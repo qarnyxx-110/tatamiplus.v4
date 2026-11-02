@@ -1,0 +1,86 @@
+{
+ "students": [
+  {
+   "name": "علی رضایی",
+   "belt": "سبز",
+   "level": "متوسط",
+   "progress": 72,
+   "lastTraining": "دیروز",
+   "status": "فعال"
+  },
+  {
+   "name": "نیما کریمی",
+   "belt": "زرد",
+   "level": "مبتدی",
+   "progress": 48,
+   "lastTraining": "۳ روز پیش",
+   "status": "فعال"
+  },
+  {
+   "name": "پارسا مرادی",
+   "belt": "قهوه‌ای",
+   "level": "پیشرفته",
+   "progress": 88,
+   "lastTraining": "امروز",
+   "status": "فعال"
+  },
+  {
+   "name": "یاسمن احمدی",
+   "belt": "نارنجی",
+   "level": "مبتدی",
+   "progress": 55,
+   "lastTraining": "هفته پیش",
+   "status": "غیرفعال"
+  },
+  {
+   "name": "کیان سلطانی",
+   "belt": "آبی",
+   "level": "متوسط",
+   "progress": 64,
+   "lastTraining": "دیروز",
+   "status": "فعال"
+  },
+  {
+   "name": "آرمان نظری",
+   "belt": "سفید",
+   "level": "مبتدی",
+   "progress": 30,
+   "lastTraining": "۵ روز پیش",
+   "status": "مرخصی"
+  }
+ ],
+ "classes": [
+  {
+   "time": "۰۹:۰۰",
+   "name": "مبتدیان صبح",
+   "level": "مبتدی",
+   "students": 12,
+   "status": "برگزار شد",
+   "coachId": 0
+  },
+  {
+   "time": "۱۱:۳۰",
+   "name": "ناژه‌وازه",
+   "level": "متوسط",
+   "students": 9,
+   "status": "در حال برگزاری",
+   "coachId": 1
+  },
+  {
+   "time": "۱۶:۰۰",
+   "name": "رندوری پیشرفته",
+   "level": "پیشرفته",
+   "students": 7,
+   "status": "به‌زودی",
+   "coachId": 2
+  },
+  {
+   "time": "۱۸:۳۰",
+   "name": "آمادگی مسابقه",
+   "level": "پیشرفته",
+   "students": 10,
+   "status": "به‌زودی",
+   "coachId": 0
+  }
+ ]
+}

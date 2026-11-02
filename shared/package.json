@@ -1,0 +1,13 @@
+{
+ "name": "tatami-plus-frontend",
+ "version": "3.0.0",
+ "private": true,
+ "description": "Tatami Plus frontend (3 PWAs + marketing panel UI). No backend included.",
+ "scripts": {
+  "build": "node build.js",
+  "test": "node tests/run-all.mjs",
+  "mock-api": "node tools/mock-api-server.mjs --port 8600 --static dist"
+ },
+ "devDependencies": { "playwright": "^1.56.0" },
+ "engines": { "node": ">=18" }
+}

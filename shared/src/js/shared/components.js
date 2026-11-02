@@ -1,0 +1,13 @@
+const bar=(p,c='',l='پیشرفت')=>`<div class="bar" role="progressbar" aria-valuenow="${p}" aria-valuemin="0" aria-valuemax="100" aria-label="${l}"><i style="width:${p}%;${c}"></i></div>`,tg=(t,k='')=>`<span class="tag ${k}">${t}</span>`;
+const act=id=>document.querySelectorAll('.d-n button').forEach(b=>b.setAttribute('aria-current',b.dataset.t==id));
+const go=id=>{const e=document.getElementById(id);if(!e)return;e.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth'});act(id)};
+const obs=()=>{if(typeof IntersectionObserver=='undefined')return;const o=new IntersectionObserver(es=>es.forEach(e=>e.isIntersecting&&act(e.target.id)),{rootMargin:'-15% 0px -75% 0px'});document.querySelectorAll('.d-s[data-nav]').forEach(e=>o.observe(e))};
+const st=(ic,t,v,n,d)=>`<div class="sc2"><span class="ic" aria-hidden="true">${ic}</span><div><div class="mu sm">${t}</div><div class="sv">${v}</div><div class="sm mu">${d?`<bdi class="up">${d}</bdi> `:''}${n||''}</div></div></div>`;
+const sec=(id,t,b,nav=1)=>`<section id="${id}" class="d-s" ${nav?'data-nav':''} aria-labelledby="h-${id}"><h2 id="h-${id}">${t}</h2>${b}</section>`;
+const rec=(t,m,s)=>`<div class="rec"><b>${t}</b>${m.map(x=>`<span>${x}</span>`).join('')}${s||''}</div>`;
+const emp=(t,d,l,h)=>`<div class="tp-state"><b>${t}</b><p class="sm">${d}</p>${l?(h.startsWith('javascript:')?`<button class="btn s o" onclick="${h.slice(11)}">${l}</button>`:`<a class="btn s o" href="${h}">${l}</a>`):''}</div>`;
+const lst=(a,f,t,d)=>a.length?a.map(f).join(''):emp(t,d);
+const qa=a=>sec('qa','دسترسی سریع',`<div class="d-qa">${a.map(x=>{const L2=x[1][0]=='#',at=L2?`href="${x[1]}"`:`type="button" onclick="go('${x[1]}')"`,tag=L2?'a':'button';return`<${tag} class="qa" ${at}><span class="ic" aria-hidden="true">${x[3]}</span><span><b>${x[0]}</b><span class="sm mu" style="display:block">${x[2]}</span></span></${tag}>`}).join('')}</div>`,0);
+const cols=(a,l,t)=>`<div class="cols" role="img" aria-label="${t}">${a.map((v,i)=>`<div><i style="height:${Math.round(v*.85)}px"></i><span>${l[i]}</span></div>`).join('')}</div>`;
+const DAYS=['ش','ی','د','س','چ','پ','ج'],MON=['مهر','آبان','آذر','دی','بهمن','اسفند'];
+const nfp=(t,h='#/',l='بازگشت به صفحه اصلی')=>`<div class="w nf" data-nf><div class="nf4 gold" aria-hidden="true">۴۰۴</div><h1>${t}</h1><p class="mu">آدرس واردشده معتبر نیست یا این مورد وجود ندارد.</p><p class="pa" style="justify-content:center"><a class="btn" href="#/">بازگشت به صفحه اصلی</a>${h!='#/'?`<a class="btn o" href="${h}">${l}</a>`:''}</p></div>`;

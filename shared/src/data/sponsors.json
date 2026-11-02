@@ -1,0 +1,38 @@
+[
+ {
+  "id": 1,
+  "name": "حامی نمونه ۱",
+  "logo": "sponsors/sponsor-01.png",
+  "demo": true
+ },
+ {
+  "id": 2,
+  "name": "حامی نمونه ۲",
+  "logo": "sponsors/sponsor-02.png",
+  "demo": true
+ },
+ {
+  "id": 3,
+  "name": "حامی نمونه ۳",
+  "logo": "sponsors/sponsor-03.png",
+  "demo": true
+ },
+ {
+  "id": 4,
+  "name": "حامی نمونه ۴",
+  "logo": "sponsors/sponsor-04.png",
+  "demo": true
+ },
+ {
+  "id": 5,
+  "name": "حامی نمونه ۵",
+  "logo": "sponsors/sponsor-05.png",
+  "demo": true
+ },
+ {
+  "id": 6,
+  "name": "حامی نمونه ۶",
+  "logo": "sponsors/sponsor-06.png",
+  "demo": true
+ }
+]

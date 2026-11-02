@@ -1,0 +1,544 @@
+[
+ {
+  "id": 0,
+  "name": "کیمونو مسابقه‌ای",
+  "category": "لباس جودو",
+  "categoryIndex": 0,
+  "priceToman": 180000,
+  "rating": 4,
+  "reviewCount": 12,
+  "stock": 25,
+  "soldCount": 20,
+  "recencyRank": 0,
+  "level": "مبتدی",
+  "sizes": [
+   "XS",
+   "S",
+   "M",
+   "L",
+   "XL",
+   "XXL"
+  ],
+  "colors": [
+   "سفید",
+   "آبی",
+   "مشکی"
+  ],
+  "description": "کیمونو مسابقه‌ای از دسته لباس جودو برای سطح مبتدی؛ توضیح نمایشی محصول در نمونه اولیه.",
+  "usage": "کلاس تمرین",
+  "imageSlot": "products/product-01.jpg"
+ },
+ {
+  "id": 1,
+  "name": "کیمونو تمرینی سبک",
+  "category": "لباس جودو",
+  "categoryIndex": 0,
+  "priceToman": 203000,
+  "rating": 4.1,
+  "reviewCount": 29,
+  "stock": 25,
+  "soldCount": 73,
+  "recencyRank": 11,
+  "level": "متوسط",
+  "sizes": [
+   "XS",
+   "S",
+   "M",
+   "L",
+   "XL",
+   "XXL"
+  ],
+  "colors": [
+   "سفید",
+   "آبی",
+   "مشکی"
+  ],
+  "description": "کیمونو تمرینی سبک از دسته لباس جودو برای سطح متوسط؛ توضیح نمایشی محصول در نمونه اولیه.",
+  "usage": "مسابقه",
+  "imageSlot": "products/product-02.jpg"
+ },
+ {
+  "id": 2,
+  "name": "کیمونو کودکان",
+  "category": "لباس جودو",
+  "categoryIndex": 0,
+  "priceToman": 226000,
+  "rating": 4.2,
+  "reviewCount": 46,
+  "stock": 3,
+  "soldCount": 126,
+  "recencyRank": 22,
+  "level": "پیشرفته",
+  "sizes": [
+   "XS",
+   "S",
+   "M",
+   "L",
+   "XL",
+   "XXL"
+  ],
+  "colors": [
+   "سفید",
+   "آبی",
+   "مشکی"
+  ],
+  "description": "کیمونو کودکان از دسته لباس جودو برای سطح پیشرفته؛ توضیح نمایشی محصول در نمونه اولیه.",
+  "usage": "تمرین در خانه",
+  "imageSlot": "products/product-03.jpg"
+ },
+ {
+  "id": 3,
+  "name": "کمربند سفید",
+  "category": "کمربند جودو",
+  "categoryIndex": 1,
+  "priceToman": 217000,
+  "rating": 4.1,
+  "reviewCount": 63,
+  "stock": 25,
+  "soldCount": 179,
+  "recencyRank": 9,
+  "level": "متوسط",
+  "sizes": [],
+  "colors": [
+   "سفید"
+  ],
+  "description": "کمربند سفید از دسته کمربند جودو برای سطح متوسط؛ توضیح نمایشی محصول در نمونه اولیه.",
+  "usage": "مسابقه",
+  "imageSlot": "products/product-04.jpg"
+ },
+ {
+  "id": 4,
+  "name": "کمربند سبز",
+  "category": "کمربند جودو",
+  "categoryIndex": 1,
+  "priceToman": 240000,
+  "rating": 4.2,
+  "reviewCount": 80,
+  "stock": 0,
+  "soldCount": 32,
+  "recencyRank": 20,
+  "level": "پیشرفته",
+  "sizes": [],
+  "colors": [
+   "سبز"
+  ],
+  "description": "کمربند سبز از دسته کمربند جودو برای سطح پیشرفته؛ توضیح نمایشی محصول در نمونه اولیه.",
+  "usage": "تمرین در خانه",
+  "imageSlot": "products/product-05.jpg"
+ },
+ {
+  "id": 5,
+  "name": "کمربند مشکی",
+  "category": "کمربند جودو",
+  "categoryIndex": 1,
+  "priceToman": 263000,
+  "rating": 4.3,
+  "reviewCount": 97,
+  "stock": 25,
+  "soldCount": 85,
+  "recencyRank": 7,
+  "level": "همه سطوح",
+  "sizes": [],
+  "colors": [
+   "مشکی"
+  ],
+  "description": "کمربند مشکی از دسته کمربند جودو برای سطح همه سطوح؛ توضیح نمایشی محصول در نمونه اولیه.",
+  "usage": "باشگاه",
+  "imageSlot": "products/product-06.jpg"
+ },
+ {
+  "id": 6,
+  "name": "کیسه بوکس ضربه",
+  "category": "تجهیزات تمرینی",
+  "categoryIndex": 2,
+  "priceToman": 254000,
+  "rating": 4.2,
+  "reviewCount": 114,
+  "stock": 25,
+  "soldCount": 138,
+  "recencyRank": 18,
+  "level": "پیشرفته",
+  "sizes": [],
+  "colors": [
+   "مشکی",
+   "خاکستری"
+  ],
+  "description": "کیسه بوکس ضربه از دسته تجهیزات تمرینی برای سطح پیشرفته؛ توضیح نمایشی محصول در نمونه اولیه.",
+  "usage": "تمرین در خانه",
+  "imageSlot": "products/product-07.jpg"
+ },
+ {
+  "id": 7,
+  "name": "لاستیک تمرین اوچی‌کومی",
+  "category": "تجهیزات تمرینی",
+  "categoryIndex": 2,
+  "priceToman": 277000,
+  "rating": 4.3,
+  "reviewCount": 131,
+  "stock": 25,
+  "soldCount": 191,
+  "recencyRank": 5,
+  "level": "همه سطوح",
+  "sizes": [],
+  "colors": [
+   "مشکی",
+   "خاکستری"
+  ],
+  "description": "لاستیک تمرین اوچی‌کومی از دسته تجهیزات تمرینی برای سطح همه سطوح؛ توضیح نمایشی محصول در نمونه اولیه.",
+  "usage": "باشگاه",
+  "imageSlot": "products/product-08.jpg"
+ },
+ {
+  "id": 8,
+  "name": "بازوبند پرتاب",
+  "category": "تجهیزات تمرینی",
+  "categoryIndex": 2,
+  "priceToman": 300000,
+  "rating": 4.4,
+  "reviewCount": 148,
+  "stock": 25,
+  "soldCount": 44,
+  "recencyRank": 16,
+  "level": "مبتدی",
+  "sizes": [],
+  "colors": [
+   "مشکی",
+   "خاکستری"
+  ],
+  "description": "بازوبند پرتاب از دسته تجهیزات تمرینی برای سطح مبتدی؛ توضیح نمایشی محصول در نمونه اولیه.",
+  "usage": "کلاس تمرین",
+  "imageSlot": "products/product-09.jpg"
+ },
+ {
+  "id": 9,
+  "name": "کش مقاومتی",
+  "category": "قدرت و آمادگی جسمانی",
+  "categoryIndex": 3,
+  "priceToman": 291000,
+  "rating": 4.3,
+  "reviewCount": 165,
+  "stock": 3,
+  "soldCount": 97,
+  "recencyRank": 3,
+  "level": "همه سطوح",
+  "sizes": [],
+  "colors": [
+   "مشکی",
+   "قرمز"
+  ],
+  "description": "کش مقاومتی از دسته قدرت و آمادگی جسمانی برای سطح همه سطوح؛ توضیح نمایشی محصول در نمونه اولیه.",
+  "usage": "باشگاه",
+  "imageSlot": "products/product-10.jpg"
+ },
+ {
+  "id": 10,
+  "name": "کتل‌بل ۱۶ کیلویی",
+  "category": "قدرت و آمادگی جسمانی",
+  "categoryIndex": 3,
+  "priceToman": 314000,
+  "rating": 4.4,
+  "reviewCount": 182,
+  "stock": 25,
+  "soldCount": 150,
+  "recencyRank": 14,
+  "level": "مبتدی",
+  "sizes": [],
+  "colors": [
+   "مشکی",
+   "قرمز"
+  ],
+  "description": "کتل‌بل ۱۶ کیلویی از دسته قدرت و آمادگی جسمانی برای سطح مبتدی؛ توضیح نمایشی محصول در نمونه اولیه.",
+  "usage": "کلاس تمرین",
+  "imageSlot": "products/product-11.jpg"
+ },
+ {
+  "id": 11,
+  "name": "طناب کنفی",
+  "category": "قدرت و آمادگی جسمانی",
+  "categoryIndex": 3,
+  "priceToman": 337000,
+  "rating": 4.5,
+  "reviewCount": 19,
+  "stock": 25,
+  "soldCount": 203,
+  "recencyRank": 1,
+  "level": "متوسط",
+  "sizes": [],
+  "colors": [
+   "مشکی",
+   "قرمز"
+  ],
+  "description": "طناب کنفی از دسته قدرت و آمادگی جسمانی برای سطح متوسط؛ توضیح نمایشی محصول در نمونه اولیه.",
+  "usage": "مسابقه",
+  "imageSlot": "products/product-12.jpg"
+ },
+ {
+  "id": 12,
+  "name": "کیف ورزشی",
+  "category": "لوازم شخصی",
+  "categoryIndex": 4,
+  "priceToman": 328000,
+  "rating": 4.4,
+  "reviewCount": 36,
+  "stock": 25,
+  "soldCount": 56,
+  "recencyRank": 12,
+  "level": "مبتدی",
+  "sizes": [],
+  "colors": [
+   "مشکی",
+   "آبی",
+   "خاکستری"
+  ],
+  "description": "کیف ورزشی از دسته لوازم شخصی برای سطح مبتدی؛ توضیح نمایشی محصول در نمونه اولیه.",
+  "usage": "کلاس تمرین",
+  "imageSlot": "products/product-13.jpg"
+ },
+ {
+  "id": 13,
+  "name": "دمپایی تاتامی",
+  "category": "لوازم شخصی",
+  "categoryIndex": 4,
+  "priceToman": 351000,
+  "rating": 4.5,
+  "reviewCount": 53,
+  "stock": 0,
+  "soldCount": 109,
+  "recencyRank": 23,
+  "level": "متوسط",
+  "sizes": [],
+  "colors": [
+   "مشکی",
+   "آبی",
+   "خاکستری"
+  ],
+  "description": "دمپایی تاتامی از دسته لوازم شخصی برای سطح متوسط؛ توضیح نمایشی محصول در نمونه اولیه.",
+  "usage": "مسابقه",
+  "imageSlot": "products/product-14.jpg"
+ },
+ {
+  "id": 14,
+  "name": "حوله ورزشی",
+  "category": "لوازم شخصی",
+  "categoryIndex": 4,
+  "priceToman": 374000,
+  "rating": 4.6,
+  "reviewCount": 70,
+  "stock": 25,
+  "soldCount": 162,
+  "recencyRank": 10,
+  "level": "پیشرفته",
+  "sizes": [],
+  "colors": [
+   "مشکی",
+   "آبی",
+   "خاکستری"
+  ],
+  "description": "حوله ورزشی از دسته لوازم شخصی برای سطح پیشرفته؛ توضیح نمایشی محصول در نمونه اولیه.",
+  "usage": "تمرین در خانه",
+  "imageSlot": "products/product-15.jpg"
+ },
+ {
+  "id": 15,
+  "name": "محافظ دهان",
+  "category": "محافظ‌ها و ایمنی",
+  "categoryIndex": 5,
+  "priceToman": 365000,
+  "rating": 4.5,
+  "reviewCount": 87,
+  "stock": 25,
+  "soldCount": 215,
+  "recencyRank": 21,
+  "level": "متوسط",
+  "sizes": [],
+  "colors": [
+   "مشکی",
+   "قرمز",
+   "آبی"
+  ],
+  "description": "محافظ دهان از دسته محافظ‌ها و ایمنی برای سطح متوسط؛ توضیح نمایشی محصول در نمونه اولیه.",
+  "usage": "مسابقه",
+  "imageSlot": "products/product-16.jpg"
+ },
+ {
+  "id": 16,
+  "name": "مچ‌بند حمایتی",
+  "category": "محافظ‌ها و ایمنی",
+  "categoryIndex": 5,
+  "priceToman": 388000,
+  "rating": 4.6,
+  "reviewCount": 104,
+  "stock": 3,
+  "soldCount": 68,
+  "recencyRank": 8,
+  "level": "پیشرفته",
+  "sizes": [
+   "S",
+   "M",
+   "L"
+  ],
+  "colors": [
+   "مشکی",
+   "قرمز",
+   "آبی"
+  ],
+  "description": "مچ‌بند حمایتی از دسته محافظ‌ها و ایمنی برای سطح پیشرفته؛ توضیح نمایشی محصول در نمونه اولیه.",
+  "usage": "تمرین در خانه",
+  "imageSlot": "products/product-17.jpg"
+ },
+ {
+  "id": 17,
+  "name": "زانوبند",
+  "category": "محافظ‌ها و ایمنی",
+  "categoryIndex": 5,
+  "priceToman": 411000,
+  "rating": 4.7,
+  "reviewCount": 121,
+  "stock": 25,
+  "soldCount": 121,
+  "recencyRank": 19,
+  "level": "همه سطوح",
+  "sizes": [
+   "S",
+   "M",
+   "L"
+  ],
+  "colors": [
+   "مشکی",
+   "قرمز",
+   "آبی"
+  ],
+  "description": "زانوبند از دسته محافظ‌ها و ایمنی برای سطح همه سطوح؛ توضیح نمایشی محصول در نمونه اولیه.",
+  "usage": "باشگاه",
+  "imageSlot": "products/product-18.jpg"
+ },
+ {
+  "id": 18,
+  "name": "تشک تاشو خانگی",
+  "category": "تجهیزات تمرین در خانه",
+  "categoryIndex": 6,
+  "priceToman": 402000,
+  "rating": 4.6,
+  "reviewCount": 138,
+  "stock": 25,
+  "soldCount": 174,
+  "recencyRank": 6,
+  "level": "پیشرفته",
+  "sizes": [],
+  "colors": [
+   "مشکی",
+   "آبی"
+  ],
+  "description": "تشک تاشو خانگی از دسته تجهیزات تمرین در خانه برای سطح پیشرفته؛ توضیح نمایشی محصول در نمونه اولیه.",
+  "usage": "تمرین در خانه",
+  "imageSlot": "products/product-19.jpg"
+ },
+ {
+  "id": 19,
+  "name": "مانکن پرتاب",
+  "category": "تجهیزات تمرین در خانه",
+  "categoryIndex": 6,
+  "priceToman": 425000,
+  "rating": 4.7,
+  "reviewCount": 155,
+  "stock": 25,
+  "soldCount": 27,
+  "recencyRank": 17,
+  "level": "همه سطوح",
+  "sizes": [],
+  "colors": [
+   "مشکی",
+   "آبی"
+  ],
+  "description": "مانکن پرتاب از دسته تجهیزات تمرین در خانه برای سطح همه سطوح؛ توضیح نمایشی محصول در نمونه اولیه.",
+  "usage": "باشگاه",
+  "imageSlot": "products/product-20.jpg"
+ },
+ {
+  "id": 20,
+  "name": "قفسه کمربند",
+  "category": "تجهیزات تمرین در خانه",
+  "categoryIndex": 6,
+  "priceToman": 448000,
+  "rating": 4.8,
+  "reviewCount": 172,
+  "stock": 25,
+  "soldCount": 80,
+  "recencyRank": 4,
+  "level": "مبتدی",
+  "sizes": [],
+  "colors": [
+   "مشکی",
+   "آبی"
+  ],
+  "description": "قفسه کمربند از دسته تجهیزات تمرین در خانه برای سطح مبتدی؛ توضیح نمایشی محصول در نمونه اولیه.",
+  "usage": "کلاس تمرین",
+  "imageSlot": "products/product-21.jpg"
+ },
+ {
+  "id": 21,
+  "name": "تشک تاتامی رقابتی",
+  "category": "تجهیزات باشگاهی",
+  "categoryIndex": 7,
+  "priceToman": 439000,
+  "rating": 4.7,
+  "reviewCount": 189,
+  "stock": 25,
+  "soldCount": 133,
+  "recencyRank": 15,
+  "level": "همه سطوح",
+  "sizes": [],
+  "colors": [
+   "آبی",
+   "قرمز",
+   "مشکی"
+  ],
+  "description": "تشک تاتامی رقابتی از دسته تجهیزات باشگاهی برای سطح همه سطوح؛ توضیح نمایشی محصول در نمونه اولیه.",
+  "usage": "باشگاه",
+  "imageSlot": "products/product-22.jpg"
+ },
+ {
+  "id": 22,
+  "name": "ساعت مسابقه",
+  "category": "تجهیزات باشگاهی",
+  "categoryIndex": 7,
+  "priceToman": 462000,
+  "rating": 4.8,
+  "reviewCount": 26,
+  "stock": 0,
+  "soldCount": 186,
+  "recencyRank": 2,
+  "level": "مبتدی",
+  "sizes": [],
+  "colors": [
+   "آبی",
+   "قرمز",
+   "مشکی"
+  ],
+  "description": "ساعت مسابقه از دسته تجهیزات باشگاهی برای سطح مبتدی؛ توضیح نمایشی محصول در نمونه اولیه.",
+  "usage": "کلاس تمرین",
+  "imageSlot": "products/product-23.jpg"
+ },
+ {
+  "id": 23,
+  "name": "تخته امتیاز",
+  "category": "تجهیزات باشگاهی",
+  "categoryIndex": 7,
+  "priceToman": 485000,
+  "rating": 4.9,
+  "reviewCount": 43,
+  "stock": 3,
+  "soldCount": 39,
+  "recencyRank": 13,
+  "level": "متوسط",
+  "sizes": [],
+  "colors": [
+   "آبی",
+   "قرمز",
+   "مشکی"
+  ],
+  "description": "تخته امتیاز از دسته تجهیزات باشگاهی برای سطح متوسط؛ توضیح نمایشی محصول در نمونه اولیه.",
+  "usage": "مسابقه",
+  "imageSlot": "products/product-24.jpg"
+ }
+]

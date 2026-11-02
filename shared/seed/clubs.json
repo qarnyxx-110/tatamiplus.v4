@@ -1,0 +1,68 @@
+[
+ {
+  "id": 0,
+  "name": "باشگاه جودوی ققنوس",
+  "city": "تهران",
+  "status": "فعال",
+  "studentCount": 86,
+  "description": "کلاس‌های مبتدی تا پیشرفته برای بزرگسالان و نوجوانان در مرکز شهر.",
+  "schedule": "شنبه، دوشنبه و چهارشنبه ۱۷:۰۰ تا ۲۱:۰۰",
+  "coachId": 0,
+  "imageSlot": "clubs/club-01.jpg"
+ },
+ {
+  "id": 1,
+  "name": "باشگاه نقش‌جهان",
+  "city": "اصفهان",
+  "status": "فعال",
+  "studentCount": 62,
+  "description": "تمرین ناژه‌وازه و آمادگی مسابقه با تمرکز بر رده‌های جوانان.",
+  "schedule": "یکشنبه، سه‌شنبه و پنجشنبه ۱۶:۰۰ تا ۲۰:۰۰",
+  "coachId": 1,
+  "imageSlot": "clubs/club-02.jpg"
+ },
+ {
+  "id": 2,
+  "name": "باشگاه پارس",
+  "city": "شیراز",
+  "status": "در حال ثبت‌نام",
+  "studentCount": 48,
+  "description": "کلاس‌های ویژه مبتدیان و کودکان با ثبت‌نام باز.",
+  "schedule": "شنبه تا چهارشنبه ۱۸:۰۰ تا ۲۰:۰۰",
+  "coachId": 2,
+  "imageSlot": "clubs/club-03.jpg"
+ },
+ {
+  "id": 3,
+  "name": "باشگاه خراسان",
+  "city": "مشهد",
+  "status": "فعال",
+  "studentCount": 74,
+  "description": "رندوری منظم و برنامه آمادگی جسمانی هفتگی.",
+  "schedule": "دوشنبه، چهارشنبه و جمعه ۱۷:۳۰ تا ۲۰:۳۰",
+  "coachId": 3,
+  "imageSlot": "clubs/club-04.jpg"
+ },
+ {
+  "id": 4,
+  "name": "باشگاه ارک",
+  "city": "تبریز",
+  "status": "غیرفعال",
+  "studentCount": 35,
+  "description": "فعالیت باشگاه موقتاً متوقف شده است (اطلاعات نمایشی).",
+  "schedule": "فعلاً کلاسی برگزار نمی‌شود",
+  "coachId": 4,
+  "imageSlot": "clubs/club-05.jpg"
+ },
+ {
+  "id": 5,
+  "name": "باشگاه البرز",
+  "city": "کرج",
+  "status": "فعال",
+  "studentCount": 55,
+  "description": "تمرین‌های گروهی، کنترل در خاک و آمادگی مسابقه.",
+  "schedule": "شنبه، دوشنبه و چهارشنبه ۱۸:۰۰ تا ۲۱:۰۰",
+  "coachId": 5,
+  "imageSlot": "clubs/club-06.jpg"
+ }
+]

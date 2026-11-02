@@ -1,0 +1,58 @@
+[
+ {
+  "id": 0,
+  "name": "جام بهاره تهران",
+  "status": "آینده",
+  "date": "۱۴۰۵/۰۷/۲۵",
+  "participants": 60,
+  "imageSlot": "tournaments/tournament-01.jpg",
+  "location": "تهران، سالن آزادی",
+  "weightClass": "-۷۳ کیلوگرم",
+  "registrationStatus": "ثبت‌نام باز",
+  "registeredStudents": 6
+ },
+ {
+  "id": 1,
+  "name": "لیگ باشگاه‌های اصفهان",
+  "status": "آینده",
+  "date": "۱۴۰۵/۰۸/۱۲",
+  "participants": 82,
+  "imageSlot": "tournaments/tournament-02.jpg",
+  "location": "اصفهان، سالن نقش‌جهان",
+  "weightClass": "-۸۱ کیلوگرم",
+  "registrationStatus": "ظرفیت رو به تکمیل",
+  "registeredStudents": 4
+ },
+ {
+  "id": 2,
+  "name": "مسابقات کشوری نوجوانان",
+  "status": "جاری",
+  "date": "۱۴۰۵/۰۷/۰۸",
+  "participants": 104,
+  "imageSlot": "tournaments/tournament-03.jpg"
+ },
+ {
+  "id": 3,
+  "name": "جام دوستی شیراز",
+  "status": "جاری",
+  "date": "۱۴۰۵/۰۷/۰۹",
+  "participants": 126,
+  "imageSlot": "tournaments/tournament-04.jpg"
+ },
+ {
+  "id": 4,
+  "name": "قهرمانی مشهد",
+  "status": "پایان‌یافته",
+  "date": "۱۴۰۵/۰۵/۲۰",
+  "participants": 148,
+  "imageSlot": "tournaments/tournament-05.jpg"
+ },
+ {
+  "id": 5,
+  "name": "جام رمضان تبریز",
+  "status": "پایان‌یافته",
+  "date": "۱۴۰۵/۰۳/۱۱",
+  "participants": 170,
+  "imageSlot": "tournaments/tournament-06.jpg"
+ }
+]

@@ -1,0 +1,155 @@
+[
+ {
+  "slug": "sara-ahmadi",
+  "firstName": "سارا",
+  "lastName": "احمدی",
+  "clubId": 0,
+  "level": "مربی ارشد",
+  "specialties": [
+   "ناژه‌وازه",
+   "آمادگی مسابقه"
+  ],
+  "styles": [
+   "آموزش گام‌به‌گام",
+   "تمرین با شریک"
+  ],
+  "bio": "پروفایل نمونه: مربی‌ای با تمرکز بر ناژه‌وازه و ترکیب پرتاب‌ها. متن توضیح آزمایشی است و اطلاعات واقعی نیست.",
+  "experienceYears": 12,
+  "history": [],
+  "achievements": [],
+  "credentials": [],
+  "contact": null,
+  "photo": "coaches/sara-ahmadi.jpg",
+  "academySpecialty": "ناژه و ترکیب‌ها",
+  "coursesLabel": "۱۲ دوره",
+  "studentCount": 24,
+  "hue": 20
+ },
+ {
+  "slug": "reza-kiani",
+  "firstName": "رضا",
+  "lastName": "کیانی",
+  "clubId": 1,
+  "level": "مربی میانی",
+  "specialties": [
+   "نه‌وازه"
+  ],
+  "styles": [
+   "کنترل و تثبیت در خاک",
+   "تمرین رندوری هدفمند"
+  ],
+  "bio": "پروفایل نمونه: مربی‌ای با تمرکز بر کنترل در خاک و تکنیک‌های تثبیت. متن آزمایشی است.",
+  "experienceYears": 9,
+  "history": [],
+  "achievements": [],
+  "credentials": [],
+  "contact": null,
+  "photo": "coaches/reza-kiani.jpg",
+  "academySpecialty": "کنترل در خاک",
+  "coursesLabel": "۹ دوره",
+  "studentCount": 18,
+  "hue": 75
+ },
+ {
+  "slug": "maryam-nouri",
+  "firstName": "مریم",
+  "lastName": "نوری",
+  "clubId": 2,
+  "level": "مربی میانی",
+  "specialties": [
+   "آمادگی مسابقه",
+   "ناژه‌وازه"
+  ],
+  "styles": [
+   "برنامه‌ریزی هفته مسابقه",
+   "تحلیل ویدیویی نمایشی"
+  ],
+  "bio": "پروفایل نمونه: مربی‌ای با تمرکز بر برنامه‌ریزی آمادگی مسابقه. متن آزمایشی است.",
+  "experienceYears": 7,
+  "history": [],
+  "achievements": [],
+  "credentials": [],
+  "contact": null,
+  "photo": "coaches/maryam-nouri.jpg",
+  "academySpecialty": "آمادگی مسابقه",
+  "coursesLabel": "۷ دوره",
+  "studentCount": 15,
+  "hue": 130
+ },
+ {
+  "slug": "amir-salehi",
+  "firstName": "امیر",
+  "lastName": "صالحی",
+  "clubId": 3,
+  "level": "مربی ارشد",
+  "specialties": [
+   "آموزش کودکان و نوجوانان",
+   "ناژه‌وازه"
+  ],
+  "styles": [
+   "یادگیری مرحله‌ای",
+   "بازی‌محور برای سنین پایین"
+  ],
+  "bio": "پروفایل نمونه: مربی‌ای با تمرکز بر آموزش کودکان و نوجوانان. متن آزمایشی است.",
+  "experienceYears": 14,
+  "history": [],
+  "achievements": [],
+  "credentials": [],
+  "contact": null,
+  "photo": "coaches/amir-salehi.jpg",
+  "academySpecialty": "کودکان و نوجوانان",
+  "coursesLabel": "۱۴ دوره",
+  "studentCount": 30,
+  "hue": 185
+ },
+ {
+  "slug": "negar-farhadi",
+  "firstName": "نگار",
+  "lastName": "فرهادی",
+  "clubId": 4,
+  "level": "مربی پایه",
+  "specialties": [
+   "آمادگی جسمانی"
+  ],
+  "styles": [
+   "قدرت و تحرک‌پذیری",
+   "تمرین گروهی"
+  ],
+  "bio": "پروفایل نمونه: مربی‌ای با تمرکز بر آمادگی جسمانی ورزشکاران رزمی. متن آزمایشی است.",
+  "experienceYears": 6,
+  "history": [],
+  "achievements": [],
+  "credentials": [],
+  "contact": null,
+  "photo": "coaches/negar-farhadi.jpg",
+  "academySpecialty": "قدرت و آمادگی",
+  "coursesLabel": "۶ دوره",
+  "studentCount": 12,
+  "hue": 240
+ },
+ {
+  "slug": "hossein-radmanesh",
+  "firstName": "حسین",
+  "lastName": "رادمنش",
+  "clubId": 5,
+  "level": "مربی پایه",
+  "specialties": [
+   "داوری و قوانین"
+  ],
+  "styles": [
+   "آموزش قوانین مسابقه",
+   "مرور موارد داوری"
+  ],
+  "bio": "پروفایل نمونه: مربی‌ای با تمرکز بر آشنایی با قوانین و داوری. متن آزمایشی است.",
+  "experienceYears": 5,
+  "history": [],
+  "achievements": [],
+  "credentials": [],
+  "contact": null,
+  "photo": "coaches/hossein-radmanesh.jpg",
+  "academySpecialty": "داوری و قوانین",
+  "coursesLabel": "۵ دوره",
+  "studentCount": 10,
+  "hue": 295
+ }
+]

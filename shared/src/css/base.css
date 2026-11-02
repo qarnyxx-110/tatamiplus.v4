@@ -1,0 +1,21 @@
+/* Tatami Plus — base: reset، تایپوگرافی، فرم‌ها، فوکوس. فقط از توکن‌های --tp-* استفاده می‌شود. */
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0);padding-bottom:env(safe-area-inset-bottom,0)}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:4.5rem;-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--tp-color-bg);color:var(--tp-color-text-primary);font:var(--tp-font-weight-regular) var(--tp-font-size-base)/var(--tp-font-leading-base) var(--tp-font-family)}
+a{color:inherit;text-decoration:none}
+h1,h2,h3,h4{line-height:var(--tp-font-leading-tight);margin:0 0 var(--tp-space-xs);font-weight:var(--tp-font-weight-bold)}
+h1{font-size:var(--tp-font-size-3xl)}h2{font-size:var(--tp-font-size-2xl)}h3{font-size:var(--tp-font-size-xl)}h4{font-size:var(--tp-font-size-lg)}
+.hero h1{font-size:var(--tp-font-size-display)}
+p{margin:0 0 var(--tp-space-sm)}
+button,input,select,textarea{font:inherit;color:inherit}button{cursor:pointer}
+:focus-visible{outline:var(--tp-focus-ring);outline-offset:var(--tp-focus-offset)}
+input,select,textarea{background:var(--tp-color-surface);border:1px solid var(--tp-color-border);border-radius:var(--tp-radius-control);padding:var(--tp-space-xs) var(--tp-space-sm);min-height:var(--tp-control-height-md);transition:border-color var(--tp-motion-fast)}
+input:hover,select:hover,textarea:hover{border-color:var(--tp-color-border-strong)}
+input:focus-visible,select:focus-visible,textarea:focus-visible{border-color:var(--tp-color-brand);outline-offset:0}
+input[aria-invalid=true],select[aria-invalid=true],textarea[aria-invalid=true]{border-color:var(--tp-color-danger)}
+input:disabled,select:disabled,textarea:disabled,button:disabled{opacity:.5;cursor:not-allowed}
+input[readonly]{border-style:dashed}
+select{appearance:none;padding-inline-end:var(--tp-space-xl);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%239BA8B7' stroke-width='1.6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:left var(--tp-space-sm) center}
+table{width:100%;border-collapse:collapse}th,td{padding:var(--tp-space-xs);border-bottom:1px solid var(--tp-color-border);text-align:start}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important;scroll-behavior:auto!important}}

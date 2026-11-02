@@ -1,0 +1,7 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # اگر درخواست مستقیماً برای ریشه سایت بود، ریدایرکت شود
+    RewriteRule ^$ /preview/ [R=302,L]
+</IfModule>

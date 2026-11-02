@@ -1,0 +1,74 @@
+[
+ {
+  "id": 0,
+  "name": "سارا احمدی",
+  "specialty": "ناژه و ترکیب‌ها",
+  "coursesLabel": "۱۲ دوره",
+  "teachingLevel": "همه سطوح",
+  "experienceYears": 12,
+  "studentCount": 24,
+  "clubId": 0,
+  "bio": "تمرکز بر ناژه‌وازه و ترکیب پرتاب‌ها؛ پروفایل نمایشی.",
+  "imageSlot": "instructors/instructor-01.jpg"
+ },
+ {
+  "id": 1,
+  "name": "رضا کیانی",
+  "specialty": "کنترل در خاک",
+  "coursesLabel": "۹ دوره",
+  "teachingLevel": "مبتدی تا متوسط",
+  "experienceYears": 9,
+  "studentCount": 18,
+  "clubId": 1,
+  "bio": "آموزش کنترل در خاک و تکنیک‌های کنترل؛ پروفایل نمایشی.",
+  "imageSlot": "instructors/instructor-02.jpg"
+ },
+ {
+  "id": 2,
+  "name": "مریم نوری",
+  "specialty": "آمادگی مسابقه",
+  "coursesLabel": "۷ دوره",
+  "teachingLevel": "متوسط تا پیشرفته",
+  "experienceYears": 7,
+  "studentCount": 15,
+  "clubId": 2,
+  "bio": "برنامه‌ریزی آمادگی مسابقه و مدیریت تمرین؛ پروفایل نمایشی.",
+  "imageSlot": "instructors/instructor-03.jpg"
+ },
+ {
+  "id": 3,
+  "name": "امیر صالحی",
+  "specialty": "کودکان و نوجوانان",
+  "coursesLabel": "۱۴ دوره",
+  "teachingLevel": "مبتدی",
+  "experienceYears": 14,
+  "studentCount": 30,
+  "clubId": 3,
+  "bio": "کار با کودکان و نوجوانان و یادگیری گام‌به‌گام؛ پروفایل نمایشی.",
+  "imageSlot": "instructors/instructor-04.jpg"
+ },
+ {
+  "id": 4,
+  "name": "نگار فرهادی",
+  "specialty": "قدرت و آمادگی",
+  "coursesLabel": "۶ دوره",
+  "teachingLevel": "همه سطوح",
+  "experienceYears": 6,
+  "studentCount": 12,
+  "clubId": 4,
+  "bio": "قدرت و آمادگی جسمانی مخصوص ورزشکاران رزمی؛ پروفایل نمایشی.",
+  "imageSlot": "instructors/instructor-05.jpg"
+ },
+ {
+  "id": 5,
+  "name": "حسین رادمنش",
+  "specialty": "داوری و قوانین",
+  "coursesLabel": "۵ دوره",
+  "teachingLevel": "پیشرفته",
+  "experienceYears": 5,
+  "studentCount": 10,
+  "clubId": 5,
+  "bio": "آشنایی با قوانین و داوری؛ پروفایل نمایشی.",
+  "imageSlot": "instructors/instructor-06.jpg"
+ }
+]
