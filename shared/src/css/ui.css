@@ -81,3 +81,82 @@ header nav a{display:inline-flex;align-items:center;min-height:var(--tp-control-
 
 .logo{display:inline-flex;align-items:center;min-height:var(--tp-control-touch)}
 .chip{min-width:var(--tp-control-touch)}
+
+/* ===== سیستم طراحی تاتامی پلاس: قرمز تاتامی، مشکی کمربند، سفید کیمونو. فقط ظاهر؛ ساختار و رفتار دست نخورده ===== */
+/* تایپوگرافی: Lalezar فقط برای تیترهای نمایشی؛ بقیه Vazirmatn */
+h1,.hero h1,.d-h h1,.d-s>h2,.cta h2,.sc h2,.nf4{font-family:var(--tp-font-family-display);font-weight:var(--tp-font-weight-regular);letter-spacing:0;line-height:1.35}
+h3,h4,.card h2,.card h3{font-weight:var(--tp-font-weight-bold)}
+.logo,.d-lg,.mk-sb .mk-logo{font-family:var(--tp-font-family-display);font-weight:var(--tp-font-weight-regular);color:var(--tp-color-text-primary)}
+/* ObiHeading: نوار کمربند مشکی ۸px با سر قرمز زیر تیتر هر بخش */
+.d-s>h2{display:block;padding-bottom:var(--tp-space-xs);margin-bottom:var(--tp-space-md)}
+.d-s>h2::after{content:"";display:block;height:8px;margin-top:var(--tp-space-xs);border-radius:var(--tp-radius-none);background:linear-gradient(to right,var(--tp-color-brand) 0 64px,var(--tp-color-text-primary) 64px)}
+/* هدر و ناوبری */
+header{background:var(--tp-color-header-bg);border-bottom:1px solid var(--tp-color-border);backdrop-filter:saturate(1.2) blur(6px)}
+nav a{font-weight:var(--tp-font-weight-medium)}nav a:hover{color:var(--tp-color-text-primary);background:var(--tp-color-surface-hover)}
+nav a.on{color:var(--tp-color-brand-text);background:var(--tp-color-brand-tint)}
+.ib{border-color:var(--tp-color-border)}.ib:hover{border-color:var(--tp-color-text-primary)}
+/* دکمه‌ها: قرمز اصلی با سایه چاپی، دکمه خطی مشکی؛ بدون دکمه کپسولی */
+.btn{background:var(--tp-color-brand);color:var(--tp-color-text-on-brand);border:2px solid transparent;border-radius:var(--tp-radius-control);font-weight:var(--tp-font-weight-bold);transition:transform var(--tp-motion-fast),box-shadow var(--tp-motion-fast),background var(--tp-motion-fast),color var(--tp-motion-fast)}
+.btn:hover{filter:none;background:var(--tp-color-brand-hover);transform:translate(2px,-2px);box-shadow:var(--tp-shadow-stamp)}
+.btn:active{transform:none;box-shadow:none}
+.btn.o{background:transparent;border-color:var(--tp-color-text-primary);color:var(--tp-color-text-primary)}
+.btn.o:hover{background:var(--tp-color-text-primary);color:var(--tp-color-surface);box-shadow:var(--tp-shadow-stamp-brand)}
+.btn[disabled],.btn[aria-disabled=true]{opacity:1;background:var(--tp-color-neutral-tint);color:var(--tp-color-text-subtle);border-color:transparent;transform:none;box-shadow:none}
+.rec .btn{color:var(--tp-color-text-on-brand)}.rec .btn.o{color:var(--tp-color-text-primary)}
+/* فرم‌ها */
+input,select,textarea{background:var(--tp-color-surface);border:2px solid var(--tp-color-border-strong);border-radius:var(--tp-radius-control)}
+input::placeholder,textarea::placeholder{color:var(--tp-color-text-subtle)}
+input:hover,select:hover,textarea:hover{border-color:var(--tp-color-text-secondary)}
+input:focus-visible,select:focus-visible,textarea:focus-visible{border-color:var(--tp-color-text-primary);outline:2px solid var(--tp-color-ring);outline-offset:2px}
+.vpc input[type=range]{border:0}
+/* کارت‌ها: گوشه ۱۶px، خط مویی؛ در هاور با سایه چاپی بالا می‌آیند */
+.card,.d-c,.sc2,.qa,.ci,.sf,.d-sb,.d-acc,.cta,.tp-logo,.vp,.tp-modal-box{border-radius:var(--tp-radius-card);box-shadow:none}
+.rec{border-radius:var(--tp-radius-control)}
+a.card,.pcd,.vcd,a.rec,.qa{transition:transform var(--tp-motion-base),box-shadow var(--tp-motion-base),border-color var(--tp-motion-base)}
+a.card:hover,.pcd:hover,.vcd:hover,a.rec:hover,.qa:hover{transform:translate(2px,-2px);box-shadow:var(--tp-shadow-stamp);border-color:var(--tp-color-text-primary)}
+.card .b h3,.card .b b{font-weight:var(--tp-font-weight-bold)}
+/* آمار داشبورد */
+.sv{color:var(--tp-color-text-primary);font-weight:900}.up{color:var(--tp-color-success)}
+.ic{background:var(--tp-color-brand-tint);color:var(--tp-color-brand-text)}
+.cols i{background:var(--tp-color-brand)}.bar{background:var(--tp-color-neutral-tint)}
+/* چیپ، برچسب، زبانه */
+.chip{border-radius:var(--tp-radius-chip);border-color:var(--tp-color-border-strong);font-weight:var(--tp-font-weight-medium)}
+.chip:hover{border-color:var(--tp-color-text-primary)}
+.chip.on,.chip[aria-pressed=true],.chip[aria-selected=true]{background:var(--tp-color-brand-tint);border-color:var(--tp-color-brand);color:var(--tp-color-brand-text)}
+.tag{border-radius:var(--tp-radius-badge);font-weight:var(--tp-font-weight-bold);padding:1px var(--tp-space-xs)}
+.tag.g{background:var(--tp-color-ai-tint);color:var(--tp-color-ai)}
+.tag.m{background:var(--tp-color-neutral-tint);color:var(--tp-color-text-secondary)}
+.tp-tabs [role=tab][aria-selected=true]{color:var(--tp-color-brand-text);border-bottom-color:var(--tp-color-brand);font-weight:var(--tp-font-weight-bold)}
+.d-n button[aria-current=true],.mk-sb a[aria-current=page]{background:var(--tp-color-brand-tint);color:var(--tp-color-brand-text);font-weight:var(--tp-font-weight-bold)}
+.d-sw a{border-color:var(--tp-color-text-primary);color:var(--tp-color-text-primary)}.d-sw a:hover{background:var(--tp-color-text-primary);color:var(--tp-color-surface)}
+/* هشدار و وضعیت‌ها */
+.warn{background:var(--tp-color-shido-soft);border-color:var(--tp-color-shido);color:var(--tp-color-shido-text)}
+.tp-toast{background:var(--tp-color-night);color:var(--tp-color-night-foreground);box-shadow:var(--tp-shadow-popover)}
+.tp-toast.error{background:var(--tp-color-danger);color:var(--tp-color-bg)}
+.tp-article a{color:var(--tp-color-brand-text);text-decoration-thickness:2px;text-underline-offset:4px}
+.tp-article blockquote{border-inline-start-color:var(--tp-color-brand)}
+/* جایگزین تصویر: بافت حصیر تاتامی با درز قرمز، نه جعبه خاکستری */
+.ph{color:var(--tp-color-text-secondary);background-color:var(--tp-color-neutral-tint);background-image:repeating-linear-gradient(0deg,transparent 0 5px,var(--tp-color-border) 5px 6px),linear-gradient(90deg,transparent calc(50% - 2px),var(--tp-color-brand) calc(50% - 2px) calc(50% + 2px),transparent calc(50% + 2px))}
+.ph.ok{background:var(--tp-color-neutral-tint)}.ph svg{opacity:.25}
+.ph figcaption{background:var(--tp-color-surface);color:var(--tp-color-text-secondary);padding:0 var(--tp-space-xs);border-radius:var(--tp-radius-badge)}
+/* باندهای شب: هیرو و فوتر مشکی */
+.hero{background:var(--tp-color-night);color:var(--tp-color-night-foreground);position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;inset-block:0;inset-inline-end:12%;width:6px;background:var(--tp-color-brand);pointer-events:none}
+.hero .w{position:relative;z-index:1}
+.hero h1{color:var(--tp-color-night-foreground)}
+.hero .gold{color:var(--tp-color-night-foreground);font-weight:var(--tp-font-weight-bold)}
+.hero .mu{color:rgba(245,245,245,.78)}
+.hero .btn.o{border-color:var(--tp-color-night-foreground);color:var(--tp-color-night-foreground)}
+.hero .btn.o:hover{background:var(--tp-color-night-foreground);color:var(--tp-color-night)}
+.hero .btn:hover{box-shadow:var(--tp-shadow-stamp-brand)}
+.hero :focus-visible,.ft :focus-visible{outline-color:var(--tp-color-night-foreground)}
+.ft{background:var(--tp-color-night);color:rgba(245,245,245,.72);border-top:8px solid var(--tp-color-brand)}
+.ft .logo,.ftg nav b{color:var(--tp-color-night-foreground)}.ftg a:hover{color:var(--tp-color-night-foreground)}
+.cta{border:2px solid var(--tp-color-text-primary)}
+.ft .gold{font-family:var(--tp-font-family-display);font-weight:var(--tp-font-weight-regular);font-size:var(--tp-font-size-xl);color:var(--tp-color-night-foreground)}.ft .mu{color:rgba(245,245,245,.72)}
+footer{background:var(--tp-color-night)}
+.tag.ok{background:var(--tp-color-success-soft);color:var(--tp-color-success)}.tag.ok::before{content:"✓ "}
+.tag.lo{background:var(--tp-color-shido-soft);color:var(--tp-color-shido-text)}
+.bar i{background:var(--tp-color-text-primary)}
+/* حالت تاریک دائمی */
+:root{color-scheme:dark}.tp-toast{border:1px solid var(--tp-color-border)}
