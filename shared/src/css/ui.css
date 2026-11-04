@@ -157,6 +157,7 @@ a.card:hover,.pcd:hover,.vcd:hover,a.rec:hover,.qa:hover{transform:translate(2px
 footer{background:var(--tp-color-night)}
 .tag.ok{background:var(--tp-color-success-soft);color:var(--tp-color-success)}.tag.ok::before{content:"✓ "}
 .tag.lo{background:var(--tp-color-shido-soft);color:var(--tp-color-shido-text)}
+@media(min-width:901px){.fbtn{display:none}}
 .bar i{background:var(--tp-color-text-primary)}
 /* حالت تاریک دائمی */
 :root{color-scheme:dark}.tp-toast{border:1px solid var(--tp-color-border)}
