@@ -66,7 +66,7 @@
 .btn,.chip{display:inline-flex;align-items:center;justify-content:center}
 .btn.s{min-height:var(--tp-control-touch)}
 .fv,.qt button,.tp-pager button{min-width:var(--tp-control-touch)}
-header nav a{display:inline-flex;align-items:center;min-height:var(--tp-control-touch)}
+body>header nav a{display:inline-flex;align-items:center;min-height:var(--tp-control-touch)}
 .ftg a{display:inline-flex;align-items:center;min-height:var(--tp-control-touch)}
 .tp-crumbs a,.tp-crumbs li{display:inline-flex;align-items:center;min-height:var(--tp-control-touch)}
 .rec,.qa{min-height:var(--tp-control-touch)}
@@ -91,7 +91,7 @@ h3,h4,.card h2,.card h3{font-weight:var(--tp-font-weight-bold)}
 .d-s>h2{display:block;padding-bottom:var(--tp-space-xs);margin-bottom:var(--tp-space-md)}
 .d-s>h2::after{content:"";display:block;height:8px;margin-top:var(--tp-space-xs);border-radius:var(--tp-radius-none);background:linear-gradient(to right,var(--tp-color-brand) 0 64px,var(--tp-color-text-primary) 64px)}
 /* هدر و ناوبری */
-header{background:var(--tp-color-header-bg);border-bottom:1px solid var(--tp-color-border);backdrop-filter:saturate(1.2) blur(6px)}
+body>header{background:var(--tp-color-header-bg);border-bottom:1px solid var(--tp-color-border);backdrop-filter:saturate(1.2) blur(6px)}
 nav a{font-weight:var(--tp-font-weight-medium)}nav a:hover{color:var(--tp-color-text-primary);background:var(--tp-color-surface-hover)}
 nav a.on{color:var(--tp-color-brand-text);background:var(--tp-color-brand-tint)}
 .ib{border-color:var(--tp-color-border)}.ib:hover{border-color:var(--tp-color-text-primary)}
@@ -188,7 +188,7 @@ footer{background:var(--tp-color-night)}
 @supports (animation-timeline:view()){
  .d-s{animation:tp-rise linear backwards;animation-timeline:view();animation-range:entry 0px entry 160px}
  .d-s>h2::after,#app[data-enter] .d-s>h2::after{animation:tp-draw-x linear backwards;animation-timeline:view();animation-range:entry 40px entry 260px}
- header{animation:tp-hdr linear both;animation-timeline:scroll(root);animation-range:0 160px}
+ body>header{animation:tp-hdr linear both;animation-timeline:scroll(root);animation-range:0 160px}
 }
 
 /* هیرو: تیتر از راست آشکار می‌شود، خط قرمز از بالا کشیده می‌شود، بافت حصیر شب */
@@ -212,10 +212,10 @@ input,select,textarea{transition:border-color var(--tp-motion-base),box-shadow v
 input:focus-visible,select:focus-visible,textarea:focus-visible{box-shadow:var(--tp-shadow-glow)}
 :focus-visible{transition:outline-offset var(--tp-motion-fast) var(--tp-motion-ease-out)}
 /* ناوبری: خط زیرین قرمز به‌جای پس‌زمینه برای آیتم فعال */
-header nav a{position:relative}
-header nav a::after{content:"";position:absolute;inset-inline:var(--tp-space-sm);bottom:6px;height:2px;background:var(--tp-color-brand);transform:scaleX(0);transition:transform var(--tp-motion-slow) var(--tp-motion-ease-out)}
-header nav a:hover::after{transform:scaleX(.35)}
-nav a.on{background:transparent}header nav a.on::after{transform:scaleX(1)}
+body>header nav a{position:relative}
+body>header nav a::after{content:"";position:absolute;inset-inline:var(--tp-space-sm);bottom:6px;height:2px;background:var(--tp-color-brand);transform:scaleX(0);transition:transform var(--tp-motion-slow) var(--tp-motion-ease-out)}
+body>header nav a:hover::after{transform:scaleX(.35)}
+nav a.on{background:transparent}body>header nav a.on::after{transform:scaleX(1)}
 /* لایه‌های شناور */
 .tp-toast{transform:translateY(16px);transition:opacity var(--tp-motion-base) var(--tp-motion-ease-out),transform var(--tp-motion-slow) var(--tp-motion-ease-spring)}
 .tp-toast.on{transform:none}
@@ -230,3 +230,123 @@ h1,h2,h3,.d-s>h2{text-wrap:balance}p{text-wrap:pretty}
 .sv,.rw2,.qt output,td,.cols span{font-variant-numeric:tabular-nums}
 .d-c,.sc2,.ci,.sf,.d-sb,.d-acc{transition:border-color var(--tp-motion-base)}
 .sc2:hover,.d-c:hover{border-color:var(--tp-color-border-strong)}
+
+/* ===== ناوبری: منوی اولویت‌دار + کشوی کامل (همه عرض‌ها) ===== */
+.tp-ico{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+.ib{display:inline-flex;align-items:center;justify-content:center;gap:var(--tp-space-xs);line-height:1;white-space:nowrap;font-weight:var(--tp-font-weight-medium)}
+body>header{flex-wrap:nowrap;gap:var(--tp-space-sm);min-height:64px;padding-block:var(--tp-space-xs)}
+.hb{margin-inline-start:auto}
+.mnb{cursor:pointer;color:var(--tp-color-text-primary)}
+.mnb-m{display:none}
+/* کمتر از ۱۰۲۴: فقط دکمه منو */
+@media(max-width:1023px){body>header nav#nv{display:none}body>header{flex-wrap:nowrap}.logo{font-size:var(--tp-font-size-lg)}}
+@media(max-width:600px){.hb-pf{display:none}.hb{gap:var(--tp-space-2xs)}}
+/* ۱۰۲۴ و بیشتر: پیوندهای اصلی در هدر، بقیه زیر «بیشتر» */
+@media(min-width:1024px){
+ body>header nav#nv{overflow:visible;flex:0 1 auto}
+ .mnb-l{display:none}.mnb-m{display:inline}
+ #nv a:nth-child(n+5){display:none}
+ body>header:has(#nv a.on:nth-child(n+5)) .mnb{color:var(--tp-color-brand-text);border-color:var(--tp-color-brand)}
+}
+@media(min-width:1200px){#nv a:nth-child(n+5){display:inline-flex}#nv a:nth-child(n+7){display:none}body>header:has(#nv a.on:nth-child(n+5)) .mnb{color:inherit;border-color:var(--tp-color-border)}body>header:has(#nv a.on:nth-child(n+7)) .mnb{color:var(--tp-color-brand-text);border-color:var(--tp-color-brand)}}
+@media(min-width:1440px){#nv a:nth-child(n+7){display:inline-flex}#nv a:nth-child(n+9){display:none}body>header:has(#nv a.on:nth-child(n+7)) .mnb{color:inherit;border-color:var(--tp-color-border)}body>header:has(#nv a.on:nth-child(n+9)) .mnb{color:var(--tp-color-brand-text);border-color:var(--tp-color-brand)}}
+
+/* کشوی منو (dialog بومی: تله فوکوس، Esc، بازگشت فوکوس) */
+.tp-drawer{position:fixed;inset-block:0;inset-inline-start:0;inset-inline-end:auto;margin:0;width:min(88vw,22rem);height:100dvh;max-height:none;max-width:none;padding:0;border:0;border-inline-end:1px solid var(--tp-color-border);background:var(--tp-color-surface);color:var(--tp-color-text-primary);box-shadow:var(--tp-shadow-popover)}
+.tp-drawer[open]{display:flex;flex-direction:column;animation:tp-drawer-in var(--tp-motion-slow) var(--tp-motion-ease-out)}
+.tp-drawer::backdrop{background:var(--tp-color-scrim);backdrop-filter:blur(2px)}
+.tp-drawer[open]::backdrop{animation:tp-fade var(--tp-motion-base) var(--tp-motion-ease-out)}
+@keyframes tp-drawer-in{from{transform:translateX(100%)}}
+html:has(.tp-drawer[open]){overflow:hidden}
+.tp-drawer-h{display:flex;align-items:center;justify-content:space-between;gap:var(--tp-space-sm);padding:calc(var(--tp-space-sm) + env(safe-area-inset-top,0)) var(--tp-space-md) var(--tp-space-sm);border-bottom:1px solid var(--tp-color-border)}
+.tp-drawer-n{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:2px;padding:var(--tp-space-sm)}
+.tp-drawer-n a{display:flex;align-items:center;min-height:48px;padding-inline:var(--tp-space-md);border-radius:var(--tp-radius-control);border-inline-start:3px solid transparent;color:var(--tp-color-text-secondary);font-weight:var(--tp-font-weight-medium);transition:background-color var(--tp-motion-base),color var(--tp-motion-base)}
+.tp-drawer-n a:hover{background:var(--tp-color-surface-hover);color:var(--tp-color-text-primary)}
+.tp-drawer-n a.on{background:var(--tp-color-brand-tint);color:var(--tp-color-brand-text);border-inline-start-color:var(--tp-color-brand);font-weight:var(--tp-font-weight-bold)}
+.tp-drawer-f{display:grid;gap:var(--tp-space-xs);padding:var(--tp-space-md) var(--tp-space-md) calc(var(--tp-space-md) + env(safe-area-inset-bottom,0));border-top:1px solid var(--tp-color-border)}
+.tp-drawer-f .btn{width:100%}
+
+/* هیرو موبایل: خط قرمز کنار لبه (نه روی متن) و ارتفاع متناسب با محتوا */
+@media(max-width:900px){.hero{min-height:auto;padding-block:var(--tp-space-3xl) var(--tp-space-2xl)}.hero::after{inset-inline-end:0;width:4px}}
+
+/* جای تصویر روی موبایل: سقف ارتفاع تا جای‌نگهدار صفحه را پر نکند */
+@media(max-width:900px){.ph:not(.ok){max-height:min(240px,36vh)}}
+
+/* فوتر: هم‌ترازی با شروع خط؛ روی موبایل پیوندها کنار هم می‌پیچند */
+.ft{text-align:start}.ft>p{text-align:start;max-width:var(--tp-container-page);margin-inline:auto}
+@media(max-width:600px){.ftg{grid-template-columns:1fr;gap:var(--tp-space-md)}.ftg nav{flex-direction:row;flex-wrap:wrap;column-gap:var(--tp-space-md);row-gap:0}.ftg nav b{flex-basis:100%;margin-bottom:var(--tp-space-2xs)}.ft{padding-block:var(--tp-space-lg)}}
+
+/* دکمه حذف (مخرب) */
+.btn.o.dg{border-color:var(--tp-color-danger);color:var(--tp-color-danger)}
+.btn.o.dg:hover{background:var(--tp-color-danger);color:var(--tp-color-bg);box-shadow:none}
+
+/* تاریخ جلالی */
+.tp-jdt{display:flex;flex-wrap:wrap;align-items:flex-end;gap:var(--tp-space-xs);margin-block:var(--tp-space-2xs) var(--tp-space-sm);position:relative}
+.tp-jdt-raw{position:absolute;width:1px;height:1px;min-height:0!important;padding:0;border:0;opacity:0;pointer-events:none;inset-inline-start:0;top:0}
+.tp-jdt-f{display:grid;gap:2px}
+.tp-jdt-f select[data-p=d]{width:5rem}.tp-jdt-f select[data-p=m]{width:7.5rem}.tp-jdt-f input[data-p=y]{width:6rem}.tp-jdt-f input[data-p=t]{width:7.5rem}
+.tp-jdt .tp-hint{flex-basis:100%;margin:0}
+.tp-drawer-n{order:0;flex:1 1 auto;min-height:0}
+
+/* ===== هدر: سبد و حساب ===== */
+#hcart{position:relative}
+#cc:not(:empty){display:inline-grid;place-items:center;min-width:1.25rem;height:1.25rem;padding-inline:4px;border-radius:var(--tp-radius-round);background:var(--tp-color-brand);color:var(--tp-color-text-on-brand);font-size:var(--tp-font-size-xs);font-weight:var(--tp-font-weight-bold);line-height:1}
+#hbu{max-width:12rem}#hbu .hb-t{overflow:hidden;text-overflow:ellipsis}
+@media(max-width:600px){.hb-t{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}#hcart,#hbu{min-width:var(--tp-control-touch);padding-inline:var(--tp-space-xs)}#cc:not(:empty){position:absolute;top:2px;inset-inline-end:2px}}
+.tp-drawer-f .btn{gap:var(--tp-space-xs)}
+
+/* ===== ورود و ثبت‌نام ===== */
+.tp-auth{max-width:28rem;padding-block:var(--tp-space-xl) var(--tp-space-2xl)}
+.tp-auth-card{background:var(--tp-color-surface);border:1px solid var(--tp-color-border);border-radius:var(--tp-radius-card);padding:var(--tp-space-lg)}
+.tp-auth-card h1{font-size:var(--tp-font-size-2xl);margin-bottom:var(--tp-space-2xs)}
+.tp-auth-card .tp-field input{width:100%}
+.tp-auth-btn{width:100%;margin-top:var(--tp-space-sm)}
+.tp-auth-alt{text-align:center;margin-top:var(--tp-space-md)}
+.tp-auth-alt a,.tp-note a{color:var(--tp-color-brand-text);text-decoration:underline;text-underline-offset:4px;font-weight:var(--tp-font-weight-bold)}
+.tp-auth-note{text-align:center}
+.tp-pw{position:relative;display:flex}
+.tp-pw input{flex:1;padding-inline-end:4.5rem}
+.tp-pw-b{position:absolute;inset-inline-end:2px;top:2px;bottom:2px;min-width:var(--tp-control-touch);padding-inline:var(--tp-space-sm);border:0;border-radius:var(--tp-radius-xs);background:transparent;color:var(--tp-color-text-secondary);font-size:var(--tp-font-size-sm);font-weight:var(--tp-font-weight-medium)}
+.tp-pw-b:hover{color:var(--tp-color-text-primary);background:var(--tp-color-surface-hover)}
+/* موقعیت دکمه نمایش رمز در RTL: input با dir=ltr، دکمه در انتهای منطقی کادر */
+.tp-roles{border:0;padding:0;margin:var(--tp-space-sm) 0}.tp-roles legend{font-size:var(--tp-font-size-sm);margin-bottom:var(--tp-space-2xs);padding:0}
+.tp-radio{position:relative;gap:var(--tp-space-xs);cursor:pointer;padding-inline:var(--tp-space-md)}
+.tp-radio input{position:absolute;opacity:0;width:0;height:0;min-height:0;margin:0}
+.tp-radio:has(input:checked){background:var(--tp-color-brand-tint);border-color:var(--tp-color-brand);color:var(--tp-color-brand-text);font-weight:var(--tp-font-weight-bold)}
+.tp-radio:has(input:checked)::before{content:"✓"}
+.tp-radio:has(input:focus-visible){outline:2px solid var(--tp-color-ring);outline-offset:2px}
+
+/* ===== خطای فرم کنار فیلد ===== */
+.tp-form-sum{background:var(--tp-color-danger-tint);color:var(--tp-color-danger);border-radius:var(--tp-radius-control);padding:var(--tp-space-xs) var(--tp-space-sm);font-weight:var(--tp-font-weight-bold);margin:0 0 var(--tp-space-sm)}
+.tp-error-text{font-weight:var(--tp-font-weight-medium)}
+.tp-error-text::before{content:"⚠ "}
+input[aria-invalid=true],select[aria-invalid=true],textarea[aria-invalid=true]{border-color:var(--tp-color-danger)!important;box-shadow:0 0 0 3px rgba(255,138,138,.15)}
+.tp-toast.error{background:var(--tp-color-danger);color:var(--tp-color-bg);font-weight:var(--tp-font-weight-bold)}
+
+/* ===== پرداخت: مراحل، فرم دوستونه، تأیید ===== */
+.tp-steps{list-style:none;display:flex;gap:var(--tp-space-xs);padding:0;margin:var(--tp-space-sm) 0 var(--tp-space-md);counter-reset:s}
+.tp-steps li{flex:1;display:flex;align-items:center;gap:var(--tp-space-xs);font-size:var(--tp-font-size-sm);color:var(--tp-color-text-secondary);padding-bottom:var(--tp-space-xs);border-bottom:3px solid var(--tp-color-border)}
+.tp-steps li span{display:inline-grid;place-items:center;width:1.6rem;height:1.6rem;flex:none;border-radius:var(--tp-radius-round);border:2px solid currentColor;font-weight:var(--tp-font-weight-bold);font-size:var(--tp-font-size-xs)}
+.tp-steps li.on{color:var(--tp-color-text-primary);border-bottom-color:var(--tp-color-brand);font-weight:var(--tp-font-weight-bold)}
+.tp-steps li.on span{background:var(--tp-color-brand);border-color:var(--tp-color-brand);color:var(--tp-color-text-on-brand)}
+.tp-steps li.done{color:var(--tp-color-success);border-bottom-color:var(--tp-color-success)}
+@media(max-width:420px){.tp-steps li{flex-direction:column;align-items:flex-start;gap:2px;font-size:var(--tp-font-size-xs)}}
+#co-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 var(--tp-space-md);max-width:46rem}
+#co-form .fl{margin:var(--tp-space-xs) 0}#co-form .fl input,#co-form .fl textarea,#co-form .fl select{width:100%}
+#co-form>.tp-form-sum,#co-form>.fl:has(textarea),#co-form>.pa{grid-column:1/-1}
+@media(max-width:600px){#co-form{grid-template-columns:minmax(0,1fr)}}
+.tp-note{border:1px solid var(--tp-color-border);background:var(--tp-color-surface);border-radius:var(--tp-radius-control);padding:var(--tp-space-sm) var(--tp-space-md);margin:var(--tp-space-sm) 0;font-size:var(--tp-font-size-sm);max-width:46rem}
+.tp-done{max-width:40rem}
+.tp-done-c{text-align:center;padding:var(--tp-space-xl) var(--tp-space-lg)}
+.tp-done-i{width:4rem;height:4rem;margin:0 auto var(--tp-space-sm);display:grid;place-items:center;border-radius:var(--tp-radius-round);background:var(--tp-color-success-soft);color:var(--tp-color-success);font-size:2rem;font-weight:900;animation:tp-pop var(--tp-motion-slow) var(--tp-motion-ease-spring) backwards}
+.tp-done-c h1{font-size:var(--tp-font-size-2xl)}
+.tp-code{font-family:ui-monospace,monospace;letter-spacing:.06em;color:var(--tp-color-text-primary)}
+.tp-done-l{text-align:start;margin:var(--tp-space-md) 0}
+.tp-done .pa{justify-content:center}
+.tp-acct{display:flex;align-items:center;gap:var(--tp-space-sm);flex-wrap:wrap;margin-bottom:var(--tp-space-sm)}.tp-acct>div{flex:1 1 12rem;min-width:0}
+.tp-acct-w{padding-bottom:0}
+@media(max-width:600px){.pa .btn.o{display:inline-flex}.pcd .pa .btn.o{display:none}}
+/* باقی‌مانده ممیزی: دکمه‌های پخش‌کننده ۴۴px، حذف لوگوی تکراری داشبورد موبایل، چاپ بدون محوشدگی */
+.vpc button{min-width:var(--tp-control-touch);min-height:var(--tp-control-touch)}
+@media(max-width:900px){.d-lg{display:none}}
+@media print{*,*::before,*::after{animation:none!important;transition:none!important}body>header,.tp-drawer,.tp-toast{display:none!important}}
