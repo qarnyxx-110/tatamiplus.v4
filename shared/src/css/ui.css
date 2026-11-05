@@ -161,3 +161,72 @@ footer{background:var(--tp-color-night)}
 .bar i{background:var(--tp-color-text-primary)}
 /* حالت تاریک دائمی */
 :root{color-scheme:dark}.tp-toast{border:1px solid var(--tp-color-border)}
+
+/* ===== حرکت (Motion) — فقط transform/opacity/clip-path؛ ورود صفحه فقط هنگام تغییر مسیر (#app[data-enter])؛ prefers-reduced-motion همه را خاموش می‌کند ===== */
+@keyframes tp-rise{from{opacity:0;transform:translateY(14px)}}
+@keyframes tp-fade{from{opacity:0}}
+@keyframes tp-pop{from{opacity:0;transform:translateY(8px) scale(.96)}}
+@keyframes tp-draw-x{from{transform:scaleX(0)}}
+@keyframes tp-draw-y{from{transform:scaleY(0)}}
+@keyframes tp-reveal{from{opacity:0;clip-path:inset(0 0 0 100%);transform:translateY(.15em)}to{opacity:1;clip-path:inset(0 0 0 0)}}
+@keyframes tp-hdr{to{box-shadow:var(--tp-shadow-header);background:rgba(14,14,14,.985)}}
+
+/* ورود صفحه و ورود پلکانی کارت‌ها */
+#app[data-enter]>:not(.hero):not(.cine){animation:tp-rise var(--tp-motion-enter) var(--tp-motion-ease-out) backwards}
+:is(.grid,.pg,.d-stats,.d-qa,.d-2,.tp-sponsors,.cols)>:nth-child(2){--i:1}:is(.grid,.pg,.d-stats,.d-qa,.d-2,.tp-sponsors,.cols)>:nth-child(3){--i:2}:is(.grid,.pg,.d-stats,.d-qa,.d-2,.tp-sponsors,.cols)>:nth-child(4){--i:3}:is(.grid,.pg,.d-stats,.d-qa,.d-2,.tp-sponsors,.cols)>:nth-child(5){--i:4}:is(.grid,.pg,.d-stats,.d-qa,.d-2,.tp-sponsors,.cols)>:nth-child(6){--i:5}:is(.grid,.pg,.d-stats,.d-qa,.d-2,.tp-sponsors,.cols)>:nth-child(7){--i:6}:is(.grid,.pg,.d-stats,.d-qa,.d-2,.tp-sponsors,.cols)>:nth-child(8){--i:7}:is(.grid,.pg,.d-stats,.d-qa,.d-2,.tp-sponsors,.cols)>:nth-child(n+9){--i:8}
+#app[data-enter] :is(.grid,.pg,.d-stats,.d-qa,.d-2,.tp-sponsors)>*{animation:tp-rise var(--tp-motion-enter) var(--tp-motion-ease-out) backwards;animation-delay:calc(80ms + var(--i,0)*var(--tp-motion-stagger))}
+#app[data-enter] .ph.ok img{animation:tp-fade var(--tp-motion-slow) var(--tp-motion-ease-out) backwards}
+
+/* ObiHeading: کمربند از راست (ابتدای خط) بسته می‌شود و سر قرمز آخر می‌رسد */
+.d-s>h2::after{transform-origin:right center}
+#app[data-enter] .d-s>h2::after{animation:tp-draw-x var(--tp-motion-draw) var(--tp-motion-ease-in-out) .12s backwards}
+/* نمودارها رشد می‌کنند */
+#app[data-enter] .bar i{transform-origin:right center;animation:tp-draw-x .9s var(--tp-motion-ease-out) .25s backwards}
+#app[data-enter] .cols i{transform-origin:bottom center;animation:tp-draw-y .7s var(--tp-motion-ease-out) backwards;animation-delay:calc(200ms + var(--i,0)*50ms)}
+
+/* اسکرول: بخش‌های پایین صفحه هنگام ورود به دید ظاهر می‌شوند؛ هدر هنگام اسکرول سایه می‌گیرد (فقط مرورگرهای پشتیبان) */
+@supports (animation-timeline:view()){
+ .d-s{animation:tp-rise linear backwards;animation-timeline:view();animation-range:entry 0px entry 160px}
+ .d-s>h2::after,#app[data-enter] .d-s>h2::after{animation:tp-draw-x linear backwards;animation-timeline:view();animation-range:entry 40px entry 260px}
+ header{animation:tp-hdr linear both;animation-timeline:scroll(root);animation-range:0 160px}
+}
+
+/* هیرو: تیتر از راست آشکار می‌شود، خط قرمز از بالا کشیده می‌شود، بافت حصیر شب */
+.hero::before{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,transparent 0 5px,rgba(255,255,255,.035) 5px 6px)}
+.hero::after{transform-origin:top center;animation:tp-draw-y 1s var(--tp-motion-ease-in-out) backwards}
+.hero h1{animation:tp-reveal .8s var(--tp-motion-ease-out) .1s backwards}
+.hero .gold{animation:tp-rise var(--tp-motion-enter) var(--tp-motion-ease-out) .35s backwards}
+.hero .mu{animation:tp-rise var(--tp-motion-enter) var(--tp-motion-ease-out) .45s backwards}
+.hero .btn{animation:tp-rise var(--tp-motion-enter) var(--tp-motion-ease-out) .55s backwards}.hero .btn.o{animation-delay:.62s}
+
+/* ریزتعامل‌ها */
+.btn{transition:transform var(--tp-motion-fast) var(--tp-motion-ease-out),box-shadow var(--tp-motion-fast) var(--tp-motion-ease-out),background-color var(--tp-motion-base),color var(--tp-motion-base),border-color var(--tp-motion-base)}
+.btn:active{transform:scale(.98);box-shadow:none;transition-duration:var(--tp-motion-instant)}
+a.card,.pcd,.vcd,a.rec,.qa{transition:transform var(--tp-motion-base) var(--tp-motion-ease-out),box-shadow var(--tp-motion-base) var(--tp-motion-ease-out),border-color var(--tp-motion-base)}
+a.card:active,.pcd:active,.vcd:active,a.rec:active,.qa:active{transform:none;box-shadow:var(--tp-shadow-stamp-sm);transition-duration:var(--tp-motion-instant)}
+:is(a.card,.pcd,.vcd) .ph img{transition:transform .6s var(--tp-motion-ease-out)}
+:is(a.card,.pcd,.vcd):hover .ph img{transform:scale(1.04)}
+.chip,.tp-tabs [role=tab],.d-n button,.mk-sb a,.tp-pager button,.fv,.ib{transition:background-color var(--tp-motion-base),border-color var(--tp-motion-base),color var(--tp-motion-base),transform var(--tp-motion-fast) var(--tp-motion-ease-out)}
+.chip:active,.fv:active,.tp-pager button:active{transform:scale(.96)}
+input,select,textarea{transition:border-color var(--tp-motion-base),box-shadow var(--tp-motion-base)}
+input:focus-visible,select:focus-visible,textarea:focus-visible{box-shadow:var(--tp-shadow-glow)}
+:focus-visible{transition:outline-offset var(--tp-motion-fast) var(--tp-motion-ease-out)}
+/* ناوبری: خط زیرین قرمز به‌جای پس‌زمینه برای آیتم فعال */
+header nav a{position:relative}
+header nav a::after{content:"";position:absolute;inset-inline:var(--tp-space-sm);bottom:6px;height:2px;background:var(--tp-color-brand);transform:scaleX(0);transition:transform var(--tp-motion-slow) var(--tp-motion-ease-out)}
+header nav a:hover::after{transform:scaleX(.35)}
+nav a.on{background:transparent}header nav a.on::after{transform:scaleX(1)}
+/* لایه‌های شناور */
+.tp-toast{transform:translateY(16px);transition:opacity var(--tp-motion-base) var(--tp-motion-ease-out),transform var(--tp-motion-slow) var(--tp-motion-ease-spring)}
+.tp-toast.on{transform:none}
+.tp-modal{animation:tp-fade var(--tp-motion-base) var(--tp-motion-ease-out)}
+.tp-modal-box{animation:tp-pop var(--tp-motion-slow) var(--tp-motion-ease-spring) backwards}
+.tp-dropdown[open] .tp-dropdown-menu{animation:tp-pop var(--tp-motion-base) var(--tp-motion-ease-out)}
+
+/* جزئیات سیستم طراحی */
+::selection{background:var(--tp-color-selection);color:var(--tp-color-text-primary)}
+html{scrollbar-color:var(--tp-color-border-strong) var(--tp-color-bg)}
+h1,h2,h3,.d-s>h2{text-wrap:balance}p{text-wrap:pretty}
+.sv,.rw2,.qt output,td,.cols span{font-variant-numeric:tabular-nums}
+.d-c,.sc2,.ci,.sf,.d-sb,.d-acc{transition:border-color var(--tp-motion-base)}
+.sc2:hover,.d-c:hover{border-color:var(--tp-color-border-strong)}
