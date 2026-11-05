@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}حساب کاربری | تاتامی پلاس{% endblock %}
+{% block content %}
+<div class="w tp-acct-w">
+  <h1>حساب کاربری</h1>
+  {% if user.is_authenticated %}
+    <div class="d-c tp-acct">
+      <span class="d-av" aria-hidden="true">{{ user.username|first|upper }}</span>
+      <div>
+        <b>خوش آمدید، {{ user.username }}</b>
+        <div class="mu sm">نوع حساب: {{ user.get_role_display }}{% if user.email %} · <span dir="ltr">{{ user.email }}</span>{% endif %}</div>
+      </div>
+      <form class="tp-inline" method="post" action="{% url 'accounts:logout' %}">{% csrf_token %}<button class="btn o s" type="submit">خروج از حساب</button></form>
+    </div>
+
+    {% if user.role == 'coach' %}
+      {% with application=user.coach_application %}
+      <div class="d-c tp-coach-next">
+        <ol class="tp-steps" aria-label="مراحل مربی شدن">
+          <li class="done"><span>✓</span>ساخت حساب مربی</li>
+          {% if application %}
+            <li class="done"><span>✓</span>ثبت درخواست مربیگری</li>
+            <li class="{% if application.status == 'pending_review' %}on{% else %}done{% endif %}"{% if application.status == 'pending_review' %} aria-current="step"{% endif %}><span>{% if application.status == 'pending_review' %}۳{% else %}✓{% endif %}</span>بررسی تیم</li>
+            <li class="{% if application.status != 'pending_review' %}on{% endif %}"{% if application.status != 'pending_review' %} aria-current="step"{% endif %}><span>۴</span>انتشار پروفایل</li>
+          {% else %}
+            <li class="on" aria-current="step"><span>۲</span>ثبت درخواست مربیگری</li>
+            <li><span>۳</span>بررسی تیم</li>
+            <li><span>۴</span>انتشار پروفایل</li>
+          {% endif %}
+        </ol>
+        {% if application %}
+          <p>وضعیت درخواست مربیگری: <span class="tag {% if application.status == 'approved' %}ok{% elif application.status == 'rejected' %}danger{% else %}g{% endif %}">{{ application.get_status_display }}</span></p>
+          <a class="btn o" href="{% url 'coaches:application_status' %}">مشاهدهٔ وضعیت درخواست</a>
+        {% else %}
+          <p>برای نمایش در فهرست مربیان، درخواست مربیگری و مدرک خود را ثبت کنید.</p>
+          <a class="btn" href="{% url 'coaches:apply' %}">ثبت درخواست مربیگری</a>
+        {% endif %}
+      </div>
+      {% endwith %}
+    {% endif %}
+  {% else %}
+    <div class="d-c tp-acct-out">
+      <p class="mu">برای ادامه، حساب هنرجو یا مربی بسازید یا وارد حساب خود شوید.</p>
+      <ul class="tp-roles-l" aria-label="نوع حساب کاربری">
+        <li><span class="tp-role-n" aria-hidden="true">۰۱</span><div><b>هنرجو</b><div class="mu sm">مربیان را ببینید و سبد خریدتان را در حساب خود نگه دارید.</div></div><a class="btn s" href="{% url 'accounts:register' %}?role=student">ثبت‌نام هنرجو</a></li>
+        <li><span class="tp-role-n" aria-hidden="true">۰۲</span><div><b>مربی</b><div class="mu sm">حساب بسازید و درخواست مربیگری خود را برای بررسی ثبت کنید.</div></div><a class="btn s" href="{% url 'accounts:register' %}?role=coach">ثبت‌نام مربی</a></li>
+        <li><span class="tp-role-n" aria-hidden="true">۰۳</span><div><b>باشگاه</b><div class="mu sm">این گزینه فقط نمایشی است و در نسخهٔ اولیه حساب باشگاه ساخته نمی‌شود.</div></div><span class="tag m">نمایشی</span></li>
+      </ul>
+      <p class="tp-auth-alt">قبلاً ثبت‌نام کرده‌اید؟ <a href="{% url 'accounts:login' %}">وارد شوید</a></p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

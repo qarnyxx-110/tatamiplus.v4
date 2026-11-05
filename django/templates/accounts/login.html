@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block title %}ورود | تاتامی پلاس{% endblock %}
+{% block content %}
+<div class="w tp-auth">
+  <div class="tp-auth-card">
+    <h1>ورود به حساب</h1>
+    <p class="mu">نام کاربری و گذرواژهٔ خود را وارد کنید.</p>
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {% include 'includes/form_fields.html' %}
+      {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+      <button class="btn tp-auth-btn" type="submit">ورود</button>
+    </form>
+  </div>
+  <p class="tp-auth-alt">حساب ندارید؟ <a href="{% url 'accounts:register' %}">ثبت‌نام کنید</a></p>
+</div>
+{% endblock %}

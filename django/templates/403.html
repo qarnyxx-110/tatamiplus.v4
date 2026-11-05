@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block title %}دسترسی ممکن نیست | تاتامی پلاس{% endblock %}
+{% block content %}
+<div class="w">
+  <div class="tp-state tp-state--error" role="alert">
+    <b>شما به این صفحه دسترسی ندارید</b>
+    <p>{% if user.is_authenticated and user.role == 'student' %}این بخش فقط برای حساب‌های مربی است. حساب شما «{{ user.get_role_display }}» است.{% else %}برای دیدن این صفحه مجوز لازم را ندارید.{% endif %}</p>
+    <a class="btn o s" href="{% url 'account' %}">بازگشت به حساب کاربری</a>
+  </div>
+</div>
+{% endblock %}

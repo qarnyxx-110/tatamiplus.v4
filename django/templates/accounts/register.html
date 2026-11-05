@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block title %}ساخت حساب کاربری | تاتامی پلاس{% endblock %}
+{% block content %}
+<div class="w tp-auth">
+  <div class="tp-auth-card">
+    <h1>ساخت حساب کاربری</h1>
+    <p class="mu">هنرجو یا مربی را انتخاب کنید. پروفایل مربی پس از بررسی تیم منتشر می‌شود.</p>
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {% include 'includes/form_fields.html' %}
+      <button class="btn tp-auth-btn" type="submit">ثبت‌نام</button>
+    </form>
+  </div>
+  <p class="tp-auth-alt">قبلاً ثبت‌نام کرده‌اید؟ <a href="{% url 'accounts:login' %}">وارد شوید</a></p>
+</div>
+{% endblock %}

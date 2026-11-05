@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block title %}درخواست مربیگری | تاتامی پلاس{% endblock %}
+{% block content %}
+<div class="w tp-auth tp-apply">
+  <div class="tp-auth-card">
+    <p class="pf-kick">حساب مربی</p>
+    <h1>درخواست همکاری</h1>
+    <ol class="tp-steps" aria-label="مراحل مربی شدن">
+      <li class="done"><span>✓</span>ساخت حساب مربی</li>
+      <li class="on" aria-current="step"><span>۲</span>ثبت درخواست مربیگری</li>
+      <li><span>۳</span>بررسی تیم</li>
+      <li><span>۴</span>انتشار پروفایل</li>
+    </ol>
+    <p class="mu">درخواست شما توسط تیم تاتامی پلاس بررسی می‌شود. ثبت درخواست، پروفایل عمومی را به‌طور خودکار منتشر نمی‌کند. هر مربی فقط یک درخواست ثبت می‌کند.</p>
+    <form method="post" enctype="multipart/form-data" novalidate>
+      {% csrf_token %}
+      {% include 'includes/form_fields.html' %}
+      <p class="tp-hint">فایل مدرک: PDF، JPG یا PNG، حداکثر ۱۰ مگابایت. این فایل خصوصی است و فقط تیم بررسی آن را می‌بیند.</p>
+      <button class="btn tp-auth-btn" type="submit">ثبت درخواست</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

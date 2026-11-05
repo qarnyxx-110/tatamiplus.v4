@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block title %}صفحه پیدا نشد | تاتامی پلاس{% endblock %}
+{% block content %}
+<div class="w nf">
+  <p class="nf4" aria-hidden="true">۴۰۴</p>
+  <h1>صفحه پیدا نشد</h1>
+  <p class="mu">آدرس واردشده معتبر نیست یا این مورد دیگر در دسترس نیست.</p>
+  <p class="pa"><a class="btn" href="{% url 'home' %}">بازگشت به صفحه اصلی</a> <a class="btn o" href="{% url 'store:product_list' %}">فروشگاه</a></p>
+</div>
+{% endblock %}

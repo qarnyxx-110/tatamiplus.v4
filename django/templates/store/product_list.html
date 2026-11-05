@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% load store_format %}
+
+{% block title %}فروشگاه | تاتامی پلاس{% endblock %}
+{% block content %}
+<div class="w">
+  <div class="sh">
+    <div>
+      <h1>فروشگاه</h1>
+      <p class="mu" style="margin:0">لباس، کمربند و تجهیزات تمرین جودو.</p>
+    </div>
+  </div>
+
+  <form method="get" action="{% url 'store:product_list' %}" class="tp-filter" role="search" aria-label="جستجو و فیلتر محصولات">
+    <div class="sbar"><label class="sr" for="{{ form.query.id_for_label }}">جستجوی محصول</label>{{ form.query }}</div>
+    <div class="sl">
+      <aside class="sf" id="sf" aria-label="فیلترها">
+        <div class="sfh"><b>فیلترها</b><a class="chip" href="{% url 'store:product_list' %}">پاک کردن</a></div>
+        <label class="fl">دسته‌بندی {{ form.category }}</label>
+        <label class="fl">سایز {{ form.size }}</label>
+        <label class="fl">رنگ {{ form.color }}</label>
+        <label class="fl">سطح {{ form.training_level }}</label>
+        <div class="fl">محدوده قیمت
+          <div class="fr">
+            <label class="sr" for="{{ form.min_price.id_for_label }}">حداقل قیمت</label>{{ form.min_price }}
+            <label class="sr" for="{{ form.max_price.id_for_label }}">حداکثر قیمت</label>{{ form.max_price }}
+          </div>
+          {% for error in form.max_price.errors %}<p class="tp-error-text">{{ error }}</p>{% endfor %}
+        </div>
+        <div class="sfa"><button class="btn" type="submit">اعمال فیلتر</button></div>
+      </aside>
+
+      <div>
+        <div class="tb">
+          <b aria-live="polite">{{ page.paginator.count|price_fa }} محصول{% if page.paginator.num_pages > 1 %}<span class="mu sm"> · صفحهٔ {{ page.number|price_fa }} از {{ page.paginator.num_pages|price_fa }}</span>{% endif %}</b>
+          <button class="btn s o fbtn" type="button" data-toggle="sf" aria-controls="sf" aria-expanded="false">فیلترها</button>
+          <label class="mu sm">مرتب‌سازی {{ form.sort }}</label>
+          <noscript><button class="btn s o" type="submit">اعمال</button></noscript>
+        </div>
+        {% if form.errors %}<p class="tp-note" role="alert">مقادیر فیلتر را بررسی کنید.</p>{% endif %}
+
+        {% if page.object_list %}
+          <div class="pg">
+            {% for product in page %}
+              <article class="card pcd">
+                <a href="{% url 'store:product_detail' product.slug %}" tabindex="-1" aria-hidden="true">
+                  {% with image=product.images.all|first %}
+                    <figure class="ph r43{% if image %} ok{% endif %}">{% if image %}<img src="{{ image.image.url }}" alt="" loading="lazy" decoding="async">{% endif %}</figure>
+                  {% endwith %}
+                </a>
+                <div class="b">
+                  <div class="mu sm">{{ product.category.name }}</div>
+                  <h3><a href="{% url 'store:product_detail' product.slug %}">{{ product.name }}</a></h3>
+                  {% if product.training_level %}<div class="mu sm">سطح: {{ product.training_level }}</div>{% endif %}
+                  <div class="tp-price">از {{ product.starting_price|price_fa }}</div>
+                  <div class="pa"><a class="btn s" href="{% url 'store:product_detail' product.slug %}" aria-label="مشاهدهٔ {{ product.name }}">مشاهدهٔ محصول</a></div>
+                </div>
+              </article>
+            {% endfor %}
+          </div>
+
+          {% if page.has_other_pages %}
+            <nav aria-label="صفحه‌بندی">
+              <ul class="tp-pager" role="list">
+                <li>{% if page.has_previous %}<a href="{% querystring page=page.previous_page_number %}" aria-label="صفحه قبل">›</a>{% else %}<span class="off" aria-hidden="true">›</span>{% endif %}</li>
+                {% for n in page.paginator.page_range %}
+                  <li>{% if n == page.number %}<a href="{% querystring page=n %}" aria-current="page">{{ n|price_fa }}</a>{% else %}<a href="{% querystring page=n %}" aria-label="صفحه {{ n|price_fa }}">{{ n|price_fa }}</a>{% endif %}</li>
+                {% endfor %}
+                <li>{% if page.has_next %}<a href="{% querystring page=page.next_page_number %}" aria-label="صفحه بعد">‹</a>{% else %}<span class="off" aria-hidden="true">‹</span>{% endif %}</li>
+              </ul>
+            </nav>
+          {% endif %}
+        {% else %}
+          <div class="tp-state">
+            <b>محصولی پیدا نشد</b>
+            <p>{% if request.GET %}فیلترها را تغییر دهید یا عبارت دیگری جستجو کنید.{% else %}هنوز محصولی در فروشگاه ثبت نشده است.{% endif %}</p>
+            {% if request.GET %}<a class="btn o s" href="{% url 'store:product_list' %}">پاک کردن فیلترها</a>{% endif %}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </form>
+  <p class="mu sm" style="margin-top:var(--tp-space-lg)">واحد پول قیمت‌ها هنوز نهایی نشده است.</p>
+</div>
+{% endblock %}

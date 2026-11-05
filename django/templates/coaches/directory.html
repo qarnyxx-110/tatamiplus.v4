@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block title %}مربیان | تاتامی پلاس{% endblock %}
+{% block content %}
+<div class="w">
+  <h1>مربیان تاتامی</h1>
+  <p class="mu">فقط مربیانی که تأیید شده‌اند و تیم تاتامی پلاس برایشان پروفایل عمومی ساخته است، در این فهرست دیده می‌شوند.</p>
+  <section class="d-s" aria-labelledby="coaches-t">
+    <h2 id="coaches-t">مربیان تأییدشده</h2>
+    {% if profiles %}
+      <ul class="tp-coaches">
+        {% for profile in profiles %}
+          <li>
+            <a class="d-c tp-coach qa" href="{% url 'coaches:profile_detail' profile.pk %}">
+              <span class="d-av" aria-hidden="true">{{ profile.display_name|first }}</span>
+              <span><b>{{ profile.display_name }}</b>{% if profile.headline %}<span class="mu sm">{{ profile.headline }}</span>{% endif %}</span>
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <div class="tp-state" aria-live="polite">
+        <b>هنوز پروفایل عمومی‌ای منتشر نشده است</b>
+        <p>پروفایل مربیان پس از تأیید درخواست و انتشار توسط تیم در اینجا نمایش داده می‌شود.</p>
+        {% if user.is_authenticated and user.role == 'coach' %}<a class="btn o s" href="{% url 'account' %}">وضعیت درخواست من</a>{% elif not user.is_authenticated %}<a class="btn o s" href="{% url 'accounts:register' %}?role=coach">ثبت‌نام مربی</a>{% endif %}
+      </div>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

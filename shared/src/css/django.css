@@ -1,0 +1,45 @@
+/* قواعد مخصوص تمپلیت‌های Django (بقیه از سیستم طراحی مشترک می‌آید). فقط با توکن‌های --tp-* */
+.tp-skip{position:absolute;inset-inline-start:var(--tp-space-sm);top:-4rem;z-index:var(--tp-z-toast);background:var(--tp-color-brand);color:var(--tp-color-text-on-brand);padding:var(--tp-space-xs) var(--tp-space-md);border-radius:var(--tp-radius-control)}
+.tp-skip:focus{top:var(--tp-space-xs)}
+/* پیام‌های messages framework */
+.tp-msgs{display:grid;gap:var(--tp-space-xs);padding-block:var(--tp-space-sm) 0}
+.tp-msg{margin:0;display:flex;gap:var(--tp-space-xs);align-items:center}
+.tp-msg.success{border-color:var(--tp-color-success);background:var(--tp-color-success-soft);color:var(--tp-color-success)}.tp-msg.success::before{content:"✓"}
+.tp-msg.error{border-color:var(--tp-color-danger);background:var(--tp-color-danger-tint);color:var(--tp-color-danger)}.tp-msg.error::before{content:"⚠"}
+/* فیلدهای رندرشدهٔ Django */
+.tp-field input:not([type=checkbox]):not([type=radio]):not([type=file]),.tp-field select,.tp-field textarea{width:100%}
+.tp-field textarea{min-height:5.5rem}
+.errorlist{list-style:none;margin:var(--tp-space-2xs) 0 0;padding:0;color:var(--tp-color-danger);font-size:var(--tp-font-size-caption);font-weight:var(--tp-font-weight-medium)}
+.errorlist li::before{content:"⚠ "}
+.tp-form-errors{margin-bottom:var(--tp-space-sm)}
+.tp-field input[type=file]{width:100%;padding:var(--tp-space-sm);border:2px dashed var(--tp-color-border-strong);border-radius:var(--tp-radius-control);background:var(--tp-color-bg);cursor:pointer}
+.tp-field input[type=file]::file-selector-button{font:inherit;font-weight:var(--tp-font-weight-bold);margin-inline-end:var(--tp-space-sm);padding:var(--tp-space-xs) var(--tp-space-md);border:2px solid var(--tp-color-text-primary);border-radius:var(--tp-radius-control);background:transparent;color:var(--tp-color-text-primary);cursor:pointer}
+.tp-field input[type=file][aria-invalid=true]{border-color:var(--tp-color-danger)}
+/* فرم فیلتر فروشگاه (GET) */
+.tp-filter .fl select,.tp-filter .fl input{width:100%}
+.tp-filter .sfa{display:flex;gap:var(--tp-space-xs);margin-top:var(--tp-space-sm)}
+.tp-filter .sfa .btn{flex:1}
+.tp-pager a{display:inline-flex;align-items:center;justify-content:center;min-width:var(--tp-control-touch);min-height:var(--tp-control-touch);padding-inline:var(--tp-space-xs);background:var(--tp-color-surface);border:1px solid var(--tp-color-border);border-radius:var(--tp-radius-control)}
+.tp-pager a:hover{border-color:var(--tp-color-border-strong)}.tp-pager [aria-current=page]{background:var(--tp-color-brand-tint);border-color:var(--tp-color-brand);color:var(--tp-color-brand-text)}
+.tp-pager .off{opacity:.45;pointer-events:none}
+/* کارت محصول در تمپلیت */
+.pcd .b h3{font-size:var(--tp-font-size-base);margin:0 0 var(--tp-space-2xs)}
+.pcd .b h3 a:hover{color:var(--tp-color-brand-text)}
+.tp-price{font-weight:900;font-variant-numeric:tabular-nums}
+/* سبد خرید */
+.tp-qty{display:flex;align-items:center;gap:var(--tp-space-xs);flex-wrap:wrap}
+.tp-qty input{width:5.5rem}
+.ci .tp-error-text{margin-top:var(--tp-space-2xs)}
+/* مربیان */
+.tp-coaches{list-style:none;margin:0;padding:0;display:grid;gap:var(--tp-space-sm);grid-template-columns:repeat(auto-fill,minmax(min(100%,18rem),1fr))}
+.tp-coach{display:flex;align-items:center;gap:var(--tp-space-md);height:100%}
+.tp-coach .d-av{width:52px;height:52px;flex:none;font-size:1.25rem}
+.tp-coach b{display:block}
+.tp-coach-bio{max-width:var(--tp-container-article)}
+/* صفحهٔ خانه */
+.tp-home-links{margin-top:var(--tp-space-md)}
+/* فرم خروج داخل هدر/کشو */
+.tp-inline{display:inline;margin:0}
+.tp-drawer-f form{display:block}.tp-drawer-f form .btn{width:100%}
+@media(min-width:1024px){body>header .mnb{display:none!important}}
+.pf-av.d-av{display:grid;place-items:center;font-family:var(--tp-font-family-display);font-size:3rem;color:var(--tp-color-text-on-brand);background:var(--tp-color-brand)}

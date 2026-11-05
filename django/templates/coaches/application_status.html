@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% load persian %}
+{% load jformat %}
+{% block title %}وضعیت درخواست | تاتامی پلاس{% endblock %}
+{% block content %}
+<div class="w tp-auth tp-apply">
+  <div class="tp-auth-card">
+    <p class="mu sm">درخواست مربیگری</p>
+    <h1>{{ application.get_status_display }}</h1>
+    <ol class="tp-steps" aria-label="مراحل مربی شدن">
+      <li class="done"><span>✓</span>ساخت حساب مربی</li>
+      <li class="done"><span>✓</span>ثبت درخواست مربیگری</li>
+      {% if application.status == 'pending_review' %}
+        <li class="on" aria-current="step"><span>۳</span>بررسی تیم</li><li><span>۴</span>انتشار پروفایل</li>
+      {% else %}
+        <li class="done"><span>✓</span>بررسی تیم</li><li class="on" aria-current="step"><span>۴</span>انتشار پروفایل</li>
+      {% endif %}
+    </ol>
+    <p class="mu sm">تاریخ ثبت: {{ application.submitted_at|jformat:'%Y/%m/%d'|persian_digits }}</p>
+    {% if application.status == 'pending_review' %}
+      <p class="tp-note"><span class="tag g">در انتظار بررسی</span> تیم تاتامی پلاس درخواست شما را بررسی می‌کند.</p>
+    {% elif application.status == 'rejected' %}
+      <div class="tp-note"><p><span class="tag danger">درخواست تأیید نشد</span></p><p>{{ application.rejection_reason }}</p></div>
+    {% else %}
+      <p class="tp-note"><span class="tag ok">درخواست تأیید شد</span> پروفایل عمومی پس از انتشار توسط تیم نمایش داده می‌شود.</p>
+    {% endif %}
+    <dl class="tp-dl">
+      <div><dt>سطح مربیگری</dt><dd>{{ application.coaching_level }}</dd></div>
+      <div><dt>تخصص‌ها</dt><dd>{{ application.specializations|linebreaksbr }}</dd></div>
+      <div><dt>سابقه</dt><dd>{{ application.years_experience|persian_digits }} سال</dd></div>
+      {% if application.club_name %}<div><dt>باشگاه</dt><dd>{{ application.club_name }}</dd></div>{% endif %}
+    </dl>
+    <p class="pa"><a class="btn o" href="{% url 'account' %}">بازگشت به حساب کاربری</a></p>
+  </div>
+</div>
+{% endblock %}

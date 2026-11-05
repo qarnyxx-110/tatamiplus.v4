@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% load store_format %}
+
+{% block title %}سبد خرید | تاتامی پلاس{% endblock %}
+{% block content %}
+<div class="w">
+  <h1>سبد خرید</h1>
+  {% if items %}
+    <div class="cl2">
+      <section aria-label="اقلام سبد خرید">
+        {% for item in items %}
+          <article class="ci">
+            <div class="cb">
+              <a href="{% url 'store:product_detail' item.variant.product.slug %}"><b>{{ item.variant.product.name }}</b></a>
+              <div class="mu sm">{% if item.variant.size %}سایز {{ item.variant.size }}{% endif %}{% if item.variant.size and item.variant.color %} · {% endif %}{% if item.variant.color %}رنگ {{ item.variant.color }}{% endif %}</div>
+              <div class="mu sm">{{ item.variant.price|price_fa }} × {{ item.quantity|price_fa }} = <b>{{ item.subtotal|price_fa }}</b></div>
+              {% if not item.available %}<p class="tp-error-text">این تنوع ناموجود است یا تعداد آن باید اصلاح شود.</p>{% endif %}
+              <div class="cr">
+                <form class="tp-qty" method="post" action="{% url 'store:update_cart_item' item.pk %}">
+                  {% csrf_token %}
+                  <label for="quantity-{{ item.pk }}">تعداد</label>
+                  <input id="quantity-{{ item.pk }}" name="quantity" type="number" inputmode="numeric" min="1" max="{{ item.variant.stock_quantity }}" value="{{ item.quantity }}" required>
+                  <button class="btn o s" type="submit">به‌روزرسانی</button>
+                </form>
+                <form method="post" action="{% url 'store:remove_cart_item' item.pk %}">
+                  {% csrf_token %}
+                  <button class="btn o s dg" type="submit" aria-label="حذف {{ item.variant.product.name }} از سبد">حذف</button>
+                </form>
+              </div>
+            </div>
+          </article>
+        {% endfor %}
+      </section>
+      <aside class="d-c" aria-label="خلاصهٔ سبد">
+        <h2 style="font-size:var(--tp-font-size-lg)">خلاصهٔ سبد</h2>
+        <div class="rw2"><b>جمع سبد</b><b>{{ cart.total|price_fa }}</b></div>
+        <p class="tp-note">ثبت سفارش و پرداخت در این مرحله فعال نیست. واحد پول هنوز نهایی نشده است.</p>
+        <a class="btn o" style="width:100%" href="{% url 'store:product_list' %}">ادامهٔ خرید</a>
+      </aside>
+    </div>
+  {% else %}
+    <div class="tp-state">
+      <b>سبد خرید خالی است</b>
+      <p>محصولات انتخاب‌شده در این بخش نمایش داده می‌شوند.</p>
+      <a class="btn" href="{% url 'store:product_list' %}">رفتن به فروشگاه</a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

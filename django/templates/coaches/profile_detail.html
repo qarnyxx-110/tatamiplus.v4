@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ profile.display_name }} | مربیان تاتامی پلاس{% endblock %}
+{% block description %}{{ profile.display_name }}{% if profile.headline %} — {{ profile.headline }}{% endif %}{% endblock %}
+{% block content %}
+<div class="w">
+  <nav class="tp-crumbs" aria-label="مسیر صفحه"><ol><li><a href="{% url 'home' %}">خانه</a></li><li><a href="{% url 'coaches:directory' %}">مربیان تاتامی</a></li><li aria-current="page">{{ profile.display_name }}</li></ol></nav>
+  <header class="pf-hero">
+    <div class="pf-id">
+      <span class="d-av pf-av" aria-hidden="true">{{ profile.display_name|first }}</span>
+      <div class="pf-who">
+        <p class="pf-kick">مربی تأییدشدهٔ تاتامی پلاس</p>
+        <h1>{{ profile.display_name }}</h1>
+        {% if profile.headline %}<p class="mu">{{ profile.headline }}</p>{% endif %}
+      </div>
+    </div>
+  </header>
+  <section class="d-s" aria-labelledby="bio-t">
+    <h2 id="bio-t">معرفی مربی</h2>
+    <div class="tp-coach-bio">{{ profile.biography|linebreaks }}</div>
+  </section>
+  <p class="pa"><a class="btn o" href="{% url 'coaches:directory' %}">بازگشت به فهرست مربیان</a></p>
+</div>
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block title %}تاتامی پلاس | پلتفرم فارسی جودو{% endblock %}
+{% block content %}
+<section class="hero">
+  <div class="w">
+    <h1>مسیر بعدی جودوی خود را پیدا کنید</h1>
+    <p class="gold">مربی تأییدشده پیدا کنید و تجهیزات تمرین را از فروشگاه تاتامی پلاس ببینید.</p>
+    <p class="mu">پروفایل مربیان پس از بررسی مدارک و تأیید تیم تاتامی پلاس منتشر می‌شود.</p>
+    <a class="btn" href="{% url 'coaches:directory' %}">مشاهدهٔ مربیان</a>
+    <a class="btn o" href="{% url 'store:product_list' %}">رفتن به فروشگاه</a>
+  </div>
+</section>
+
+<section class="w d-s" aria-labelledby="home-links">
+  <h2 id="home-links">از کجا شروع کنیم؟</h2>
+  <div class="d-qa tp-home-links">
+    <a class="qa" href="{% url 'coaches:directory' %}"><span class="ic" aria-hidden="true">۰۱</span><div><b>پیدا کردن مربی</b><div class="mu sm">مشاهدهٔ مربیان تأییدشده</div></div></a>
+    <a class="qa" href="{% url 'store:product_list' %}"><span class="ic" aria-hidden="true">۰۲</span><div><b>خرید تجهیزات</b><div class="mu sm">مرور محصولات فروشگاه</div></div></a>
+    <a class="qa" href="{% url 'account' %}"><span class="ic" aria-hidden="true">۰۳</span><div><b>حساب کاربری</b><div class="mu sm">ورود یا ثبت‌نام هنرجو و مربی</div></div></a>
+  </div>
+</section>
+{% endblock %}
