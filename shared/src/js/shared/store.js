@@ -8,7 +8,7 @@ let CHECKOUT={step:0,name:'',phone:'',province:'',city:'',postal:'',address:'',d
 const tgl=(k,v)=>{const a=FS[k];FS[k]=a.includes(v)?a.filter(x=>x!=v):[...a,v];R('x')},sF=(k,v)=>{FS[k]=v;R('x')};
 const clr=()=>{q='';cat='';Object.assign(FS,{pmin:0,pmax:0,sz:[],col:[],lv:'',fv:false});R('x')};
 const cadd=(id,s,c,n)=>{const p=P[id];if(!p||!p.st){toast('این محصول ناموجود است','err');return false}const inCart=cart.filter(x=>x.id==id).reduce((a,x)=>a+x.q,0),room=Math.max(0,p.st-inCart);if(room<=0||n>room){toast(room?'تعداد درخواستی بیشتر از موجودی است':'به حداکثر موجودی این محصول رسیده‌اید','err');return false}const e=cart.find(x=>x.id==id&&x.s==s&&x.c==c);e?e.q+=n:cart.push({id,s,c,q:n});save();return true};
-const toast=(t,k='')=>{const e=$('#ts');e.textContent=t;e.className='tp-toast on '+k;clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),2200)};
+const toast=(t,k='')=>{const e=$('#ts');e.textContent=t;e.className='tp-toast on '+(k==='err'?'error':k);e.setAttribute('role',k==='err'?'alert':'status');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),2200)};
 function qadd(id){const p=P[id];if(!p||!p.st){toast('این محصول ناموجود است','err');return}if(p.sz.length||p.cl.length){location.hash='#/product/'+id;return}if(cadd(id,'','',1))toast('به سبد خرید اضافه شد')}
 function addP(){const p=P[PS.id];if(!p||!p.st){toast('این محصول ناموجود است','err');return}if(p.sz.length&&!PS.s){toast('لطفاً سایز را انتخاب کنید','err');return}if(p.cl.length&&!PS.c){toast('لطفاً رنگ را انتخاب کنید','err');return}if(cadd(PS.id,PS.s,PS.c,PS.q)){toast('به سبد خرید اضافه شد');location.hash='#/cart'}}
 function qP(d){PS.q=Math.max(1,Math.min(P[PS.id].st,PS.q+d));R('x')}
@@ -28,11 +28,19 @@ function checkoutNext(){
  if(!cart.length){toast('سبد خرید شما خالی است','err');location.hash='#/cart';return}
  const keys=['name','phone','province','city','postal','address'];for(const k of keys){const e=document.getElementById('co-'+k);if(e)CHECKOUT[k]=e.value.trim()}
  const n=document.getElementById('co-notes');if(n)CHECKOUT.notes=n.value.trim();const d=document.getElementById('co-delivery');if(d)CHECKOUT.delivery=d.value;
- if(!CHECKOUT.name||!CHECKOUT.phone||!CHECKOUT.province||!CHECKOUT.city||!CHECKOUT.postal||!CHECKOUT.address){toast('لطفاً همه فیلدهای ضروری را تکمیل کنید','err');return}
- const phone=CHECKOUT.phone.replace(/[^0-9۰-۹]/g,'');if(!/^(09[0-9۰-۹]{9}|۰۹[۰-۹]{9})$/.test(phone)){toast('شماره موبایل را به‌صورت ۱۱ رقمی وارد کنید','err');return}
- if(!/^[0-9۰-۹]{10}$/.test(CHECKOUT.postal.replace(/\s/g,''))){toast('کد پستی باید ۱۰ رقم باشد','err');return}
- CHECKOUT.step=1;R('x')
+ const E={},ph=nz(CHECKOUT.phone).replace(/^\+98|^0098/,'0'),pc=nz(CHECKOUT.postal);
+ if(!CHECKOUT.name)E['co-name']='نام و نام خانوادگی گیرنده را وارد کنید.';else if(CHECKOUT.name.length<3)E['co-name']='نام گیرنده باید حداقل ۳ حرف باشد.';
+ if(!CHECKOUT.phone)E['co-phone']='شماره موبایل را وارد کنید.';else if(!/^09\d{9}$/.test(ph))E['co-phone']='شماره موبایل باید ۱۱ رقم و با ۰۹ شروع شود؛ مثل ۰۹۱۲۳۴۵۶۷۸۹.';
+ if(!CHECKOUT.province)E['co-province']='استان را وارد کنید.';
+ if(!CHECKOUT.city)E['co-city']='شهر را وارد کنید.';
+ if(!CHECKOUT.postal)E['co-postal']='کد پستی را وارد کنید.';else if(!/^\d{10}$/.test(pc))E['co-postal']='کد پستی باید ۱۰ رقم باشد (بدون خط تیره).';
+ if(!CHECKOUT.address)E['co-address']='نشانی کامل را وارد کنید.';else if(CHECKOUT.address.length<10)E['co-address']='نشانی را کامل‌تر بنویسید: خیابان، کوچه، پلاک و واحد.';
+ const f=document.getElementById('co-form');if(f&&!fErr(f,E))return;
+ CHECKOUT.phone=ph;CHECKOUT.postal=pc;CHECKOUT.step=1;R('x');scrollTo(0,0)
 }
 function checkoutBack(){CHECKOUT.step=0;R('x')}
-function checkoutDemoConfirm(){if(!cart.length){location.hash='#/cart';return}CHECKOUT.step=2;R('x')}
+function checkoutDemoConfirm(){if(!cart.length){location.hash='#/cart';return}const ok=cart.filter(x=>P[x.id]),total=ok.reduce((a,x)=>a+P[x.id].p*x.q,0),code='TP-'+Date.now().toString(36).slice(-6).toUpperCase();
+ CHECKOUT.last={code,total,n:ok.reduce((a,x)=>a+x.q,0),items:ok.map(x=>({n:P[x.id].n,q:x.q,s:x.s,c:x.c,t:P[x.id].p*x.q})),name:CHECKOUT.name,city:CHECKOUT.city,delivery:CHECKOUT.delivery};
+ if(typeof ME!=='undefined'&&ME){const o=L('tp:orders',[]),a=Array.isArray(o)?o.slice(-19):[];a.push({code,total,n:CHECKOUT.last.n,user:ME.username.toLowerCase(),at:Date.now()});S('tp:orders',a)}
+ cart.length=0;save();Object.assign(CHECKOUT,{step:2,notes:''});R('x');scrollTo(0,0)}
 function checkoutRestart(){CHECKOUT.step=0;location.hash='#/cart'}
