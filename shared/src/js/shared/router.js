@@ -1,4 +1,4 @@
-const MAXSEG={'':0,role:0,login:0,register:0,dashboard:0,store:0,search:0,cart:0,checkout:0,tournaments:0,videos:0,academy:0,ai:0,clubs:0,profile:0,sponsors:0,'my-profile':0,'design-system':0,coaches:1,tatamipedia:1,blog:1,product:1,video:1,tournament:1,instructor:1,club:1};
+const MAXSEG={'':0,role:0,login:0,register:0,'coach-apply':0,'coach-application':0,dashboard:0,store:0,search:0,cart:0,checkout:0,tournaments:0,videos:0,academy:0,ai:0,clubs:0,profile:0,sponsors:0,'my-profile':0,'design-system':0,coaches:1,tatamipedia:1,blog:1,product:1,video:1,tournament:1,instructor:1,club:1};
 if(APP.fixed)role=APP.role;
 function R(f){if(APP.fixed&&APP.home&&!location.hash){location.hash='#/'+APP.home;return}const qp=new URLSearchParams(location.search+'&'+(location.hash.split('?')[1]||'')).get('role');if(!APP.fixed&&RN[qp]&&qp!=role){role=qp;S('role',qp)}const h=location.hash.split('?')[0].replace('#/','').split('/'),k=h[0];
 if(!APP.fixed&&!role&&k!='role'&&!R.seen){R.seen=1;location.hash='#/role?next='+encodeURIComponent(location.hash||'#/');return}
