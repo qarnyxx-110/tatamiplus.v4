@@ -4,5 +4,27 @@ Object.assign(views,{
 <div class="w"><h2>امکانات پلتفرم</h2><div class="grid">${[['فروشگاه','#/store','تجهیزات جودو'],['تورنمنت‌ها','#/tournaments','برنامه و نتایج'],['ویدیوهای ضبط‌شده','#/videos','آموزش سطح‌بندی‌شده'],['آنالیز هوش مصنوعی','#/ai','نمونه نمایشی تحلیل'],['آکادمی اساتید','#/academy','مربیان و دوره‌ها'],['باشگاه‌ها','#/clubs','باشگاه‌های جودو'],['بلاگ','#/blog','مقاله‌های آموزشی'],['تاتامی‌پدیا','#/tatamipedia','دانشنامه جودو']].filter(f=>allowed(f[1].slice(2))).map(f=>`<a class="card b" href="${f[1]}"><b class="gold">${f[0]}</b><div class="mu">${f[2]}</div></a>`).join('')}</div></div>`+homeMore(),
 role:()=>`<div class="w" style="text-align:center"><h1>به تاتامی پلاس خوش آمدید</h1><p class="mu">نوع حساب خود را انتخاب کنید (ورود واقعی وجود ندارد).</p><div class="grid" style="margin-top:var(--tp-space-lg)">${[['student','هنرجو','یادگیری، ویدیو و پیشرفت'],['coach','مربی','مدیریت هنرجویان و دوره‌ها'],['club','باشگاه','مدیریت اعضا و رویدادها']].map(r=>`<button class="card b" onclick="setRole('${r[0]}')" style="text-align:center"><h2 class="gold">${r[1]}</h2><span class="mu">${r[2]}</span></button>`).join('')}</div></div>`,
 dashboard:()=>{const r=RN[role]?role:'student';return`<div class="d-l"><aside class="d-sb"><a class="d-lg" href="#/">تاتامی پلاس</a><nav class="d-n" aria-label="بخش‌های داشبورد ${RN[r]}">${SB[r].map((x,i)=>`<button type="button" data-t="${x[0]}" aria-current="${i==0}" onclick="go('${x[0]}')">${x[1]}</button>`).join('')}</nav>${APP.fixed?'':'<div class="d-sw"><a href="#/role">تغییر نوع حساب</a></div>'}</aside><div class="d-m"><header class="d-h"><div><h1>${HD[r][0]}</h1><p class="mu" style="margin:var(--tp-space-2xs) 0 0">${HD[r][1]}</p></div><div class="d-acc"><span class="d-av" aria-hidden="true">${RN[r][0]}</span><div><b>حساب ${RN[r]}</b><div class="mu sm">نسخه آزمایشی · داده‌های نمایشی</div></div></div></header>${BODY[r]()}</div></div>`},
-search:()=>{location.hash='#/store?focus=1';return''},
+search:()=>searchView(),
 });
+// جستجوی سراسری: فروشگاه، مربیان، مقاله‌ها، تاتامی‌پدیا، ویدیوها و باشگاه‌ها (فقط بخش‌های مجاز همین اپ)
+let SQ='';
+function searchSet(v){setHashParams({q:v});R('sq')}
+function searchAll(k){if(k==='store'){q=SQ;location.hash='#/store'}else if(k==='videos'){if(typeof vq!=='undefined')vq=SQ;location.hash='#/videos'}}
+function searchView(){const raw=(hashParams().get('q')||'').slice(0,80),n=nz(raw);SQ=raw;PT={t:'جستجو',d:'جستجو در فروشگاه، مربیان، مقاله‌ها، تاتامی‌پدیا، ویدیوها و باشگاه‌ها'};
+ const has=t=>nz(t).includes(n),eq=encodeURIComponent(raw),G=[];
+ if(n){
+  if(allowed('store'))G.push(['محصولات',P.filter(p=>has(p.n+' '+p.c)).map(p=>[`#/product/${p.id}`,p.n,p.c]),`<button type="button" class="btn o s" onclick="searchAll('store')">همه در فروشگاه</button>`]);
+  if(allowed('coaches'))G.push(['مربیان',COACHES.filter(c=>has([c.firstName,c.lastName,c.level,c.academySpecialty,...(c.specialties||[])].join(' '))).map(c=>[`#/coaches/${encodeURIComponent(c.slug)}`,c.firstName+' '+c.lastName,(c.specialties||[]).join('، ')]),`<a class="btn o s" href="#/coaches?q=${eq}">همه در مربیان</a>`]);
+  if(allowed('blog'))G.push(['مقاله‌ها',BL.filter(b=>has([b.t,b.x,b.c].join(' '))).map(b=>[bLink(b),b.t,b.c||'']),`<a class="btn o s" href="#/blog?q=${eq}">همه در بلاگ</a>`]);
+  if(allowed('tatamipedia'))G.push(['تاتامی‌پدیا',TPD.terms.filter(t=>t.status!=='draft'&&has([t.nameFa,t.nameJa,t.romaji,t.meaning].join(' '))).map(t=>[`#/tatamipedia/${encodeURIComponent(t.slug)}`,t.nameFa,[t.romaji,t.meaning].filter(Boolean).join(' · ')]),`<a class="btn o s" href="#/tatamipedia?q=${eq}">همه در تاتامی‌پدیا</a>`]);
+  if(allowed('videos'))G.push(['ویدیوها',V.filter(v=>has(v.t+' '+v.c)).map(v=>[`#/video/${v.id}`,v.t,v.c+' · '+v.l]),`<button type="button" class="btn o s" onclick="searchAll('videos')">همه در ویدیوها</button>`]);
+  if(allowed('clubs'))G.push(['باشگاه‌ها',CB.map((c,i)=>[`#/club/${i}`,c[0],c[1],c[4]]).filter(c=>has(c.join(' '))).map(c=>c.slice(0,3)),'']);
+ }
+ const hit=G.filter(g=>g[1].length),total=hit.reduce((a,g)=>a+g[1].length,0);
+ const sug=['اوچی‌ماتا','کیمونو','کمربند','ایپون','سارا احمدی','تهران'].map(t=>`<button type="button" class="chip" onclick="searchSet('${t}')">${t}</button>`).join('');
+ const row=r=>`<a class="rec" href="${r[0]}"><b>${esc(r[1])}</b>${r[2]?`<span>${esc(r[2])}</span>`:''}</a>`;
+ return`<div class="w"><h1>جستجو</h1><p class="mu">در فروشگاه، مربیان، مقاله‌ها، تاتامی‌پدیا${allowed('videos')?'، ویدیوها':''}${allowed('clubs')?' و باشگاه‌ها':''}.</p>
+ <div class="sbar" role="search"><label class="sr" for="sq">جستجو در کل سایت</label><input id="sq" type="search" placeholder="نام فن، محصول، مربی یا مقاله..." value="${esc(raw)}" oninput="searchSet(this.value)" autocomplete="off"></div>
+ ${!n?`<p class="mu sm">پیشنهاد جستجو:</p><div class="chips">${sug}</div>`:`<p><b aria-live="polite">${total?F(total)+' نتیجه برای «'+esc(raw)+'»':'نتیجه‌ای برای «'+esc(raw)+'» پیدا نشد'}</b></p>`}
+ ${n&&!total?`<div class="tp-state"><b>نتیجه‌ای پیدا نشد</b><p>املای کلمه را بررسی کنید یا عبارت کوتاه‌تری بنویسید. نام فن‌ها را می‌توانید فارسی، ژاپنی یا لاتین جستجو کنید.</p><div class="chips" style="justify-content:center">${sug}</div></div>`:''}
+ ${hit.map(g=>`<section class="d-s" aria-label="${g[0]}"><h2>${g[0]} <span class="mu sm">(${F(g[1].length)})</span></h2>${g[1].slice(0,5).map(row).join('')}${g[1].length>5&&g[2]?`<div class="tp-cluster" style="margin-top:var(--tp-space-sm)">${g[2]}</div>`:''}</section>`).join('')}</div>`}
