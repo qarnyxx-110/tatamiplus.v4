@@ -15,7 +15,7 @@ function qP(d){PS.q=Math.max(1,Math.min(P[PS.id].st,PS.q+d));R('x')}
 function cq(k,d){const x=cart[k];x.q=Math.max(1,Math.min(P[x.id].st,x.q+d));save();R('x')}
 function rm(k){cart.splice(k,1);save();R('x')}
 function tf(i){fav=fav.includes(i)?fav.filter(x=>x!=i):[...fav,i];save();R('x')}
-const rate=p=>p.rv?`<span class="mu sm">★ ${F(p.r)} (${F(p.rv)} نظر)</span>`:'',sk=p=>p.st==0?tg('ناموجود','m'):p.st<5?tg('تنها '+F(p.st)+' عدد','g'):tg('موجود');
+const rate=p=>p.rv?`<span class="mu sm">★ ${F(p.r)} (${F(p.rv)} نظر)</span>`:'',sk=p=>p.st==0?tg('ناموجود','m'):p.st<5?tg('تنها '+F(p.st)+' عدد','g lo'):tg('موجود','ok');
 const fvb=(p,c='')=>`<button class="fv ${fav.includes(p.id)?'on':''} ${c}" aria-pressed="${fav.includes(p.id)}" aria-label="${fav.includes(p.id)?'حذف از':'افزودن به'} علاقه‌مندی‌ها: ${p.n}" onclick="tf(${p.id})">${fav.includes(p.id)?'♥':'♡'}</button>`;
 const pc=p=>`<article class="card pcd"><a href="#/product/${p.id}" aria-label="مشاهده ${p.n}">${im.p(p)}</a><div class="b"><a href="#/product/${p.id}"><b>${p.n}</b></a><div class="mu sm">${p.c}</div>${rate(p)}<div class="gold">${T(p.p)}</div>${p.ref?'<div class="mu sm">قیمت مرجع بازار</div>':p.demo?`<div>${tg('نمونه آزمایشی','m')}</div>`:''}${sk(p)}<div class="pa"><button class="btn s" ${p.st?'':'disabled'} onclick="qadd(${p.id})">${p.st?'افزودن به سبد':'ناموجود'}</button><a class="btn s o" href="#/product/${p.id}">مشاهده محصول</a>${fvb(p)}</div></div></article>`;
 const chp=(t,on,fn,x='')=>`<button class="chip ${on?'on':''}" aria-pressed="${!!on}" ${x} onclick="${fn}">${t}</button>`;
