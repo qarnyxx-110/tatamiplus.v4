@@ -5,15 +5,18 @@ P.forEach(p=>{if(p.ref){Object.assign(p,{rv:0,st:25,sold:0,d:p.id,ds:`${p.n}؛ $
 const ALLC=[...new Set(P.flatMap(p=>p.cl))],SZ_ALL=[...SZS,'2','3','4','5'].filter(s=>P.some(p=>p.sz.includes(s)));
 const FS={pmin:0,pmax:0,sz:[],col:[],lv:'',fv:false,open:false};let PS={id:-1};
 let CHECKOUT={step:0,name:'',phone:'',province:'',city:'',postal:'',address:'',delivery:'standard',notes:''};
-const tgl=(k,v)=>{const a=FS[k];FS[k]=a.includes(v)?a.filter(x=>x!=v):[...a,v];R('x')},sF=(k,v)=>{FS[k]=v;R('x')};
+const tgl=(k,v)=>{FS[k]=FS[k].includes(v)?[]:[v];R('x')},sF=(k,v)=>{FS[k]=v;R('x')};
 const clr=()=>{q='';cat='';Object.assign(FS,{pmin:0,pmax:0,sz:[],col:[],lv:'',fv:false});R('x')};
 const cadd=(id,s,c,n)=>{const p=P[id];if(!p||!p.st){toast('این محصول ناموجود است','err');return false}const inCart=cart.filter(x=>x.id==id).reduce((a,x)=>a+x.q,0),room=Math.max(0,p.st-inCart);if(room<=0||n>room){toast(room?'تعداد درخواستی بیشتر از موجودی است':'به حداکثر موجودی این محصول رسیده‌اید','err');return false}const e=cart.find(x=>x.id==id&&x.s==s&&x.c==c);e?e.q+=n:cart.push({id,s,c,q:n});save();return true};
 const toast=(t,k='')=>{const e=$('#ts');e.textContent=t;e.className='tp-toast on '+(k==='err'?'error':k);e.setAttribute('role',k==='err'?'alert':'status');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),2200)};
-function qadd(id){const p=P[id];if(!p||!p.st){toast('این محصول ناموجود است','err');return}if(p.sz.length||p.cl.length){location.hash='#/product/'+id;return}if(cadd(id,'','',1))toast('به سبد خرید اضافه شد')}
-function addP(){const p=P[PS.id];if(!p||!p.st){toast('این محصول ناموجود است','err');return}if(p.sz.length&&!PS.s){toast('لطفاً سایز را انتخاب کنید','err');return}if(p.cl.length&&!PS.c){toast('لطفاً رنگ را انتخاب کنید','err');return}if(cadd(PS.id,PS.s,PS.c,PS.q)){toast('به سبد خرید اضافه شد');location.hash='#/cart'}}
-function qP(d){PS.q=Math.max(1,Math.min(P[PS.id].st,PS.q+d));R('x')}
-function cq(k,d){const x=cart[k];x.q=Math.max(1,Math.min(P[x.id].st,x.q+d));save();R('x')}
-function rm(k){cart.splice(k,1);save();R('x')}
+function qadd(id){const p=P[id];if(!p||!p.st){toast('این محصول ناموجود است','err');return}if(p.sz.length||p.cl.length){location.hash='#/product/'+id;return}if(cadd(id,'','',1))toast('محصول به سبد خرید اضافه شد.')}
+// مثل AddToCartForm: خطای «تنوع» (سایز/رنگ) و «تعداد» کنار همان فیلد؛ موفقیت ← سبد خرید
+function addP(){const p=P[PS.id];if(!p||!p.st){toast('این محصول ناموجود است','err');return}const E={};if(p.sz.length&&!PS.s)E.s='این فیلد لازم است.';if(p.cl.length&&!PS.c)E.c='این فیلد لازم است.';
+ const inCart=cart.filter(x=>x.id==PS.id&&x.s==PS.s&&x.c==PS.c).reduce((a,x)=>a+x.q,0);if(!E.s&&!E.c&&inCart+PS.q>p.st)E.q='تعداد درخواستی از موجودی فعلی بیشتر است.';
+ PS.err=E;if(E.s||E.c||E.q){R(E.s?'pd-sz':E.c?'pd-cl':'pd-qt');return}if(cadd(PS.id,PS.s,PS.c,PS.q)){toast('محصول به سبد خرید اضافه شد.');location.hash='#/cart'}}
+function qP(d){PS.q=Math.max(1,Math.min(P[PS.id].st,PS.q+d));if(PS.err)PS.err.q='';R('x')}
+function cq(k,d){const x=cart[k],n=x.q+d;if(n<1){toast('تعداد باید دست‌کم یک باشد.','err');return}if(n>P[x.id].st){toast('تعداد درخواستی از موجودی فعلی بیشتر است.','err');return}x.q=n;save();R('x');toast('تعداد محصول به‌روزرسانی شد.')}
+function rm(k){cart.splice(k,1);save();R('x');toast('محصول از سبد خرید حذف شد.')}
 function tf(i){fav=fav.includes(i)?fav.filter(x=>x!=i):[...fav,i];save();R('x')}
 const rate=p=>p.rv?`<span class="mu sm">★ ${F(p.r)} (${F(p.rv)} نظر)</span>`:'',sk=p=>p.st==0?tg('ناموجود','m'):p.st<5?tg('تنها '+F(p.st)+' عدد','g lo'):tg('موجود','ok');
 const fvb=(p,c='')=>`<button class="fv ${fav.includes(p.id)?'on':''} ${c}" aria-pressed="${fav.includes(p.id)}" aria-label="${fav.includes(p.id)?'حذف از':'افزودن به'} علاقه‌مندی‌ها: ${p.n}" onclick="tf(${p.id})">${fav.includes(p.id)?'♥':'♡'}</button>`;
