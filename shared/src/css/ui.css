@@ -169,7 +169,7 @@ footer{background:var(--tp-color-night)}
 @keyframes tp-draw-x{from{transform:scaleX(0)}}
 @keyframes tp-draw-y{from{transform:scaleY(0)}}
 @keyframes tp-reveal{from{opacity:0;clip-path:inset(0 0 0 100%);transform:translateY(.15em)}to{opacity:1;clip-path:inset(0 0 0 0)}}
-@keyframes tp-hdr{to{box-shadow:var(--tp-shadow-header);background:rgba(14,14,14,.985)}}
+@keyframes tp-hdr{to{box-shadow:var(--tp-shadow-header);background:rgba(18,20,24,.985)}}
 
 /* ورود صفحه و ورود پلکانی کارت‌ها */
 #app[data-enter]>:not(.hero):not(.cine){animation:tp-rise var(--tp-motion-enter) var(--tp-motion-ease-out) backwards}
@@ -320,7 +320,7 @@ html:has(.tp-drawer[open]){overflow:hidden}
 .tp-form-sum{background:var(--tp-color-danger-tint);color:var(--tp-color-danger);border-radius:var(--tp-radius-control);padding:var(--tp-space-xs) var(--tp-space-sm);font-weight:var(--tp-font-weight-bold);margin:0 0 var(--tp-space-sm)}
 .tp-error-text{font-weight:var(--tp-font-weight-medium)}
 .tp-error-text::before{content:"⚠ "}
-input[aria-invalid=true],select[aria-invalid=true],textarea[aria-invalid=true]{border-color:var(--tp-color-danger)!important;box-shadow:0 0 0 3px rgba(255,138,138,.15)}
+input[aria-invalid=true],select[aria-invalid=true],textarea[aria-invalid=true]{border-color:var(--tp-color-danger)!important;box-shadow:0 0 0 3px rgba(180,35,24,.12)}
 .tp-toast.error{background:var(--tp-color-danger);color:var(--tp-color-bg);font-weight:var(--tp-font-weight-bold)}
 
 /* ===== پرداخت: مراحل، فرم دوستونه، تأیید ===== */
@@ -398,7 +398,7 @@ input[aria-invalid=true],select[aria-invalid=true],textarea[aria-invalid=true]{b
 .pf-heat-wrap{max-width:26rem}
 .pf-heat{display:grid;grid-template-rows:repeat(7,minmax(0,1fr));grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:4px}
 .pf-heat i,.pf-legend i{display:block;aspect-ratio:1;border-radius:3px;background:var(--tp-color-neutral-tint)}
-.pf-heat i.l1,.pf-legend i.l1{background:rgba(224,30,30,.28)}.pf-heat i.l2,.pf-legend i.l2{background:rgba(224,30,30,.5)}.pf-heat i.l3,.pf-legend i.l3{background:rgba(224,30,30,.75)}.pf-heat i.l4,.pf-legend i.l4{background:var(--tp-color-brand)}
+.pf-heat i.l1,.pf-legend i.l1{background:rgba(31,79,181,.22)}.pf-heat i.l2,.pf-legend i.l2{background:rgba(31,79,181,.45)}.pf-heat i.l3,.pf-legend i.l3{background:rgba(31,79,181,.72)}.pf-heat i.l4,.pf-legend i.l4{background:var(--tp-color-brand)}
 .pf-heat-ax{display:flex;justify-content:space-between;margin-top:var(--tp-space-2xs)}
 .pf-legend{display:flex;align-items:center;gap:4px;margin-top:var(--tp-space-2xs)}.pf-legend i{width:12px}
 .pf-mini{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--tp-space-sm);margin:var(--tp-space-md) 0 0}
@@ -449,3 +449,39 @@ input[aria-invalid=true],select[aria-invalid=true],textarea[aria-invalid=true]{b
 .chips[tabindex="-1"]:focus,.qt[tabindex="-1"]:focus{outline-color:var(--tp-color-danger)}
 .pf-mc-soon{margin-top:auto;padding-top:var(--tp-space-xs);border-top:1px dashed var(--tp-color-border)}
 .d-m>.tp-note{margin-top:0}
+
+/* ===== تم تیره: آبی جودو و خاکستری تاتامی ===== */
+.hero::after{background:rgba(255,255,255,.55)}
+.hero .btn{background:#FFFFFF;color:var(--tp-color-brand-text)}
+.hero .btn:hover{background:var(--tp-color-brand-tint);color:var(--tp-color-brand-hover);box-shadow:-4px 4px 0 rgba(255,255,255,.35)}
+.ft{border-top-color:#5B86E5}
+.tp-belt-black{box-shadow:inset 0 0 0 1px rgba(255,255,255,.3)}
+.tp-toast.error{color:var(--tp-color-bg)}
+.btn.o.dg:hover{color:var(--tp-color-bg)}
+.ft a,.ft nav a{color:rgba(255,255,255,.82)}.ft a:hover,.ft nav a:hover{color:#FFFFFF}
+.db{color:#FFFFFF}
+.hero .btn.o{background:transparent;color:#FFFFFF;border-color:#FFFFFF}
+.hero .btn.o:hover{background:#FFFFFF;color:var(--tp-color-brand-hover)}
+.hero .btn:not(.o){background:#FFFFFF;color:var(--tp-color-night)}
+.hero .btn:not(.o):hover{background:#E7EDFA;color:var(--tp-color-night)}
+
+/* ===== رنگ کمربندهای جودو ===== */
+.tp-belt-white{background:var(--tp-belt-white)}.tp-belt-yellow{background:var(--tp-belt-yellow)}.tp-belt-orange{background:var(--tp-belt-orange)}.tp-belt-green{background:var(--tp-belt-green)}.tp-belt-blue{background:var(--tp-belt-blue)}.tp-belt-brown{background:var(--tp-belt-brown)}.tp-belt-black{background:var(--tp-belt-black)}
+/* نوار امضا: هفت کمربند به ترتیب رتبه، از راست (شروع) به چپ */
+.hero,.ft{border-image:linear-gradient(to left,var(--tp-belt-white) 0 14.28%,var(--tp-belt-yellow) 14.28% 28.57%,var(--tp-belt-orange) 28.57% 42.85%,var(--tp-belt-green) 42.85% 57.14%,var(--tp-belt-blue) 57.14% 71.42%,var(--tp-belt-brown) 71.42% 85.71%,var(--tp-belt-black) 85.71%) 1}
+.hero{border-bottom:6px solid}
+.ft{border-top:6px solid}
+/* برچسب سطح با رنگ کمربند: مبتدی زرد، متوسط سبز، پیشرفته قهوه‌ای */
+.tag.lv1{background:rgba(242,194,0,.14);color:#F2C200}
+.tag.lv2{background:rgba(46,139,60,.24);color:#74D184}
+.tag.lv3{background:rgba(160,96,52,.28);color:#E3AE86}
+/* مسیر کمربند */
+.tp-beltpath{list-style:none;margin:var(--tp-space-md) 0 0;padding:var(--tp-space-sm) var(--tp-space-md);display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:var(--tp-space-xs);background:var(--tp-color-surface);border:1px solid var(--tp-color-border);border-radius:var(--tp-radius-card)}
+.tp-beltpath li{display:grid;justify-items:center;gap:6px;text-align:center;font-size:var(--tp-font-size-caption);color:var(--tp-color-text-subtle)}
+.tp-beltpath .tp-belt-bar{width:100%;max-width:56px;height:14px}
+.tp-beltpath li:not(.done):not(.on) .tp-belt-bar{opacity:.3}
+.tp-beltpath li.done{color:var(--tp-color-text-secondary)}
+.tp-beltpath li.done .tp-bp-l::after{content:" ✓";color:var(--tp-color-success)}
+.tp-beltpath li.on{color:var(--tp-color-text-primary);font-weight:var(--tp-font-weight-bold)}
+.tp-beltpath li.on .tp-belt-bar{outline:2px solid var(--tp-color-brand-text);outline-offset:3px}
+@media(max-width:420px){.tp-beltpath{padding-inline:var(--tp-space-xs);gap:4px}.tp-beltpath li{font-size:.68rem}}
