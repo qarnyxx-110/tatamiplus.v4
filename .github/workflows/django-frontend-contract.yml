@@ -77,3 +77,19 @@ jobs:
       - name: Run backend tests with the proposed frontend templates
         working-directory: backend
         run: python manage.py test --verbosity 2
+
+      - name: Package the changed Django frontend files for backend handoff
+        run: |
+          set -euo pipefail
+          mkdir -p handoff/templates handoff/static/css
+          cp django/templates/base.html handoff/templates/base.html
+          cp django/static/css/tatami.css handoff/static/css/tatami.css
+          (cd handoff && zip -qr "$GITHUB_WORKSPACE/tatami-django-stage-4-1-handoff.zip" .)
+
+      - name: Upload backend handoff package
+        uses: actions/upload-artifact@v4
+        with:
+          name: tatami-django-stage-4-1-handoff
+          path: tatami-django-stage-4-1-handoff.zip
+          if-no-files-found: error
+          retention-days: 7
