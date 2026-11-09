@@ -326,16 +326,29 @@ export async function runPreview(base,browser){
  pg.on('pageerror',e=>errors.push(String(e).slice(0,140)));
  await pg.addInitScript(()=>localStorage.setItem('role',JSON.stringify('student')));
  await pg.goto(base+'/index.html');await wait(350);
+ const freshCtx=await browser.newContext({viewport:{width:1280,height:900},serviceWorkers:'block'});
+ const fresh=await freshCtx.newPage();await fresh.goto(base+'/index.html');await wait(250);
+ S.ok('بازدیدکننده بدون نقش در صفحه اصلی می‌ماند',await fresh.evaluate(()=>!location.hash||location.hash==='#/'));
+ S.ok('بازدیدکننده بدون نقش محتوای خانه را می‌بیند',/نسل جدید تجربه جودو/.test(await fresh.locator('#app').innerText()));
+ await freshCtx.close();
  const go=async h=>{await pg.evaluate(x=>{location.hash=x},h);await wait(100)};
  const T=()=>pg.locator('#app').innerText();
  const cards=()=>pg.locator('#app .sl .pg article.pcd').count();
  await go('#/');
  S.ok('صفحه اصلی در بازدید اول پیام «آماده شروع هستید؟» را دارد',(await T()).includes('آماده شروع هستید؟'));
  S.ok('لینک سیستم طراحی از فوتر حذف شده است',await pg.locator('footer a[href="#/design-system"]').count()===0);
+ S.ok('لینک انتخاب نوع حساب از فوتر حذف شده است',await pg.locator('footer a[href="#/role"]').count()===0);
  await go('#/design-system');
  S.ok('مسیر مستقیم سیستم طراحی به ۴۰۴ می‌رسد',/۴۰۴/.test(await T()));
  S.ok('کد صفحه سیستم طراحی در خروجی عمومی Preview بارگذاری نشده است',
    !await pg.evaluate(()=>[...document.scripts].map(s=>s.textContent).join('\n').includes('راهنمای زنده توکن‌ها')));
+ await go('#/role');
+ S.ok('مسیر مستقیم انتخاب نوع حساب به ۴۰۴ می‌رسد',/۴۰۴/.test(await T()));
+ S.ok('کد صفحه انتخاب نوع حساب از خروجی Preview حذف شده است',
+   !await pg.evaluate(()=>[...document.scripts].map(s=>s.textContent).join('\n').includes('نوع حساب خود را انتخاب کنید')));
+ await go('#/dashboard');
+ S.ok('لینک تغییر نوع حساب از داشبورد حذف شده است',await pg.locator('#app a[href="#/role"]').count()===0);
+ await go('#/');
  await go('#/store');
  S.ok('صفحه اول فروشگاه دقیقاً ۲۴ محصول دارد',await cards()===24,String(await cards()));
  S.ok('صفحه‌بندی سه‌صفحه‌ای برای ۶۲ محصول ساخته شده است',
