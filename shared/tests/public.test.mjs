@@ -22,9 +22,59 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
   S.ok('باشگاه‌ها: صفحه جستجو و فهرست',clubList.includes('جستجوی باشگاه‌ها')&&clubList.includes('فهرست باشگاه‌ها'));
   const clubControlCounts=await Promise.all(['tp-club-city','tp-club-gender','tp-club-radius'].map(id=>pg.locator('#'+id).count()));S.ok('باشگاه‌ها: کنترل‌های شهر، جنسیت و شعاع',clubControlCounts.every(n=>n===1),clubControlCounts.join(','));
   S.ok('باشگاه‌ها: نزدیک من و تب نقشه',clubList.includes('نزدیک من')&&clubList.includes('نقشه'));
-  S.ok('باشگاه‌ها: عدم جعل مختصات/نشانک',clubList.includes('مختصات جغرافیایی در دادهٔ نمونه ثبت نشده است')&&clubList.includes('Web Key محدودشده به دامنه لازم است'));
+  S.ok('باشگاه‌ها: برچسب و داده نمونه',await pg.locator('#tp-club-cards[data-source="sample"] [data-club-id]').count()===6&&clubList.includes('داده‌های نمونه'));
+  S.ok('باشگاه‌ها: فیلترهای وابسته به API بدون داده واقعی غیرفعال‌اند',await pg.locator('#tp-club-gender').isDisabled()&&await pg.locator('#tp-club-radius').isDisabled()&&await pg.locator('#tp-club-near-status').count()===1);
+  S.ok('باشگاه‌ها: مختصات ساختگی/فاصله ساختگی در کارت‌ها نمایش داده نمی‌شود',clubList.includes('مختصات جغرافیایی در دادهٔ نمونه ثبت نشده است')&&!((await pg.locator('#tp-club-cards').innerText()).includes('کیلومتر')));
+  
+  const clubApiRows=[
+   {id:'club-north-women',name:'باشگاه شمال بانوان',city:'تهران',coach_name:'سارا احمدی',description:'تمرین بانوان در شمال تهران',status:'registration_open',gender:'women',student_count:20,schedule:'شنبه و دوشنبه',latitude:35.7201,longitude:51.4001},
+   {id:'club-north-men',name:'باشگاه شمال آقایان',city:'تهران',coach_name:'رضا کیانی',description:'تمرین آقایان',status:'active',gender:'men',student_count:15,latitude:35.7202,longitude:51.4001},
+   {id:'club-south-women',name:'باشگاه جنوب بانوان',city:'شیراز',coach_name:'مربی نمونه',description:'تمرین شیراز',status:'active',gender:'women',latitude:29.6000,longitude:52.5000},
+   {id:'club-north-far',name:'باشگاه شمال دور',city:'تهران',coach_name:'مربی نمونه',description:'بیرون از شعاع پنج کیلومتر',status:'active',gender:'women',latitude:35.8000,longitude:51.4000},
+   {id:'club-north-no-coord',name:'باشگاه شمال بدون مختصات',city:'تهران',coach_name:'مربی نمونه',description:'مختصات هنوز ثبت نشده',status:'pending',gender:'women',student_count:8}
+  ];
+  let clubApiStatus=200,clubApiRequestUrl='';
+  await pg.route('**/__tp_test_api/clubs*',async route=>{
+   clubApiRequestUrl=route.request().url();
+   if(clubApiStatus!==200){await route.fulfill({status:clubApiStatus,contentType:'text/plain',body:'temporarily unavailable'});return}
+   await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({results:[...clubApiRows,clubApiRows[0],{name:'رکورد بدون شناسه',city:'تهران'}]})});
+  });
+  await pg.evaluate(()=>{window.TP_CLUBS_JSON_URL='/__tp_test_api/clubs';window.TP_NESHAN_WEB_KEY=''});
+  const filteredHash='#/clubs?query='+encodeURIComponent('باشگاه شمال')+'&city='+encodeURIComponent('تهران')+'&gender=women&radius_km=5&lat=35.72&lng=51.4';
+  await go(filteredHash);
+  await pg.waitForFunction(()=>document.querySelector('#tp-club-cards')?.dataset.source==='api');
+  const radiusIds=await pg.locator('#tp-club-cards [data-club-id]').evaluateAll(es=>es.map(e=>e.dataset.clubId));
+  const requestParams=new URL(clubApiRequestUrl).searchParams;
+  S.ok('باشگاه‌ها: دریافت API حتی بدون Web Key نشان',radiusIds.length===1&&radiusIds[0]==='club-north-women');
+  S.ok('باشگاه‌ها: اعمال جستجو/شهر/جنسیت/شعاع روی همان مجموعه داده',requestParams.get('query')==='باشگاه شمال'&&requestParams.get('city')==='تهران'&&requestParams.get('gender')==='women'&&requestParams.get('radius_km')==='5'&&requestParams.get('lat')==='35.72'&&requestParams.get('lng')==='51.4');
+  S.ok('باشگاه‌ها: رکوردهای نامعتبر و شناسه تکراری نادیده گرفته می‌شوند',(await pg.locator('#tp-club-notes').innerText()).includes('رکورد به‌دلیل شناسه/نام نامعتبر یا تکراری بودن شناسه نمایش داده نشد'));
+  S.ok('باشگاه‌ها: نبود Web Key دریافت و فهرست API را متوقف نمی‌کند',(await pg.locator('#tp-club-map-status').innerText()).includes('فهرست باشگاه‌ها دریافت شد'));
+  
+  await pg.evaluate(()=>{
+   window.TP_NESHAN_WEB_KEY='test-web-key';
+   window.L={
+    Map:class{constructor(id,options){this.id=id;this.options=options;this._markers=[];window.__tpFakeClubMap=this}remove(){this._removed=true}panTo(point){this._lastPan=point}setView(point,zoom){this._view={point,zoom}}fitBounds(bounds){this._bounds=bounds}invalidateSize(){}},
+    marker(point){return{point,addTo(map){this.map=map;map._markers.push(this);return this},bindPopup(html){this.popup=html;return this},openPopup(){return this}}},
+    featureGroup(markers){return{getBounds(){return{pad(){return{}}}}}}
+   };
+  });
+  await go('#/clubs?query='+encodeURIComponent('باشگاه شمال')+'&city='+encodeURIComponent('تهران')+'&gender=women');
+  await pg.waitForFunction(()=>window.__tpFakeClubMap&&window.__tpFakeClubMap._markers.length===2);
+  const apiCards=await pg.locator('#tp-club-cards[data-source="api"] [data-club-id]').evaluateAll(es=>es.map(e=>e.dataset.clubId));
+  const mapData=await pg.evaluate(()=>({ids:window.__tpFakeClubMap._markers.map(m=>m.point),status:document.getElementById('tp-club-map-status').innerText}));
+  S.ok('باشگاه‌ها: کارت‌ها از پاسخ واقعی API جایگزین داده نمونه می‌شوند',apiCards.length===3&&apiCards.includes('club-north-women')&&apiCards.includes('club-north-far')&&apiCards.includes('club-north-no-coord')&&!apiCards.includes('0'));
+  S.ok('باشگاه‌ها: فقط رکوردهای دارای مختصات معتبر نشانک می‌گیرند',mapData.ids.length===2&&mapData.status.includes('نشانک روی نقشه نمایش داده شد'));
+  await pg.locator('#tp-club-cards [data-club-id="club-north-women"]').hover();
+  S.ok('باشگاه‌ها: تعامل کارت و نشانک نقشه همگام است',await pg.evaluate(()=>Array.isArray(window.__tpFakeClubMap._lastPan)&&window.__tpFakeClubMap._lastPan[0]===35.7201));
+  S.ok('باشگاه‌ها: گزینه‌های شهر از داده API به فیلتر افزوده می‌شوند',await pg.locator('#tp-club-city option').evaluateAll(es=>es.some(e=>e.value==='شیراز')));
+  
+  clubApiStatus=503;
+  await go('#/clubs?query='+encodeURIComponent('باشگاه شمال'));
+  await pg.waitForFunction(()=>document.querySelector('#tp-club-cards')?.dataset.source==='error');
+  S.ok('باشگاه‌ها: خطای API به داده نمونه یا کارت‌های قدیمی سقوط نمی‌کند',await pg.locator('#tp-club-cards [data-club-id]').count()===0&&(await pg.locator('#tp-club-list-status').innerText()).includes('HTTP 503'));
+  
   await go('#/club/0');const clubDetail=await T();
-  S.ok('باشگاه‌ها: جزئیات بدون آدرس یا مختصات جعلی',clubDetail.includes('نشانی دقیق')&&clubDetail.includes('در دادهٔ نمونه ثبت نشده است.'));
+  S.ok('باشگاه‌ها: جزئیات نمونه بدون آدرس یا مختصات جعلی',clubDetail.includes('نشانی دقیق')&&clubDetail.includes('در دادهٔ نمونه ثبت نشده است.'));
  }
 
  S.ok('جم: نشان موجودی در هدر',await pg.locator('#hgem[href="#/gems"]').count()===1);
@@ -114,43 +164,157 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
  for(const r of ['#/coaches','#/tatamipedia','#/blog','#/store','#/product/2','#/cart','#/videos','#/dashboard','#/tournaments']){await p3.evaluate(x=>{location.hash=x},r);await wait(80);const n=await p3.evaluate(()=>[...document.querySelectorAll('#app button:not([disabled]),#app a.btn,#app .chip,#app select,#app input:not([type=checkbox]):not([type=file]),#nv a,header a,.tp-pager button')].filter(e=>{const b=e.getBoundingClientRect();return b.width>0&&(b.height<43.5||b.width<43.5)&&getComputedStyle(e).visibility!=='hidden'}).map(e=>(e.tagName+'.'+e.className+':'+Math.round(e.getBoundingClientRect().width)+'x'+Math.round(e.getBoundingClientRect().height)).slice(0,50)));if(n.length)small.push(r+' '+n.slice(0,3).join(','))}
  S.ok('اهداف لمسی ≥۴۴×۴۴ در کنترل‌های مهم (۳۶۰px)',!small.length,small.join(' ; '));await c3.close();
  return S}
-export async function runPwa(app,base,browser,altRoot){const S=new Suite('PWA-فنی '+app);
- const ctx=await browser.newContext({viewport:{width:390,height:800},serviceWorkers:'allow'});const pg=await ctx.newPage();await pg.goto(base+'/index.html');
+export async function runPwa(app,base,browser,altRoot){
+ const S=new Suite('PWA-فنی '+app);
+ const ctx=await browser.newContext({viewport:{width:390,height:800},serviceWorkers:'allow'});
+ const pg=await ctx.newPage();
+ await pg.goto(base+'/index.html');
  const neshanConfig=await pg.evaluate(async()=>{const r=await fetch('assets/neshan-config.js');return{status:r.status,text:await r.text()}});
  S.ok('تنظیمات نشان در خروجی PWA قابل دریافت است',neshanConfig.status===200&&neshanConfig.text.includes('TP_NESHAN_WEB_KEY')&&neshanConfig.text.includes('TP_CLUBS_JSON_URL'),String(neshanConfig.status));
  const man=await pg.evaluate(()=>fetch('manifest.webmanifest').then(r=>r.json()));
  S.ok('Manifest: fa/rtl/standalone/id/start_url/scope',man.lang==='fa'&&man.dir==='rtl'&&man.display==='standalone'&&man.scope==='./'&&man.id==='./'&&man.name.startsWith('Tatami Plus'),JSON.stringify([man.lang,man.dir,man.display,man.start_url]));
  S.ok('Manifest: آیکون ۱۹۲/۵۱۲/maskable',['192x192','512x512'].every(s=>man.icons.some(i=>i.sizes===s))&&man.icons.some(i=>i.purpose==='maskable'));
- let ok=true;for(const i of man.icons)if(await pg.evaluate(u=>fetch(u).then(r=>r.status),i.src)!==200)ok=false;S.ok('آیکون‌ها 200',ok);
+ let ok=true;
+ for(const i of man.icons)if(await pg.evaluate(u=>fetch(u).then(r=>r.status),i.src)!==200)ok=false;
+ S.ok('آیکون‌ها 200',ok);
  S.ok('offline.html موجود',await pg.evaluate(()=>fetch('offline.html').then(r=>r.status))===200);
- await pg.evaluate(()=>navigator.serviceWorker.ready.then(()=>1));await wait(900);await pg.reload();await wait(500);
- const keys=await pg.evaluate(()=>caches.keys());S.ok('Service Worker فعال و Cache نسخه‌دار ساخته شد',keys.length===1&&new RegExp('^tatami-'+app+'-[0-9a-f]{10}
- const cdp=await ctx.newCDPSession(pg);try{const r=await cdp.send('Page.getInstallabilityErrors');S.ok('Chromium: بدون خطای نصب‌پذیری (localhost)',!r.installabilityErrors.length,JSON.stringify(r.installabilityErrors))}catch(e){S.ok('Chromium installability',false,e.message)}
- await ctx.setOffline(true);try{await pg.reload({timeout:8000});await wait(400);S.ok('آفلاین: رفرش برنامه',await pg.evaluate(()=>document.getElementById('app').innerHTML.length)>500);await pg.evaluate(()=>{location.hash='#/tatamipedia/ippon'});await wait(100);S.ok('آفلاین: تاتامی‌پدیا',(await pg.evaluate(()=>document.getElementById('app').innerText)).includes('ایپون'));const offlineConfig=await pg.evaluate(async()=>{try{const r=await fetch('assets/neshan-config.js');return{status:r.status,text:await r.text()}}catch{return{status:0,text:''}}});S.ok('تنظیمات نشان در حالت آفلاین هم در دسترس است',offlineConfig.status===200&&offlineConfig.text.includes('TP_NESHAN_WEB_KEY'),String(offlineConfig.status))}catch(e){S.ok('آفلاین: رفرش',false,e.message.slice(0,80))}
- try{await pg.goto(base+'/coaches/sara-ahmadi/',{timeout:8000});await wait(700);S.ok('آفلاین: ورود مستقیم /coaches/<slug>/',(await pg.evaluate(()=>document.getElementById('app')&&document.getElementById('app').innerText)||'').includes('سارا احمدی'))}catch(e){S.ok('آفلاین: ورود مستقیم /coaches/<slug>/',false,e.message.slice(0,80))}
- await ctx.setOffline(false);
- // به‌روزرسانی: نسخه جدید Build ← نام Cache جدید، حذف Cache قدیمی، محتوای جدید
- if(altRoot){const before=keys[0];altRoot.use();await pg.goto(base+'/index.html');await wait(1200);await pg.reload();let after=[];for(let i=0;i<20;i++){await wait(400);after=await pg.evaluate(()=>caches.keys());if(after.length===1&&after[0]!==before)break}
-  S.ok('به‌روزرسانی: Cache نسخه جدید جایگزین قدیمی شد',after.length===1&&after[0]!==before,before+' → '+after.join());S.ok('به‌روزرسانی: محتوای نسخه جدید نمایش داده می‌شود',await pg.evaluate(()=>document.documentElement.outerHTML.includes('UPDATE_MARKER')));altRoot.reset()}
- // صفحه‌های پوششی و ریدایرکت‌ها
- const get=async p=>{const r=await pg.request.get(base+p,{maxRedirects:0});return{s:r.status(),t:await r.text()}};
- let r=await get('/coaches/');S.ok('/coaches/ ← صفحه پوششی به فهرست مربیان',r.s===200&&r.t.includes('#/coaches'));r=await get('/coaches');S.ok('/coaches (بدون اسلش) ← ریدایرکت ۳۰۱ به /coaches/',r.s===301);
- r=await get('/tatamipedia/ippon/');S.ok('صفحه پوششی اصطلاح: عنوان/توضیح و Redirect',r.s===200&&r.t.includes('ایپون')&&r.t.includes('og:title')&&r.t.includes('#/tatamipedia/ippon'));
- S.ok('صفحه پوششی بدون SITE_URL: canonical/og:url/og:image ساخته نمی‌شود (دامنه جعل نمی‌شود)',!r.t.includes('canonical')&&!r.t.includes('og:url')&&!r.t.includes('og:image'));
- await ctx.close();return S}
-).test(keys[0]),keys.join());
- const configCached=await pg.evaluate(async()=>{const names=await caches.keys();if(!names.length)return false;const cache=await caches.open(names[0]);const url=new URL('assets/neshan-config.js',location.href).toString();return!!(await cache.match(url))});
+ await pg.evaluate(()=>navigator.serviceWorker.ready.then(()=>1));
+ await wait(900);
+ await pg.reload();
+ await wait(500);
+ const keys=await pg.evaluate(()=>caches.keys());
+ S.ok('Service Worker فعال و Cache نسخه‌دار ساخته شد',keys.length===1&&new RegExp('^tatami-'+app+'-[0-9a-f]{10}$').test(keys[0]),keys.join());
+ const configCached=await pg.evaluate(async()=>{
+  const names=await caches.keys();
+  if(!names.length)return false;
+  const cache=await caches.open(names[0]);
+  const url=new URL('assets/neshan-config.js',location.href).toString();
+  return!!(await cache.match(url));
+ });
  S.ok('فایل تنظیمات نشان در Cache اولیه PWA ذخیره شده است',configCached);
- const cdp=await ctx.newCDPSession(pg);try{const r=await cdp.send('Page.getInstallabilityErrors');S.ok('Chromium: بدون خطای نصب‌پذیری (localhost)',!r.installabilityErrors.length,JSON.stringify(r.installabilityErrors))}catch(e){S.ok('Chromium installability',false,e.message)}
- await ctx.setOffline(true);try{await pg.reload({timeout:8000});await wait(400);S.ok('آفلاین: رفرش برنامه',await pg.evaluate(()=>document.getElementById('app').innerHTML.length)>500);await pg.evaluate(()=>{location.hash='#/tatamipedia/ippon'});await wait(100);S.ok('آفلاین: تاتامی‌پدیا',(await pg.evaluate(()=>document.getElementById('app').innerText)).includes('ایپون'))}catch(e){S.ok('آفلاین: رفرش',false,e.message.slice(0,80))}
- try{await pg.goto(base+'/coaches/sara-ahmadi/',{timeout:8000});await wait(700);S.ok('آفلاین: ورود مستقیم /coaches/<slug>/',(await pg.evaluate(()=>document.getElementById('app')&&document.getElementById('app').innerText)||'').includes('سارا احمدی'))}catch(e){S.ok('آفلاین: ورود مستقیم /coaches/<slug>/',false,e.message.slice(0,80))}
+ const cdp=await ctx.newCDPSession(pg);
+ try{
+  const r=await cdp.send('Page.getInstallabilityErrors');
+  S.ok('Chromium: بدون خطای نصب‌پذیری (localhost)',!r.installabilityErrors.length,JSON.stringify(r.installabilityErrors));
+ }catch(e){S.ok('Chromium installability',false,e.message)}
+ await ctx.setOffline(true);
+ try{
+  await pg.reload({timeout:8000});
+  await wait(400);
+  S.ok('آفلاین: رفرش برنامه',await pg.evaluate(()=>document.getElementById('app').innerHTML.length)>500);
+  await pg.evaluate(()=>{location.hash='#/tatamipedia/ippon'});
+  await wait(100);
+  S.ok('آفلاین: تاتامی‌پدیا',(await pg.evaluate(()=>document.getElementById('app').innerText)).includes('ایپون'));
+  const offlineConfig=await pg.evaluate(async()=>{
+   try{const r=await fetch('assets/neshan-config.js');return{status:r.status,text:await r.text()}}
+   catch{return{status:0,text:''}}
+  });
+  S.ok('تنظیمات نشان در حالت آفلاین هم در دسترس است',offlineConfig.status===200&&offlineConfig.text.includes('TP_NESHAN_WEB_KEY'),String(offlineConfig.status));
+ }catch(e){S.ok('آفلاین: رفرش',false,e.message.slice(0,80))}
+ try{
+  await pg.goto(base+'/coaches/sara-ahmadi/',{timeout:8000});
+  await wait(700);
+  S.ok('آفلاین: ورود مستقیم /coaches/<slug>/',(await pg.evaluate(()=>document.getElementById('app')&&document.getElementById('app').innerText)||'').includes('سارا احمدی'));
+ }catch(e){S.ok('آفلاین: ورود مستقیم /coaches/<slug>/',false,e.message.slice(0,80))}
  await ctx.setOffline(false);
- // به‌روزرسانی: نسخه جدید Build ← نام Cache جدید، حذف Cache قدیمی، محتوای جدید
- if(altRoot){const before=keys[0];altRoot.use();await pg.goto(base+'/index.html');await wait(1200);await pg.reload();let after=[];for(let i=0;i<20;i++){await wait(400);after=await pg.evaluate(()=>caches.keys());if(after.length===1&&after[0]!==before)break}
-  S.ok('به‌روزرسانی: Cache نسخه جدید جایگزین قدیمی شد',after.length===1&&after[0]!==before,before+' → '+after.join());S.ok('به‌روزرسانی: محتوای نسخه جدید نمایش داده می‌شود',await pg.evaluate(()=>document.documentElement.outerHTML.includes('UPDATE_MARKER')));altRoot.reset()}
- // صفحه‌های پوششی و ریدایرکت‌ها
+ if(altRoot){
+  const before=keys[0];
+  altRoot.use();
+  await pg.goto(base+'/index.html');
+  await wait(1200);
+  await pg.reload();
+  let after=[];
+  for(let i=0;i<20;i++){
+   await wait(400);
+   after=await pg.evaluate(()=>caches.keys());
+   if(after.length===1&&after[0]!==before)break;
+  }
+  S.ok('به‌روزرسانی: Cache نسخه جدید جایگزین قدیمی شد',after.length===1&&after[0]!==before,before+' → '+after.join());
+  S.ok('به‌روزرسانی: محتوای نسخه جدید نمایش داده می‌شود',await pg.evaluate(()=>document.documentElement.outerHTML.includes('UPDATE_MARKER')));
+  altRoot.reset();
+ }
  const get=async p=>{const r=await pg.request.get(base+p,{maxRedirects:0});return{s:r.status(),t:await r.text()}};
- let r=await get('/coaches/');S.ok('/coaches/ ← صفحه پوششی به فهرست مربیان',r.s===200&&r.t.includes('#/coaches'));r=await get('/coaches');S.ok('/coaches (بدون اسلش) ← ریدایرکت ۳۰۱ به /coaches/',r.s===301);
- r=await get('/tatamipedia/ippon/');S.ok('صفحه پوششی اصطلاح: عنوان/توضیح و Redirect',r.s===200&&r.t.includes('ایپون')&&r.t.includes('og:title')&&r.t.includes('#/tatamipedia/ippon'));
+ let r=await get('/coaches/');
+ S.ok('/coaches/ ← صفحه پوششی به فهرست مربیان',r.s===200&&r.t.includes('#/coaches'));
+ r=await get('/coaches');
+ S.ok('/coaches (بدون اسلش) ← ریدایرکت ۳۰۱ به /coaches/',r.s===301);
+ r=await get('/tatamipedia/ippon/');
+ S.ok('صفحه پوششی اصطلاح: عنوان/توضیح و Redirect',r.s===200&&r.t.includes('ایپون')&&r.t.includes('og:title')&&r.t.includes('#/tatamipedia/ippon'));
  S.ok('صفحه پوششی بدون SITE_URL: canonical/og:url/og:image ساخته نمی‌شود (دامنه جعل نمی‌شود)',!r.t.includes('canonical')&&!r.t.includes('og:url')&&!r.t.includes('og:image'));
- await ctx.close();return S}
+ await ctx.close();
+ return S;
+}
+
+
+export async function runClubs(app,base,browser){
+ const S=new Suite('Club list/map '+app);
+ const ctx=await browser.newContext({viewport:{width:390,height:850},serviceWorkers:'block'});
+ const pg=await ctx.newPage();
+ const errors=[];
+ pg.on('pageerror',e=>errors.push(String(e)));
+ await pg.goto(base+'/index.html');
+ await wait(250);
+ const go=async hash=>{await pg.evaluate(h=>{location.hash=h},hash);await wait(100)};
+ const txt=()=>pg.locator('#app').innerText();
+ await go('#/clubs');
+ const sample=await pg.locator('#tp-club-cards[data-source="sample"] [data-club-id]').count();
+ S.ok('داده نمونه: شش کارت با برچسب نمونه',sample===6&&(await txt()).includes('داده‌های نمونه'));
+ S.ok('داده نمونه: فیلتر جنسیت و شعاع بدون API غیرفعال‌اند',await pg.locator('#tp-club-gender').isDisabled()&&await pg.locator('#tp-club-radius').isDisabled());
+ S.ok('داده نمونه: مختصات و فاصله ساختگی نمایش داده نمی‌شود',!(await pg.locator('#tp-club-cards').innerText()).includes('کیلومتر')&&(await txt()).includes('مختصات جغرافیایی در دادهٔ نمونه ثبت نشده است'));
+ const rows=[
+  {id:'club-north-women',name:'باشگاه شمال بانوان',city:'تهران',coach_name:'سارا احمدی',description:'تمرین بانوان در شمال تهران',status:'registration_open',gender:'women',student_count:20,schedule:'شنبه و دوشنبه',latitude:35.7201,longitude:51.4001},
+  {id:'club-north-men',name:'باشگاه شمال آقایان',city:'تهران',coach_name:'رضا کیانی',description:'تمرین آقایان',status:'active',gender:'men',student_count:15,latitude:35.7202,longitude:51.4001},
+  {id:'club-south-women',name:'باشگاه جنوب بانوان',city:'شیراز',coach_name:'مربی نمونه',description:'تمرین شیراز',status:'active',gender:'women',latitude:29.6000,longitude:52.5000},
+  {id:'club-north-far',name:'باشگاه شمال دور',city:'تهران',coach_name:'مربی نمونه',description:'بیرون از شعاع پنج کیلومتر',status:'active',gender:'women',latitude:35.8000,longitude:51.4000},
+  {id:'club-north-no-coord',name:'باشگاه شمال بدون مختصات',city:'تهران',coach_name:'مربی نمونه',description:'مختصات هنوز ثبت نشده',status:'pending',gender:'women',student_count:8}
+ ];
+ let status=200,requestUrl='';
+ await pg.route('**/__tp_test_api/clubs*',async route=>{
+  requestUrl=route.request().url();
+  if(status!==200){await route.fulfill({status,contentType:'text/plain',body:'temporarily unavailable'});return}
+  await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({results:[...rows,rows[0],{name:'رکورد بدون شناسه',city:'تهران'}]})});
+ });
+ await pg.evaluate(()=>{window.TP_CLUBS_JSON_URL='/__tp_test_api/clubs';window.TP_NESHAN_WEB_KEY=''});
+ const filtered='#/clubs?query='+encodeURIComponent('باشگاه شمال')+'&city='+encodeURIComponent('تهران')+'&gender=women&radius_km=5&lat=35.72&lng=51.4';
+ await go(filtered);
+ await pg.waitForFunction(()=>document.querySelector('#tp-club-cards')?.dataset.source==='api');
+ const selected=await pg.locator('#tp-club-cards [data-club-id]').evaluateAll(es=>es.map(e=>e.dataset.clubId));
+ const params=new URL(requestUrl).searchParams;
+ S.ok('API بدون Web Key: فهرست همچنان بارگذاری می‌شود',selected.length===1&&selected[0]==='club-north-women'&&(await pg.locator('#tp-club-map-status').innerText()).includes('فهرست باشگاه‌ها دریافت شد'));
+ S.ok('فیلتر ترکیبی: جستجو، شهر، جنسیت و شعاع',params.get('query')==='باشگاه شمال'&&params.get('city')==='تهران'&&params.get('gender')==='women'&&params.get('radius_km')==='5'&&params.get('lat')==='35.72'&&params.get('lng')==='51.4');
+ S.ok('اعتبارسنجی: شناسه تکراری و رکورد ناقص حذف می‌شوند',(await pg.locator('#tp-club-notes').innerText()).includes('شناسه/نام نامعتبر یا تکراری بودن شناسه'));
+ await pg.evaluate(()=>{
+  window.TP_NESHAN_WEB_KEY='test-web-key';
+  window.L={
+   Map:class{constructor(id,options){this.id=id;this.options=options;this._markers=[];window.__tpFakeClubMap=this}remove(){this._removed=true}panTo(point){this._lastPan=point}setView(point,zoom){this._view={point,zoom}}fitBounds(bounds){this._bounds=bounds}invalidateSize(){}},
+   marker(point){return{point,addTo(map){this.map=map;map._markers.push(this);return this},bindPopup(html){this.popup=html;return this},openPopup(){return this}}},
+   featureGroup(markers){return{getBounds(){return{pad(){return{}}}}}}
+  };
+ });
+ await go('#/clubs?query='+encodeURIComponent('باشگاه شمال')+'&city='+encodeURIComponent('تهران')+'&gender=women');
+ await pg.waitForFunction(()=>window.__tpFakeClubMap&&window.__tpFakeClubMap._markers.length===2);
+ const cards=await pg.locator('#tp-club-cards[data-source="api"] [data-club-id]').evaluateAll(es=>es.map(e=>e.dataset.clubId));
+ const markers=await pg.evaluate(()=>({points:window.__tpFakeClubMap._markers.map(m=>m.point),status:document.getElementById('tp-club-map-status').innerText}));
+ S.ok('همگامی فهرست و نقشه: کارت‌ها از پاسخ API',cards.length===3&&cards.includes('club-north-women')&&cards.includes('club-north-far')&&cards.includes('club-north-no-coord')&&!cards.includes('0'));
+ S.ok('مختصات: فقط دو رکورد معتبر نشانک می‌گیرند',markers.points.length===2&&markers.status.includes('نشانک روی نقشه نمایش داده شد'));
+ await pg.locator('#tp-club-cards [data-club-id="club-north-women"]').hover();
+ S.ok('تعامل: انتخاب کارت، نقشه را به مختصات همان باشگاه می‌برد',await pg.evaluate(()=>Array.isArray(window.__tpFakeClubMap._lastPan)&&window.__tpFakeClubMap._lastPan[0]===35.7201));
+ S.ok('شهرها: شهرهای API به انتخاب‌گر افزوده می‌شوند',await pg.locator('#tp-club-city option').evaluateAll(es=>es.some(e=>e.value==='شیراز')));
+ status=503;
+ await go('#/clubs?query='+encodeURIComponent('باشگاه شمال'));
+ await pg.waitForFunction(()=>document.querySelector('#tp-club-cards')?.dataset.source==='error');
+ S.ok('خطای API: بدون برگشت پنهانی به داده نمونه',await pg.locator('#tp-club-cards [data-club-id]').count()===0&&(await pg.locator('#tp-club-list-status').innerText()).includes('HTTP 503'));
+ await go('#/club/0');
+ const detail=await txt();
+ S.ok('جزئیات نمونه: بدون نشانی یا مختصات جعلی',detail.includes('نشانی دقیق')&&detail.includes('در دادهٔ نمونه ثبت نشده است.'));
+ await go('#/clubs');
+ for(const width of [320,360,390]){
+  await pg.setViewportSize({width,height:850});
+  await wait(80);
+  const overflow=await pg.evaluate(()=>({yes:document.documentElement.scrollWidth>document.documentElement.clientWidth,viewport:document.documentElement.clientWidth,document:document.documentElement.scrollWidth,nodes:[...document.querySelectorAll('body *')].map(e=>({tag:e.tagName,id:e.id,cls:String(e.className||'').slice(0,90),left:Math.round(e.getBoundingClientRect().left),right:Math.round(e.getBoundingClientRect().right),width:Math.round(e.getBoundingClientRect().width),scroll:e.scrollWidth,client:e.clientWidth})).filter(x=>x.width>0&&(x.right>document.documentElement.clientWidth+1||x.left< -1||x.scroll>x.client+2)).slice(0,12)}));
+  S.ok('واکنش‌گرایی صفحه باشگاه‌ها در '+width+'px',!overflow.yes,JSON.stringify(overflow));
+ }
+ S.ok('بدون خطای JavaScript در صفحه باشگاه‌ها',errors.length===0,errors.join(' | '));
+ await ctx.close();
+ return S;
+}

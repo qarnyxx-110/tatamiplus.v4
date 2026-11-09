@@ -40,6 +40,18 @@ jobs:
         with:
           node-version: "24"
 
+      - name: Install browser-test dependencies
+        working-directory: shared
+        run: |
+          npm install --no-package-lock --no-audit --no-fund
+          npx playwright install --with-deps chromium
+
+      - name: Run focused clubs and map browser tests
+        working-directory: shared
+        env:
+          ONLY: clubs
+        run: npm test
+
       - name: Remove stale Preview output
         working-directory: shared
         run: rm -rf dist/preview
