@@ -57,11 +57,11 @@ jobs:
           if (!html.includes('<main id="app"></main>')) {
             throw new Error("Preview app mount point is missing.");
           }
-          const scripts = [...html.matchAll(/<script>([\\s\\S]*?)<\\/script>/g)];
+          const scripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)];
           if (scripts.length === 0) {
             throw new Error("No inline application script was generated.");
           }
-          fs.writeFileSync("/tmp/tatami-preview-inline.js", scripts.map(match => match[1]).join("\\n"));
+          fs.writeFileSync("/tmp/tatami-preview-inline.js", scripts.map(match => match[1]).join("\n"));
           JSON.parse(fs.readFileSync("dist/preview/assets/images/manifest.json", "utf8"));
           NODE
           node --check /tmp/tatami-preview-inline.js
