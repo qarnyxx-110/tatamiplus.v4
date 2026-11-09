@@ -9,13 +9,13 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
  // --- مسیرهای معتبر/نامعتبر
  const valid=['#/','#/store','#/store/','#/product/3','#/product?id=3','#/video/3','#/video?id=3','#/blog','#/blog/uchi-mata-basics','#/blog/2','#/tournaments','#/tournament/1','#/instructor/1','#/academy','#/profile','#/cart','#/dashboard','#/videos','#/search','#/coaches','#/coaches/sara-ahmadi','#/sponsors','#/tatamipedia','#/tatamipedia/ippon','#/tatamipedia?q=ippon&cat=refereeing','#/blog?page=2'];
  const bad=[];for(const r of valid){await go(r);if(await nf())bad.push(r)}S.ok('مسیرهای معتبر 404 نمی‌دهند ('+valid.length+' مسیر)',!bad.length,bad.join(' '));
- const invalid=['#/store/x/y','#/product/abc','#/product/1/2','#/product/999','#/product','#/product/','#/video/','#/video/99','#/video?id=','#/tournament/abc','#/tournament/99','#/tournament/','#/instructor/99','#/instructor/','#/blog/not-a-real-slug','#/blog/a/b','#/coaches/nobody','#/coaches/','#/coaches/a/b','#/tatamipedia/nobody','#/tatamipedia/','#/tatamipedia/a/b','#/nonexistent','#/a/b/c/d/e','#/'+'x'.repeat(420),'#store','#/club/99'];
+ const invalid=['#/courses/unknown','#/episode/unknown-lesson-1','#/store/x/y','#/product/abc','#/product/1/2','#/product/999','#/product','#/product/','#/video/','#/video/99','#/video?id=','#/tournament/abc','#/tournament/99','#/tournament/','#/instructor/99','#/instructor/','#/blog/not-a-real-slug','#/blog/a/b','#/coaches/nobody','#/coaches/','#/coaches/a/b','#/tatamipedia/nobody','#/tatamipedia/','#/tatamipedia/a/b','#/nonexistent','#/a/b/c/d/e','#/'+'x'.repeat(420),'#store','#/club/99'];
  const wrong=[];for(const r of invalid){await go(r);if(!await nf())wrong.push(r.slice(0,40))}S.ok('مسیرهای نامعتبر همه 404 دارند ('+invalid.length+' مسیر)',!wrong.length,wrong.join(' '));
  await go('#/zzz');S.ok('404: دکمه «بازگشت به صفحه اصلی»',await pg.evaluate(()=>!!document.querySelector('#app a[href="#/"]')&&/بازگشت به صفحه اصلی/.test(document.getElementById('app').innerText)));
  // --- نقش‌ها
  const dwrong=[];for(const r of denied){await go(r);if(!await nf())dwrong.push(r)}S.ok('مسیرهای ممنوع این نقش 404 می‌دهند',!dwrong.length,dwrong.join(' '));
  await go('#/');const nav=await pg.evaluate(()=>[...document.querySelectorAll('#nv a')].map(a=>a.textContent.trim()));
- S.ok('منو: بلاگ، تاتامی‌پدیا، مربیان، حامیان',['بلاگ','تاتامی‌پدیا','مربیان تاتامی','حامیان تاتامی پلاس'].every(x=>nav.includes(x)),nav.join('|'));
+ S.ok('منو: بلاگ، تاتامی‌پدیا، مربیان، حامیان',['بلاگ','تاتامی‌پدیا','مربیان تاتامی','حامیان تاتامی پلاس'].every(x=>nav.includes(x)),nav.join('|'));S.ok('منو: دوره‌های آموزشی',nav.includes('دوره‌ها'),nav.join('|'));
  S.ok('منو: «باشگاه‌ها» فقط برای هنرجو/باشگاه',(app==='coach')?!nav.includes('باشگاه‌ها'):nav.includes('باشگاه‌ها'));
  const foot=await pg.evaluate(()=>[...document.querySelectorAll('footer a')].map(a=>a.textContent.trim()));S.ok('فوتر: لینک تاتامی‌پدیا و حامیان، بدون «سیستم طراحی»',foot.includes('تاتامی‌پدیا')&&foot.includes('حامیان تاتامی پلاس')&&!foot.includes('سیستم طراحی'),foot.join('|'));
  await go('#/my-profile');S.ok('«پروفایل من» فقط در PWA مربی',(app==='coach')?!await nf():await nf());
@@ -66,6 +66,13 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
  await go('#/product/'+await pg.evaluate(()=>P.find(p=>p.ref&&!p.sz.length&&!p.cl.length).id));S.ok('جزئیات: محصول بدون رنگ/سایز، بخش رنگ نمایش داده نمی‌شود و افزودن به سبد کار می‌کند',!(await T()).includes('\nرنگ\n')&&await pg.evaluate(()=>{addP();return JSON.parse(localStorage.getItem('cart')).length>=1}));
  await go('#/cart');S.ok('سبد: محصول کاتالوگ با یادداشت قیمت مرجع',(await T()).includes('قیمت مرجع'));
  await pg.evaluate(()=>localStorage.clear());
+
+ // --- کاتالوگ دوره‌های نمایشی Preview
+ await go('#/courses');S.ok('دوره‌ها: فهرست سه دوره نمونه',await cnt('#app .tp-course-card')===3);
+ await go('#/courses/judo-foundations');t=await T();S.ok('دوره‌ها: جزئیات، مربی و قسمت‌ها',t.includes('آشنایی با فنون پایه جودو')&&t.includes('فهرست قسمت‌ها')&&t.includes('ثبت‌نام و خرید در این نسخه انجام نمی‌شود.'));
+ S.ok('دوره‌ها: ثبت‌نام واقعی غیرفعال است',await pg.locator('#app button[disabled]').count()===1);
+ await go('#/episode/judo-foundations-lesson-1');t=await T();S.ok('قسمت دوره: معرفی نمونه بدون ویدئوی ساختگی',t.includes('پخش ویدئو در پیش‌نمایش فعال نیست')&&await cnt('#app video')===0);
+ await go('#/episode/not-a-course-lesson-1');S.ok('قسمت نامعتبر به صفحه ۴۰۴ می‌رود',await nf());
 
  // --- وبلاگ
  await go('#/blog');S.ok('بلاگ: صفحه اول ۶ مقاله + صفحه‌بندی',await cnt('#app article')===6&&await cnt('.tp-pager')===1);
