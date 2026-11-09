@@ -14,12 +14,14 @@
               <a href="{% url 'store:product_detail' item.variant.product.slug %}"><b>{{ item.variant.product.name }}</b></a>
               <div class="mu sm">{% if item.variant.size %}سایز {{ item.variant.size }}{% endif %}{% if item.variant.size and item.variant.color %} · {% endif %}{% if item.variant.color %}رنگ {{ item.variant.color }}{% endif %}</div>
               <div class="mu sm">{{ item.variant.price|price_fa }} × {{ item.quantity|price_fa }} = <b>{{ item.subtotal|price_fa }}</b></div>
-              {% if not item.available %}<p class="tp-error-text">این تنوع ناموجود است یا تعداد آن باید اصلاح شود.</p>{% endif %}
+              {% if not item.available %}<p class="tp-error-text" role="status">این تنوع ناموجود است یا تعداد آن باید اصلاح شود. در صورت ناموجود بودن، قلم را حذف کنید.</p>{% endif %}
               <div class="cr">
-                <form class="tp-qty" method="post" action="{% url 'store:update_cart_item' item.pk %}">
+                <form class="tp-qty" method="post" action="{% url 'store:update_cart_item' item.pk %}" data-quantity-form>
                   {% csrf_token %}
                   <label for="quantity-{{ item.pk }}">تعداد</label>
-                  <input id="quantity-{{ item.pk }}" name="quantity" type="number" inputmode="numeric" min="1" max="{{ item.variant.stock_quantity }}" value="{{ item.quantity }}" required>
+                  <button class="btn o s" type="button" data-qty-step="-1" aria-label="کاهش تعداد {{ item.variant.product.name }}" hidden>−</button>
+                  <input id="quantity-{{ item.pk }}" name="quantity" type="number" inputmode="numeric" dir="ltr" min="1" max="{{ item.variant.stock_quantity }}" value="{{ item.quantity }}" required>
+                  <button class="btn o s" type="button" data-qty-step="1" aria-label="افزایش تعداد {{ item.variant.product.name }}" hidden>+</button>
                   <button class="btn o s" type="submit">به‌روزرسانی</button>
                 </form>
                 <form method="post" action="{% url 'store:remove_cart_item' item.pk %}">
@@ -34,7 +36,7 @@
       <aside class="d-c" aria-label="خلاصهٔ سبد">
         <h2 style="font-size:var(--tp-font-size-lg)">خلاصهٔ سبد</h2>
         <div class="rw2"><b>جمع سبد</b><b>{{ cart.total|price_fa }}</b></div>
-        <p class="tp-note">ثبت سفارش و پرداخت در این مرحله فعال نیست. واحد پول هنوز نهایی نشده است.</p>
+        <p class="tp-note">ثبت سفارش، انتخاب آدرس و پرداخت آنلاین هنوز در بک‌اند فعال نشده‌اند. مبلغ بالا صرفاً جمع اقلام موجود در سبد است.</p>
         <a class="btn o" style="width:100%" href="{% url 'store:product_list' %}">ادامهٔ خرید</a>
       </aside>
     </div>
