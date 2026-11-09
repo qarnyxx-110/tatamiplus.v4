@@ -24,12 +24,8 @@ permissions:
 
 jobs:
   build:
-    name: Build preview
+    name: Build and validate preview
     runs-on: ubuntu-latest
-    env:
-      FTP_SERVER: ${{ secrets.FTP_SERVER }}
-      FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
-      FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
 
     steps:
       - name: Check out source
@@ -66,12 +62,38 @@ jobs:
           NODE
           node --check /tmp/tatami-preview-inline.js
 
+      - name: Upload built Preview artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tatami-preview
+          path: shared/dist/preview/
+          if-no-files-found: error
+          retention-days: 3
+
+  deploy:
+    name: Publish Preview to cPanel
+    needs: build
+    if: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    env:
+      FTP_SERVER: ${{ secrets.FTP_SERVER }}
+      FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+      FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+
+    steps:
       - name: Skip upload until cPanel secrets are configured
-        if: ${{ github.event_name != 'pull_request' && (env.FTP_SERVER == '' || env.FTP_USERNAME == '' || env.FTP_PASSWORD == '') }}
+        if: ${{ env.FTP_SERVER == '' || env.FTP_USERNAME == '' || env.FTP_PASSWORD == '' }}
         run: echo "::notice::Build passed. Add FTP_SERVER, FTP_USERNAME, and FTP_PASSWORD repository secrets to enable cPanel publishing."
 
+      - name: Download built Preview artifact
+        if: ${{ env.FTP_SERVER != '' && env.FTP_USERNAME != '' && env.FTP_PASSWORD != '' }}
+        uses: actions/download-artifact@v4
+        with:
+          name: tatami-preview
+          path: ./release
+
       - name: Deploy preview to the restricted cPanel FTP directory
-        if: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && env.FTP_SERVER != '' && env.FTP_USERNAME != '' && env.FTP_PASSWORD != '' }}
+        if: ${{ env.FTP_SERVER != '' && env.FTP_USERNAME != '' && env.FTP_PASSWORD != '' }}
         uses: SamKirkland/FTP-Deploy-Action@v4.4.0
         with:
           server: ${{ secrets.FTP_SERVER }}
@@ -79,7 +101,7 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           protocol: ftps
           port: ${{ vars.FTP_PORT || '21' }}
-          local-dir: ./shared/dist/preview/
+          local-dir: ./release/
           server-dir: ./
           dangerous-clean-slate: false
           security: strict
