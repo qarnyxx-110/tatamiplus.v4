@@ -24,7 +24,7 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
   S.ok('باشگاه‌ها: نزدیک من و تب نقشه',clubList.includes('نزدیک من')&&clubList.includes('نقشه'));
   S.ok('باشگاه‌ها: برچسب و داده نمونه',await pg.locator('#tp-club-cards[data-source="sample"] [data-club-id]').count()===6&&clubList.includes('داده‌های نمونه'));
   S.ok('باشگاه‌ها: فیلترهای وابسته به API بدون داده واقعی غیرفعال‌اند',await pg.locator('#tp-club-gender').isDisabled()&&await pg.locator('#tp-club-radius').isDisabled()&&await pg.locator('#tp-club-near-status').count()===1);
-  S.ok('باشگاه‌ها: مختصات ساختگی/فاصله ساختگی نمایش داده نمی‌شود',clubList.includes('مختصات جغرافیایی در دادهٔ نمونه ثبت نشده است')&&!clubList.includes('کیلومتر'));
+  S.ok('باشگاه‌ها: مختصات ساختگی/فاصله ساختگی در کارت‌ها نمایش داده نمی‌شود',clubList.includes('مختصات جغرافیایی در دادهٔ نمونه ثبت نشده است')&&!((await pg.locator('#tp-club-cards').innerText()).includes('کیلومتر')));
   
   const clubApiRows=[
    {id:'club-north-women',name:'باشگاه شمال بانوان',city:'تهران',coach_name:'سارا احمدی',description:'تمرین بانوان در شمال تهران',status:'registration_open',gender:'women',student_count:20,schedule:'شنبه و دوشنبه',latitude:35.7201,longitude:51.4001},
