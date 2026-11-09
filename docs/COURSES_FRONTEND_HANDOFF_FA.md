@@ -25,50 +25,26 @@ URL nameهای club:* و coaches:courses/coaches:course_form در بک‌اند 
 
 ## فیلدهای context مورد استفاده
 
-### فهرست دوره‌ها
+فهرست دوره‌ها: هر course دارای slug, title, level, level_label, episode_count, short_description, price, currency_label, cover_url یا cover_image, first_episode_free و coach باشد. هر coach دارای slug, display_name و photo_url یا photo باشد. levels زوج‌های value/label، filters دیکشنری q/coach/level و page_obj شیء Django Paginator است. Query stringهای مصرفی q, coach, level, page هستند.
 
-هر course باید دارای slug, title, level, level_label, episode_count, short_description, price, currency_label, cover_url یا cover_image, first_episode_free و coach باشد.
-هر coach باید دارای slug, display_name و photo_url یا photo باشد.
-levels یک لیست از زوج‌های value/label است؛ filters دیکشنری q, coach, level است؛ page_obj شیء Django Paginator است.
-Query stringهای مصرفی: q, coach, level, page.
+صفحهٔ مربی: coach دارای display_name, slug, headline, biography, photo_url یا photo, level_label و specialty_label است. courses و page_obj مانند صفحهٔ فهرست هستند.
 
-### معرفی مربی و دوره‌ها
+جزئیات دوره: course دارای slug, title, description, level, level_label, episode_count, price, currency_label, cover_url یا cover_image, cover_alt, first_episode_free و coach باشد. episodes مجموعه‌ای از قسمت‌ها با slug, title, order, duration, is_free و can_watch است. is_enrolled یک boolean و first_watchable_episode اولین قسمت قابل تماشای این کاربر یا None است. مسیر خرید club:course_purchase با پارامتر slug به‌صورت اختیاری reverse می‌شود؛ در نبود این URL، دکمهٔ خرید غیرفعال است.
 
-coach باید دارای display_name, slug, headline, biography, photo_url یا photo, level_label و specialty_label باشد. courses و page_obj مانند صفحهٔ فهرست هستند.
+صفحهٔ قسمت: episode دارای slug, title, description, duration, can_watch و در صورت مجاز بودن video_url یا video است؛ video_mime_type و poster_url اختیاری‌اند. episodes فهرست تمام قسمت‌ها و next_episode قسمت بعدی یا None است. فایل ویدئو تنها وقتی episode.can_watch درست است در عنصر video با controls، controlsList="nodownload" و playsinline قرار می‌گیرد.
 
-### جزئیات دوره
+پنل دوره‌های مربی: courses هر مورد دارای title, status (draft, review, published), level, level_label, episode_count, updated_at_jalali, edit_url و در صورت انتشار public_url باشد. page_obj برای صفحه‌بندی اختیاری است.
 
-course باید دارای slug, title, description, level, level_label, episode_count, price, currency_label, cover_url یا cover_image, cover_alt, first_episode_free و coach باشد.
-episodes مجموعه‌ای از قسمت‌ها با slug, title, order, duration, is_free و can_watch است.
-is_enrolled یک boolean است؛ first_watchable_episode اولین قسمت قابل تماشای این کاربر یا None است.
-برای مسیر خرید، نام club:course_purchase و پارامتر slug به‌صورت اختیاری reverse می‌شود. در نبود این URL، دکمهٔ خرید غیرفعال است.
+فرم دوره: form یک Django Form دوره است. نام‌های پیشنهادی title, description, level, price, cover_image, status هستند. episode_formset یک inline formset دارای management_form، فیلد hidden به نام order و فیلد video_file برای هر قسمت است. فیلدهای پیشنهادی title, description, is_free, order, video_file و can_delete=True هستند. برای آپلود، video_allowed_extensions لیستی مانند ['.mp4', '.webm'] و video_max_size_bytes سقف بایت تأییدشدهٔ سمت سرور باشد. این مقادیر نمونهٔ تنظیم‌اند و باید با محدودیت واقعی سرور یکسان شوند. view باید multipart/form-data، request.FILES، اعتبارسنجی فرمت/اندازه، ذخیرهٔ فایل و formset، و رندر خطاهای Django را پشتیبانی کند. XHR در فرانت‌اند فقط برای نمایش progress است.
 
-### صفحهٔ قسمت
-
-episode دارای slug, title, description, duration, can_watch و در صورت مجاز بودن video_url یا video است؛ video_mime_type و poster_url اختیاری‌اند.
-episodes فهرست تمام قسمت‌ها و next_episode قسمت بعدی یا None است.
-فایل ویدئو تنها وقتی episode.can_watch درست است در عنصر video با controls، controlsList="nodownload" و playsinline قرار می‌گیرد.
-
-### پنل دوره‌های مربی
-
-courses هر مورد دارای title, status (draft, review, published), level, level_label, episode_count, updated_at, edit_url و در صورت انتشار public_url باشد.
-page_obj برای صفحه‌بندی اختیاری است.
-
-### فرم دوره و قسمت‌ها
-
-form یک Django Form دوره است. نام‌های پیشنهادی: title, description, level, price, cover_image, status.
-episode_formset یک inline formset دارای management_form، فیلد hidden به نام order و فیلد video_file برای هر قسمت است. فیلدهای پیشنهادی قسمت: title, description, is_free, order, video_file؛ can_delete=True.
-برای آپلود، video_allowed_extensions باید لیستی مانند ['.mp4', '.webm'] و video_max_size_bytes سقف بایت تأییدشدهٔ سمت سرور باشد. این مقادیر نمونهٔ تنظیم‌اند و باید با محدودیت واقعی سرور یکسان شوند.
-view باید multipart/form-data، request.FILES، اعتبارسنجی فرمت/اندازه، ذخیرهٔ فایل و formset، و رندر خطاهای Django را پشتیبانی کند. XHR در فرانت‌اند فقط برای نمایش progress است.
-
-## اقلامی که بک‌اند باید پیش از فعال‌سازی تأیید کند
+## موارد موردنیاز بک‌اند پیش از فعال‌سازی
 
 1. ساختار مدل Course و Episode، مالکیت مربی، وضعیت‌های draft/review/published و قواعد انتشار.
 2. رابطهٔ ثبت‌نام/خرید و منبع حقیقت is_enrolled و episode.can_watch.
 3. قیمت و واحد پول و route خرید؛ این UI پرداخت یا سفارش واقعی ایجاد نمی‌کند.
-4. مسیر امن ذخیره‌سازی/دریافت ویدئو، فرمت‌های مجاز و حداکثر حجم؛ فایل خصوصی نباید با مسیر عمومی و بدون کنترل مجوز ارائه شود.
+4. مسیر امن ذخیره‌سازی/دریافت ویدئو، فرمت‌های مجاز و حداکثر حجم؛ فایل خصوصی نباید بدون کنترل مجوز از مسیر عمومی ارائه شود.
 5. URLها، نام فیلدهای Form/FormSet و قواعد مجوز برای ایجاد/ویرایش دوره.
-6. سیاست قسمت رایگان؛ پیشنهاد template این است که is_free و permission نهایی در view لحاظ شوند، نه اینکه شمارهٔ قسمت در JavaScript ملاک شود.
+6. سیاست قسمت رایگان؛ is_free و permission نهایی باید در view لحاظ شوند، نه شمارهٔ قسمت در JavaScript.
 
 ## امنیت و اعتبارسنجی
 
