@@ -1,6 +1,6 @@
 // اجرای کامل: Build → سرورها → تست هر PWA → پنل مارکتینگ. خروجی: test-results/summary.md و results.json
 import fs from 'node:fs';import path from 'node:path';import os from 'node:os';import {spawn} from 'node:child_process';
-import {pw,serve,build,wait} from './helpers.mjs';import {runPublic,runPwa,runClubs} from './public.test.mjs';import {runMarketingApi,runMarketingDemo} from './marketing.test.mjs';
+import {pw,serve,build,wait} from './helpers.mjs';import {runPublic,runPwa,runClubs,runPreview} from './public.test.mjs';import {runMarketingApi,runMarketingDemo} from './marketing.test.mjs';
 const tmp=fs.mkdtempSync(path.join(os.tmpdir(),'tp-test-')),MOCK=+process.env.MOCK_PORT||8601,A=path.join(tmp,'a'),B=path.join(tmp,'b'),API=path.join(tmp,'api'),PUB=path.join(tmp,'pub'),SITE=path.join(tmp,'site');
 console.log('Build…');build(A);build(B,{TP_API_BASE:'/__build_b__'});build(API,{TP_API_BASE:'/api/v1'});build(PUB,{TP_API_BASE:`http://127.0.0.1:${MOCK}/api/v1`});build(SITE,{SITE_URL:'https://example.test'});
 // نسخه B: شبیه‌سازی انتشار نسخه جدید (برای تست به‌روزرسانی Service Worker)
@@ -15,6 +15,11 @@ try{
    out.push(await runClubs(app,srv.url,browser));
    await srv.close();
   }
+ }else if(process.env.ONLY==='preview'){
+  const srv=await serve(path.join(A,'preview'));
+  console.log('→ Preview access/account/store regression tests');
+  out.push(await runPreview(srv.url,browser));
+  await srv.close();
  }else{
   for(const app of apps){const srv=await serve(()=>path.join(root,app));console.log('→',app);out.push(await runPublic(app,srv.url,browser));out.push(await runPwa(app,srv.url,browser,ctl));await srv.close()}
   // متادیتای اشتراک‌گذاری با SITE_URL (دامنه آزمایشی فقط در Build موقت تست)
