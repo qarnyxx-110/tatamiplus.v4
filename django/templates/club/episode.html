@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% load static humanize %}
+{% block title %}{{ episode.title }} | {{ course.title }} | تاتامی پلاس{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'css/courses.css' %}">{% endblock %}
+{% block content %}
+<div class="w tp-course-page tp-episode-page">
+  <nav class="tp-crumbs" aria-label="مسیر صفحه"><ol><li><a href="{% url 'home' %}">خانه</a></li><li><a href="{% url 'club:list' %}">دوره‌ها</a></li><li><a href="{% url 'club:course_detail' slug=course.slug %}">{{ course.title }}</a></li><li aria-current="page">{{ episode.title }}</li></ol></nav>
+  <header class="tp-episode-head"><div><p class="tp-kicker">{{ course.title }}</p><h1>{{ episode.title }}</h1><p class="tp-muted">{% if episode.duration %}مدت قسمت: {{ episode.duration }}{% endif %}</p></div><a class="btn o" href="{% url 'club:course_detail' slug=course.slug %}">بازگشت به دوره</a></header>
+  <div class="tp-episode-layout">
+    <main class="tp-episode-player-wrap">
+      {% if episode.can_watch %}
+        <video class="tp-video-player" controls controlsList="nodownload" playsinline preload="metadata"{% if episode.poster_url %} poster="{{ episode.poster_url }}"{% endif %}>
+          {% if episode.video_url %}<source src="{{ episode.video_url }}"{% if episode.video_mime_type %} type="{{ episode.video_mime_type }}"{% endif %}>{% elif episode.video %}<source src="{{ episode.video.url }}">{% endif %}
+          مرورگر شما از پخش ویدئو پشتیبانی نمی‌کند.
+        </video>
+        {% if not episode.video_url and not episode.video %}<p class="tp-course-note" role="status">ویدئوی این قسمت هنوز بارگذاری نشده است.</p>{% endif %}
+        {% if episode.description %}<div class="tp-course-description">{{ episode.description|linebreaks }}</div>{% endif %}
+        {% if next_episode %}<a class="btn tp-next-episode" href="{% if next_episode.can_watch %}{% url 'club:episode' slug=next_episode.slug %}{% else %}#{% endif %}"{% if not next_episode.can_watch %} data-open-purchase aria-haspopup="dialog" aria-controls="episode-purchase-dialog"{% endif %}>قسمت بعدی: {{ next_episode.title }}</a>{% endif %}
+      {% else %}
+        <section class="tp-episode-locked" aria-labelledby="episode-locked-title"><span class="tp-lock-symbol" aria-hidden="true">▣</span><p class="tp-kicker">قسمت قفل‌شده</p><h2 id="episode-locked-title">برای تماشای این قسمت، دسترسی دوره لازم است.</h2><p>عنوان دوره: {{ course.title }}</p><button class="btn" type="button" data-open-purchase aria-haspopup="dialog" aria-controls="episode-purchase-dialog">مشاهدهٔ شرایط خرید دوره</button></section>
+      {% endif %}
+    </main>
+    <aside class="tp-episode-sidebar"><h2>فهرست قسمت‌ها</h2><div class="tp-episode-list">{% for item in episodes %}{% include 'components/course_episode_row.html' with episode=item current_episode=episode %}{% endfor %}</div></aside>
+  </div>
+</div>
+{% url 'club:course_purchase' slug=course.slug as course_purchase_url %}
+<dialog class="tp-course-dialog" id="episode-purchase-dialog" aria-labelledby="episode-purchase-title"><form method="dialog" class="tp-course-dialog-close"><button class="ib" type="submit" aria-label="بستن پنجره">×</button></form><p class="tp-kicker">دسترسی به محتوای دوره</p><h2 id="episode-purchase-title">برای دیدن بقیهٔ قسمت‌ها دوره را بخرید</h2><p>{{ course.title }}</p><strong class="tp-dialog-price">{{ course.price|intcomma }} {{ course.currency_label|default:'تومان' }}</strong>{% if course_purchase_url %}<form method="post" action="{{ course_purchase_url }}">{% csrf_token %}<button class="btn" type="submit">ادامهٔ فرایند خرید</button></form>{% else %}<button class="btn" type="button" disabled>خرید پس از آماده‌شدن سرویس سفارش فعال می‌شود</button><p class="tp-muted tp-small">خرید واقعی در بک‌اند فعلی وجود ندارد.</p>{% endif %}</dialog>
+{% endblock %}
+{% block extra_js %}<script src="{% static 'js/course-ui.js' %}" defer></script>{% endblock %}
