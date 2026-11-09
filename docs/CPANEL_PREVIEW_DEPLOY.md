@@ -33,21 +33,34 @@
 | `FTP_USERNAME` | نام کاربری کامل حساب FTP جدید |
 | `FTP_PASSWORD` | رمز همان حساب FTP |
 
-مقادیر را در چت، فایل سورس، یا commit قرار ندهید. پورت پیش‌فرض گردش‌کار 21 است. اگر cPanel در Manual Settings پورت دیگری برای FTPS اعلام کرد، در GitHub به مسیر **Settings → Secrets and variables → Actions → Variables → New repository variable** بروید و متغیر اختیاری `FTP_PORT` را با همان عدد بسازید. گردش‌کار FTPS رمزگذاری‌شده را با اعتبارسنجی گواهی فعال می‌کند. اگر هاست FTPS را پشتیبانی نمی‌کند، پیش از تغییر پروتکل باید اطلاعات فنی میزبان بررسی شود؛ FTP ساده رمز را رمزگذاری نمی‌کند.
+مقادیر را در چت، فایل سورس، یا commit قرار ندهید.
 
-## ۳) فعال‌سازی
+### پورت FTPS (اختیاری)
+
+گردش‌کار به‌صورت پیش‌فرض از پورت `21` استفاده می‌کند. اگر cPanel در **Configure FTP Client → Manual Settings** پورت دیگری اعلام کرد، به **Settings → Secrets and variables → Actions → Variables → New repository variable** بروید و متغیر زیر را اضافه کنید:
+
+- نام: `FTP_PORT`
+- مقدار: شماره پورت FTPS اعلام‌شده توسط هاست (فقط عدد)
+
+از FTP ساده و بدون رمزگذاری استفاده نکنید. اگر هاست FTPS را پشتیبانی نمی‌کند، پیش از تغییر پروتکل باید اطلاعات فنی میزبان بررسی شود.
+
+## ۳) فعال‌سازی انتشار
 
 1. این Pull Request را بررسی و در صورت تأیید به `main` ادغام کنید.
-2. بعد از افزودن سه Secret، از **Actions → Build and deploy Tatami Plus preview to cPanel → Run workflow** یک بار انتشار را دستی اجرا کنید.
-3. اجرای سبز workflow فقط موفقیت Build و انتقال FTP را نشان می‌دهد؛ سپس URL عمومی را در مرورگر بررسی کنید:
+2. سه Secret بالا را در GitHub تنظیم کنید.
+3. بعد از ادغام و افزودن Secretها، از **Actions → Build and deploy Tatami Plus preview to cPanel → Run workflow** یک بار انتشار را دستی اجرا کنید.
+4. در اجرای workflow باید job با نام **Publish Preview to cPanel** اجرا شود و مرحله **Deploy Preview to the restricted cPanel FTP directory** موفق باشد. اگر Secretها ناقص باشند، Build موفق می‌شود ولی آپلود با پیام هشدار عمداً Skip می‌شود.
+5. پس از پایان آپلود، URL عمومی را در مرورگر بررسی کنید:
    `https://tatamiplus.ir/preview/`
 
-پس از ادغام، تغییرات بعدی در `shared/src/` یا `shared/build.js` با push به `main` به‌صورت خودکار Build و منتشر می‌شوند.
+پس از ادغام، تغییرات بعدی در `shared/src/`، `shared/public/assets/` یا `shared/build.js` با push به `main` به‌صورت خودکار Build و منتشر می‌شوند.
 
 ## رفتار محافظتی
 
 - در Pull Request فقط Build و اعتبارسنجی انجام می‌شود؛ آپلود انجام نمی‌شود.
+- اطلاعات FTP به job ساخت و اجرای کدهای Pull Request داده نمی‌شود؛ Secretها فقط در گام‌های محدود job انتشار استفاده می‌شوند.
 - تا پیش از تنظیم سه Secret، انتشار به‌صورت امن Skip می‌شود.
+- خروجی Preview پیش از Build پاک‌سازی می‌شود تا فایل‌های حذف‌شده در انتشار باقی نمانند.
 - `dangerous-clean-slate` خاموش است و حساب FTP نیز باید فقط به پوشه Preview محدود باشد.
 - فایل‌های Django و سایر پوشه‌های خروجی در مقصد FTP این workflow قرار ندارند.
 - این workflow عمداً checkout/cart/payment نمایشی را به سرویس واقعی تبدیل نمی‌کند و صرفاً فایل‌های فرانت‌اند Preview را منتشر می‌کند.
