@@ -15,6 +15,7 @@ on:
       - main
     paths:
       - "shared/src/**"
+      - "shared/public/assets/**"
       - "shared/build.js"
       - "shared/package.json"
       - ".github/workflows/build-preview-package.yml"
