@@ -1,0 +1,79 @@
+name: Validate Django frontend against backend
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "django/templates/**"
+      - "django/static/**"
+      - "shared/src/css/**"
+      - "shared/src/design/tokens.json"
+      - "shared/public/fonts/**"
+      - "shared/build.js"
+      - "shared/package.json"
+      - ".github/workflows/django-frontend-contract.yml"
+  push:
+    branches: [main]
+    paths:
+      - "django/templates/**"
+      - "django/static/**"
+      - "shared/src/css/**"
+      - "shared/src/design/tokens.json"
+      - "shared/public/fonts/**"
+      - "shared/build.js"
+      - "shared/package.json"
+      - ".github/workflows/django-frontend-contract.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  django-template-contract:
+    name: Render frontend templates with the real Django backend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out frontend repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Verify generated Django CSS is synchronized with its source
+        run: |
+          set -euo pipefail
+          node shared/build.js
+          git diff --exit-code -- django/static/css/tatami.css
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Check out the backend contract revision (read-only)
+        run: |
+          set -euo pipefail
+          git clone https://github.com/Radinsharifi/Tatami-demo.git backend
+          git -C backend checkout --detach c88d977949897017e848c3ba23b3ec1bcc0a3ebb
+
+      - name: Install backend dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r backend/requirements.txt
+
+      - name: Install the frontend templates and static assets into the isolated backend checkout
+        run: |
+          set -euo pipefail
+          mkdir -p backend/templates backend/static
+          cp -a django/templates/. backend/templates/
+          cp -a django/static/. backend/static/
+
+      - name: Validate Django settings and template URL reversals
+        working-directory: backend
+        run: python manage.py check
+
+      - name: Run backend tests with the proposed frontend templates
+        working-directory: backend
+        run: python manage.py test --verbosity 2
