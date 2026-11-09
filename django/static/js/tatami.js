@@ -118,8 +118,12 @@
     const s = f.querySelector('[type=submit]'); if (s) { setTimeout(() => { s.disabled = true; s.classList.add('is-loading'); }, 0); }
   }));
 
-  // ۵-ب. قالب‌بندی مقادیر عددی جم با ارقام فارسی.
-  $('[data-fa-number]')?.textContent;
+  // ۵-ب. قالب‌بندی مقادیر عددی با ارقام فارسی.
+  $('[data-fa-number]').forEach(node => {
+    const raw = String(node.textContent || '').replace(/[٬,\\s]/g, '');
+    const value = Number(raw);
+    if (Number.isFinite(value)) node.textContent = value.toLocaleString('fa-IR');
+  });
 
   // ۶. پیام دریافت جم: تگ gem در Django messages به toast کوتاه منتقل می‌شود.
   const gemMessages = $$('.tp-msg.gem');
