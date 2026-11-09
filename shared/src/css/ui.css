@@ -485,3 +485,24 @@ input[aria-invalid=true],select[aria-invalid=true],textarea[aria-invalid=true]{b
 .tp-beltpath li.on{color:var(--tp-color-text-primary);font-weight:var(--tp-font-weight-bold)}
 .tp-beltpath li.on .tp-belt-bar{outline:2px solid var(--tp-color-brand-text);outline-offset:3px}
 @media(max-width:420px){.tp-beltpath{padding-inline:var(--tp-space-xs);gap:4px}.tp-beltpath li{font-size:.68rem}}
+
+/* ===== جم: نشان موجودی و تاریخچه ===== */
+.tp-gem-header{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--tp-color-border);border-radius:var(--tp-radius-control);padding:var(--tp-space-2xs) var(--tp-space-sm);white-space:nowrap;color:var(--tp-color-accent)}
+.tp-gem-header .tp-ico{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.tp-gem-header-value{font-variant-numeric:tabular-nums;color:var(--tp-color-brand-text)}
+.tp-gem-demo{font-size:var(--tp-font-size-xs);color:var(--tp-color-text-subtle)}
+.tp-gems{max-width:var(--tp-container-page)}
+.tp-gem-balance-card{display:flex;align-items:center;gap:var(--tp-space-md);margin-top:var(--tp-space-md);padding:var(--tp-space-lg);background:var(--tp-color-surface);border:1px solid var(--tp-color-border);border-radius:var(--tp-radius-card)}
+.tp-gem-icon{display:grid;place-items:center;width:54px;height:54px;flex:none;border-radius:var(--tp-radius-round);background:var(--tp-color-brand-tint);color:var(--tp-color-brand-text);font-size:2rem}
+.tp-gem-number{font-size:var(--tp-font-size-3xl);font-weight:900;line-height:1.4;font-variant-numeric:tabular-nums}
+.tp-gem-number span{font-size:var(--tp-font-size-base);font-weight:600;color:var(--tp-color-text-secondary)}
+.tp-gem-help{max-width:50rem}
+.tp-gem-positive{color:var(--tp-color-success);font-weight:800;font-variant-numeric:tabular-nums}
+.tp-gem-negative{color:var(--tp-color-danger);font-weight:800;font-variant-numeric:tabular-nums}
+.tp-gem-table-wrap{overflow-x:auto;border:1px solid var(--tp-color-border);border-radius:var(--tp-radius-card)}
+.tp-gem-table{width:100%;border-collapse:collapse;min-width:28rem}
+.tp-gem-table th,.tp-gem-table td{padding:var(--tp-space-sm) var(--tp-space-md);text-align:right;border-bottom:1px solid var(--tp-color-border)}
+.tp-gem-table th{background:var(--tp-color-surface);white-space:nowrap}
+.tp-gem-table tbody tr:last-child td{border-bottom:0}
+.tp-msg.gem{border-inline-start:4px solid var(--tp-color-accent)}
+@media(max-width:600px){.tp-gem-demo{display:none}.tp-gem-header{gap:4px;padding-inline:6px}.tp-gem-header .hb-t{font-size:var(--tp-font-size-caption)}.tp-gem-balance-card{padding:var(--tp-space-md)}.tp-gem-icon{width:44px;height:44px}}
