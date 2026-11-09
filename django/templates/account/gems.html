@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% load static humanize %}
+
+{% block title %}تاریخچه جم | تاتامی پلاس{% endblock %}
+{% block description %}مشاهده موجودی و تاریخچه تراکنش‌های جم در تاتامی پلاس.{% endblock %}
+
+{% block content %}
+<div class="w tp-gems">
+  <div class="sh">
+    <div>
+      <h1>جم‌های من</h1>
+      <p class="mu">موجودی فعلی و گردش تراکنش‌های جم حساب شما.</p>
+    </div>
+    <span class="tag">تاریخچه حساب</span>
+  </div>
+
+  <section class="tp-gem-balance-card" aria-labelledby="gem-balance-title">
+    <div class="tp-gem-icon" aria-hidden="true">◆</div>
+    <div>
+      <div id="gem-balance-title" class="mu sm">موجودی فعلی</div>
+      <div class="tp-gem-number"><bdi data-fa-number>{{ gem_balance }}</bdi> <span>جم</span></div>
+    </div>
+  </section>
+
+  <section class="d-s" aria-labelledby="gem-help-title">
+    <h2 id="gem-help-title">چطور جم بگیرم؟</h2>
+    <div class="d-c tp-gem-help">
+      {% if gem_help_text %}
+        <p>{{ gem_help_text }}</p>
+      {% else %}
+        <p>روش‌های دریافت و مصرف جم پس از تأیید قوانین محصول در این بخش نمایش داده می‌شوند.</p>
+      {% endif %}
+    </div>
+  </section>
+
+  <section class="d-s" aria-labelledby="gem-history-title">
+    <div class="sh">
+      <h2 id="gem-history-title">تاریخچه تراکنش‌ها</h2>
+      <div class="tp-cluster" aria-label="راهنمای نوع تراکنش">
+        <span class="tag g">+ دریافت</span>
+        <span class="tag danger">− مصرف</span>
+      </div>
+    </div>
+
+    {% if transactions %}
+      <div class="tp-gem-table-wrap">
+        <table class="tp-gem-table">
+          <thead>
+            <tr>
+              <th scope="col">تاریخ شمسی</th>
+              <th scope="col">دلیل تراکنش</th>
+              <th scope="col">مقدار جم</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for transaction in transactions %}
+              <tr>
+                <td>{{ transaction.date_shamsi }}</td>
+                <td>{{ transaction.reason }}</td>
+                <td>
+                  {% if transaction.is_credit %}
+                    <span class="tp-gem-positive">+<bdi data-fa-number>{{ transaction.amount }}</bdi></span>
+                  {% else %}
+                    <span class="tp-gem-negative">−<bdi data-fa-number>{{ transaction.amount }}</bdi></span>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="tp-state">
+        <b>تراکنشی برای نمایش وجود ندارد</b>
+        <p class="sm">با ثبت اولین تراکنش، تاریخ، دلیل و مقدار جم در این بخش نمایش داده می‌شود.</p>
+      </div>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}
