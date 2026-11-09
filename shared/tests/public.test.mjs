@@ -336,6 +336,7 @@ export async function runPreview(base,browser){
  const cards=()=>pg.locator('#app .sl .pg article.pcd').count();
  await go('#/');
  S.ok('صفحه اصلی در بازدید اول پیام «آماده شروع هستید؟» را دارد',(await T()).includes('آماده شروع هستید؟'));
+ S.ok('CTA خانه به ثبت‌نام هدایت می‌کند',await pg.locator('#app .cta a[href="#/register"]').count()===1);
  S.ok('لینک سیستم طراحی از فوتر حذف شده است',await pg.locator('footer a[href="#/design-system"]').count()===0);
  S.ok('لینک انتخاب نوع حساب از فوتر حذف شده است',await pg.locator('footer a[href="#/role"]').count()===0);
  await go('#/design-system');
@@ -348,6 +349,10 @@ export async function runPreview(base,browser){
    !await pg.evaluate(()=>[...document.scripts].map(s=>s.textContent).join('\n').includes('نوع حساب خود را انتخاب کنید')));
  await go('#/dashboard');
  S.ok('لینک تغییر نوع حساب از داشبورد حذف شده است',await pg.locator('#app a[href="#/role"]').count()===0);
+ await go('#/');
+ await go('#/my-profile');
+ S.ok('بخش پروفایل مربی به مسیر حذف‌شده لینک نمی‌دهد',
+   await pg.locator('#app a[href="#/role"]').count()===0&&await pg.locator('#app a[href="#/profile"]').count()===1);
  await go('#/');
  await go('#/store');
  S.ok('صفحه اول فروشگاه دقیقاً ۲۴ محصول دارد',await cards()===24,String(await cards()));
