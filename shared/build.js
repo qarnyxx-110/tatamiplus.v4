@@ -15,7 +15,7 @@ const DATA={coaches:JSON.parse(R('data/coaches.json')),sponsors:JSON.parse(R('da
 const TOK=JSON.parse(R('design/tokens.json'));delete TOK._comment;
 const tokensCss=()=>':root{'+Object.entries(TOK).flatMap(([g,o])=>Object.entries(o).map(([k,v])=>`--tp-${g}-${k}:${String(v).replace(/\{([a-z]+)\.([^}]+)\}/g,(m,a,c)=>`var(--tp-${a}-${c})`)}`)).join(';')+'}';
 const APPS={
- preview:{fixed:false,deny:[]},
+ preview:{fixed:false,deny:['design-system']},
  student:{fixed:true,role:'student',home:'',deny:['role','my-profile','design-system'],name:'Tatami Plus Student',short:'Tatami Student',desc:'تاتامی پلاس برای هنرجویان جودو',start:'./',
   nav:[['','خانه'],['dashboard','داشبورد'],['store','فروشگاه'],['tournaments','تورنمنت‌ها'],['videos','ویدیوهای ضبط‌شده'],['ai','آنالیز هوش مصنوعی'],['academy','آکادمی اساتید'],['courses','دوره‌ها'],['gems','جم'],['coaches','مربیان تاتامی'],['clubs','باشگاه‌ها'],['blog','بلاگ'],['tatamipedia','تاتامی‌پدیا'],['sponsors','حامیان تاتامی پلاس'],['search','جستجو']]},
  coach:{fixed:true,role:'coach',home:'dashboard',deny:['role','ai','clubs','club','design-system'],name:'Tatami Plus Coach',short:'Tatami Coach',desc:'تاتامی پلاس برای مربیان جودو',start:'./#/dashboard',
@@ -34,8 +34,8 @@ function page(name,pwa){const a=APPS[name],cfg={...a};delete cfg.name;delete cfg
  let h=dropGoogle(R('index.html'));
  h=h.replace(/<a ([^>]*?)href="#\/([a-z-]*)[^"]*"([^>]*)>[^<]*<\/a>/g,(m,x,k)=>a.deny.includes(k)?'':m);
  const tags=pwa?`<meta name="theme-color" content="#121418"><meta name="description" content="${a.desc}"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icons/icon-192.png"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png">`:'';
- const files=(pwa||name!=='preview'?PUBLIC_JS:[...PUBLIC_JS.slice(0,-1),'js/shared/views-styleguide.js',PUBLIC_JS[PUBLIC_JS.length-1]]);
- const js=(pwa?'':'window.__ARTIFACT__=true;\n')+`const APP=${JSON.stringify(cfg)},IMG_AVAIL=${JSON.stringify(AVAIL)},TP_API_BASE=${JSON.stringify(API)},COACHES=${JSON.stringify(DATA.coaches)},STORE_CATALOG=${JSON.stringify(STORE)},SPONSORS=${JSON.stringify(DATA.sponsors)},TPD=${JSON.stringify(DATA.tpd)}${name==='preview'?',TP_TOKENS='+JSON.stringify(TOK):''};\n`+files.map(R).join('\n');
+ const files=PUBLIC_JS;
+ const js=(pwa?'':'window.__ARTIFACT__=true;\n')+`const APP=${JSON.stringify(cfg)},IMG_AVAIL=${JSON.stringify(AVAIL)},TP_API_BASE=${JSON.stringify(API)},COACHES=${JSON.stringify(DATA.coaches)},STORE_CATALOG=${JSON.stringify(STORE)},SPONSORS=${JSON.stringify(DATA.sponsors)},TPD=${JSON.stringify(DATA.tpd)};\n`+files.map(R).join('\n');
  return h.replace('<!--PWA-->',()=>tags).replace('/*CSS*/',()=>baseCss()).replace('/*JS*/',()=>min(js,'js'))}
 function marketing(){const js=`const TP_CMS=${JSON.stringify({apiBase:API,mode:API?'api':'demo'})},BL_SEED=${JSON.stringify(R('data/blog-seed.json')?JSON.parse(R('data/blog-seed.json')):[])},TPD_SEED=${JSON.stringify(DATA.tpd)},TP_DEMO_AUTHOR='تیم مارکتینگ';\n`+MKT_JS.map(R).join('\n');
  return dropGoogle(R('marketing.html')).replace('/*CSS*/',()=>baseCss(R('css/marketing.css'))).replace('/*JS*/',()=>min(js,'js'))}
