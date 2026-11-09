@@ -7,17 +7,19 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
  const go=async h=>{await pg.evaluate(x=>{location.hash=x},h);await wait(60)},T=()=>pg.evaluate(()=>document.getElementById('app').innerText),cnt=sel=>pg.locator(sel).count(),nf=()=>pg.evaluate(is404);
  await pg.goto(base+'/index.html');await wait(300);
  // --- مسیرهای معتبر/نامعتبر
- const valid=['#/','#/store','#/store/','#/product/3','#/product?id=3','#/video/3','#/video?id=3','#/blog','#/blog/uchi-mata-basics','#/blog/2','#/tournaments','#/tournament/1','#/instructor/1','#/academy','#/profile','#/cart','#/dashboard','#/videos','#/search','#/coaches','#/coaches/sara-ahmadi','#/sponsors','#/tatamipedia','#/tatamipedia/ippon','#/tatamipedia?q=ippon&cat=refereeing','#/blog?page=2'];
+ const valid=['#/','#/store','#/store/','#/product/3','#/product?id=3','#/video/3','#/video?id=3','#/blog','#/blog/uchi-mata-basics','#/blog/2','#/tournaments','#/tournament/1','#/instructor/1','#/academy','#/profile','#/gems','#/cart','#/dashboard','#/videos','#/search','#/coaches','#/coaches/sara-ahmadi','#/sponsors','#/tatamipedia','#/tatamipedia/ippon','#/tatamipedia?q=ippon&cat=refereeing','#/blog?page=2'];
  const bad=[];for(const r of valid){await go(r);if(await nf())bad.push(r)}S.ok('مسیرهای معتبر 404 نمی‌دهند ('+valid.length+' مسیر)',!bad.length,bad.join(' '));
- const invalid=['#/courses/unknown','#/episode/unknown-lesson-1','#/store/x/y','#/product/abc','#/product/1/2','#/product/999','#/product','#/product/','#/video/','#/video/99','#/video?id=','#/tournament/abc','#/tournament/99','#/tournament/','#/instructor/99','#/instructor/','#/blog/not-a-real-slug','#/blog/a/b','#/coaches/nobody','#/coaches/','#/coaches/a/b','#/tatamipedia/nobody','#/tatamipedia/','#/tatamipedia/a/b','#/nonexistent','#/a/b/c/d/e','#/'+'x'.repeat(420),'#store','#/club/99'];
+ const invalid=['#/gems/extra','#/courses/unknown','#/episode/unknown-lesson-1','#/store/x/y','#/product/abc','#/product/1/2','#/product/999','#/product','#/product/','#/video/','#/video/99','#/video?id=','#/tournament/abc','#/tournament/99','#/tournament/','#/instructor/99','#/instructor/','#/blog/not-a-real-slug','#/blog/a/b','#/coaches/nobody','#/coaches/','#/coaches/a/b','#/tatamipedia/nobody','#/tatamipedia/','#/tatamipedia/a/b','#/nonexistent','#/a/b/c/d/e','#/'+'x'.repeat(420),'#store','#/club/99'];
  const wrong=[];for(const r of invalid){await go(r);if(!await nf())wrong.push(r.slice(0,40))}S.ok('مسیرهای نامعتبر همه 404 دارند ('+invalid.length+' مسیر)',!wrong.length,wrong.join(' '));
  await go('#/zzz');S.ok('404: دکمه «بازگشت به صفحه اصلی»',await pg.evaluate(()=>!!document.querySelector('#app a[href="#/"]')&&/بازگشت به صفحه اصلی/.test(document.getElementById('app').innerText)));
  // --- نقش‌ها
  const dwrong=[];for(const r of denied){await go(r);if(!await nf())dwrong.push(r)}S.ok('مسیرهای ممنوع این نقش 404 می‌دهند',!dwrong.length,dwrong.join(' '));
  await go('#/');const nav=await pg.evaluate(()=>[...document.querySelectorAll('#nv a')].map(a=>a.textContent.trim()));
  S.ok('منو: بلاگ، تاتامی‌پدیا، مربیان، حامیان',['بلاگ','تاتامی‌پدیا','مربیان تاتامی','حامیان تاتامی پلاس'].every(x=>nav.includes(x)),nav.join('|'));S.ok('منو: دوره‌های آموزشی',nav.includes('دوره‌ها'),nav.join('|'));
+ S.ok('منو: تاریخچه جم',nav.includes('جم'),nav.join('|'));
  S.ok('منو: «باشگاه‌ها» فقط برای هنرجو/باشگاه',(app==='coach')?!nav.includes('باشگاه‌ها'):nav.includes('باشگاه‌ها'));
  const foot=await pg.evaluate(()=>[...document.querySelectorAll('footer a')].map(a=>a.textContent.trim()));S.ok('فوتر: لینک تاتامی‌پدیا و حامیان، بدون «سیستم طراحی»',foot.includes('تاتامی‌پدیا')&&foot.includes('حامیان تاتامی پلاس')&&!foot.includes('سیستم طراحی'),foot.join('|'));
+ await go('#/gems');const gems=await T();S.ok('جم: صفحه تاریخچه و وضعیت عدم اتصال',gems.includes('تاریخچه تراکنش‌ها')&&gems.includes('موجودی واقعی هنوز به این نسخه متصل نشده است'));S.ok('جم: عدم نمایش تراکنش ساختگی',gems.includes('تراکنشی برای نمایش وجود ندارد'));
  await go('#/my-profile');S.ok('«پروفایل من» فقط در PWA مربی',(app==='coach')?!await nf():await nf());
  if(app!=='coach'){await go('#/coaches/sara-ahmadi');S.ok('پروفایل مربی: لینک باشگاه',await pg.evaluate(()=>!!document.querySelector('#app a[href^="#/club/"]')))}
  // --- مربیان: جست‌وجو و فیلتر
