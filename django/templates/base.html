@@ -24,6 +24,7 @@
     <a href="{% url 'account' %}"{% if route == 'account' %} class="on" aria-current="page"{% endif %}>حساب کاربری</a>
   </nav>
   <div class="hb">
+    {% if user.is_authenticated and gem_balance != None %}{% include "components/gem_badge.html" with amount=gem_balance %}{% endif %}
     <a class="ib" id="hcart" href="{% url 'store:cart' %}" aria-label="سبد خرید"{% if route == 'cart' %} aria-current="page"{% endif %}>
       <svg class="tp-ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 4h2l2.4 11.2a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.5L21 8H6.2"/><circle cx="10" cy="20" r="1.4"/><circle cx="17" cy="20" r="1.4"/></svg><span class="hb-t">سبد خرید</span>
     </a>
@@ -70,6 +71,8 @@
     {% for message in messages %}<p class="tp-note tp-msg {{ message.tags }}">{{ message }}</p>{% endfor %}
   </div>
 {% endif %}
+
+<div id="ts" class="tp-toast" role="status" aria-live="polite"></div>
 
 <main id="app" data-enter tabindex="-1">{% block content %}{% endblock %}</main>
 
