@@ -311,8 +311,8 @@ export async function runClubs(app,base,browser){
  for(const width of [320,360,390]){
   await pg.setViewportSize({width,height:850});
   await wait(80);
-  const overflow=await pg.evaluate(()=>document.documentElement.scrollWidth>document.documentElement.clientWidth);
-  S.ok('واکنش‌گرایی صفحه باشگاه‌ها در '+width+'px',!overflow);
+  const overflow=await pg.evaluate(()=>({yes:document.documentElement.scrollWidth>document.documentElement.clientWidth,viewport:document.documentElement.clientWidth,document:document.documentElement.scrollWidth,nodes:[...document.querySelectorAll('body *')].map(e=>({tag:e.tagName,id:e.id,cls:String(e.className||'').slice(0,90),left:Math.round(e.getBoundingClientRect().left),right:Math.round(e.getBoundingClientRect().right),width:Math.round(e.getBoundingClientRect().width),scroll:e.scrollWidth,client:e.clientWidth})).filter(x=>x.width>0&&(x.right>document.documentElement.clientWidth+1||x.left< -1||x.scroll>x.client+2)).slice(0,12)}));
+  S.ok('واکنش‌گرایی صفحه باشگاه‌ها در '+width+'px',!overflow.yes,JSON.stringify(overflow));
  }
  S.ok('بدون خطای JavaScript در صفحه باشگاه‌ها',errors.length===0,errors.join(' | '));
  await ctx.close();
