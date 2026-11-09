@@ -49,7 +49,7 @@ function tpCourseDetail(slug){
  <p class="mu sm">قسمت‌ها محتوای نمونه‌اند و وضعیت دسترسی یا خرید واقعی را نشان نمی‌دهند.</p></div>`;
 }
 function tpEpisodeDetail(raw){
- const m=/^([a-z0-9-]+)-lesson-(\\d+)$/.exec(String(raw||''));
+ const m=/^([a-z0-9-]+)-lesson-(\d+)$/.exec(String(raw||''));
  const c=m&&tpDemoCourse(m[1]),n=m?Number(m[2]):0,lesson=c&&c.lessons[n-1];
  if(!c||!lesson)return nfp('قسمتی پیدا نشد','#/courses','بازگشت به دوره‌ها');
  PT={t:lesson.title,d:'معرفی نمونه قسمت دوره'};
