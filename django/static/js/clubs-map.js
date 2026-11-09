@@ -102,6 +102,10 @@
         poi: true
       });
 
+      window.__tpDjangoClubMap = map;
+      const placeholder = root.querySelector('.tp-map-placeholder');
+      if (placeholder) placeholder.remove();
+
       if (single) {
         L.marker([lat, lng]).addTo(map)
           .bindPopup(popupHtml({
