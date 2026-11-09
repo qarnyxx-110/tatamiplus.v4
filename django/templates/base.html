@@ -10,10 +10,11 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Lalezar&family=Vazirmatn:wght@400;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{% static 'css/tatami.css' %}">
-  <script src="{% static 'js/tatami.js' %}" defer></script>
+  {% block extra_head %}{% endblock %}
 </head>
 <body>
 {% with app=request.resolver_match.app_name route=request.resolver_match.url_name %}
+{% url 'club:list' as course_list_url %}
 <a class="tp-skip" href="#app">رفتن به محتوای اصلی</a>
 <header>
   <a class="logo" href="{% url 'home' %}">تاتامی پلاس</a>
@@ -21,6 +22,7 @@
     <a href="{% url 'home' %}"{% if route == 'home' %} class="on" aria-current="page"{% endif %}>خانه</a>
     <a href="{% url 'store:product_list' %}"{% if app == 'store' and route != 'cart' %} class="on" aria-current="page"{% endif %}>فروشگاه</a>
     <a href="{% url 'coaches:directory' %}"{% if route == 'directory' or route == 'profile_detail' %} class="on" aria-current="page"{% endif %}>مربیان تاتامی</a>
+    {% if course_list_url %}<a href="{{ course_list_url }}"{% if app == 'club' %} class="on" aria-current="page"{% endif %}>دوره‌ها</a>{% endif %}
     <a href="{% url 'account' %}"{% if route == 'account' %} class="on" aria-current="page"{% endif %}>حساب کاربری</a>
   </nav>
   <div class="hb">
@@ -52,6 +54,7 @@
     <a href="{% url 'store:product_list' %}"{% if app == 'store' and route != 'cart' %} class="on" aria-current="page"{% endif %}>فروشگاه</a>
     <a href="{% url 'store:cart' %}"{% if route == 'cart' %} class="on" aria-current="page"{% endif %}>سبد خرید</a>
     <a href="{% url 'coaches:directory' %}"{% if route == 'directory' or route == 'profile_detail' %} class="on" aria-current="page"{% endif %}>مربیان تاتامی</a>
+    {% if course_list_url %}<a href="{{ course_list_url }}"{% if app == 'club' %} class="on" aria-current="page"{% endif %}>دوره‌ها</a>{% endif %}
     <a href="{% url 'account' %}"{% if route == 'account' %} class="on" aria-current="page"{% endif %}>حساب کاربری</a>
   </nav>
   <div class="tp-drawer-f">
@@ -76,11 +79,12 @@
 <footer class="ft">
   <div class="ftg">
     <div><b class="gold">تاتامی پلاس</b><p class="mu sm">پلتفرم فارسی جودو: مربیان تأییدشده و تجهیزات تمرین.</p></div>
-    <nav aria-label="پیوندهای تاتامی پلاس"><b>پلتفرم</b><a href="{% url 'store:product_list' %}">فروشگاه</a><a href="{% url 'coaches:directory' %}">مربیان تاتامی</a></nav>
+    <nav aria-label="پیوندهای تاتامی پلاس"><b>پلتفرم</b><a href="{% url 'store:product_list' %}">فروشگاه</a><a href="{% url 'coaches:directory' %}">مربیان تاتامی</a>{% if course_list_url %}<a href="{{ course_list_url }}">دوره‌ها</a>{% endif %}</nav>
     <nav aria-label="پیوندهای حساب"><b>حساب</b><a href="{% url 'account' %}">حساب کاربری</a><a href="{% url 'store:cart' %}">سبد خرید</a>{% if not user.is_authenticated %}<a href="{% url 'accounts:register' %}">ثبت‌نام</a>{% endif %}</nav>
   </div>
   <p class="mu sm">{% block footer_note %}تاتامی پلاس — نسخهٔ آزمایشی{% endblock %}</p>
 </footer>
 {% endwith %}
+{% block extra_js %}{% endblock %}
 </body>
 </html>
