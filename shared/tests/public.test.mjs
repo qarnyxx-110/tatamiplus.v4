@@ -17,6 +17,7 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
  await go('#/');const nav=await pg.evaluate(()=>[...document.querySelectorAll('#nv a')].map(a=>a.textContent.trim()));
  S.ok('منو: بلاگ، تاتامی‌پدیا، مربیان، حامیان',['بلاگ','تاتامی‌پدیا','مربیان تاتامی','حامیان تاتامی پلاس'].every(x=>nav.includes(x)),nav.join('|'));S.ok('منو: دوره‌های آموزشی',nav.includes('دوره‌ها'),nav.join('|'));
  S.ok('منو: تاریخچه جم',nav.includes('جم'),nav.join('|'));
+ S.ok('جم: نشان موجودی در هدر',await pg.locator('#hgem[href="#/gems"]').count()===1);
  S.ok('منو: «باشگاه‌ها» فقط برای هنرجو/باشگاه',(app==='coach')?!nav.includes('باشگاه‌ها'):nav.includes('باشگاه‌ها'));
  const foot=await pg.evaluate(()=>[...document.querySelectorAll('footer a')].map(a=>a.textContent.trim()));S.ok('فوتر: لینک تاتامی‌پدیا و حامیان، بدون «سیستم طراحی»',foot.includes('تاتامی‌پدیا')&&foot.includes('حامیان تاتامی پلاس')&&!foot.includes('سیستم طراحی'),foot.join('|'));
  await go('#/gems');const gems=await T();S.ok('جم: صفحه تاریخچه و وضعیت عدم اتصال',gems.includes('تاریخچه تراکنش‌ها')&&gems.includes('موجودی واقعی هنوز به این نسخه متصل نشده است'));S.ok('جم: عدم نمایش تراکنش ساختگی',gems.includes('تراکنشی برای نمایش وجود ندارد'));
