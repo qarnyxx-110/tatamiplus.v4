@@ -511,7 +511,7 @@ input[aria-invalid=true],select[aria-invalid=true],textarea[aria-invalid=true]{b
 .tp-club-filters{margin:var(--tp-space-md) 0;padding:var(--tp-space-md);background:var(--tp-color-surface);border:1px solid var(--tp-color-border);border-radius:var(--tp-radius-card)}
 .tp-club-filter-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--tp-space-md)}
 .tp-club-filter-grid .tp-field{min-width:0}
-.tp-club-radius-field input[type=range]{accent-color:var(--tp-color-brand);padding:0;min-height:1.5rem}
+.tp-club-radius-field input[type=range]{accent-color:var(--tp-color-brand);padding:0;min-height:1.5rem};width:100%;max-width:100%;box-sizing:border-box
 .tp-club-radius-ticks{display:flex;justify-content:space-between;color:var(--tp-color-text-secondary);font-size:var(--tp-font-size-xs)}
 .tp-club-radius-ticks span{flex:1;text-align:center}
 .tp-club-notes{margin:var(--tp-space-sm) 0}
@@ -552,3 +552,6 @@ input[aria-invalid=true],select[aria-invalid=true],textarea[aria-invalid=true]{b
 @media(max-width:1000px){.tp-club-filter-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.tp-clubs-layout{grid-template-columns:minmax(0,1fr)}.tp-club-map-panel{position:static}}
 @media(max-width:900px){.tp-club-mobile-tabs{display:flex}.tp-clubs-layout[data-mobile-tab=list] .tp-club-map-panel{display:none}.tp-clubs-layout[data-mobile-tab=map] .tp-clubs-list{display:none}.tp-neshan-map{height:65vh;min-height:22rem}}
 @media(max-width:600px){.tp-club-filter-grid{grid-template-columns:minmax(0,1fr)}.tp-club-filters{padding:var(--tp-space-sm)}.tp-neshan-map{height:60vh;min-height:20rem}.tp-club-detail-grid{grid-template-columns:minmax(0,1fr)}.tp-club-cover{min-height:8rem}.tp-club-details>div{grid-template-columns:minmax(0,1fr);gap:2px}}
+
+/* ریزنمایشگرها: حفظ هدر و کنترل‌های صفحه باشگاه بدون سرریز افقی */
+@media(max-width:360px){body>header{gap:4px;padding-inline:8px}.hb{gap:2px;min-width:0}#hgem .tp-gem-header-value{display:none}#mnb .mnb-l,#mnb .mnb-m{display:none}#mnb{min-width:44px;padding-inline:6px}}
