@@ -57,6 +57,24 @@
     const s = f.querySelector('[type=submit]'); if (s) { setTimeout(() => { s.disabled = true; s.classList.add('is-loading'); }, 0); }
   }));
 
+  // ۵-ب. قالب‌بندی مقادیر عددی جم با ارقام فارسی.
+  $('[data-fa-number]').forEach(node => {
+    const raw = String(node.textContent || '').replace(/[٬,\s]/g, '');
+    const value = Number(raw);
+    if (Number.isFinite(value)) node.textContent = value.toLocaleString('fa-IR');
+  });
+
+  // ۶. پیام دریافت جم: تگ gem در Django messages به toast کوتاه منتقل می‌شود.
+  const gemMessages = $$('.tp-msg.gem');
+  if (gemMessages.length) {
+    const toast = $('#ts');
+    if (toast) {
+      toast.textContent = gemMessages.map(m => m.textContent.trim()).filter(Boolean).join(' ');
+      toast.classList.add('on', 'info');
+      window.setTimeout(() => { toast.classList.remove('on', 'info'); toast.textContent = ''; }, 4500);
+    }
+  }
+
   // ۶. پیام‌ها: پس از چند ثانیه کم‌رنگ نمی‌شوند (خواندنی می‌مانند)؛ فقط فوکوس روی پیام خطا اگر فیلدی خطا ندارد
   if (!bad) { const err = $('.tp-msg.error'); if (err) { err.tabIndex = -1; err.focus({ preventScroll: true }); } }
 })();

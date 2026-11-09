@@ -485,3 +485,70 @@ input[aria-invalid=true],select[aria-invalid=true],textarea[aria-invalid=true]{b
 .tp-beltpath li.on{color:var(--tp-color-text-primary);font-weight:var(--tp-font-weight-bold)}
 .tp-beltpath li.on .tp-belt-bar{outline:2px solid var(--tp-color-brand-text);outline-offset:3px}
 @media(max-width:420px){.tp-beltpath{padding-inline:var(--tp-space-xs);gap:4px}.tp-beltpath li{font-size:.68rem}}
+
+/* ===== جم: نشان موجودی و تاریخچه ===== */
+.tp-gem-header{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--tp-color-border);border-radius:var(--tp-radius-control);padding:var(--tp-space-2xs) var(--tp-space-sm);white-space:nowrap;color:var(--tp-color-accent)}
+.tp-gem-header .tp-ico{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.tp-gem-header-value{font-variant-numeric:tabular-nums;color:var(--tp-color-brand-text)}
+.tp-gem-demo{font-size:var(--tp-font-size-xs);color:var(--tp-color-text-subtle)}
+.tp-gems{max-width:var(--tp-container-page)}
+.tp-gem-balance-card{display:flex;align-items:center;gap:var(--tp-space-md);margin-top:var(--tp-space-md);padding:var(--tp-space-lg);background:var(--tp-color-surface);border:1px solid var(--tp-color-border);border-radius:var(--tp-radius-card)}
+.tp-gem-icon{display:grid;place-items:center;width:54px;height:54px;flex:none;border-radius:var(--tp-radius-round);background:var(--tp-color-brand-tint);color:var(--tp-color-brand-text);font-size:2rem}
+.tp-gem-number{font-size:var(--tp-font-size-3xl);font-weight:900;line-height:1.4;font-variant-numeric:tabular-nums}
+.tp-gem-number span{font-size:var(--tp-font-size-base);font-weight:600;color:var(--tp-color-text-secondary)}
+.tp-gem-help{max-width:50rem}
+.tp-gem-positive{color:var(--tp-color-success);font-weight:800;font-variant-numeric:tabular-nums}
+.tp-gem-negative{color:var(--tp-color-danger);font-weight:800;font-variant-numeric:tabular-nums}
+.tp-gem-table-wrap{overflow-x:auto;border:1px solid var(--tp-color-border);border-radius:var(--tp-radius-card)}
+.tp-gem-table{width:100%;border-collapse:collapse;min-width:28rem}
+.tp-gem-table th,.tp-gem-table td{padding:var(--tp-space-sm) var(--tp-space-md);text-align:right;border-bottom:1px solid var(--tp-color-border)}
+.tp-gem-table th{background:var(--tp-color-surface);white-space:nowrap}
+.tp-gem-table tbody tr:last-child td{border-bottom:0}
+.tp-msg.gem{border-inline-start:4px solid var(--tp-color-accent)}
+@media(max-width:600px){.tp-gem-demo{display:none}.tp-gem-header{gap:4px;padding-inline:6px}.tp-gem-header .hb-t{font-size:var(--tp-font-size-caption)}.tp-gem-balance-card{padding:var(--tp-space-md)}.tp-gem-icon{width:44px;height:44px}}
+
+/* ===== جستجوی باشگاه و نقشهٔ نشان ===== */
+.tp-club-filters{margin:var(--tp-space-md) 0;padding:var(--tp-space-md);background:var(--tp-color-surface);border:1px solid var(--tp-color-border);border-radius:var(--tp-radius-card)}
+.tp-club-filter-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--tp-space-md)}
+.tp-club-filter-grid .tp-field{min-width:0}
+.tp-club-radius-field input[type=range]{accent-color:var(--tp-color-brand);padding:0;min-height:1.5rem}
+.tp-club-radius-ticks{display:flex;justify-content:space-between;color:var(--tp-color-text-secondary);font-size:var(--tp-font-size-xs)}
+.tp-club-radius-ticks span{flex:1;text-align:center}
+.tp-club-notes{margin:var(--tp-space-sm) 0}
+.tp-club-notes .tp-note{font-size:var(--tp-font-size-sm);margin-bottom:var(--tp-space-2xs)}
+.tp-club-mobile-tabs{display:none;gap:var(--tp-space-xs);margin:var(--tp-space-sm) 0}
+.tp-club-mobile-tabs button{flex:1;min-height:44px;border:1px solid var(--tp-color-border);background:var(--tp-color-surface);border-radius:var(--tp-radius-control)}
+.tp-club-mobile-tabs button[aria-pressed=true]{background:var(--tp-color-brand-tint);border-color:var(--tp-color-brand);color:var(--tp-color-brand-text)}
+.tp-clubs-layout{display:grid;grid-template-columns:minmax(18rem,.9fr) minmax(0,1.35fr);gap:var(--tp-space-lg);align-items:start}
+.tp-clubs-list{min-width:0}
+.tp-club-list-head,.tp-club-map-heading{display:flex;justify-content:space-between;align-items:center;gap:var(--tp-space-sm);margin-bottom:var(--tp-space-sm)}
+.tp-club-list-head h2{font-size:var(--tp-font-size-xl);margin:0}
+.tp-club-cards{display:grid;gap:var(--tp-space-sm)}
+.tp-club-card{padding:var(--tp-space-md);background:var(--tp-color-surface);border:1px solid var(--tp-color-border);border-radius:var(--tp-radius-card);transition:border-color var(--tp-motion-fast),background var(--tp-motion-fast)}
+.tp-club-card.is-map-active{border-color:var(--tp-color-brand);background:var(--tp-color-brand-tint)}
+.tp-club-card h3{font-size:var(--tp-font-size-lg);margin-bottom:var(--tp-space-2xs)}
+.tp-club-card p{margin-bottom:var(--tp-space-xs)}
+.tp-club-card-actions{display:flex;gap:var(--tp-space-xs);flex-wrap:wrap;margin-top:var(--tp-space-sm)}
+.tp-club-map-panel{min-width:0;position:sticky;top:5rem}
+.tp-club-map-heading{margin-bottom:var(--tp-space-xs)}
+.tp-club-map-heading b{font-size:var(--tp-font-size-lg)}
+.tp-neshan-map{position:relative;width:100%;height:32rem;min-height:18rem;overflow:hidden;border:1px solid var(--tp-color-border);border-radius:var(--tp-radius-card);background:var(--tp-color-surface)}
+.tp-neshan-map-small{height:16rem;max-width:44rem}
+.tp-map-placeholder{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--tp-space-xs);padding:var(--tp-space-lg);text-align:center;color:var(--tp-color-text-secondary);background:linear-gradient(135deg,var(--tp-color-surface),var(--tp-color-bg));pointer-events:none}
+.tp-map-placeholder b{color:var(--tp-color-text-primary)}
+.tp-map-placeholder p{max-width:28rem;font-size:var(--tp-font-size-sm);margin:0}
+.tp-map-placeholder-pin{display:grid;place-items:center;width:3rem;height:3rem;border-radius:var(--tp-radius-round);background:var(--tp-color-brand-tint);color:var(--tp-color-brand-text);font-size:2rem}
+.tp-map-status{margin-top:var(--tp-space-xs)}
+.tp-map-popup{direction:rtl;min-width:10rem;text-align:right;font-family:var(--tp-font-family)}
+.tp-map-popup p{margin:.25rem 0}
+.tp-map-popup-distance{font-size:var(--tp-font-size-xs);color:var(--tp-color-text-secondary)}
+.tp-map-popup a{display:inline-block;margin-top:.3rem;color:var(--tp-color-brand-text);font-weight:700}
+.tp-club-detail-grid{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:var(--tp-space-xl);align-items:start}
+.tp-club-cover{display:grid;place-items:center;min-height:14rem;border-radius:var(--tp-radius-card);background:var(--tp-color-surface);border:1px solid var(--tp-color-border);font-size:4rem}
+.tp-club-details{margin:var(--tp-space-md) 0}
+.tp-club-details>div{display:grid;grid-template-columns:9rem minmax(0,1fr);gap:var(--tp-space-sm);padding:var(--tp-space-xs) 0;border-bottom:1px solid var(--tp-color-border)}
+.tp-club-details dt{color:var(--tp-color-text-secondary)}
+.tp-club-details dd{margin:0}
+@media(max-width:1000px){.tp-club-filter-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.tp-clubs-layout{grid-template-columns:minmax(0,1fr)}.tp-club-map-panel{position:static}}
+@media(max-width:900px){.tp-club-mobile-tabs{display:flex}.tp-clubs-layout[data-mobile-tab=list] .tp-club-map-panel{display:none}.tp-clubs-layout[data-mobile-tab=map] .tp-clubs-list{display:none}.tp-neshan-map{height:65vh;min-height:22rem}}
+@media(max-width:600px){.tp-club-filter-grid{grid-template-columns:minmax(0,1fr)}.tp-club-filters{padding:var(--tp-space-sm)}.tp-neshan-map{height:60vh;min-height:20rem}.tp-club-detail-grid{grid-template-columns:minmax(0,1fr)}.tp-club-cover{min-height:8rem}.tp-club-details>div{grid-template-columns:minmax(0,1fr);gap:2px}}

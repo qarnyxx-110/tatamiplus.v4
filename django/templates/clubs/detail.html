@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ club.name }} | تاتامی پلاس{% endblock %}
+{% block description %}اطلاعات باشگاه {{ club.name }} و راه‌های تماس و موقعیت آن روی نقشه نشان.{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'css/clubs-map.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="w tp-club-detail">
+  <nav class="tp-crumbs" aria-label="مسیر صفحه">
+    <a href="{% url 'home' %}">خانه</a> /
+    <a href="{{ clubs_search_url|default:'#' }}">باشگاه‌ها</a> /
+    <span aria-current="page">{{ club.name }}</span>
+  </nav>
+
+  <div class="tp-club-detail-grid">
+    <div>
+      {% if club.cover_url %}
+        <img class="tp-club-cover-image" src="{{ club.cover_url }}" alt="{{ club.name }}">
+      {% else %}
+        <div class="tp-club-cover" aria-hidden="true">🏯</div>
+      {% endif %}
+    </div>
+    <div>
+      <h1>{{ club.name }}</h1>
+      <p class="mu">{{ club.city }}{% if club.address %} · {{ club.address }}{% endif %}</p>
+      {% if club.description %}<p>{{ club.description }}</p>{% endif %}
+      <dl class="tp-club-details">
+        {% if club.gender_label %}<div><dt>مناسب برای</dt><dd>{{ club.gender_label }}</dd></div>{% endif %}
+        {% if club.phone %}<div><dt>شماره تماس</dt><dd><a href="tel:{{ club.phone }}">{{ club.phone }}</a></dd></div>{% endif %}
+        {% if club.address %}<div><dt>نشانی</dt><dd>{{ club.address }}</dd></div>{% endif %}
+      </dl>
+      {% if club.neshan_directions_url %}
+        <a class="btn" href="{{ club.neshan_directions_url }}" target="_blank" rel="noopener noreferrer">مسیریابی با نشان</a>
+      {% else %}
+        <p class="mu sm">لینک مسیریابی پس از ارائهٔ URL مقصد از سمت بک‌اند فعال می‌شود.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <section class="d-s" aria-labelledby="club-map-heading">
+    <h2 id="club-map-heading">موقعیت باشگاه</h2>
+    <div id="tp-club-detail-map" class="tp-neshan-map tp-neshan-map-small"
+         data-map-key="{{ neshan_web_key|default:'' }}"
+         data-single="true"
+         data-single-lat="{{ club.latitude|default:'' }}"
+         data-single-lng="{{ club.longitude|default:'' }}"
+         data-club-name="{{ club.name }}"
+         data-club-city="{{ club.city }}"
+         data-status-id="tp-club-detail-map-status">
+      <div class="tp-map-placeholder">
+        <span class="tp-map-placeholder-pin" aria-hidden="true">⌖</span>
+        <b>موقعیت باشگاه</b>
+        <p>برای نمایش موقعیت، مختصات جغرافیایی باشگاه لازم است.</p>
+      </div>
+    </div>
+    <p class="mu sm tp-map-status" id="tp-club-detail-map-status" role="status"></p>
+  </section>
+
+  {% if club.coaches %}
+    <section class="d-s">
+      <h2>مربیان باشگاه</h2>
+      {% for coach in club.coaches %}
+        <div class="rec"><b>{{ coach.name }}</b>{% if coach.specialty %}<span>{{ coach.specialty }}</span>{% endif %}</div>
+      {% endfor %}
+    </section>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+  <script src="{% static 'js/clubs-map.js' %}" defer></script>
+{% endblock %}
