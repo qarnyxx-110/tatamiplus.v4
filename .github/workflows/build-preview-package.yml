@@ -6,6 +6,7 @@ on:
       - "feat/preview-course-catalog"
     paths:
       - "shared/src/**"
+      - "shared/public/assets/**"
       - "shared/build.js"
       - "shared/package.json"
       - ".github/workflows/build-preview-package.yml"
@@ -55,7 +56,11 @@ jobs:
             "ثبت‌نام در دوره",
             "جم‌های من",
             "تاریخچه تراکنش‌ها",
-            "موجودی واقعی هنوز به این نسخه متصل نشده است."
+            "موجودی واقعی هنوز به این نسخه متصل نشده است.",
+            "جستجوی باشگاه‌ها",
+            "نزدیک من",
+            "نقشهٔ نشان",
+            "اطلاعات فعلی: نمونه"
           ];
           for (const item of required) {
             if (!html.includes(item)) throw new Error("Missing Preview content: " + item);
@@ -66,6 +71,8 @@ jobs:
           JSON.parse(fs.readFileSync("dist/preview/assets/images/manifest.json", "utf8"));
           NODE
           node --check /tmp/tatami-preview-inline.js
+          node --check public/assets/neshan-config.js
+          test -s dist/preview/assets/neshan-config.js
 
       - name: Create cPanel upload ZIP
         working-directory: shared
