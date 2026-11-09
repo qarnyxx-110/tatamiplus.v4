@@ -47,7 +47,7 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
   const requestParams=new URL(clubApiRequestUrl).searchParams;
   S.ok('باشگاه‌ها: دریافت API حتی بدون Web Key نشان',radiusIds.length===1&&radiusIds[0]==='club-north-women');
   S.ok('باشگاه‌ها: اعمال جستجو/شهر/جنسیت/شعاع روی همان مجموعه داده',requestParams.get('query')==='باشگاه شمال'&&requestParams.get('city')==='تهران'&&requestParams.get('gender')==='women'&&requestParams.get('radius_km')==='5'&&requestParams.get('lat')==='35.72'&&requestParams.get('lng')==='51.4');
-  S.ok('باشگاه‌ها: رکوردهای نامعتبر و شناسه تکراری نادیده گرفته می‌شوند',(await pg.locator('#tp-club-notes').innerText()).includes('رکورد به‌دلیل نداشتن شناسه یا نام معتبر نمایش داده نشد'));
+  S.ok('باشگاه‌ها: رکوردهای نامعتبر و شناسه تکراری نادیده گرفته می‌شوند',(await pg.locator('#tp-club-notes').innerText()).includes('رکورد به‌دلیل شناسه/نام نامعتبر یا تکراری بودن شناسه نمایش داده نشد'));
   S.ok('باشگاه‌ها: نبود Web Key دریافت و فهرست API را متوقف نمی‌کند',(await pg.locator('#tp-club-map-status').innerText()).includes('فهرست باشگاه‌ها دریافت شد'));
   
   await pg.evaluate(()=>{
@@ -241,6 +241,80 @@ export async function runPwa(app,base,browser,altRoot){
  r=await get('/tatamipedia/ippon/');
  S.ok('صفحه پوششی اصطلاح: عنوان/توضیح و Redirect',r.s===200&&r.t.includes('ایپون')&&r.t.includes('og:title')&&r.t.includes('#/tatamipedia/ippon'));
  S.ok('صفحه پوششی بدون SITE_URL: canonical/og:url/og:image ساخته نمی‌شود (دامنه جعل نمی‌شود)',!r.t.includes('canonical')&&!r.t.includes('og:url')&&!r.t.includes('og:image'));
+ await ctx.close();
+ return S;
+}
+
+
+export async function runClubs(app,base,browser){
+ const S=new Suite('Club list/map '+app);
+ const ctx=await browser.newContext({viewport:{width:390,height:850},serviceWorkers:'block'});
+ const pg=await ctx.newPage();
+ const errors=[];
+ pg.on('pageerror',e=>errors.push(String(e)));
+ await pg.goto(base+'/index.html');
+ await wait(250);
+ const go=async hash=>{await pg.evaluate(h=>{location.hash=h},hash);await wait(100)};
+ const txt=()=>pg.locator('#app').innerText();
+ await go('#/clubs');
+ const sample=await pg.locator('#tp-club-cards[data-source="sample"] [data-club-id]').count();
+ S.ok('داده نمونه: شش کارت با برچسب نمونه',sample===6&&(await txt()).includes('داده‌های نمونه'));
+ S.ok('داده نمونه: فیلتر جنسیت و شعاع بدون API غیرفعال‌اند',await pg.locator('#tp-club-gender').isDisabled()&&await pg.locator('#tp-club-radius').isDisabled());
+ S.ok('داده نمونه: مختصات و فاصله ساختگی نمایش داده نمی‌شود',!(await pg.locator('#tp-club-cards').innerText()).includes('کیلومتر')&&(await txt()).includes('مختصات جغرافیایی در دادهٔ نمونه ثبت نشده است'));
+ const rows=[
+  {id:'club-north-women',name:'باشگاه شمال بانوان',city:'تهران',coach_name:'سارا احمدی',description:'تمرین بانوان در شمال تهران',status:'registration_open',gender:'women',student_count:20,schedule:'شنبه و دوشنبه',latitude:35.7201,longitude:51.4001},
+  {id:'club-north-men',name:'باشگاه شمال آقایان',city:'تهران',coach_name:'رضا کیانی',description:'تمرین آقایان',status:'active',gender:'men',student_count:15,latitude:35.7202,longitude:51.4001},
+  {id:'club-south-women',name:'باشگاه جنوب بانوان',city:'شیراز',coach_name:'مربی نمونه',description:'تمرین شیراز',status:'active',gender:'women',latitude:29.6000,longitude:52.5000},
+  {id:'club-north-far',name:'باشگاه شمال دور',city:'تهران',coach_name:'مربی نمونه',description:'بیرون از شعاع پنج کیلومتر',status:'active',gender:'women',latitude:35.8000,longitude:51.4000},
+  {id:'club-north-no-coord',name:'باشگاه شمال بدون مختصات',city:'تهران',coach_name:'مربی نمونه',description:'مختصات هنوز ثبت نشده',status:'pending',gender:'women',student_count:8}
+ ];
+ let status=200,requestUrl='';
+ await pg.route('**/__tp_test_api/clubs*',async route=>{
+  requestUrl=route.request().url();
+  if(status!==200){await route.fulfill({status,contentType:'text/plain',body:'temporarily unavailable'});return}
+  await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({results:[...rows,rows[0],{name:'رکورد بدون شناسه',city:'تهران'}]})});
+ });
+ await pg.evaluate(()=>{window.TP_CLUBS_JSON_URL='/__tp_test_api/clubs';window.TP_NESHAN_WEB_KEY=''});
+ const filtered='#/clubs?query='+encodeURIComponent('باشگاه شمال')+'&city='+encodeURIComponent('تهران')+'&gender=women&radius_km=5&lat=35.72&lng=51.4';
+ await go(filtered);
+ await pg.waitForFunction(()=>document.querySelector('#tp-club-cards')?.dataset.source==='api');
+ const selected=await pg.locator('#tp-club-cards [data-club-id]').evaluateAll(es=>es.map(e=>e.dataset.clubId));
+ const params=new URL(requestUrl).searchParams;
+ S.ok('API بدون Web Key: فهرست همچنان بارگذاری می‌شود',selected.length===1&&selected[0]==='club-north-women'&&(await pg.locator('#tp-club-map-status').innerText()).includes('فهرست باشگاه‌ها دریافت شد'));
+ S.ok('فیلتر ترکیبی: جستجو، شهر، جنسیت و شعاع',params.get('query')==='باشگاه شمال'&&params.get('city')==='تهران'&&params.get('gender')==='women'&&params.get('radius_km')==='5'&&params.get('lat')==='35.72'&&params.get('lng')==='51.4');
+ S.ok('اعتبارسنجی: شناسه تکراری و رکورد ناقص حذف می‌شوند',(await pg.locator('#tp-club-notes').innerText()).includes('شناسه/نام نامعتبر یا تکراری بودن شناسه'));
+ await pg.evaluate(()=>{
+  window.TP_NESHAN_WEB_KEY='test-web-key';
+  window.L={
+   Map:class{constructor(id,options){this.id=id;this.options=options;this._markers=[];window.__tpFakeClubMap=this}remove(){this._removed=true}panTo(point){this._lastPan=point}setView(point,zoom){this._view={point,zoom}}fitBounds(bounds){this._bounds=bounds}invalidateSize(){}},
+   marker(point){return{point,addTo(map){this.map=map;map._markers.push(this);return this},bindPopup(html){this.popup=html;return this},openPopup(){return this}}},
+   featureGroup(markers){return{getBounds(){return{pad(){return{}}}}}}
+  };
+ });
+ await go('#/clubs?query='+encodeURIComponent('باشگاه شمال')+'&city='+encodeURIComponent('تهران')+'&gender=women');
+ await pg.waitForFunction(()=>window.__tpFakeClubMap&&window.__tpFakeClubMap._markers.length===2);
+ const cards=await pg.locator('#tp-club-cards[data-source="api"] [data-club-id]').evaluateAll(es=>es.map(e=>e.dataset.clubId));
+ const markers=await pg.evaluate(()=>({points:window.__tpFakeClubMap._markers.map(m=>m.point),status:document.getElementById('tp-club-map-status').innerText}));
+ S.ok('همگامی فهرست و نقشه: کارت‌ها از پاسخ API',cards.length===3&&cards.includes('club-north-women')&&cards.includes('club-north-far')&&cards.includes('club-north-no-coord')&&!cards.includes('0'));
+ S.ok('مختصات: فقط دو رکورد معتبر نشانک می‌گیرند',markers.points.length===2&&markers.status.includes('نشانک روی نقشه نمایش داده شد'));
+ await pg.locator('#tp-club-cards [data-club-id="club-north-women"]').hover();
+ S.ok('تعامل: انتخاب کارت، نقشه را به مختصات همان باشگاه می‌برد',await pg.evaluate(()=>Array.isArray(window.__tpFakeClubMap._lastPan)&&window.__tpFakeClubMap._lastPan[0]===35.7201));
+ S.ok('شهرها: شهرهای API به انتخاب‌گر افزوده می‌شوند',await pg.locator('#tp-club-city option').evaluateAll(es=>es.some(e=>e.value==='شیراز')));
+ status=503;
+ await go('#/clubs?query='+encodeURIComponent('باشگاه شمال'));
+ await pg.waitForFunction(()=>document.querySelector('#tp-club-cards')?.dataset.source==='error');
+ S.ok('خطای API: بدون برگشت پنهانی به داده نمونه',await pg.locator('#tp-club-cards [data-club-id]').count()===0&&(await pg.locator('#tp-club-list-status').innerText()).includes('HTTP 503'));
+ await go('#/club/0');
+ const detail=await txt();
+ S.ok('جزئیات نمونه: بدون نشانی یا مختصات جعلی',detail.includes('نشانی دقیق')&&detail.includes('در دادهٔ نمونه ثبت نشده است.'));
+ await go('#/clubs');
+ for(const width of [320,360,390]){
+  await pg.setViewportSize({width,height:850});
+  await wait(80);
+  const overflow=await pg.evaluate(()=>document.documentElement.scrollWidth>document.documentElement.clientWidth);
+  S.ok('واکنش‌گرایی صفحه باشگاه‌ها در '+width+'px',!overflow);
+ }
+ S.ok('بدون خطای JavaScript در صفحه باشگاه‌ها',errors.length===0,errors.join(' | '));
  await ctx.close();
  return S;
 }
