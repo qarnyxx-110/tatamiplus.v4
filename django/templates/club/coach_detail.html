@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% load static humanize %}
+{% block title %}دوره‌های {{ coach.display_name }} | تاتامی پلاس{% endblock %}
+{% block description %}معرفی مربی و دوره‌های آموزشی او در تاتامی پلاس.{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'css/courses.css' %}">{% endblock %}
+{% block content %}
+<div class="w tp-course-page">
+  <nav class="tp-crumbs" aria-label="مسیر صفحه"><ol><li><a href="{% url 'home' %}">خانه</a></li><li><a href="{% url 'club:list' %}">دوره‌ها</a></li><li aria-current="page">{{ coach.display_name }}</li></ol></nav>
+  <header class="tp-coach-hero">
+    <div class="tp-coach-photo">{% if coach.photo_url %}<img src="{{ coach.photo_url }}" alt="تصویر {{ coach.display_name }}">{% elif coach.photo %}<img src="{{ coach.photo.url }}" alt="تصویر {{ coach.display_name }}">{% else %}<span aria-hidden="true">{{ coach.display_name|first }}</span>{% endif %}</div>
+    <div><p class="tp-kicker">مربی دوره‌های آموزشی</p><h1>{{ coach.display_name }}</h1>{% if coach.headline %}<p class="tp-coach-headline">{{ coach.headline }}</p>{% endif %}{% if coach.biography %}<div class="tp-coach-bio">{{ coach.biography|linebreaks }}</div>{% endif %}
+      <div class="tp-course-meta">{% if coach.level_label %}<span class="tp-chip">{{ coach.level_label }}</span>{% endif %}{% if coach.specialty_label %}<span class="tp-chip">{{ coach.specialty_label }}</span>{% endif %}</div>
+    </div>
+  </header>
+  <section class="tp-course-section" aria-labelledby="coach-courses-title">
+    <div class="tp-course-section-head"><div><p class="tp-kicker">مسیرهای یادگیری</p><h2 id="coach-courses-title">دوره‌های این مربی</h2></div><span class="tp-muted">{{ page_obj.paginator.count|intcomma }} دوره</span></div>
+    {% if courses %}<div class="tp-course-grid">{% for course in courses %}{% include 'components/course_card.html' with course=course %}{% endfor %}</div>
+      {% if page_obj.paginator.num_pages > 1 %}<nav class="tp-course-pagination" aria-label="صفحه‌بندی دوره‌های مربی">{% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}" rel="prev">صفحهٔ قبل</a>{% else %}<span class="is-disabled">صفحهٔ قبل</span>{% endif %}<span>صفحهٔ {{ page_obj.number|intcomma }} از {{ page_obj.paginator.num_pages|intcomma }}</span>{% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}" rel="next">صفحهٔ بعد</a>{% else %}<span class="is-disabled">صفحهٔ بعد</span>{% endif %}</nav>{% endif %}
+    {% else %}<div class="tp-course-empty"><h3>هنوز دوره‌ای برای این مربی منتشر نشده است</h3><p>با انتشار دوره، فهرست آن در همین صفحه نمایش داده می‌شود.</p></div>{% endif %}
+  </section>
+</div>
+{% endblock %}

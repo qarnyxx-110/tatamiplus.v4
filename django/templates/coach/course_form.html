@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% load static humanize %}
+{% block title %}{% if course %}ویرایش دوره{% else %}ساخت دوره{% endif %} | تاتامی پلاس{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'css/courses.css' %}">{% endblock %}
+{% block content %}
+<div class="w tp-course-page tp-course-editor">
+  <nav class="tp-crumbs" aria-label="مسیر صفحه"><ol><li><a href="{% url 'home' %}">خانه</a></li><li><a href="{% url 'coaches:courses' %}">دوره‌های من</a></li><li aria-current="page">{% if course %}ویرایش دوره{% else %}ساخت دوره{% endif %}</li></ol></nav>
+  <header class="tp-course-page-head"><div><p class="tp-kicker">پنل مربی</p><h1>{% if course %}ویرایش دورهٔ {{ course.title }}{% else %}ساخت دورهٔ جدید{% endif %}</h1><p class="mu">اطلاعات دوره و قسمت‌ها را ثبت کنید. ترتیب قسمت‌ها با کشیدن و رها کردن قابل تغییر است.</p></div><a class="btn o" href="{% url 'coaches:courses' %}">بازگشت به دوره‌ها</a></header>
+  <form method="post" enctype="multipart/form-data" data-course-upload-form data-video-extensions="{{ video_allowed_extensions|join:',' }}" data-video-max-bytes="{{ video_max_size_bytes|default:0 }}">
+    {% csrf_token %}
+    {% if form.non_field_errors %}<div class="tp-form-errors" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+    <section class="tp-editor-section" aria-labelledby="course-fields-title"><h2 id="course-fields-title">اطلاعات اصلی دوره</h2>
+      {% for field in form.hidden_fields %}{{ field }}{% endfor %}
+      <div class="tp-editor-fields">{% for field in form.visible_fields %}<div class="tp-field{% if field.errors %} has-error{% endif %}"><label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %}<span aria-hidden="true"> *</span>{% endif %}</label>{{ field }}{% if field.help_text %}<small class="tp-muted">{{ field.help_text }}</small>{% endif %}{% if field.errors %}<div class="tp-field-errors" role="alert">{{ field.errors }}</div>{% endif %}</div>{% endfor %}</div>
+    </section>
+    <section class="tp-editor-section" aria-labelledby="episodes-form-title"><div class="tp-editor-section-head"><div><h2 id="episodes-form-title">قسمت‌های دوره</h2><p class="tp-muted">برای جابه‌جایی، دستهٔ کنار هر قسمت را بکشید و در جای جدید رها کنید.</p></div><button class="btn o s" type="button" data-add-episode>افزودن قسمت</button></div>
+      {{ episode_formset.management_form }}
+      {% if episode_formset.non_form_errors %}<div class="tp-form-errors" role="alert">{{ episode_formset.non_form_errors }}</div>{% endif %}
+      <div class="tp-episode-editor-list" data-sortable-list>
+        {% for episode_form in episode_formset.forms %}
+          <article class="tp-episode-editor-card" data-episode-item draggable="false">
+            {% for hidden in episode_form.hidden_fields %}{{ hidden }}{% endfor %}
+            <div class="tp-episode-editor-top"><button type="button" class="tp-drag-handle" data-drag-handle aria-label="جابجایی قسمت" title="برای جابه‌جایی بکشید">⠿</button><strong>قسمت <span data-episode-number>{{ forloop.counter|intcomma }}</span></strong><div class="tp-episode-order-actions"><button type="button" class="btn o s" data-move-up aria-label="انتقال قسمت به بالا">↑</button><button type="button" class="btn o s" data-move-down aria-label="انتقال قسمت به پایین">↓</button><button type="button" class="btn o s" data-remove-episode>حذف</button></div>{% if episode_form.DELETE %}<label class="tp-delete-toggle">{{ episode_form.DELETE }} حذف این قسمت</label>{% endif %}</div>
+            {% if episode_form.non_field_errors %}<div class="tp-field-errors" role="alert">{{ episode_form.non_field_errors }}</div>{% endif %}
+            <div class="tp-editor-fields">{% for field in episode_form.visible_fields %}{% if field.name != 'video_file' and field.name != 'DELETE' %}<div class="tp-field{% if field.errors %} has-error{% endif %}"><label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% if field.errors %}<div class="tp-field-errors" role="alert">{{ field.errors }}</div>{% endif %}</div>{% endif %}{% endfor %}</div>
+            {% if episode_form.video_file %}<div class="tp-field tp-video-upload-field"><label for="{{ episode_form.video_file.id_for_label }}">ویدئوی قسمت</label><div class="tp-file-drop" data-drop-zone><span class="tp-file-drop-icon" aria-hidden="true">＋</span><span>فایل ویدئو را اینجا رها کنید یا انتخاب کنید</span>{{ episode_form.video_file }}<small class="tp-muted" data-file-name>فایلی انتخاب نشده است.</small></div>{% if episode_form.video_file.errors %}<div class="tp-field-errors" role="alert">{{ episode_form.video_file.errors }}</div>{% endif %}</div>{% endif %}
+          </article>
+        {% endfor %}
+      </div>
+      <template id="empty-episode-template"><article class="tp-episode-editor-card" data-episode-item draggable="false">{% for hidden in episode_formset.empty_form.hidden_fields %}{{ hidden }}{% endfor %}<div class="tp-episode-editor-top"><button type="button" class="tp-drag-handle" data-drag-handle aria-label="جابجایی قسمت">⠿</button><strong>قسمت <span data-episode-number>جدید</span></strong><div class="tp-episode-order-actions"><button type="button" class="btn o s" data-move-up aria-label="انتقال قسمت به بالا">↑</button><button type="button" class="btn o s" data-move-down aria-label="انتقال قسمت به پایین">↓</button><button type="button" class="btn o s" data-remove-episode>حذف</button></div>{% if episode_formset.empty_form.DELETE %}<label class="tp-delete-toggle">{{ episode_formset.empty_form.DELETE }} حذف این قسمت</label>{% endif %}</div><div class="tp-editor-fields">{% for field in episode_formset.empty_form.visible_fields %}{% if field.name != 'video_file' and field.name != 'DELETE' %}<div class="tp-field"><label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% if field.errors %}<div class="tp-field-errors">{{ field.errors }}</div>{% endif %}</div>{% endif %}{% endfor %}</div>{% if episode_formset.empty_form.video_file %}<div class="tp-field tp-video-upload-field"><label for="{{ episode_formset.empty_form.video_file.id_for_label }}">ویدئوی قسمت</label><div class="tp-file-drop" data-drop-zone><span class="tp-file-drop-icon" aria-hidden="true">＋</span><span>فایل ویدئو را اینجا رها کنید یا انتخاب کنید</span>{{ episode_formset.empty_form.video_file }}<small class="tp-muted" data-file-name>فایلی انتخاب نشده است.</small></div></div>{% endif %}</article></template>
+    </section>
+    <div class="tp-upload-status" data-upload-status hidden aria-live="polite"><div class="tp-upload-status-head"><strong data-upload-message>آماده‌سازی آپلود…</strong><span data-upload-percent>۰٪</span></div><progress max="100" value="0" data-upload-progress>۰٪</progress><button type="button" class="btn o s" data-cancel-upload>لغو آپلود</button></div>
+    <p class="tp-muted tp-small">فرمت‌ها و حداکثر حجم مجاز باید از تنظیمات تأییدشدهٔ سرور به این صفحه ارسال شوند. اعتبارسنجی مرورگر جایگزین اعتبارسنجی بک‌اند نیست.</p>
+    <div class="tp-editor-actions"><button class="btn" type="submit">{% if course %}ذخیره تغییرات{% else %}ثبت دوره{% endif %}</button><a class="btn o" href="{% url 'coaches:courses' %}">انصراف</a></div>
+  </form>
+</div>
+{% endblock %}
+{% block extra_js %}<script src="{% static 'js/course-ui.js' %}" defer></script>{% endblock %}

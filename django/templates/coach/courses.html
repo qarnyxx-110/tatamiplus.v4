@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% load static humanize %}
+{% block title %}مدیریت دوره‌های من | تاتامی پلاس{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'css/courses.css' %}">{% endblock %}
+{% block content %}
+<div class="w tp-course-page tp-coach-dashboard">
+  <nav class="tp-crumbs" aria-label="مسیر صفحه"><ol><li><a href="{% url 'home' %}">خانه</a></li><li aria-current="page">دوره‌های من</li></ol></nav>
+  <header class="tp-course-page-head"><div><p class="tp-kicker">پنل مربی</p><h1>دوره‌های من</h1><p class="mu">دوره‌های آموزشی خود را مدیریت کنید و وضعیت بررسی آن‌ها را ببینید.</p></div>{% url 'coaches:course_form' as course_form_url %}{% if course_form_url %}<a class="btn" href="{{ course_form_url }}">ساخت دورهٔ جدید</a>{% else %}<span class="tp-muted tp-small">مسیر ساخت دوره پس از اتصال بک‌اند فعال می‌شود.</span>{% endif %}</header>
+  <div class="tp-course-status-legend" aria-label="راهنمای وضعیت دوره"><span class="tp-status is-draft">پیش‌نویس</span><span class="tp-status is-review">در انتظار بررسی</span><span class="tp-status is-published">منتشر شده</span></div>
+  {% if courses %}<div class="tp-coach-course-list">{% for course in courses %}<article class="tp-coach-course-row">
+    <div class="tp-coach-course-cover">{% if course.cover_url %}<img src="{{ course.cover_url }}" alt="">{% elif course.cover_image %}<img src="{{ course.cover_image.url }}" alt="">{% else %}<span aria-hidden="true">دوره</span>{% endif %}</div>
+    <div class="tp-coach-course-info"><div class="tp-course-meta"><span class="tp-status is-{{ course.status }}">{% if course.status == 'draft' %}پیش‌نویس{% elif course.status == 'review' %}در انتظار بررسی{% elif course.status == 'published' %}منتشر شده{% else %}{{ course.status_label|default:course.status }}{% endif %}</span><span class="tp-muted">{{ course.level_label|default:course.level }}</span></div><h2>{{ course.title }}</h2><p class="tp-muted">{{ course.episode_count|intcomma }} قسمت · {% if course.updated_at_jalali %}آخرین ویرایش: {{ course.updated_at_jalali }}{% endif %}</p></div>
+    <div class="tp-coach-course-actions">{% if course.edit_url %}<a class="btn o s" href="{{ course.edit_url }}">ویرایش</a>{% endif %}{% if course.public_url and course.status == 'published' %}<a class="btn s" href="{{ course.public_url }}">مشاهدهٔ عمومی</a>{% endif %}</div>
+  </article>{% endfor %}</div>
+  {% if page_obj and page_obj.paginator.num_pages > 1 %}<nav class="tp-course-pagination" aria-label="صفحه‌بندی دوره‌های من">{% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}">قبلی</a>{% endif %}<span>صفحهٔ {{ page_obj.number|intcomma }} از {{ page_obj.paginator.num_pages|intcomma }}</span>{% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}">بعدی</a>{% endif %}</nav>{% endif %}
+  {% else %}<section class="tp-course-empty"><h2>هنوز دوره‌ای نساخته‌اید</h2><p>با ساخت اولین دوره، می‌توانید قسمت‌ها را اضافه و برای بررسی ارسال کنید.</p>{% if course_form_url %}<a class="btn" href="{{ course_form_url }}">ساخت اولین دوره</a>{% endif %}</section>{% endif %}
+</div>
+{% endblock %}

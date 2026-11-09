@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% load static humanize %}
+{% block title %}{{ course.title }} | تاتامی پلاس{% endblock %}
+{% block description %}جزئیات دورهٔ {{ course.title }}، معرفی مربی و فهرست قسمت‌ها.{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'css/courses.css' %}">{% endblock %}
+{% block content %}
+<div class="w tp-course-page tp-course-detail">
+  <nav class="tp-crumbs" aria-label="مسیر صفحه"><ol><li><a href="{% url 'home' %}">خانه</a></li><li><a href="{% url 'club:list' %}">دوره‌ها</a></li><li aria-current="page">{{ course.title }}</li></ol></nav>
+  <div class="tp-course-detail-grid">
+    <section class="tp-course-main">
+      <div class="tp-course-detail-cover">{% if course.cover_url %}<img src="{{ course.cover_url }}" alt="{% if course.cover_alt %}{{ course.cover_alt }}{% else %}{{ course.title }}{% endif %}">{% elif course.cover_image %}<img src="{{ course.cover_image.url }}" alt="{{ course.title }}">{% else %}<span aria-hidden="true">تاتامی پلاس</span>{% endif %}</div>
+      <p class="tp-kicker">دورهٔ آموزشی جودو</p><h1>{{ course.title }}</h1>
+      <div class="tp-course-meta"><span class="tp-chip">{{ course.level_label|default:course.level }}</span><span class="tp-muted">{{ course.episode_count|intcomma }} قسمت</span>{% if course.first_episode_free %}<span class="tp-chip tp-chip-free">قسمت اول رایگان</span>{% endif %}</div>
+      <div class="tp-course-description">{{ course.description|linebreaks }}</div>
+      {% if course.coach %}<a class="tp-course-coach tp-course-coach-large" href="{% url 'club:coach_detail' slug=course.coach.slug %}">{% if course.coach.photo_url %}<img src="{{ course.coach.photo_url }}" alt="">{% elif course.coach.photo %}<img src="{{ course.coach.photo.url }}" alt="">{% else %}<span class="tp-avatar" aria-hidden="true">{{ course.coach.display_name|first }}</span>{% endif %}<span><small>مدرس دوره</small><strong>{{ course.coach.display_name }}</strong></span><span class="tp-text-link">مشاهدهٔ پروفایل</span></a>{% endif %}
+    </section>
+    <aside class="tp-course-side" aria-label="اطلاعات و ثبت‌نام دوره">
+      <div class="tp-course-pricebox"><span class="tp-muted">هزینهٔ دوره</span><strong>{{ course.price|intcomma }} <small>{{ course.currency_label|default:'تومان' }}</small></strong>
+        {% if is_enrolled %}{% if first_watchable_episode %}<a class="btn" href="{% url 'club:episode' slug=first_watchable_episode.slug %}">ادامهٔ تماشا</a>{% else %}<span class="tp-course-note">هنوز قسمت قابل تماشایی برای این دوره ثبت نشده است.</span>{% endif %}
+        {% else %}<button class="btn" type="button" data-open-purchase aria-haspopup="dialog" aria-controls="course-purchase-dialog">خرید دوره</button>{% endif %}
+        <p class="tp-muted tp-small">{% if is_enrolled %}دسترسی این حساب به دوره فعال است.{% else %}برای مشاهدهٔ قسمت‌های قفل‌شده باید دسترسی دوره فعال شود.{% endif %}</p>
+      </div>
+      <div class="tp-course-facts"><div><span>سطح دوره</span><b>{{ course.level_label|default:course.level }}</b></div><div><span>تعداد قسمت‌ها</span><b>{{ course.episode_count|intcomma }}</b></div><div><span>مدرس</span><b>{{ course.coach.display_name }}</b></div></div>
+    </aside>
+  </div>
+  <section class="tp-course-section" aria-labelledby="episodes-title"><div class="tp-course-section-head"><div><p class="tp-kicker">برنامهٔ آموزشی</p><h2 id="episodes-title">قسمت‌های دوره</h2></div><span class="tp-muted">علامت قفل یعنی این قسمت برای حساب شما قابل مشاهده نیست.</span></div>
+    {% if episodes %}<div class="tp-episode-list">{% for episode in episodes %}{% include 'components/course_episode_row.html' with episode=episode %}{% endfor %}</div>{% else %}<div class="tp-course-empty"><p>هنوز قسمتی برای این دوره ثبت نشده است.</p></div>{% endif %}
+  </section>
+</div>
+{% url 'club:course_purchase' slug=course.slug as course_purchase_url %}
+<dialog class="tp-course-dialog" id="course-purchase-dialog" aria-labelledby="course-purchase-title">
+  <form method="dialog" class="tp-course-dialog-close"><button class="ib" type="submit" aria-label="بستن پنجره">×</button></form>
+  <p class="tp-kicker">دسترسی به دوره</p><h2 id="course-purchase-title">برای دیدن بقیهٔ قسمت‌ها دوره را بخرید</h2><p>{{ course.title }}</p><strong class="tp-dialog-price">{{ course.price|intcomma }} {{ course.currency_label|default:'تومان' }}</strong>
+  {% if course_purchase_url %}<form method="post" action="{{ course_purchase_url }}">{% csrf_token %}<button class="btn" type="submit">ادامهٔ فرایند خرید</button></form>{% else %}<button class="btn" type="button" disabled>خرید پس از آماده‌شدن سرویس سفارش فعال می‌شود</button><p class="tp-muted tp-small">در نسخهٔ فعلی بک‌اند، سفارش و خرید دوره پیاده‌سازی نشده است.</p>{% endif %}
+</dialog>
+<div class="tp-course-sticky-buy" aria-label="ادامهٔ دوره یا خرید">{% if is_enrolled %}<span>دسترسی فعال</span>{% if first_watchable_episode %}<a class="btn" href="{% url 'club:episode' slug=first_watchable_episode.slug %}">ادامهٔ تماشا</a>{% endif %}{% else %}<span>{{ course.price|intcomma }} {{ course.currency_label|default:'تومان' }}</span><button class="btn" type="button" data-open-purchase>خرید دوره</button>{% endif %}</div>
+{% endblock %}
+{% block extra_js %}<script src="{% static 'js/course-ui.js' %}" defer></script>{% endblock %}
