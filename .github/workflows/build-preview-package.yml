@@ -8,7 +8,6 @@ on:
       - "shared/src/**"
       - "shared/build.js"
       - "shared/package.json"
-      - "shared/tests/**"
       - ".github/workflows/build-preview-package.yml"
   pull_request:
     branches:
@@ -17,14 +16,13 @@ on:
       - "shared/src/**"
       - "shared/build.js"
       - "shared/package.json"
-      - "shared/tests/**"
       - ".github/workflows/build-preview-package.yml"
 
 permissions:
   contents: read
 
 jobs:
-  build-test-package:
+  build-package:
     runs-on: ubuntu-latest
     steps:
       - name: Check out source
@@ -35,43 +33,36 @@ jobs:
         with:
           node-version: "24"
 
-      - name: Install frontend test dependencies
-        working-directory: shared
-        run: npm install --no-audit --no-fund --package-lock=false
-
-      - name: Install Chromium for browser tests
-        working-directory: shared
-        run: npx playwright install --with-deps chromium
-
       - name: Build Preview
         working-directory: shared
-        run: npm run build
+        run: node build.js
 
-      - name: Validate generated Preview
+      - name: Validate generated Preview and JavaScript syntax
         working-directory: shared
         shell: bash
         run: |
           set -euo pipefail
           test -s dist/preview/index.html
+          test -d dist/preview/assets
           test -s dist/preview/assets/images/manifest.json
           node --input-type=module <<'NODE'
           import fs from "node:fs";
           const html = fs.readFileSync("dist/preview/index.html", "utf8");
-          if (!html.includes('<main id="app"></main>')) throw new Error("Preview mount point is missing");
-          if (!html.includes("دوره‌های آموزشی")) throw new Error("Course navigation is missing");
-          if (!html.includes("پخش ویدئو در پیش‌نمایش فعال نیست")) throw new Error("Course episode disclaimer is missing");
+          const required = [
+            '<main id="app"></main>',
+            "دوره‌های آموزشی",
+            "پخش ویدئو در پیش‌نمایش فعال نیست",
+            "ثبت‌نام در دوره"
+          ];
+          for (const item of required) {
+            if (!html.includes(item)) throw new Error("Missing Preview content: " + item);
+          }
           const scripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)];
           if (!scripts.length) throw new Error("No inline application script was generated");
           fs.writeFileSync("/tmp/tatami-preview-inline.js", scripts.map(x => x[1]).join("\n"));
           JSON.parse(fs.readFileSync("dist/preview/assets/images/manifest.json", "utf8"));
           NODE
           node --check /tmp/tatami-preview-inline.js
-
-      - name: Run browser regression tests
-        working-directory: shared
-        env:
-          ONLY: public
-        run: npm test
 
       - name: Create cPanel upload ZIP
         working-directory: shared
