@@ -52,7 +52,10 @@ jobs:
             '<main id="app"></main>',
             "دوره‌های آموزشی",
             "پخش ویدئو در پیش‌نمایش فعال نیست",
-            "ثبت‌نام در دوره"
+            "ثبت‌نام در دوره",
+            "جم‌های من",
+            "تاریخچه تراکنش‌ها",
+            "موجودی واقعی هنوز به این نسخه متصل نشده است."
           ];
           for (const item of required) {
             if (!html.includes(item)) throw new Error("Missing Preview content: " + item);
