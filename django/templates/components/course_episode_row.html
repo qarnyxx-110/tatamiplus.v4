@@ -1,0 +1,13 @@
+{% if episode.can_watch %}
+  <a class="tp-episode-row{% if current_episode and current_episode.pk == episode.pk %} is-current{% endif %}" href="{% url 'club:episode' slug=episode.slug %}">
+    <span class="tp-episode-icon" aria-hidden="true">▶</span>
+    <span class="tp-episode-main"><strong>{{ forloop.counter|default:episode.order }}. {{ episode.title }}</strong>{% if episode.duration %}<small>{{ episode.duration }}</small>{% endif %}</span>
+    {% if episode.is_free %}<span class="tp-chip tp-chip-free">رایگان</span>{% else %}<span class="tp-chip">قابل مشاهده</span>{% endif %}
+  </a>
+{% else %}
+  <button class="tp-episode-row is-locked" type="button" data-open-purchase aria-haspopup="dialog" aria-controls="course-purchase-dialog">
+    <span class="tp-episode-icon" aria-hidden="true">▣</span>
+    <span class="tp-episode-main"><strong>{{ forloop.counter|default:episode.order }}. {{ episode.title }}</strong>{% if episode.duration %}<small>{{ episode.duration }}</small>{% endif %}</span>
+    <span class="tp-chip tp-chip-locked">قفل‌شده</span>
+  </button>
+{% endif %}
