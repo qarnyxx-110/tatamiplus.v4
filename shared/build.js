@@ -40,7 +40,10 @@ function page(name,pwa){const a=APPS[name],cfg={...a};delete cfg.name;delete cfg
 function marketing(){const js=`const TP_CMS=${JSON.stringify({apiBase:API,mode:API?'api':'demo'})},BL_SEED=${JSON.stringify(R('data/blog-seed.json')?JSON.parse(R('data/blog-seed.json')):[])},TPD_SEED=${JSON.stringify(DATA.tpd)},TP_DEMO_AUTHOR='تیم مارکتینگ';\n`+MKT_JS.map(R).join('\n');
  return dropGoogle(R('marketing.html')).replace('/*CSS*/',()=>baseCss(R('css/marketing.css'))).replace('/*JS*/',()=>min(js,'js'))}
 const OUT=process.env.OUT?path.resolve(process.env.OUT):J('dist');
-const keep=s=>!/[\\/]assets[\\/]/.test(s)||fs.statSync(s).isDirectory()||/\.(jpe?g|png|webp|avif)$/i.test(s);
+// فایل تنظیمات نشان به‌صورت عمومی در هر PWA لازم است؛ سایر فایل‌های assets همچنان فقط بر اساس allowlist کپی می‌شوند.
+const NESHAN_CONFIG_SRC=J('public/assets/neshan-config.js');
+const NESHAN_CONFIG=fs.readFileSync(NESHAN_CONFIG_SRC,'utf8');
+const keep=s=>!/[\\/]assets[\\/]/.test(s)||fs.statSync(s).isDirectory()||/\.(jpe?g|png|webp|avif)$/i.test(s)||path.resolve(s)===NESHAN_CONFIG_SRC;
 const prune=d=>{for(const e of fs.readdirSync(d,{withFileTypes:true}))if(e.isDirectory()){prune(path.join(d,e.name));if(!fs.readdirSync(path.join(d,e.name)).length)fs.rmdirSync(path.join(d,e.name))}};
 const meta=(title,desc,url,img)=>`<title>${title} | تاتامی پلاس</title><meta name="description" content="${desc}"><meta property="og:title" content="${title}"><meta property="og:description" content="${desc}"><meta property="og:type" content="website">${SITE&&url?`<link rel="canonical" href="${SITE}/${url}"><meta property="og:url" content="${SITE}/${url}">`:''}${SITE&&img?`<meta property="og:image" content="${SITE}/${img}">`:''}`;
 // صفحه پوششی استاتیک: آدرس خوانا + متادیتا اختصاصی؛ سپس به مسیر هش‌محور برنامه هدایت می‌شود
@@ -56,7 +59,7 @@ for(const n of ['student','coach','club']){const a=APPS[n],o=path.join(OUT,n);fs
  for(const t of DATA.tpd.terms.filter(t=>t.status!=='draft'))stub(o,'tatamipedia/'+t.slug,'tatamipedia/'+t.slug,strip(t.nameFa+' — تاتامی‌پدیا'),strip(t.meaning+'. '+t.description.slice(0,110)),AVAIL.includes('tatamipedia/'+t.slug+'.jpg')?'assets/images/tatamipedia/'+t.slug+'.jpg':'');
  fs.writeFileSync(o+'/manifest.webmanifest',JSON.stringify({id:'./',name:a.name,short_name:a.short,description:a.desc,lang:'fa',dir:'rtl',start_url:a.start,scope:'./',display:'standalone',orientation:'portrait',background_color:'#121418',theme_color:'#121418',icons:[{src:'icons/icon-192.png',sizes:'192x192',type:'image/png',purpose:'any'},{src:'icons/icon-512.png',sizes:'512x512',type:'image/png',purpose:'any'},{src:'icons/maskable-512.png',sizes:'512x512',type:'image/png',purpose:'maskable'}]},null,1));
  // نسخه Cache از محتوای Build ساخته می‌شود: هر تغییر در سورس ← نام Cache جدید ← به‌روزرسانی خودکار
- const ver=sha(html+JSON.stringify(AVAIL)+FONTS.join()),shell=['./','index.html','offline.html','manifest.webmanifest','icons/icon-192.png','icons/icon-512.png',...FONTS.map(f=>'fonts/'+f)];
+ const ver=sha(html+JSON.stringify(AVAIL)+FONTS.join()+NESHAN_CONFIG),shell=['./','index.html','offline.html','manifest.webmanifest','icons/icon-192.png','icons/icon-512.png','assets/neshan-config.js',...FONTS.map(f=>'fonts/'+f)];
  fs.writeFileSync(o+'/sw.js',fs.readFileSync(o+'/sw.js','utf8').replace("'tatami-v2'",`'tatami-${n}-${ver}'`).replace("SHELL=['./','index.html','offline.html','manifest.webmanifest','icons/icon-192.png','icons/icon-512.png']",'SHELL='+JSON.stringify(shell)));
  console.log(n,fs.statSync(o+'/index.html').size,'bytes · cache',ver)}
 {const o=path.join(OUT,'marketing');fs.rmSync(o,{recursive:true,force:true});fs.mkdirSync(o,{recursive:true});fs.writeFileSync(o+'/index.html',marketing());console.log('marketing',fs.statSync(o+'/index.html').size,'bytes · mode',API?'api':'demo')}
