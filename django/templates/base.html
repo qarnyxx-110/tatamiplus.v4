@@ -10,6 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Lalezar&family=Vazirmatn:wght@400;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{% static 'css/tatami.css' %}">
+  {% block extra_head %}{% endblock %}
   <script src="{% static 'js/tatami.js' %}" defer></script>
 </head>
 <body>
@@ -85,5 +86,6 @@
   <p class="mu sm">{% block footer_note %}تاتامی پلاس — نسخهٔ آزمایشی{% endblock %}</p>
 </footer>
 {% endwith %}
+{% block extra_scripts %}{% endblock %}
 </body>
 </html>
