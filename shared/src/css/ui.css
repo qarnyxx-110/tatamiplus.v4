@@ -511,7 +511,7 @@ input[aria-invalid=true],select[aria-invalid=true],textarea[aria-invalid=true]{b
 .tp-club-filters{margin:var(--tp-space-md) 0;padding:var(--tp-space-md);background:var(--tp-color-surface);border:1px solid var(--tp-color-border);border-radius:var(--tp-radius-card)}
 .tp-club-filter-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--tp-space-md)}
 .tp-club-filter-grid .tp-field{min-width:0}
-.tp-club-radius-field input[type=range]{accent-color:var(--tp-color-brand);padding:0;min-height:1.5rem};width:100%;max-width:100%;box-sizing:border-box
+.tp-club-radius-field input[type=range]{accent-color:var(--tp-color-brand);padding:0;min-height:1.5rem;width:100%;max-width:100%;box-sizing:border-box}
 .tp-club-radius-ticks{display:flex;justify-content:space-between;color:var(--tp-color-text-secondary);font-size:var(--tp-font-size-xs)}
 .tp-club-radius-ticks span{flex:1;text-align:center}
 .tp-club-notes{margin:var(--tp-space-sm) 0}
