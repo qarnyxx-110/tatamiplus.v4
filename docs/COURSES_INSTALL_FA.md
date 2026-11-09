@@ -1,32 +1,28 @@
 # راهنمای نصب بستهٔ فرانت‌اند دوره‌ها
 
-## مسیرهای بسته
+مخزن GitHub این فایل‌ها را زیر پوشهٔ django/ نگه می‌دارد. فایل ZIP تحویلی برای ادغام مستقیم در ریشهٔ پروژهٔ Django چیده شده و مسیرهای آن با templates/ و static/ شروع می‌شوند.
 
-- django/templates/base.html
-- django/templates/components/course_card.html
-- django/templates/components/course_episode_row.html
-- django/templates/club/list.html
-- django/templates/club/coach_detail.html
-- django/templates/club/course_detail.html
-- django/templates/club/episode.html
-- django/templates/coach/courses.html
-- django/templates/coach/course_form.html
-- django/static/css/courses.css
-- django/static/js/course-ui.js
+## مسیرهای داخل ZIP قابل بارگذاری
+
+- templates/base.html
+- templates/components/course_card.html
+- templates/components/course_episode_row.html
+- templates/club/list.html
+- templates/club/coach_detail.html
+- templates/club/course_detail.html
+- templates/club/episode.html
+- templates/coach/courses.html
+- templates/coach/course_form.html
+- static/css/courses.css
+- static/js/course-ui.js
 - docs/COURSES_FRONTEND_HANDOFF_FA.md
 
-## محل کپی در مخزن
+## مقصد نصب
 
-محتویات پوشهٔ django/templates/ در همین مخزن در django/templates/ و محتویات django/static/ در django/static/ قرار می‌گیرند.
+ZIP را در ریشهٔ پروژهٔ Django استخراج و فایل‌ها را با پوشه‌های موجود ادغام کنید. از ساخت مسیرهای تودرتو مانند templates/templates یا static/static خودداری کنید.
 
-## محل کپی در ZIP مستقل بک‌اند
-
-ZIP مستقل Tatami-demo-main.zip پوشه‌های templates/ و static/ را مستقیماً در ریشه دارد. برای ادغام این patch در آن پروژه، پیشوند django/ را از مسیرهای بسته حذف کنید:
-- django/templates/... به Tatami-demo-main/templates/...
-- django/static/... به Tatami-demo-main/static/...
-
-فایل base موجود در ساختار Django integration مخزن به‌روزرسانی شده است. اگر نسخهٔ مستقل Tatami-demo-main را هدف می‌گیرید، فایل base آن از قالب قدیمی styles.css استفاده می‌کند؛ ابتدا باید آن base را با layout جدید هماهنگ کنید یا نسخهٔ یکپارچه‌سازی موجود در django/templates/base.html را همراه فایل‌های static متناظر استفاده کنید.
+نسخهٔ base.html داخل ZIP برای بک‌اند مستقل Tatami-demo-main.zip ساخته شده و از static/css/styles.css فعلی آن پروژه استفاده می‌کند. نسخهٔ ثبت‌شده در GitHub در django/templates/base.html بخشی از ساختار Django integration مخزن است و از tatami.css استفاده می‌کند؛ این دو base برای دو مقصد متفاوت‌اند و نباید با هم جایگزین شوند.
 
 ## محدودیت اتصال
 
-این بسته فقط رابط کاربری و رفتار مرورگر است. اپ/مدل/فرم/URL دوره‌ها، رابطهٔ enrollment، خرید و ذخیره‌سازی ویدئو در بک‌اند بررسی‌شده وجود ندارد. پیش از انتشار، موارد مشخص‌شده در COURSES_FRONTEND_HANDOFF_FA.md باید در بک‌اند پیاده‌سازی و تأیید شوند. خرید ساختگی یا دسترسی جعلی ایجاد نمی‌شود.
+بک‌اند بررسی‌شده اپ/مدل/فرم/URL دوره‌ها، رابطهٔ enrollment، خرید و ذخیره‌سازی ویدئو را ندارد. صفحات پس از افزودن URLها و contextهای مستندشده در COURSES_FRONTEND_HANDOFF_FA.md قابل اجرا خواهند شد. خرید ساختگی یا دسترسی جعلی ایجاد نمی‌شود.
