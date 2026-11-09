@@ -318,3 +318,49 @@ export async function runClubs(app,base,browser){
  await ctx.close();
  return S;
 }
+
+export async function runPreview(base,browser){
+ const S=new Suite('Preview: access, account CTA, and 24-product pagination');
+ const ctx=await browser.newContext({viewport:{width:1280,height:900},serviceWorkers:'block'});
+ const pg=await ctx.newPage(),errors=[];
+ pg.on('pageerror',e=>errors.push(String(e).slice(0,140)));
+ await pg.addInitScript(()=>localStorage.setItem('role',JSON.stringify('student')));
+ await pg.goto(base+'/index.html');await wait(350);
+ const go=async h=>{await pg.evaluate(x=>{location.hash=x},h);await wait(100)};
+ const T=()=>pg.locator('#app').innerText();
+ const cards=()=>pg.locator('#app .sl .pg article.pcd').count();
+ await go('#/');
+ S.ok('صفحه اصلی در بازدید اول پیام «آماده شروع هستید؟» را دارد',(await T()).includes('آماده شروع هستید؟'));
+ S.ok('لینک سیستم طراحی از فوتر حذف شده است',await pg.locator('footer a[href="#/design-system"]').count()===0);
+ await go('#/design-system');
+ S.ok('مسیر مستقیم سیستم طراحی به ۴۰۴ می‌رسد',/۴۰۴/.test(await T()));
+ S.ok('کد صفحه سیستم طراحی در خروجی عمومی Preview بارگذاری نشده است',
+   !await pg.evaluate(()=>[...document.scripts].map(s=>s.textContent).join('\n').includes('راهنمای زنده توکن‌ها')));
+ await go('#/store');
+ S.ok('صفحه اول فروشگاه دقیقاً ۲۴ محصول دارد',await cards()===24,String(await cards()));
+ S.ok('صفحه‌بندی سه‌صفحه‌ای برای ۶۲ محصول ساخته شده است',
+   await pg.locator('#app .tp-pager button[aria-label^="صفحه "]').count()===5);
+ await pg.locator('#app .tp-pager button[aria-label="صفحه ۲"]').click();await wait(140);
+ S.ok('صفحه دوم ۲۴ محصول دارد',await cards()===24,String(await cards()));
+ S.ok('شماره صفحه در URL ثبت می‌شود',(await pg.evaluate(()=>location.hash)).includes('page=2'));
+ await pg.locator('#app .tp-pager button[aria-label="صفحه ۳"]').click();await wait(140);
+ S.ok('صفحه سوم ۱۴ محصول دارد',await cards()===14,String(await cards()));
+ S.ok('صفحه سوم در URL قابل اشتراک است',(await pg.evaluate(()=>location.hash)).includes('page=3'));
+ await pg.locator('.tb select').selectOption('price_asc');await wait(140);
+ S.ok('مرتب‌سازی در URL حفظ می‌شود',(await pg.evaluate(()=>location.hash)).includes('sort=price_asc'));
+ await pg.locator('.cn .chip',{hasText:'کمربند جودو'}).first().click();await wait(140);
+ S.ok('تغییر فیلتر صفحه را به ۱ برمی‌گرداند و فیلتر حفظ می‌شود',
+   await cards()===10&&(await pg.evaluate(()=>location.hash)).includes('category=')&&!(await pg.evaluate(()=>location.hash)).includes('page=2'));
+ await go('#/register');
+ const username='previewqa'+Date.now().toString(36);
+ await pg.fill('#rg-u',username);await pg.fill('#rg-p1','TatamiPlus!Preview2026');await pg.fill('#rg-p2','TatamiPlus!Preview2026');
+ await pg.locator('#rg-f button[type="submit"]').click();
+ await pg.waitForFunction(()=>location.hash==='#/profile',{timeout:6000});await go('#/');
+ S.ok('پس از ثبت‌نام پیام پایانی دیگر نمایش داده نمی‌شود',!(await T()).includes('آماده شروع هستید؟'));
+ await pg.evaluate(()=>doLogout());await wait(120);await go('#/');
+ S.ok('پس از خروج هم پیام ثبت‌نام‌شده دوباره ظاهر نمی‌شود',!(await T()).includes('آماده شروع هستید؟'));
+ await pg.reload();await wait(300);
+ S.ok('مخفی‌ماندن پیام پس از بارگذاری مجدد پایدار است',!(await T()).includes('آماده شروع هستید؟'));
+ S.ok('بدون خطای JavaScript در سناریوی Preview',errors.length===0,errors.join(' | '));
+ await ctx.close();return S;
+}
