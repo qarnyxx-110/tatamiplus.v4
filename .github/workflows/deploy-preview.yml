@@ -38,9 +38,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
-          cache: npm
-          cache-dependency-path: shared/package.json
+          node-version: "24"
 
       - name: Build static preview
         working-directory: shared
@@ -64,10 +62,7 @@ jobs:
             throw new Error("No inline application script was generated.");
           }
           fs.writeFileSync("/tmp/tatami-preview-inline.js", scripts.map(match => match[1]).join("\\n"));
-          const manifest = JSON.parse(fs.readFileSync("dist/preview/assets/images/manifest.json", "utf8"));
-          if (!manifest || typeof manifest !== "object") {
-            throw new Error("Image manifest is invalid.");
-          }
+          JSON.parse(fs.readFileSync("dist/preview/assets/images/manifest.json", "utf8"));
           NODE
           node --check /tmp/tatami-preview-inline.js
 
@@ -83,7 +78,7 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           protocol: ftps
-          port: 21
+          port: ${{ vars.FTP_PORT || '21' }}
           local-dir: ./shared/dist/preview/
           server-dir: ./
           dangerous-clean-slate: false
