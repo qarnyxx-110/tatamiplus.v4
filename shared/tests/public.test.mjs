@@ -20,7 +20,7 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
  if(app!=='coach'){
   await go('#/clubs');const clubList=await T();
   S.ok('باشگاه‌ها: صفحه جستجو و فهرست',clubList.includes('جستجوی باشگاه‌ها')&&clubList.includes('فهرست باشگاه‌ها'));
-  S.ok('باشگاه‌ها: کنترل‌های شهر، جنسیت و شعاع',[...['tp-club-city','tp-club-gender','tp-club-radius']].every(id=>pg.locator('#'+id).count().then(n=>n===1)));
+  const clubControlCounts=await Promise.all(['tp-club-city','tp-club-gender','tp-club-radius'].map(id=>pg.locator('#'+id).count()));S.ok('باشگاه‌ها: کنترل‌های شهر، جنسیت و شعاع',clubControlCounts.every(n=>n===1),clubControlCounts.join(','));
   S.ok('باشگاه‌ها: نزدیک من و تب نقشه',clubList.includes('نزدیک من')&&clubList.includes('نقشه'));
   S.ok('باشگاه‌ها: عدم جعل مختصات/نشانک',clubList.includes('مختصات جغرافیایی در دادهٔ نمونه ثبت نشده است')&&clubList.includes('Web Key محدودشده به دامنه لازم است'));
   await go('#/club/0');const clubDetail=await T();
