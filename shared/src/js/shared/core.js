@@ -31,7 +31,6 @@ const vc=v=>`<a class="card" href="#/video/${v.id}">${im.v(v)}<div class="b"><b>
 const tc=t=>`<a class="card" href="#/tournament/${t.id}">${im.t(t)}<div class="b"><b>${t.n}</b><div class="mu">${t.d} · ${F(t.p)} شرکت‌کننده</div><span class="tag">${t.s}</span></div></a>`;
 const ic=x=>`<a class="card" href="#/instructor/${x.id}">${im.i(x,'r45')}<div class="b"><b>${x.n}</b><div class="mu">${x.s}</div><div class="gold">${x.k}</div><div class="mu sm">${F(x.exp)} سال سابقه · ${F(x.st)} هنرجو</div><span class="btn s o">مشاهده پروفایل</span></div></a>`;
 function tv(i){saved=saved.includes(i)?saved.filter(x=>x!=i):[...saved,i];save();R()}
-function setRole(r){role=r;S('role',r);const next=new URLSearchParams(location.hash.split('?')[1]||'').get('next');if(next&&/^#\/[a-z0-9-]*(?:\/[^?#]*)?(?:\?[^#]*)?$/i.test(next)&&!next.startsWith('#/role')){location.hash=next;return}location.hash=r=='student'?'#/':'#/dashboard'}
 const RN={student:'هنرجو',coach:'مربی',club:'باشگاه'};
 let q='',cat='',sort='',vcat='',vlev='',tab='آینده';
 const views={};
