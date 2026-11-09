@@ -52,6 +52,12 @@ jobs:
           ONLY: clubs
         run: npm test
 
+      - name: Run focused Preview access, account, and store browser tests
+        working-directory: shared
+        env:
+          ONLY: preview
+        run: npm test
+
       - name: Remove stale Preview output
         working-directory: shared
         run: rm -rf dist/preview
