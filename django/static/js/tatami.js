@@ -65,7 +65,7 @@
   });
 
   // ۶. پیام دریافت جم: تگ gem در Django messages به toast کوتاه منتقل می‌شود.
-  const gemMessages = $('.tp-msg.gem');
+  const gemMessages = $$('.tp-msg.gem');
   if (gemMessages.length) {
     const toast = $('#ts');
     if (toast) {
