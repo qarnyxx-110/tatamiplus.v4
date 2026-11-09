@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - "shared/src/**"
+      - "shared/public/assets/**"
       - "shared/build.js"
       - "shared/package.json"
       - ".github/workflows/deploy-preview.yml"
@@ -14,6 +15,7 @@ on:
       - main
     paths:
       - "shared/src/**"
+      - "shared/public/assets/**"
       - "shared/build.js"
       - "shared/package.json"
       - ".github/workflows/deploy-preview.yml"
@@ -36,6 +38,10 @@ jobs:
         with:
           node-version: "24"
 
+      - name: Remove stale Preview output
+        working-directory: shared
+        run: rm -rf dist/preview
+
       - name: Build static preview
         working-directory: shared
         run: npm run build
@@ -53,11 +59,11 @@ jobs:
           if (!html.includes('<main id="app"></main>')) {
             throw new Error("Preview app mount point is missing.");
           }
-          const scripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)];
+          const scripts = [...html.matchAll(/<script>([\\s\\S]*?)<\\/script>/g)];
           if (scripts.length === 0) {
             throw new Error("No inline application script was generated.");
           }
-          fs.writeFileSync("/tmp/tatami-preview-inline.js", scripts.map(match => match[1]).join("\n"));
+          fs.writeFileSync("/tmp/tatami-preview-inline.js", scripts.map(match => match[1]).join("\\n"));
           JSON.parse(fs.readFileSync("dist/preview/assets/images/manifest.json", "utf8"));
           NODE
           node --check /tmp/tatami-preview-inline.js
@@ -75,25 +81,33 @@ jobs:
     needs: build
     if: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
-    env:
-      FTP_SERVER: ${{ secrets.FTP_SERVER }}
-      FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
-      FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
 
     steps:
-      - name: Skip upload until cPanel secrets are configured
-        if: ${{ env.FTP_SERVER == '' || env.FTP_USERNAME == '' || env.FTP_PASSWORD == '' }}
-        run: echo "::notice::Build passed. Add FTP_SERVER, FTP_USERNAME, and FTP_PASSWORD repository secrets to enable cPanel publishing."
+      - name: Check whether cPanel credentials are configured
+        id: ftp_credentials
+        shell: bash
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+        run: |
+          if [[ -n "$FTP_SERVER" && -n "$FTP_USERNAME" && -n "$FTP_PASSWORD" ]]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+            echo "cPanel deployment credentials are configured."
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Build passed, but cPanel upload was skipped. Configure FTP_SERVER, FTP_USERNAME, and FTP_PASSWORD repository secrets."
+          fi
 
       - name: Download built Preview artifact
-        if: ${{ env.FTP_SERVER != '' && env.FTP_USERNAME != '' && env.FTP_PASSWORD != '' }}
+        if: ${{ steps.ftp_credentials.outputs.configured == 'true' }}
         uses: actions/download-artifact@v4
         with:
           name: tatami-preview
           path: ./release
 
-      - name: Deploy preview to the restricted cPanel FTP directory
-        if: ${{ env.FTP_SERVER != '' && env.FTP_USERNAME != '' && env.FTP_PASSWORD != '' }}
+      - name: Deploy Preview to the restricted cPanel FTP directory
+        if: ${{ steps.ftp_credentials.outputs.configured == 'true' }}
         uses: SamKirkland/FTP-Deploy-Action@v4.4.0
         with:
           server: ${{ secrets.FTP_SERVER }}
