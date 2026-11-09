@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}جستجوی باشگاه‌ها | تاتامی پلاس{% endblock %}
+{% block description %}جستجوی باشگاه‌های جودو بر اساس شهر، جنسیت، شعاع و موقعیت روی نقشه نشان.{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'css/clubs-map.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="w tp-clubs-page">
+  <div class="sh">
+    <div>
+      <h1>جستجوی باشگاه‌ها</h1>
+      <p class="mu">باشگاه‌های جودو را بر اساس شهر و موقعیت پیدا کنید.</p>
+    </div>
+  </div>
+
+  <form class="tp-club-filters" id="tp-club-filters" method="get" action="{{ request.path }}">
+    <div class="tp-club-filter-grid">
+      <div class="tp-field">
+        <label for="tp-club-query">جستجوی باشگاه</label>
+        <input id="tp-club-query" name="query" type="search" value="{{ request.GET.query|default:'' }}" placeholder="نام باشگاه یا مربی">
+      </div>
+      <div class="tp-field">
+        <label for="tp-club-city">شهر</label>
+        <select id="tp-club-city" name="city">
+          <option value="">همهٔ شهرها</option>
+          {% for city in cities %}
+            <option value="{{ city.value }}"{% if filters.city == city.value %} selected{% endif %}>{{ city.label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="tp-field">
+        <label for="tp-club-gender">مناسب برای</label>
+        <select id="tp-club-gender" name="gender">
+          <option value="">همه</option>
+          <option value="men"{% if filters.gender == 'men' %} selected{% endif %}>آقایان</option>
+          <option value="women"{% if filters.gender == 'women' %} selected{% endif %}>بانوان</option>
+        </select>
+      </div>
+      <div class="tp-field tp-club-radius-field">
+        <label for="tp-club-radius-index">شعاع جستجو: <output id="tp-club-radius-label">{{ radius_km|default:5 }} کیلومتر</output></label>
+        <input id="tp-club-radius-index" type="range" min="0" max="3" step="1" value="{{ radius_index|default:1 }}" data-radius-control>
+        <input id="tp-club-radius-value" type="hidden" name="radius_km" value="{{ radius_km|default:5 }}">
+        <div class="tp-club-radius-ticks"><span>۲</span><span>۵</span><span>۱۰</span><span>۲۵ کیلومتر</span></div>
+      </div>
+    </div>
+
+    <input type="hidden" name="lat" id="tp-club-lat" value="{{ lat|default:'' }}">
+    <input type="hidden" name="lng" id="tp-club-lng" value="{{ lng|default:'' }}">
+
+    <div class="tp-cluster">
+      <button class="btn" type="submit">اعمال فیلترها</button>
+      <button class="btn o" type="button" data-geolocate>نزدیک من</button>
+      <a class="btn o" href="{{ request.path }}">پاک کردن فیلترها</a>
+      <span class="mu sm" id="tp-club-near-status" role="status"></span>
+    </div>
+  </form>
+
+  <div class="tp-club-mobile-tabs" role="group" aria-label="نمایش فهرست یا نقشه">
+    <button type="button" data-club-tab="list" aria-pressed="true">فهرست</button>
+    <button type="button" data-club-tab="map" aria-pressed="false">نقشه</button>
+  </div>
+
+  <div class="tp-clubs-layout" data-mobile-tab="list">
+    <section class="tp-clubs-list" aria-label="فهرست باشگاه‌ها">
+      <div class="tp-club-list-head">
+        <h2>فهرست باشگاه‌ها</h2>
+        <span class="mu sm">{{ page_obj.paginator.count|default:clubs|length }} مورد</span>
+      </div>
+
+      {% for club in clubs %}
+        <article class="tp-club-card" data-club-card data-club-id="{{ club.id }}">
+          <div>
+            <h3>
+              {% if club.detail_url %}<a href="{{ club.detail_url }}">{{ club.name }}</a>{% else %}{{ club.name }}{% endif %}
+            </h3>
+            <p class="mu sm">{{ club.city }}{% if club.distance_km != None %} · {{ club.distance_km }} کیلومتر تا شما{% endif %}</p>
+            {% if club.address %}<p class="mu sm">{{ club.address }}</p>{% endif %}
+            {% if club.gender_label %}<span class="tag">{{ club.gender_label }}</span>{% endif %}
+            {% if club.detail_url %}<div class="tp-club-card-actions"><a class="btn o s" href="{{ club.detail_url }}">جزئیات باشگاه</a></div>{% endif %}
+          </div>
+        </article>
+      {% empty %}
+        <div class="tp-state">
+          <b>در این شعاع باشگاهی پیدا نشد</b>
+          <p class="sm">شعاع را بیشتر کنید یا شهر دیگری را انتخاب کنید.</p>
+        </div>
+      {% endfor %}
+
+      {% if page_obj and page_obj.has_other_pages %}
+        <nav class="tp-pager" aria-label="صفحه‌بندی باشگاه‌ها">
+          {% if page_obj.has_previous %}<a class="btn o s" href="?{{ querystring_without_page }}&page={{ page_obj.previous_page_number }}">قبلی</a>{% endif %}
+          <span class="mu sm">صفحهٔ {{ page_obj.number }} از {{ page_obj.paginator.num_pages }}</span>
+          {% if page_obj.has_next %}<a class="btn o s" href="?{{ querystring_without_page }}&page={{ page_obj.next_page_number }}">بعدی</a>{% endif %}
+        </nav>
+      {% endif %}
+    </section>
+
+    <section class="tp-club-map-panel" aria-label="نقشهٔ باشگاه‌ها">
+      <div class="tp-club-map-heading"><b>نقشهٔ باشگاه‌ها</b><span class="mu sm">نقشهٔ نشان</span></div>
+      <div id="tp-clubs-map" class="tp-neshan-map"
+           data-map-key="{{ neshan_web_key|default:'' }}"
+           data-api-url="{{ clubs_json_url|default:'' }}"
+           data-center-lat="{{ lat|default:'35.699739' }}"
+           data-center-lng="{{ lng|default:'51.338097' }}"
+           data-status-id="tp-club-map-status">
+        <div class="tp-map-placeholder">
+          <span class="tp-map-placeholder-pin" aria-hidden="true">⌖</span>
+          <b>نقشهٔ نشان</b>
+          <p>پس از تنظیم Web Key و JSON endpoint، موقعیت باشگاه‌ها روی نقشه نمایش داده می‌شود.</p>
+        </div>
+      </div>
+      <p class="mu sm tp-map-status" id="tp-club-map-status" role="status">نقشه در انتظار تنظیم Web Key و endpoint مختصات باشگاه‌هاست.</p>
+    </section>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+  <script src="{% static 'js/clubs-map.js' %}" defer></script>
+{% endblock %}
