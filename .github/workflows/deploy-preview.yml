@@ -9,6 +9,7 @@ on:
       - "shared/public/assets/**"
       - "shared/build.js"
       - "shared/package.json"
+      - "shared/tests/**"
       - ".github/workflows/deploy-preview.yml"
   pull_request:
     branches:
@@ -18,6 +19,7 @@ on:
       - "shared/public/assets/**"
       - "shared/build.js"
       - "shared/package.json"
+      - "shared/tests/**"
       - ".github/workflows/deploy-preview.yml"
   workflow_dispatch:
 
@@ -65,8 +67,32 @@ jobs:
           }
           fs.writeFileSync("/tmp/tatami-preview-inline.js", scripts.map(match => match[1]).join("\n"));
           JSON.parse(fs.readFileSync("dist/preview/assets/images/manifest.json", "utf8"));
+          if (!fs.existsSync("dist/preview/assets/neshan-config.js")) {
+            throw new Error("Preview Neshan config asset is missing.");
+          }
+          for (const app of ["student", "coach", "club"]) {
+            const root = "dist/" + app;
+            const configPath = root + "/assets/neshan-config.js";
+            if (!fs.existsSync(configPath)) throw new Error(app + ": Neshan config asset is missing.");
+            const appHtml = fs.readFileSync(root + "/index.html", "utf8");
+            if (!appHtml.includes('src="assets/neshan-config.js"')) {
+              throw new Error(app + ": Neshan config script reference is missing.");
+            }
+            const sw = fs.readFileSync(root + "/sw.js", "utf8");
+            if (!sw.includes('"assets/neshan-config.js"')) {
+              throw new Error(app + ": Neshan config is not in the Service Worker precache list.");
+            }
+            const config = fs.readFileSync(configPath, "utf8");
+            if (!config.includes("TP_NESHAN_WEB_KEY") || !config.includes("TP_CLUBS_JSON_URL")) {
+              throw new Error(app + ": Neshan config does not expose the expected public settings.");
+            }
+            fs.writeFileSync("/tmp/tatami-" + app + "-neshan-config.js", config);
+          }
           NODE
           node --check /tmp/tatami-preview-inline.js
+          node --check /tmp/tatami-student-neshan-config.js
+          node --check /tmp/tatami-coach-neshan-config.js
+          node --check /tmp/tatami-club-neshan-config.js
 
       - name: Upload built Preview artifact
         uses: actions/upload-artifact@v4
@@ -75,6 +101,18 @@ jobs:
           path: shared/dist/preview/
           if-no-files-found: error
           retention-days: 3
+
+      - name: Package Student, Coach, and Club PWA builds
+        working-directory: shared/dist
+        run: zip -qr "$GITHUB_WORKSPACE/tatami-pwa-neshan-config.zip" student coach club
+
+      - name: Upload corrected PWA package
+        uses: actions/upload-artifact@v4
+        with:
+          name: tatami-pwa-neshan-config
+          path: tatami-pwa-neshan-config.zip
+          if-no-files-found: error
+          retention-days: 7
 
   deploy:
     name: Publish Preview to cPanel
