@@ -25,7 +25,6 @@
     <a href="{% url 'account' %}"{% if route == 'account' %} class="on" aria-current="page"{% endif %}>حساب کاربری</a>
   </nav>
   <div class="hb">
-    {% if user.is_authenticated and gem_balance != None %}{% include "components/gem_badge.html" with amount=gem_balance %}{% endif %}
     <a class="ib" id="hcart" href="{% url 'store:cart' %}" aria-label="سبد خرید"{% if route == 'cart' %} aria-current="page"{% endif %}>
       <svg class="tp-ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 4h2l2.4 11.2a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.5L21 8H6.2"/><circle cx="10" cy="20" r="1.4"/><circle cx="17" cy="20" r="1.4"/></svg><span class="hb-t">سبد خرید</span>
     </a>
@@ -34,7 +33,7 @@
         <svg class="tp-ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg><span class="hb-t">{{ user.username }}</span>
       </a>
     {% else %}
-      <a class="ib" id="hbu" href="{% url 'accounts:login' %}{% if request.path != '/' %}?next={{ request.path|urlencode }}{% endif %}" aria-label="ورود یا ثبت‌نام">
+      <a class="ib" id="hbu" href="{% url 'accounts:login' %}{% if request.path != '/' %}?next={{ request.get_full_path|urlencode }}{% endif %}" aria-label="ورود یا ثبت‌نام">
         <svg class="tp-ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg><span class="hb-t">ورود / ثبت‌نام</span>
       </a>
     {% endif %}
@@ -61,15 +60,17 @@
       <a class="btn o" href="{% url 'account' %}">{{ user.username }}</a>
       <form method="post" action="{% url 'accounts:logout' %}">{% csrf_token %}<button class="btn o" type="submit">خروج از حساب</button></form>
     {% else %}
-      <a class="btn" href="{% url 'accounts:login' %}">ورود</a>
+      <a class="btn" href="{% url 'accounts:login' %}{% if request.path != '/' %}?next={{ request.get_full_path|urlencode }}{% endif %}">ورود</a>
       <a class="btn o" href="{% url 'accounts:register' %}">ثبت‌نام</a>
     {% endif %}
   </div>
 </dialog>
 
 {% if messages %}
-  <div class="w tp-msgs" role="status" aria-live="polite">
-    {% for message in messages %}<p class="tp-note tp-msg {{ message.tags }}">{{ message }}</p>{% endfor %}
+  <div class="w tp-msgs" aria-label="پیام‌های سامانه">
+    {% for message in messages %}
+      <p class="tp-note tp-msg {{ message.tags }}"{% if message.level_tag == 'error' or message.level_tag == 'warning' %} role="alert" aria-live="assertive"{% else %} role="status" aria-live="polite"{% endif %}>{{ message }}</p>
+    {% endfor %}
   </div>
 {% endif %}
 
