@@ -119,8 +119,8 @@
   }));
 
   // ۵-ب. قالب‌بندی مقادیر عددی با ارقام فارسی.
-  $('[data-fa-number]').forEach(node => {
-    const raw = String(node.textContent || '').replace(/[٬,\\s]/g, '');
+  $$('[data-fa-number]').forEach(node => {
+    const raw = String(node.textContent || '').replace(/[٬,\s]/g, '');
     const value = Number(raw);
     if (Number.isFinite(value)) node.textContent = value.toLocaleString('fa-IR');
   });

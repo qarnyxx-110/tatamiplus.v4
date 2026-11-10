@@ -36,7 +36,8 @@ jobs:
       - name: Check out frontend repository
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.head_ref || github.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          ref: ${{ github.event.pull_request.head.ref || github.ref }}
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -80,6 +81,11 @@ jobs:
         working-directory: backend
         run: python manage.py check
 
+      - name: Verify Django Admin override template and static asset
+        working-directory: backend
+        run: |
+          python manage.py shell -c "from django.template.loader import get_template; from django.urls import reverse; from django.contrib.staticfiles.finders import find; get_template('admin/base_site.html'); assert reverse('admin:index') == '/admin/'; assert find('css/tatami-admin.css'); print('Django Admin template, URL and stylesheet: OK')"
+
       - name: Run backend tests with the proposed frontend templates
         working-directory: backend
         run: python manage.py test --verbosity 2
@@ -99,6 +105,10 @@ jobs:
           fi
           git commit -m "Build Django CSS from shared design tokens"
           git push origin "HEAD:${TARGET_BRANCH}"
+
+      - name: Verify generated CSS when the workflow cannot write it back
+        if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository }}
+        run: git diff --exit-code -- django/static/css/tatami.css
 
       - name: Package the complete Django frontend handoff
         run: |

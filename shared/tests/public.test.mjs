@@ -113,7 +113,7 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
  S.ok('فروشگاه: ۵۹ محصول کاتالوگ + ۳ نمونه آزمایشی (دسته بدون کاتالوگ)، بدون نام/SKU تکراری',prod.ref===59&&prod.demo===3&&prod.names===prod.n&&prod.skus===59,JSON.stringify(prod));
  S.ok('فروشگاه: شمارنده ۶۲ محصول',(await T()).includes('۶۲ محصول'));
  S.ok('فروشگاه: برچسب «قیمت مرجع بازار» روی کارت‌ها و «نمونه آزمایشی» روی نمونه‌ها',(await T()).includes('قیمت مرجع بازار')&&(await T()).includes('نمونه آزمایشی'));
- S.ok('فروشگاه: بدون <img> شکسته (تصویری هنوز موجود نیست ← جای‌نگهدار)',await cnt('#app img')===0);
+ S.ok('فروشگاه: تصویر بارگذاری‌شده شکسته نیست',await pg.locator('#app img').evaluateAll(es=>es.every(img=>!img.complete||img.naturalWidth>0)));
  await pg.fill('#fq','سامکو');await wait(150);const nSam=await pg.evaluate(()=>P.filter(p=>p.n.includes('سامکو')).length);S.ok('فروشگاه: جست‌وجوی «سامکو» برابر تعداد محصولات دارای این نام در داده ('+nSam+')',nSam>=4&&await cnt('#app .sl .pg article.pcd')===nSam,String(await cnt('#app .sl .pg article.pcd')));
  await pg.fill('#fq','جودو  سامکو');await wait(150);const nMulti=await pg.evaluate(()=>P.filter(p=>p.n.includes('جودو سامکو')).length);S.ok('فروشگاه: جست‌وجوی چندکلمه‌ای با فاصله اضافه ('+nMulti+' نتیجه)',nMulti>=1&&await cnt('#app .sl .pg article.pcd')===nMulti,String(await cnt('#app .sl .pg article.pcd')));
  await pg.fill('#fq','');await wait(100);

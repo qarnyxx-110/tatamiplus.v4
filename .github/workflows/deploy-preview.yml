@@ -10,6 +10,7 @@ on:
       - "shared/build.js"
       - "shared/package.json"
       - "shared/tests/**"
+      - "django/static/js/**"
       - ".github/workflows/deploy-preview.yml"
   pull_request:
     branches:
@@ -20,6 +21,7 @@ on:
       - "shared/build.js"
       - "shared/package.json"
       - "shared/tests/**"
+      - "django/static/js/**"
       - ".github/workflows/deploy-preview.yml"
   workflow_dispatch:
 
@@ -45,6 +47,18 @@ jobs:
         run: |
           npm install --no-package-lock --no-audit --no-fund
           npx playwright install --with-deps chromium
+
+      - name: Run complete cross-app browser regression suite
+        working-directory: shared
+        run: npm test
+
+      - name: Run global card alignment regression tests
+        working-directory: shared
+        run: node tests/card-layout.test.mjs
+
+      - name: Run Django browser runtime regression tests
+        working-directory: shared
+        run: node tests/django-ui.test.mjs
 
       - name: Run focused clubs and map browser tests
         working-directory: shared
