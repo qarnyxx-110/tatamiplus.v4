@@ -1,4 +1,4 @@
-import { Suite, pw, serve, build, wait } from './helpers.mjs';
+import { Suite, serve, build, wait } from './helpers.mjs';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -15,12 +15,15 @@ export async function runCheckout(_base,browser){
     await pg.goto(srv.url+'/index.html');
     await wait(250);
 
-    await pg.evaluate(()=>{location.hash='#/product/1'});
+    const picked=await pg.evaluate(()=>{const i=P.findIndex(p=>p.st>0&&(!p.sz||!p.sz.length)&&(!p.cl||!p.cl.length));return i<0?null:{id:i,name:P[i].n}});
+    if(!picked)throw new Error('No in-stock product without variant options was found for the checkout test');
+    await pg.evaluate(id=>{location.hash='#/product/'+id},picked.id);
     await pg.waitForSelector('#app .pd');
     await pg.locator('#app .pd .pa button.btn').first().click();
-    await pg.waitForFunction(()=>location.hash==='#/cart');
+    await pg.waitForFunction(()=>location.hash==='#/cart'&&cart.length>0);
+    const cartText=await pg.locator('#app').innerText();
     S.ok('افزودن محصول به سبد از صفحه محصول انجام می‌شود',
-      (await pg.locator('#app').innerText()).includes('خلاصه سفارش'));
+      cartText.includes('خلاصه سفارش')&&cartText.includes(picked.name));
 
     await pg.locator('#app a[href="#/checkout"]').click();
     await pg.waitForSelector('.tp-checkout-auth');
@@ -59,7 +62,7 @@ export async function runCheckout(_base,browser){
       (await pg.locator('#app').innerText()).includes('کاربر آزمایشی تاتامی') &&
       (await pg.locator('#app').innerText()).includes('تهران، خیابان نمونه'));
     S.ok('اقلام باقی‌مانده در سبد در بازبینی نمایش داده می‌شوند',
-      await pg.locator('#app').innerText().includes('لباس جودو میزانو'));
+      (await pg.locator('#app').innerText()).includes(picked.name));
     S.ok('مرحله پرداخت تا اتصال واقعی بک‌اند غیرفعال است',
       await pg.locator('.tp-checkout-blocked button[disabled]').count()===1);
     S.ok('هیچ سفارش آزمایشی/کد رهگیری ذخیره نمی‌شود',
