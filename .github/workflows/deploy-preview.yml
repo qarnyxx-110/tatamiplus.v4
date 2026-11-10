@@ -51,6 +51,10 @@ jobs:
         working-directory: shared
         run: npm test
 
+      - name: Run global card alignment regression tests
+        working-directory: shared
+        run: node tests/card-layout.test.mjs
+
       - name: Run Django browser runtime regression tests
         working-directory: shared
         run: node tests/django-ui.test.mjs
