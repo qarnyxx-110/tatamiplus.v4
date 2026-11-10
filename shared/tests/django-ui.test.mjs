@@ -33,12 +33,12 @@ try {
 
   await runScenario(
     'multiple numeric fields and gem notification',
-    '<!doctype html><html lang="fa" dir="rtl"><body><main id="app"><span id="amount-a" data-fa-number>1 234</span><span id="amount-b" data-fa-number>98,765</span></main><div id="ts" class="tp-toast" role="status" aria-live="polite"></div><p class="tp-msg gem">۱۰ جم به حساب شما افزوده شد.</p></body></html>',
+    '<!doctype html><html lang="fa" dir="rtl"><body><main id="app"><span id="amount-a" data-fa-number>1 234</span><span id="amount-b" data-fa-number>98,765</span><span id="amount-c" data-fa-number>12٬345</span></main><div id="ts" class="tp-toast" role="status" aria-live="polite"></div><p class="tp-msg gem">۱۰ جم به حساب شما افزوده شد.</p></body></html>',
     async page => {
       const expectedA = (1234).toLocaleString('fa-IR');
       const expectedB = (98765).toLocaleString('fa-IR');
       assert.equal(await page.locator('#amount-a').textContent(), expectedA);
-      assert.equal(await page.locator('#amount-b').textContent(), expectedB);
+      assert.equal(await page.locator('#amount-b').textContent(), expectedB);\n      assert.equal(await page.locator('#amount-c').textContent(), (12345).toLocaleString('fa-IR'));
       assert.equal(await page.locator('#ts').textContent(), '۱۰ جم به حساب شما افزوده شد.');
       assert.equal(await page.locator('#ts').evaluate(el => el.classList.contains('on')), true);
       assert.equal(await page.locator('#ts').evaluate(el => el.classList.contains('info')), true);
