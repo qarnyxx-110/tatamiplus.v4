@@ -98,6 +98,7 @@ async function checkPage(page, route, label, cardSelector, actionSelector) {
 }
 
 try {
+  await checkDjangoServerRenderedCards();
   const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
