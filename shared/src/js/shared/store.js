@@ -4,7 +4,7 @@ const LVS=['مبتدی','متوسط','پیشرفته','همه سطوح'],SZS=['X
 P.forEach(p=>{if(p.ref){Object.assign(p,{rv:0,st:25,sold:0,d:p.id,ds:`${p.n}؛ ${p.grp}. قیمت نمایش‌داده‌شده قیمت مرجع بازار (${p.pdate}) از ${p.src} است و قیمت نهایی فروش تاتامی پلاس نیست.`});return}const i=p.id%3,lv=LVS[(p.ci+i)%4];Object.assign(p,{rv:12+(p.id*17)%180,st:p.id%9==4?0:p.id%7==2?3:25,sold:0,d:p.id,lv,sz:p.ci==0?SZS:p.ci==5&&i>0?['S','M','L']:[],cl:p.ci==1?BC[i]:CCOL[p.ci],ds:`${p.n} از دسته ${p.c} برای سطح ${lv}؛ توضیح نمایشی محصول در نمونه اولیه.`,ap:['کلاس تمرین','مسابقه','تمرین در خانه','باشگاه'][(p.ci+i)%4]})});
 const ALLC=[...new Set(P.flatMap(p=>p.cl))],SZ_ALL=[...SZS,'2','3','4','5'].filter(s=>P.some(p=>p.sz.includes(s)));
 const STORE_PAGE_SIZE=24;let storePage=1;const FS={pmin:0,pmax:0,sz:[],col:[],lv:'',fv:false,open:false};let PS={id:-1};
-let CHECKOUT={step:0,name:'',phone:'',province:'',city:'',postal:'',address:'',delivery:'standard',notes:''};
+let CHECKOUT={step:0,name:'',phone:'',province:'',city:'',postal:'',address:'',notes:''};
 const tgl=(k,v)=>{FS[k]=FS[k].includes(v)?[]:[v];storePage=1;R('x')},sF=(k,v)=>{FS[k]=v;storePage=1;R('x')};
 const clr=()=>{q='';cat='';storePage=1;Object.assign(FS,{pmin:0,pmax:0,sz:[],col:[],lv:'',fv:false});R('x')};
 const cadd=(id,s,c,n)=>{const p=P[id];if(!p||!p.st){toast('این محصول ناموجود است','err');return false}const inCart=cart.filter(x=>x.id==id).reduce((a,x)=>a+x.q,0),room=Math.max(0,p.st-inCart);if(room<=0||n>room){toast(room?'تعداد درخواستی بیشتر از موجودی است':'به حداکثر موجودی این محصول رسیده‌اید','err');return false}const e=cart.find(x=>x.id==id&&x.s==s&&x.c==c);e?e.q+=n:cart.push({id,s,c,q:n});save();return true};
@@ -29,9 +29,10 @@ function startCheckout(){if(!cart.length){toast('سبد خرید شما خالی
 function checkoutField(k,v){CHECKOUT[k]=v}
 function checkoutNext(){
  if(!cart.length){toast('سبد خرید شما خالی است','err');location.hash='#/cart';return}
+ if(!ME){location.hash='#/login?next=%23%2Fcheckout';return}
  const keys=['name','phone','province','city','postal','address'];for(const k of keys){const e=document.getElementById('co-'+k);if(e)CHECKOUT[k]=e.value.trim()}
  const n=document.getElementById('co-notes');if(n)CHECKOUT.notes=n.value.trim();const d=document.getElementById('co-delivery');if(d)CHECKOUT.delivery=d.value;
- const E={},ph=nz(CHECKOUT.phone).replace(/^\+98|^0098/,'0'),pc=nz(CHECKOUT.postal);
+ let ph=nz(CHECKOUT.phone);if(ph.startsWith('0098'))ph='0'+ph.slice(4);else if(ph.startsWith('98'))ph='0'+ph.slice(2);const pc=nz(CHECKOUT.postal),E={};
  if(!CHECKOUT.name)E['co-name']='نام و نام خانوادگی گیرنده را وارد کنید.';else if(CHECKOUT.name.length<3)E['co-name']='نام گیرنده باید حداقل ۳ حرف باشد.';
  if(!CHECKOUT.phone)E['co-phone']='شماره موبایل را وارد کنید.';else if(!/^09\d{9}$/.test(ph))E['co-phone']='شماره موبایل باید ۱۱ رقم و با ۰۹ شروع شود؛ مثل ۰۹۱۲۳۴۵۶۷۸۹.';
  if(!CHECKOUT.province)E['co-province']='استان را وارد کنید.';
@@ -42,8 +43,3 @@ function checkoutNext(){
  CHECKOUT.phone=ph;CHECKOUT.postal=pc;CHECKOUT.step=1;R('x');scrollTo(0,0)
 }
 function checkoutBack(){CHECKOUT.step=0;R('x')}
-function checkoutDemoConfirm(){if(!cart.length){location.hash='#/cart';return}const ok=cart.filter(x=>P[x.id]),total=ok.reduce((a,x)=>a+P[x.id].p*x.q,0),code='TP-'+Date.now().toString(36).slice(-6).toUpperCase();
- CHECKOUT.last={code,total,n:ok.reduce((a,x)=>a+x.q,0),items:ok.map(x=>({n:P[x.id].n,q:x.q,s:x.s,c:x.c,t:P[x.id].p*x.q})),name:CHECKOUT.name,city:CHECKOUT.city,delivery:CHECKOUT.delivery};
- if(typeof ME!=='undefined'&&ME){const o=L('tp:orders',[]),a=Array.isArray(o)?o.slice(-19):[];a.push({code,total,n:CHECKOUT.last.n,user:ME.username.toLowerCase(),at:Date.now()});S('tp:orders',a)}
- cart.length=0;save();Object.assign(CHECKOUT,{step:2,notes:''});R('x');scrollTo(0,0)}
-function checkoutRestart(){CHECKOUT.step=0;location.hash='#/cart'}
