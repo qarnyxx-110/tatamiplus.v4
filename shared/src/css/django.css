@@ -43,3 +43,8 @@
 .tp-drawer-f form{display:block}.tp-drawer-f form .btn{width:100%}
 @media(min-width:1024px){body>header .mnb{display:none!important}}
 .pf-av.d-av{display:grid;place-items:center;font-family:var(--tp-font-family-display);font-size:3rem;color:var(--tp-color-text-on-brand);background:var(--tp-color-brand)}
+
+/* فهرست مربیان: کارت‌های هر ردیف هم‌ارتفاع و هم‌عرض */
+.tp-coaches{align-items:stretch}
+.tp-coaches>li{display:flex;min-width:0}
+.tp-coaches>li>.tp-coach{width:100%;flex:1;min-width:0}
