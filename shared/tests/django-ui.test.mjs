@@ -38,7 +38,8 @@ try {
       const expectedA = (1234).toLocaleString('fa-IR');
       const expectedB = (98765).toLocaleString('fa-IR');
       assert.equal(await page.locator('#amount-a').textContent(), expectedA);
-      assert.equal(await page.locator('#amount-b').textContent(), expectedB);\n      assert.equal(await page.locator('#amount-c').textContent(), (12345).toLocaleString('fa-IR'));
+      assert.equal(await page.locator('#amount-b').textContent(), expectedB);
+      assert.equal(await page.locator('#amount-c').textContent(), (12345).toLocaleString('fa-IR'));
       assert.equal(await page.locator('#ts').textContent(), '۱۰ جم به حساب شما افزوده شد.');
       assert.equal(await page.locator('#ts').evaluate(el => el.classList.contains('on')), true);
       assert.equal(await page.locator('#ts').evaluate(el => el.classList.contains('info')), true);
