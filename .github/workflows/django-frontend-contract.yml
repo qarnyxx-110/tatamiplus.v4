@@ -81,6 +81,11 @@ jobs:
         working-directory: backend
         run: python manage.py check
 
+      - name: Verify Django Admin override template and static asset
+        working-directory: backend
+        run: |
+          python manage.py shell -c "from django.template.loader import get_template; from django.urls import reverse; from django.contrib.staticfiles.finders import find; get_template('admin/base_site.html'); assert reverse('admin:index') == '/admin/'; assert find('css/tatami-admin.css'); print('Django Admin template, URL and stylesheet: OK')"
+
       - name: Run backend tests with the proposed frontend templates
         working-directory: backend
         run: python manage.py test --verbosity 2
