@@ -33,7 +33,7 @@ try {
 
   await runScenario(
     'multiple numeric fields and gem notification',
-    '<!doctype html><html lang="fa" dir="rtl"><body><main id="app"><span id="amount-a" data-fa-number>1234</span><span id="amount-b" data-fa-number>98765</span></main><div id="ts" class="tp-toast" role="status" aria-live="polite"></div><p class="tp-msg gem">۱۰ جم به حساب شما افزوده شد.</p></body></html>',
+    '<!doctype html><html lang="fa" dir="rtl"><body><main id="app"><span id="amount-a" data-fa-number>1 234</span><span id="amount-b" data-fa-number>98,765</span></main><div id="ts" class="tp-toast" role="status" aria-live="polite"></div><p class="tp-msg gem">۱۰ جم به حساب شما افزوده شد.</p></body></html>',
     async page => {
       const expectedA = (1234).toLocaleString('fa-IR');
       const expectedB = (98765).toLocaleString('fa-IR');
