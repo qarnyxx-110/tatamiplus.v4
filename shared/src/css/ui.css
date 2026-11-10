@@ -505,7 +505,7 @@ input[aria-invalid=true],select[aria-invalid=true],textarea[aria-invalid=true]{b
 .tp-gem-table th{background:var(--tp-color-surface);white-space:nowrap}
 .tp-gem-table tbody tr:last-child td{border-bottom:0}
 .tp-msg.gem{border-inline-start:4px solid var(--tp-color-accent)}
-@media(max-width:600px){.tp-gem-demo{display:none}.tp-gem-header{gap:4px;padding-inline:6px}.tp-gem-header .hb-t{font-size:var(--tp-font-size-caption)}.tp-gem-balance-card{padding:var(--tp-space-md)}.tp-gem-icon{width:44px;height:44px}}
+@media(max-width:600px){.tp-gem-demo{display:none}.tp-gem-header{gap:4px;padding-inline:6px;min-width:44px}.tp-gem-header .hb-t{font-size:var(--tp-font-size-caption)}.tp-gem-balance-card{padding:var(--tp-space-md)}.tp-gem-icon{width:44px;height:44px}}
 
 /* ===== جستجوی باشگاه و نقشهٔ نشان ===== */
 .tp-club-filters{margin:var(--tp-space-md) 0;padding:var(--tp-space-md);background:var(--tp-color-surface);border:1px solid var(--tp-color-border);border-radius:var(--tp-radius-card)}
