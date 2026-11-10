@@ -35,7 +35,7 @@ export async function runCheckout(_base,browser){
     await pg.fill('#rg-p1','TatamiPlus!Checkout2026');
     await pg.fill('#rg-p2','TatamiPlus!Checkout2026');
     await pg.locator('#rg-f button[type="submit"]').click();
-    await pg.waitForFunction(()=>location.hash.split('?')[0]==='#/checkout',{timeout:7000});
+    await pg.waitForFunction(()=>location.hash.split('?')[0]==='#/checkout',undefined,{timeout:7000});
     await pg.waitForSelector('#co-form');
     S.ok('پس از ثبت‌نام، کاربر به مرحله خرید بازمی‌گردد',
       (await pg.locator('#app').innerText()).includes('اطلاعات گیرنده و نشانی'));
