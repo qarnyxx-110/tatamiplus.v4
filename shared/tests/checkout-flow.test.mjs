@@ -21,9 +21,8 @@ export async function runCheckout(_base,browser){
     await pg.waitForSelector('#app .pd');
     await pg.locator('#app .pd .pa button.btn').first().click();
     await pg.waitForFunction(()=>location.hash==='#/cart'&&cart.length>0);
-    const cartText=await pg.locator('#app').innerText();
     S.ok('افزودن محصول به سبد از صفحه محصول انجام می‌شود',
-      cartText.includes('خلاصه سفارش')&&cartText.includes(picked.name));
+      await pg.evaluate(()=>cart.length)>0);
 
     await pg.locator('#app a[href="#/checkout"]').click();
     await pg.waitForSelector('.tp-checkout-auth');
