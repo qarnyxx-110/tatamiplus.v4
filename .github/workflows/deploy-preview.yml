@@ -21,6 +21,7 @@ on:
       - "shared/build.js"
       - "shared/package.json"
       - "shared/tests/**"
+      - "django/static/js/**"
       - ".github/workflows/deploy-preview.yml"
   workflow_dispatch:
 
