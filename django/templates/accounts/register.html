@@ -6,7 +6,7 @@
   <div class="tp-auth-card">
     <h1>ساخت حساب کاربری</h1>
     <p class="mu">هنرجو یا مربی را انتخاب کنید. پروفایل مربی پس از بررسی تیم منتشر می‌شود.</p>
-    <form method="post" novalidate>
+    <form id="tp-register-form" method="post" novalidate data-auth-form="register">
       {% csrf_token %}
       {% include 'includes/form_fields.html' %}
       <button class="btn tp-auth-btn" type="submit">ثبت‌نام</button>

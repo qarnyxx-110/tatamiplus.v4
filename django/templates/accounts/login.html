@@ -6,7 +6,7 @@
   <div class="tp-auth-card">
     <h1>ورود به حساب</h1>
     <p class="mu">نام کاربری و گذرواژهٔ خود را وارد کنید.</p>
-    <form method="post" novalidate>
+    <form id="tp-login-form" method="post" novalidate data-auth-form="login">
       {% csrf_token %}
       {% include 'includes/form_fields.html' %}
       {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}

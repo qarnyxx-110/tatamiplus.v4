@@ -1,6 +1,6 @@
 {% comment %}فیلدهای یک فرم Django با کلاس‌های سیستم طراحی. شناسهٔ راهنما همان {{ field.auto_id }}_helptext است که Django در aria-describedby می‌گذارد.{% endcomment %}
 {% if form.errors %}
-  <div class="tp-form-sum" role="alert">
+  <div class="tp-form-sum" role="alert" aria-live="assertive" tabindex="-1">
     {% if form.non_field_errors %}{% for error in form.non_field_errors %}<p class="tp-form-errors">{{ error }}</p>{% endfor %}{% else %}لطفاً موارد مشخص‌شده را اصلاح کنید.{% endif %}
   </div>
 {% endif %}
@@ -9,7 +9,7 @@
   <div class="tp-field">
     <label for="{{ field.id_for_label }}">{{ field.label }}{% if not field.field.required %} <span class="mu sm">(اختیاری)</span>{% endif %}</label>
     {{ field }}
-    {% if field.help_text %}<p class="tp-hint" id="{{ field.auto_id }}_helptext">{{ field.help_text|safe }}</p>{% endif %}
-    {% for error in field.errors %}<p class="tp-error-text">{{ error }}</p>{% endfor %}
+    {% if field.help_text %}<p class="tp-hint" id="{{ field.auto_id }}_helptext">{{ field.help_text }}</p>{% endif %}
+    {% for error in field.errors %}<p class="tp-error-text" id="{{ field.auto_id }}_error_{{ forloop.counter }}">{{ error }}</p>{% endfor %}
   </div>
 {% endfor %}
