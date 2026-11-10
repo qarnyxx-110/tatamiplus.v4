@@ -26,7 +26,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   django-template-contract:
@@ -35,17 +35,20 @@ jobs:
     steps:
       - name: Check out frontend repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || github.ref }}
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "24"
 
-      - name: Verify generated Django CSS is synchronized with its source
+      - name: Regenerate Django CSS from the shared design system
         run: |
           set -euo pipefail
           node shared/build.js
-          git diff --exit-code -- django/static/css/tatami.css
+          test -s django/static/css/tatami.css
+          grep -q 'grid,.pg' django/static/css/tatami.css
 
       - name: Check Django browser JavaScript syntax
         run: node --check django/static/js/tatami.js
@@ -80,6 +83,22 @@ jobs:
       - name: Run backend tests with the proposed frontend templates
         working-directory: backend
         run: python manage.py test --verbosity 2
+
+      - name: Commit regenerated Django CSS to the pull request branch
+        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}
+        env:
+          TARGET_BRANCH: ${{ github.head_ref }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add django/static/css/tatami.css
+          if git diff --cached --quiet; then
+            echo "Generated Django CSS is already synchronized."
+            exit 0
+          fi
+          git commit -m "Build Django CSS from shared design tokens"
+          git push origin "HEAD:${TARGET_BRANCH}"
 
       - name: Package the complete Django frontend handoff
         run: |

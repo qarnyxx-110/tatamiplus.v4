@@ -555,3 +555,21 @@ input[aria-invalid=true],select[aria-invalid=true],textarea[aria-invalid=true]{b
 
 /* ریزنمایشگرها: حفظ هدر و کنترل‌های صفحه باشگاه بدون سرریز افقی */
 @media(max-width:360px){body>header{gap:4px;padding-inline:8px}.hb{gap:2px;min-width:0}#hgem .tp-gem-header-value{display:none}#mnb .mnb-l,#mnb .mnb-m{display:none}#mnb{min-width:44px;padding-inline:6px}}
+
+
+/* کارت‌های شبکه‌ای: ساختار ستونی و تراز مشترک برای همهٔ کارت‌های هم‌ردیف */
+:is(.grid,.pg,.tp-sponsors,.pf-mcs,.tp-club-cards,.tp-coaches,.d-2,.d-qa,.d-stats,.pf-grid){align-items:stretch}
+:is(.grid,.pg,.tp-sponsors,.pf-mcs,.tp-club-cards,.tp-coaches,.d-2,.d-qa,.d-stats,.pf-grid)>*{min-width:0}
+:is(.grid,.pg,.tp-sponsors,.pf-mcs)>.card{display:flex;flex-direction:column;min-width:0;height:100%}
+:is(.grid,.pg,.tp-sponsors,.pf-mcs)>.card>.b,
+:is(.grid,.pg,.tp-sponsors,.pf-mcs)>.card.b{display:flex;flex:1 1 auto;flex-direction:column;min-width:0}
+:is(.grid,.pg,.tp-sponsors,.pf-mcs)>.card.b{padding:var(--tp-space-sm) var(--tp-space-md)}
+:is(.grid,.pg,.tp-sponsors,.pf-mcs)>.card>.b>:is(.pa,.tp-cluster:last-child,.btn:last-child,.chip:last-child){margin-block-start:auto}
+:is(.grid,.pg,.tp-sponsors,.pf-mcs)>.card.b>:last-child{margin-block-start:auto}
+:is(.grid,.pg,.tp-sponsors,.pf-mcs)>.card>.b>.pa{padding-block-start:var(--tp-space-sm)}
+:is(.pg,.grid)>.pcd .pa>.btn,
+:is(.pg,.grid)>.vcd .pa>.btn{flex:1 1 100%;width:100%}
+:is(.grid,.pg,.tp-sponsors,.pf-mcs)>.d-c{height:100%;min-width:0}
+.tp-club-cards>.tp-club-card{height:100%;min-width:0}
+.tp-coaches>li{display:flex;min-width:0}
+.tp-coaches>li>.tp-coach{width:100%;flex:1;min-width:0}
