@@ -5,6 +5,7 @@ import path from 'node:path';
 import { build, pw, serve, wait } from './helpers.mjs';
 
 const out = fs.mkdtempSync(path.join(os.tmpdir(), 'tatami-card-audit-'));
+const djangoCss = fs.readFileSync(new URL('../../django/static/css/tatami.css', import.meta.url), 'utf8');
 build(out);
 const server = await serve(path.join(out, 'student'));
 const browser = await pw.chromium.launch({ headless: true });
@@ -80,4 +81,4 @@ try {
   fs.rmSync(out, { recursive: true, force: true });
 }
 if (failures.length) throw new Error(failures.join('\n\n'));
-console.log('Global card alignment browser regression: 4/4 sections passed at desktop and mobile widths');
+console.log('Global card alignment browser regression: 6 sections passed, including Django store and coaches');
