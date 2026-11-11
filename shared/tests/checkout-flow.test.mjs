@@ -24,7 +24,13 @@ export async function runCheckout(_base,browser){
     S.ok('افزودن محصول به سبد از صفحه محصول انجام می‌شود',
       await pg.evaluate(()=>cart.length)>0);
 
-    await pg.locator('#app a[href="#/checkout"]').click();
+    const continueButton=pg.locator('#app a[href="#/checkout"]');
+    S.ok('در سبد فقط یک دکمه «ادامه خرید» وجود دارد و دکمه تکراری حذف شده است',
+      await continueButton.count()===1 && await continueButton.innerText()==='ادامه خرید' &&
+      await pg.locator('#app a[href="#/store"]').count()===0);
+    S.ok('دکمه «ادامه خرید» رنگ اصلی قبلی را حفظ می‌کند',
+      await continueButton.getAttribute('class')==='btn');
+    await continueButton.click();
     await pg.waitForSelector('.tp-checkout-auth');
     S.ok('مهمان برای ورود به مرحله نشانی به ورود/ثبت‌نام هدایت می‌شود',
       await pg.locator('.tp-checkout-auth a[href^="#/login?next="]').count()===1 &&
