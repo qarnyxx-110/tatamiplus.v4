@@ -25,9 +25,12 @@ export async function runCheckout(_base,browser){
       await pg.evaluate(()=>cart.length)>0);
 
     const continueButton=pg.locator('#app a[href="#/checkout"]');
+    const continueCount=await continueButton.count();
+    const continueText=continueCount===1?await continueButton.innerText():'';
+    const storeLinkCount=await pg.locator('#app a[href="#/store"]').count();
     S.ok('در سبد فقط یک دکمه «ادامه خرید» وجود دارد و دکمه تکراری حذف شده است',
-      await continueButton.count()===1 && await continueButton.innerText()==='ادامه خرید' &&
-      await pg.locator('#app a[href="#/store"]').count()===0);
+      continueCount===1 && continueText==='ادامه خرید' && storeLinkCount===0,
+      `checkout CTA count=${continueCount}; text=${JSON.stringify(continueText)}; store links=${storeLinkCount}`);
     S.ok('دکمه «ادامه خرید» رنگ اصلی قبلی را حفظ می‌کند',
       await continueButton.getAttribute('class')==='btn');
     await continueButton.click();
