@@ -100,6 +100,8 @@ async function checkPage(page, route, label, cardSelector, actionSelector) {
 try {
   await checkDjangoServerRenderedCards();
   const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
+  // Measure stable layout, not staggered entry transforms; animation behavior is tested separately.
+  await page.emulateMedia({ reducedMotion: 'reduce' });
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
   await page.goto(server.url + '/index.html');
@@ -112,6 +114,7 @@ try {
   await page.close();
 
   const mobile = await browser.newPage({ viewport: { width: 390, height: 844 } });
+  await mobile.emulateMedia({ reducedMotion: 'reduce' });
   await mobile.goto(server.url + '/index.html');
   for (const route of ['#/store', '#/videos', '#/coaches', '#/courses']) {
     await mobile.evaluate(hash => { location.hash = hash; }, route);
