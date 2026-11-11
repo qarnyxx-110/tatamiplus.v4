@@ -1,5 +1,5 @@
 // اجرای کامل: Build → سرورها → تست هر PWA → پنل مارکتینگ. خروجی: test-results/summary.md و results.json
-import fs from 'node:fs';import path from 'node:path';import os from 'node:os';import {spawn} from 'node:child_process';
+import fs from 'node:fs';import path from 'node:path';import os from 'node:os';import {spawn,spawnSync} from 'node:child_process';
 import {pw,serve,build,wait} from './helpers.mjs';import {runPublic,runPwa,runClubs,runPreview} from './public.test.mjs';import {runMarketingApi,runMarketingDemo} from './marketing.test.mjs';
 import {runCheckout} from './checkout-flow.test.mjs';
 const tmp=fs.mkdtempSync(path.join(os.tmpdir(),'tp-test-')),MOCK=+process.env.MOCK_PORT||8601,A=path.join(tmp,'a'),B=path.join(tmp,'b'),API=path.join(tmp,'api'),PUB=path.join(tmp,'pub'),SITE=path.join(tmp,'site');
