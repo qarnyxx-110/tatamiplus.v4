@@ -1,0 +1,266 @@
+/* Tatami Plus — Django Admin visual layer.
+   Frontend-only override; Django's built-in RTL stylesheet remains enabled. */
+:root {
+  --tp-admin-bg: #f5f6f8;
+  --tp-admin-surface: #ffffff;
+  --tp-admin-text: #20242b;
+  --tp-admin-muted: #68717d;
+  --tp-admin-border: #e2e6eb;
+  --tp-admin-dark: #171a20;
+  --tp-admin-brand: #2F62D6;
+  --tp-admin-brand-hover: #244FB3;
+  --tp-admin-radius: 10px;
+  --tp-admin-shadow: 0 2px 12px rgb(17 24 39 / 5%);
+}
+
+html,
+body,
+#container {
+  min-height: 100%;
+}
+
+body,
+input,
+textarea,
+select,
+button {
+  font-family: "Vazirmatn", Tahoma, Arial, sans-serif;
+}
+
+body {
+  background: var(--tp-admin-bg);
+  color: var(--tp-admin-text);
+}
+
+#header {
+  background: var(--tp-admin-dark);
+  color: #f8fafc;
+  box-shadow: 0 2px 10px rgb(0 0 0 / 10%);
+}
+
+#branding {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+#branding h1,
+#branding h1 a {
+  color: #fff;
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+#branding h1 a:hover,
+#branding h1 a:focus {
+  color: #fff;
+  text-decoration: none;
+}
+
+.tp-admin-brand-caption {
+  display: inline-block;
+  margin-inline-start: 8px;
+  padding: 3px 8px;
+  border: 1px solid rgb(255 255 255 / 24%);
+  border-radius: 999px;
+  color: #e5e7eb;
+  font-size: 11px;
+  font-weight: 500;
+  vertical-align: middle;
+}
+
+#user-tools {
+  color: #e5e7eb;
+  font-size: 12px;
+}
+
+#user-tools a {
+  color: #fff;
+}
+
+div.breadcrumbs {
+  background: #252a33;
+  color: #d7dce4;
+  padding: 11px 24px;
+  text-align: start;
+}
+
+div.breadcrumbs a {
+  color: #fff;
+}
+
+#content {
+  padding: 24px 28px;
+}
+
+#content h1 {
+  color: var(--tp-admin-text);
+  font-size: 23px;
+  font-weight: 800;
+}
+
+.module,
+#changelist,
+#changelist-filter,
+#changelist .paginator,
+#toolbar,
+#changelist-form .results {
+  border-color: var(--tp-admin-border);
+  border-radius: var(--tp-admin-radius);
+}
+
+.module,
+#changelist,
+#changelist-filter {
+  background: var(--tp-admin-surface);
+  box-shadow: var(--tp-admin-shadow);
+  overflow: hidden;
+}
+
+.module h2,
+.module caption,
+.inline-group h2 {
+  background: #eef1f5;
+  color: #29313b;
+  font-weight: 700;
+}
+
+#changelist-filter h2 {
+  background: #eef1f5;
+  color: #29313b;
+}
+
+#changelist-filter li.selected {
+  border-inline-start: 3px solid var(--tp-admin-brand);
+}
+
+#changelist table thead th {
+  white-space: nowrap;
+}
+
+#changelist table tbody tr:hover,
+.module table tbody tr:hover {
+  background: #f7f8fa;
+}
+
+a:link,
+a:visited {
+  color: #9d202d;
+}
+
+a:hover,
+a:focus {
+  color: var(--tp-admin-brand-hover);
+}
+
+.button,
+input[type="submit"],
+input[type="button"],
+.submit-row input,
+a.button,
+.button:link,
+.button:visited {
+  border: 0;
+  border-radius: 8px;
+  font-weight: 700;
+  min-height: 36px;
+  padding: 8px 14px;
+}
+
+.button.default,
+input[type="submit"].default,
+.submit-row input.default,
+.submit-row input[type="submit"] {
+  background: var(--tp-admin-brand);
+  color: #fff;
+}
+
+.button.default:hover,
+input[type="submit"].default:hover,
+.submit-row input.default:hover,
+.submit-row input[type="submit"]:hover {
+  background: var(--tp-admin-brand-hover);
+}
+
+.submit-row {
+  border: 1px solid var(--tp-admin-border);
+  border-radius: var(--tp-admin-radius);
+}
+
+.form-row {
+  border-bottom-color: #edf0f3;
+}
+
+input,
+textarea,
+select,
+.vTextField,
+.vLargeTextField {
+  border-radius: 7px;
+  max-width: 100%;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--tp-admin-brand);
+  outline: 2px solid rgb(47 98 214 / 14%);
+  outline-offset: 1px;
+}
+
+.errornote,
+ul.messagelist li {
+  border-radius: 8px;
+  box-shadow: none;
+}
+
+#footer {
+  color: var(--tp-admin-muted);
+}
+
+@media (max-width: 767px) {
+  #header {
+    padding: 12px 16px;
+  }
+
+  #content {
+    padding: 16px;
+  }
+
+  div.breadcrumbs {
+    padding: 10px 16px;
+  }
+
+  #content-main,
+  #content-related,
+  #changelist,
+  #changelist-filter {
+    float: none;
+    width: 100%;
+  }
+
+  #changelist {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  #changelist table {
+    min-width: 640px;
+  }
+
+  .submit-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
