@@ -330,6 +330,10 @@ input[aria-invalid=true],select[aria-invalid=true],textarea[aria-invalid=true]{b
 .tp-steps li.on{color:var(--tp-color-text-primary);border-bottom-color:var(--tp-color-brand);font-weight:var(--tp-font-weight-bold)}
 .tp-steps li.on span{background:var(--tp-color-brand);border-color:var(--tp-color-brand);color:var(--tp-color-text-on-brand)}
 .tp-steps li.done{color:var(--tp-color-success);border-bottom-color:var(--tp-color-success)}
+.tp-steps li[aria-disabled=true]{opacity:.55;border-bottom-style:dashed;pointer-events:none}
+.tp-checkout-blocked{border:1px solid var(--tp-color-border);background:var(--tp-color-surface)}
+.tp-checkout-blocked .btn:disabled{cursor:not-allowed;opacity:.55}
+
 @media(max-width:420px){.tp-steps li{flex-direction:column;align-items:flex-start;gap:2px;font-size:var(--tp-font-size-xs)}}
 #co-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 var(--tp-space-md);max-width:46rem}
 #co-form .fl{margin:var(--tp-space-xs) 0}#co-form .fl input,#co-form .fl textarea,#co-form .fl select{width:100%}
