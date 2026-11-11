@@ -4,8 +4,8 @@ const LVS=['مبتدی','متوسط','پیشرفته','همه سطوح'],SZS=['X
 P.forEach(p=>{if(p.ref){Object.assign(p,{rv:0,st:25,sold:0,d:p.id,ds:`${p.n}؛ ${p.grp}. قیمت نمایش‌داده‌شده قیمت مرجع بازار (${p.pdate}) از ${p.src} است و قیمت نهایی فروش تاتامی پلاس نیست.`});return}const i=p.id%3,lv=LVS[(p.ci+i)%4];Object.assign(p,{rv:12+(p.id*17)%180,st:p.id%9==4?0:p.id%7==2?3:25,sold:0,d:p.id,lv,sz:p.ci==0?SZS:p.ci==5&&i>0?['S','M','L']:[],cl:p.ci==1?BC[i]:CCOL[p.ci],ds:`${p.n} از دسته ${p.c} برای سطح ${lv}؛ توضیح نمایشی محصول در نمونه اولیه.`,ap:['کلاس تمرین','مسابقه','تمرین در خانه','باشگاه'][(p.ci+i)%4]})});
 const ALLC=[...new Set(P.flatMap(p=>p.cl))],SZ_ALL=[...SZS,'2','3','4','5'].filter(s=>P.some(p=>p.sz.includes(s)));
 const STORE_PAGE_SIZE=24;let storePage=1;const FS={pmin:0,pmax:0,sz:[],col:[],lv:'',fv:false,open:false};let PS={id:-1};
-let CHECKOUT={step:0,name:'',phone:'',province:'',city:'',postal:'',address:'',notes:'',delivery:''};
-function resetCheckout(){Object.assign(CHECKOUT,{step:0,name:'',phone:'',province:'',city:'',postal:'',address:'',notes:'',delivery:''})}
+let CHECKOUT={step:0,name:'',phone:'',province:'',city:'',postal:'',address:'',delivery:'standard',notes:''};
+function resetCheckout(){Object.assign(CHECKOUT,{step:0,name:'',phone:'',province:'',city:'',postal:'',address:'',delivery:'standard',notes:''})}
 const tgl=(k,v)=>{FS[k]=FS[k].includes(v)?[]:[v];storePage=1;R('x')},sF=(k,v)=>{FS[k]=v;storePage=1;R('x')};
 const clr=()=>{q='';cat='';storePage=1;Object.assign(FS,{pmin:0,pmax:0,sz:[],col:[],lv:'',fv:false});R('x')};
 const cadd=(id,s,c,n)=>{const p=P[id];if(!p||!p.st){toast('این محصول ناموجود است','err');return false}const inCart=cart.filter(x=>x.id==id).reduce((a,x)=>a+x.q,0),room=Math.max(0,p.st-inCart);if(room<=0||n>room){toast(room?'تعداد درخواستی بیشتر از موجودی است':'به حداکثر موجودی این محصول رسیده‌اید','err');return false}const e=cart.find(x=>x.id==id&&x.s==s&&x.c==c);e?e.q+=n:cart.push({id,s,c,q:n});save();return true};
