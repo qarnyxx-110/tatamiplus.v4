@@ -178,6 +178,15 @@ export async function runPwa(app,base,browser,altRoot){
  for(const i of man.icons)if(await pg.evaluate(u=>fetch(u).then(r=>r.status),i.src)!==200)ok=false;
  S.ok('آیکون‌ها 200',ok);
  S.ok('offline.html موجود',await pg.evaluate(()=>fetch('offline.html').then(r=>r.status))===200);
+ const precache=await pg.evaluate(async()=>{
+  const source=await fetch('sw.js').then(r=>r.text());
+  const match=source.match(/SHELL=(\\[[^;]+\\]);/);
+  if(!match)return{ok:false,missing:['Unable to parse generated precache list']};
+  const paths=JSON.parse(match[1]),missing=[];
+  for(const path of paths){try{const response=await fetch(path);if(!response.ok)missing.push(path+' → HTTP '+response.status)}catch(error){missing.push(path+' → '+String(error))}}
+  return{ok:missing.length===0,missing};
+ });
+ S.ok('همه مسیرهای پیش‌کش PWA قابل دریافت‌اند',precache.ok,precache.missing.join(' | '));
  const swReady=await pg.evaluate(()=>Promise.race([navigator.serviceWorker.ready.then(()=>true),new Promise(resolve=>setTimeout(()=>resolve(false),10000))]));
  S.ok('Service Worker registration becomes ready within 10 seconds',swReady,swReady?'ready':'timed out');
  await wait(900);
