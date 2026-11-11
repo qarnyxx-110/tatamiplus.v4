@@ -180,7 +180,7 @@ export async function runPwa(app,base,browser,altRoot){
  S.ok('offline.html موجود',await pg.evaluate(()=>fetch('offline.html').then(r=>r.status))===200);
  const precache=await pg.evaluate(async()=>{
   const source=await fetch('sw.js').then(r=>r.text());
-  const match=source.match(/SHELL=(\\[[^;]+\\]);/);
+  const match=source.match(/SHELL=(\[[^;]+\]);/);
   if(!match)return{ok:false,missing:['Unable to parse generated precache list']};
   const paths=JSON.parse(match[1]),missing=[];
   for(const path of paths){try{const response=await fetch(path);if(!response.ok)missing.push(path+' → HTTP '+response.status)}catch(error){missing.push(path+' → '+String(error))}}
