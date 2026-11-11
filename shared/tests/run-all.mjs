@@ -9,6 +9,12 @@ for(const app of['student','coach','club']){const f=path.join(B,app,'index.html'
 const mock=spawn('node',['tools/mock-api-server.mjs','--port',String(MOCK),'--static',API],{stdio:'inherit'});await wait(800);
 const browser=await pw.chromium.launch();const out=[];const apps=['student','coach','club'];let root=A;const ctl={use:()=>{root=B},reset:()=>{root=A}};
 try{
+ for(const app of apps){
+  const sw=path.join(A,app,'sw.js');
+  const syntax=spawnSync(process.execPath,['--check',sw],{encoding:'utf8'});
+  if(syntax.status!==0)throw new Error('Generated Service Worker syntax failed for '+app+': '+(syntax.stderr||syntax.stdout));
+  console.log('PASS generated Service Worker syntax:',app);
+ }
  if(process.env.ONLY==='clubs'){
   for(const app of ['student','club']){
    const srv=await serve(()=>path.join(root,app));
