@@ -95,7 +95,7 @@ export async function runCheckout(_base,browser){
 
     await pg.evaluate(()=>doLogout());
     S.ok('خروج از حساب، اطلاعات شخصی Checkout را پاک می‌کند',
-      await pg.evaluate(()=>ME===null&&['name','phone','province','city','postal','address','notes','delivery'].every(k=>CHECKOUT[k]==='')&&CHECKOUT.step===0));
+      await pg.evaluate(()=>ME===null&&['name','phone','province','city','postal','address','notes'].every(k=>CHECKOUT[k]==='')&&CHECKOUT.delivery==='standard'&&CHECKOUT.step===0));
 
     await pg.evaluate(()=>Object.assign(CHECKOUT,{name:'نشانی کاربر قبلی',phone:'09123456789',province:'تهران',city:'تهران',postal:'1234567890',address:'نشانی آزمایشی کاربر قبلی',notes:'یادداشت قبلی'}));
     await pg.evaluate(id=>{location.hash='#/product/'+id},picked.id);
@@ -105,7 +105,7 @@ export async function runCheckout(_base,browser){
     await pg.locator('#app a[href="#/checkout"]').click();
     await pg.waitForSelector('.tp-checkout-auth');
     S.ok('شروع خرید جدید، نشانی باقی‌مانده از نشست قبلی را پاک می‌کند',
-      await pg.evaluate(()=>['name','phone','province','city','postal','address','notes','delivery'].every(k=>CHECKOUT[k]==='')&&CHECKOUT.step===0));
+      await pg.evaluate(()=>['name','phone','province','city','postal','address','notes'].every(k=>CHECKOUT[k]==='')&&CHECKOUT.delivery==='standard'&&CHECKOUT.step===0));
 
     await pg.evaluate(()=>Object.assign(CHECKOUT,{name:'نشانی حساب قبلی',phone:'09123456789',province:'البرز',city:'کرج',postal:'1234567890',address:'نشانی آزمایشی حساب قبلی',notes:'یادداشت حساب قبلی'}));
     await pg.locator('.tp-checkout-auth a[href^="#/register?next="]').click();
@@ -117,7 +117,7 @@ export async function runCheckout(_base,browser){
     await pg.locator('#rg-f button[type="submit"]').click();
     await pg.waitForSelector('#co-form');
     S.ok('ورود به حساب جدید، اطلاعات نشانی حساب قبلی را منتقل نمی‌کند',
-      await pg.evaluate(()=>['name','phone','province','city','postal','address','notes','delivery'].every(k=>CHECKOUT[k]==='')&&CHECKOUT.step===0)&&
+      await pg.evaluate(()=>['name','phone','province','city','postal','address','notes'].every(k=>CHECKOUT[k]==='')&&CHECKOUT.delivery==='standard'&&CHECKOUT.step===0)&&
       await pg.inputValue('#co-name')==='');
 
     S.ok('بدون خطای JavaScript در فلوی خرید',errors.length===0,errors.join(' | '));
