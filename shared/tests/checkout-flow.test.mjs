@@ -107,6 +107,19 @@ export async function runCheckout(_base,browser){
     S.ok('شروع خرید جدید، نشانی باقی‌مانده از نشست قبلی را پاک می‌کند',
       await pg.evaluate(()=>['name','phone','province','city','postal','address','notes','delivery'].every(k=>CHECKOUT[k]==='')&&CHECKOUT.step===0));
 
+    await pg.evaluate(()=>Object.assign(CHECKOUT,{name:'نشانی حساب قبلی',phone:'09123456789',province:'البرز',city:'کرج',postal:'1234567890',address:'نشانی آزمایشی حساب قبلی',notes:'یادداشت حساب قبلی'}));
+    await pg.locator('.tp-checkout-auth a[href^="#/register?next="]').click();
+    await pg.waitForSelector('#rg-f');
+    const username2='checkoutqa2'+Date.now().toString(36);
+    await pg.fill('#rg-u',username2);
+    await pg.fill('#rg-p1','TatamiPlus!Checkout2026');
+    await pg.fill('#rg-p2','TatamiPlus!Checkout2026');
+    await pg.locator('#rg-f button[type="submit"]').click();
+    await pg.waitForSelector('#co-form');
+    S.ok('ورود به حساب جدید، اطلاعات نشانی حساب قبلی را منتقل نمی‌کند',
+      await pg.evaluate(()=>['name','phone','province','city','postal','address','notes','delivery'].every(k=>CHECKOUT[k]==='')&&CHECKOUT.step===0)&&
+      await pg.inputValue('#co-name')==='');
+
     S.ok('بدون خطای JavaScript در فلوی خرید',errors.length===0,errors.join(' | '));
   }catch(e){
     S.ok('اجرای کامل سناریوی خرید',false,e&&e.stack?e.stack:String(e));
