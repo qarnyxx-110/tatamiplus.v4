@@ -25,10 +25,10 @@ const safeNext=n=>n&&/^#\/[a-z0-9-]*(?:\/[^?#]*)?(?:\?[^#]*)?$/i.test(n)&&!/^#\/
 const authNext=()=>safeNext(hashParams().get('next')||'');
 const nextQ=()=>{const n=authNext();return n?'next='+encodeURIComponent(n):''};
 // ورود موفق: سبد مهمان با سبد حساب ادغام می‌شود (مثل بک‌اند)
-function signIn(u){const guest=cart.map(x=>({...x}));ME=u;S('tp:me',userKey(u.username));if(!APP.fixed){role=u.role;S('role',u.role)}
+function signIn(u){resetCheckout();const guest=cart.map(x=>({...x}));ME=u;S('tp:me',userKey(u.username));if(!APP.fixed){role=u.role;S('role',u.role)}
  const mine=cleanCart(L(cartKey(),[]));let merged=0;for(const g of guest){const p=P[g.id];const e=mine.find(x=>x.id===g.id&&x.s===g.s&&x.c===g.c);if(e)e.q=Math.min(p.st,e.q+g.q);else mine.push({...g});merged++}
  setCart(mine.slice(0,50));S('cart',[]);return merged}
-function doLogout(){ME=null;try{localStorage.removeItem('tp:me')}catch{}setCart(cleanCart(L('cart',[])));toast('از حساب خود خارج شدید');location.hash='#/'}
+function doLogout(){resetCheckout();ME=null;try{localStorage.removeItem('tp:me')}catch{}setCart(cleanCart(L('cart',[])));toast('از حساب خود خارج شدید');location.hash='#/'}
 
 // ---- خطای فیلدها کنار همان فیلد (مشترک فرم‌ها) ----
 function fErr(form,errs){form.querySelectorAll('[aria-invalid=true]').forEach(e=>{e.removeAttribute('aria-invalid');e.removeAttribute('aria-errormessage')});form.querySelectorAll('.tp-error-text[data-for]').forEach(e=>e.remove());
