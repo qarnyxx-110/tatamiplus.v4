@@ -83,6 +83,16 @@ export async function runCheckout(_base,browser){
     S.ok('بازگشت برای ویرایش نشانی اطلاعات واردشده را نگه می‌دارد',
       await pg.inputValue('#co-name')==='کاربر آزمایشی تاتامی');
 
+    for(const width of [320,360,390]){
+      await pg.setViewportSize({width,height:850});
+      await wait(80);
+      const overflow=await pg.evaluate(()=>({
+        page:document.documentElement.scrollWidth>document.documentElement.clientWidth+1,
+        form:document.querySelector('#co-form').getBoundingClientRect().right>document.documentElement.clientWidth+1
+      }));
+      S.ok('فرم اطلاعات ارسال در عرض '+width+'px بدون سرریز افقی',!overflow.page&&!overflow.form,JSON.stringify(overflow));
+    }
+
     await pg.evaluate(()=>doLogout());
     S.ok('خروج از حساب، اطلاعات شخصی Checkout را پاک می‌کند',
       await pg.evaluate(()=>ME===null&&['name','phone','province','city','postal','address','notes','delivery'].every(k=>CHECKOUT[k]==='')&&CHECKOUT.step===0));
@@ -97,15 +107,6 @@ export async function runCheckout(_base,browser){
     S.ok('شروع خرید جدید، نشانی باقی‌مانده از نشست قبلی را پاک می‌کند',
       await pg.evaluate(()=>['name','phone','province','city','postal','address','notes','delivery'].every(k=>CHECKOUT[k]==='')&&CHECKOUT.step===0));
 
-    for(const width of [320,360,390]){
-      await pg.setViewportSize({width,height:850});
-      await wait(80);
-      const overflow=await pg.evaluate(()=>({
-        page:document.documentElement.scrollWidth>document.documentElement.clientWidth+1,
-        form:document.querySelector('#co-form').getBoundingClientRect().right>document.documentElement.clientWidth+1
-      }));
-      S.ok('فرم اطلاعات ارسال در عرض '+width+'px بدون سرریز افقی',!overflow.page&&!overflow.form,JSON.stringify(overflow));
-    }
     S.ok('بدون خطای JavaScript در فلوی خرید',errors.length===0,errors.join(' | '));
   }catch(e){
     S.ok('اجرای کامل سناریوی خرید',false,e&&e.stack?e.stack:String(e));
