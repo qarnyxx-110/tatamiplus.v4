@@ -83,6 +83,20 @@ export async function runCheckout(_base,browser){
     S.ok('بازگشت برای ویرایش نشانی اطلاعات واردشده را نگه می‌دارد',
       await pg.inputValue('#co-name')==='کاربر آزمایشی تاتامی');
 
+    await pg.evaluate(()=>doLogout());
+    S.ok('خروج از حساب، اطلاعات شخصی Checkout را پاک می‌کند',
+      await pg.evaluate(()=>ME===null&&['name','phone','province','city','postal','address','notes','delivery'].every(k=>CHECKOUT[k]==='')&&CHECKOUT.step===0));
+
+    await pg.evaluate(()=>Object.assign(CHECKOUT,{name:'نشانی کاربر قبلی',phone:'09123456789',province:'تهران',city:'تهران',postal:'1234567890',address:'نشانی آزمایشی کاربر قبلی',notes:'یادداشت قبلی'}));
+    await pg.evaluate(id=>{location.hash='#/product/'+id},picked.id);
+    await pg.waitForSelector('#app .pd');
+    await pg.locator('#app .pd .pa button.btn').first().click();
+    await pg.waitForFunction(()=>location.hash==='#/cart'&&cart.length>0);
+    await pg.locator('#app a[href="#/checkout"]').click();
+    await pg.waitForSelector('.tp-checkout-auth');
+    S.ok('شروع خرید جدید، نشانی باقی‌مانده از نشست قبلی را پاک می‌کند',
+      await pg.evaluate(()=>['name','phone','province','city','postal','address','notes','delivery'].every(k=>CHECKOUT[k]==='')&&CHECKOUT.step===0));
+
     for(const width of [320,360,390]){
       await pg.setViewportSize({width,height:850});
       await wait(80);
