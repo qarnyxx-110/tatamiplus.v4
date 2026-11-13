@@ -38,9 +38,41 @@ footer{border-top:1px solid var(--tp-color-border);padding:var(--tp-space-lg);te
 @media(max-width:420px){.ftg{grid-template-columns:1fr}.w{padding-inline:var(--tp-space-sm)}h1{font-size:var(--tp-font-size-3xl)}}
 @media(min-width:1600px){.w,.d-l,.ftg{max-width:1360px}}
 
-/* افزودن محصول به سبد: فقط انیمیشن صفحه جزئیات محصول در Preview */
-.tp-cart-fly{overflow:hidden!important;border:1px solid var(--tp-color-border)!important;border-radius:var(--tp-radius-card)!important;background:var(--tp-color-surface)!important;box-shadow:var(--tp-shadow-popover);opacity:1}
+/* تعامل افزودن محصول به سبد: فقط صفحه جزئیات محصول Preview */
+.pm .ph.tp-product-flight-source{opacity:.3;transition:opacity .18s ease}
+.tp-cart-fly{
+ overflow:hidden!important;
+ border:1px solid var(--tp-color-border)!important;
+ border-radius:var(--tp-radius-card)!important;
+ background:var(--tp-color-surface)!important;
+ box-shadow:var(--tp-shadow-popover);
+ opacity:1;
+ backface-visibility:hidden;
+ contain:paint;
+}
 .tp-cart-fly img{object-fit:contain!important;background:var(--tp-color-surface)}
-#hcart.tp-cart-pop{animation:tp-cart-pop .46s cubic-bezier(.2,.8,.25,1) both;transform-origin:center}
-@keyframes tp-cart-pop{0%,100%{transform:scale(1)}38%{transform:scale(1.2)}72%{transform:scale(.96)}}
-@media(prefers-reduced-motion:reduce){.tp-cart-fly{display:none!important}#hcart.tp-cart-pop{animation:none!important}}
+#hcart .tp-ico.tp-cart-icon-receive{
+ animation:tp-cart-icon-receive .56s cubic-bezier(.2,.8,.25,1) both;
+ transform-origin:50% 58%;
+}
+#cc.tp-cart-count-pop{
+ animation:tp-cart-count-pop .34s cubic-bezier(.2,.8,.25,1) both;
+ transform-origin:center;
+}
+@keyframes tp-cart-icon-receive{
+ 0%{transform:translateY(0) scale(1)}
+ 24%{transform:translateY(1.5px) scale(.91)}
+ 58%{transform:translateY(-1px) scale(1.1)}
+ 78%{transform:translateY(0) scale(.98)}
+ 100%{transform:translateY(0) scale(1)}
+}
+@keyframes tp-cart-count-pop{
+ 0%{opacity:.72;transform:translateY(2px) scale(.82)}
+ 70%{opacity:1;transform:translateY(-1px) scale(1.12)}
+ 100%{opacity:1;transform:translateY(0) scale(1)}
+}
+@media(prefers-reduced-motion:reduce){
+ .pm .ph.tp-product-flight-source{opacity:1!important;transition:none!important}
+ .tp-cart-fly{display:none!important}
+ #hcart .tp-ico.tp-cart-icon-receive,#cc.tp-cart-count-pop{animation:none!important}
+}
