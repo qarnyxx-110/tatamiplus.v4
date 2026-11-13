@@ -15,6 +15,37 @@ export async function runCheckout(_base,browser){
     await pg.goto(srv.url+'/index.html');
     await wait(250);
 
+    // Regression: گزینه‌های سایز و رنگ کاتالوگ روی کارت فروشگاه و محصولات مرتبط قابل مشاهده‌اند.
+    await pg.evaluate(()=>{location.hash='#/store'});
+    await pg.waitForSelector('.pcd');
+    const cardVariants=await pg.evaluate(()=>{
+      const product=P.find(p=>p.ref&&p.sz.length&&p.cl.length);
+      if(!product)return null;
+      const card=document.querySelector('.pcd a[href="#/product/'+product.id+'"]')?.closest('.pcd');
+      if(!card)return null;
+      return{
+        name:product.n,
+        expectedSizes:product.sz,
+        expectedColors:product.cl,
+        shownSizes:[...card.querySelectorAll('[data-product-size]')].map(node=>node.getAttribute('data-product-size')),
+        shownColors:[...card.querySelectorAll('[data-product-color]')].map(node=>node.getAttribute('data-product-color')),
+        noVariantCardHasNoPlaceholder:(()=>{
+          const plain=P.find(p=>p.ref&&!p.sz.length&&!p.cl.length);
+          if(!plain)return true;
+          const plainCard=document.querySelector('.pcd a[href="#/product/'+plain.id+'"]')?.closest('.pcd');
+          return !!plainCard&&!plainCard.querySelector('.pc-variants');
+        })()
+      };
+    });
+    S.ok('کارت محصول، سایزهای ثبت‌شده در کاتالوگ را دقیق نمایش می‌دهد',
+      !!cardVariants&&JSON.stringify(cardVariants.shownSizes)===JSON.stringify(cardVariants.expectedSizes),
+      cardVariants?JSON.stringify({expected:cardVariants.expectedSizes,shown:cardVariants.shownSizes}):'محصول دارای سایز و رنگ در فهرست پیدا نشد');
+    S.ok('کارت محصول، رنگ‌های ثبت‌شده در کاتالوگ را دقیق نمایش می‌دهد',
+      !!cardVariants&&JSON.stringify(cardVariants.shownColors)===JSON.stringify(cardVariants.expectedColors),
+      cardVariants?JSON.stringify({expected:cardVariants.expectedColors,shown:cardVariants.shownColors}):'محصول دارای سایز و رنگ در فهرست پیدا نشد');
+    S.ok('برای محصول بدون تنوع، برچسب ساختگی سایز و رنگ نمایش داده نمی‌شود',
+      !!cardVariants&&cardVariants.noVariantCardHasNoPlaceholder);
+
     const picked=await pg.evaluate(()=>{const i=P.findIndex(p=>p.st>0&&(!p.sz||!p.sz.length)&&(!p.cl||!p.cl.length));return i<0?null:{id:i,name:P[i].n}});
     if(!picked)throw new Error('No in-stock product without variant options was found for the checkout test');
     await pg.evaluate(id=>{location.hash='#/product/'+id},picked.id);
