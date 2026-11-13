@@ -61,13 +61,14 @@ try {
       await page.setViewportSize({width:390,height:800});
       assert.equal(await page.locator('.tp-role-picker [role=radio]').count(),3);
       assert.equal(await page.locator('#tp-register-form').getAttribute('data-mobile-steps'),'true');
-      assert.equal(await page.locator('#tp-register-form [data-auth-step="2"]').isHidden(),true);
+      assert.equal(await page.locator('#tp-register-form').getAttribute('data-step'),'1');
       await page.locator('.tp-role-preview').click();
       assert.equal(await page.locator('#tp-register-form').getAttribute('data-role-preview'),'club');
       assert.equal(await page.locator('#tp-register-form [type=submit]').isDisabled(),true);
       assert.equal(await page.locator('.tp-club-preview').count(),1);
       await page.locator('.tp-role-picker [role=radio]').first().click();
       assert.equal(await page.locator('#tp-register-form [type=submit]').isDisabled(),false);
+      await page.locator('#id_username').fill('sample-user');
       await page.locator('[data-auth-next]').click();
       assert.equal(await page.locator('#tp-register-form').getAttribute('data-step'),'2');
       assert.equal(await page.locator('#tp-register-form [data-auth-step="2"]').isVisible(),true);
