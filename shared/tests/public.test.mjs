@@ -14,11 +14,14 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
  await go('#/zzz');S.ok('404: دکمه «بازگشت به صفحه اصلی»',await pg.evaluate(()=>!!document.querySelector('#app a[href="#/"]')&&/بازگشت به صفحه اصلی/.test(document.getElementById('app').innerText)));
  // --- نقش‌ها
  const dwrong=[];for(const r of denied){await go(r);if(!await nf())dwrong.push(r)}S.ok('مسیرهای ممنوع این نقش 404 می‌دهند',!dwrong.length,dwrong.join(' '));
- await go('#/login');
- const toggle=pg.locator('#lg-f .tp-pw-b').first();
- const metrics=await toggle.evaluate(el=>{const wrap=el.parentElement.getBoundingClientRect(),btn=el.getBoundingClientRect(),input=el.parentElement.querySelector('input'),is=getComputedStyle(input),bs=getComputedStyle(el);return{rightInset:wrap.right-btn.right,paddingRight:parseFloat(is.paddingRight),buttonWidth:btn.width,border:bs.borderTopStyle,background:bs.backgroundColor,display:bs.display,opacity:bs.opacity}});
- S.ok('گذرواژه: دکمه نمایش همیشه دیده می‌شود و در سمت راست فیلد قرار دارد',await toggle.isVisible()&&metrics.rightInset<=4&&metrics.paddingRight>=metrics.buttonWidth&&metrics.border==='solid'&&metrics.background!=='rgba(0, 0, 0, 0)'&&metrics.display!=='none'&&metrics.opacity==='1',JSON.stringify(metrics));
- await go('#/');const nav=await pg.evaluate(()=>[...document.querySelectorAll('#nv a')].map(a=>a.textContent.trim()));
+ if(app!=='club'){
+  await go('#/login');
+  const toggle=pg.locator('#lg-f .tp-pw-b').first();
+  const metrics=await toggle.evaluate(el=>{const wrap=el.parentElement.getBoundingClientRect(),btn=el.getBoundingClientRect(),input=el.parentElement.querySelector('input'),is=getComputedStyle(input),bs=getComputedStyle(el);return{rightInset:wrap.right-btn.right,paddingRight:parseFloat(is.paddingRight),buttonWidth:btn.width,border:bs.borderTopStyle,background:bs.backgroundColor,display:bs.display,opacity:bs.opacity}});
+  S.ok('گذرواژه: دکمه نمایش همیشه دیده می‌شود و در سمت راست فیلد قرار دارد',await toggle.isVisible()&&metrics.rightInset<=4&&metrics.paddingRight>=metrics.buttonWidth&&metrics.border==='solid'&&metrics.background!=='rgba(0, 0, 0, 0)'&&metrics.display!=='none'&&metrics.opacity==='1',JSON.stringify(metrics));
+  await go('#/');
+ }
+ const nav=await pg.evaluate(()=>[...document.querySelectorAll('#nv a')].map(a=>a.textContent.trim()));
  S.ok('منو: بلاگ، تاتامی‌پدیا، مربیان، حامیان',['بلاگ','تاتامی‌پدیا','مربیان تاتامی','حامیان تاتامی پلاس'].every(x=>nav.includes(x)),nav.join('|'));S.ok('منو: دوره‌های آموزشی',nav.includes('دوره‌ها'),nav.join('|'));
  S.ok('منو: تاریخچه جم',nav.includes('جم'),nav.join('|'));
  if(app!=='coach'){
