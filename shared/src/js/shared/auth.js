@@ -147,7 +147,7 @@ Object.assign(views,{
   <section class="tp-auth-step" data-auth-step="2"><h2>ایمن‌سازی حساب</h2><p class="tp-hint">گذرواژه‌ای مطمئن برای حساب خود انتخاب کنید.</p>
   ${pwField('rg-p1','password1','گذرواژه','new-password','گذرواژه باید دست‌کم ۸ نویسه داشته باشد و به اطلاعات شخصی شما شبیه نباشد.')}
   ${pwField('rg-p2','password2','تکرار گذرواژه','new-password','برای تأیید، گذرواژه را دوباره وارد کنید.')}
-  <div class="tp-auth-mobile-actions"><button type="button" class="btn o" data-auth-back onclick="authRegStep(1)">بازگشت</button><button class="btn tp-auth-btn" type="submit">ثبت‌نام</button></div>
+  <div class="tp-auth-mobile-actions"><button type="button" class="btn o" data-auth-back onclick="authRegStep(1)">بازگشت</button></div><button class="btn tp-auth-btn" type="submit">ثبت‌نام</button>
   </section></form>`,`قبلاً ثبت‌نام کرده‌اید؟ <a href="#/login${nq?'?'+nq:''}">وارد شوید</a>`)},
  'coach-apply':()=>{PT={t:'درخواست مربیگری',d:'ثبت درخواست همکاری مربیان تاتامی پلاس'};
   if(!ME)return goTo('#/login?next=%23%2Fcoach-apply');// @login_required
