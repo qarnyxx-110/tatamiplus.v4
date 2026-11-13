@@ -20,9 +20,11 @@ export async function runCheckout(_base,browser){
     await pg.evaluate(id=>{location.hash='#/product/'+id},picked.id);
     await pg.waitForSelector('#app .pd');
     await pg.locator('#app .pd .pa button.btn').first().click();
+    await pg.waitForFunction(()=>location.hash.startsWith('#/product/')&&cart.length>0&&document.querySelector('#ts')?.textContent.trim()==='محصول با موفقیت به سبد خرید اضافه شد.'&&!document.querySelector('.tp-cart-flight'));
+    S.ok('پس از افزودن، مشتری در صفحه محصول می‌ماند و پیام موفقیت می‌بیند',
+      await pg.evaluate(()=>location.hash.startsWith('#/product/')&&cart.length>0));
+    await pg.locator('#hcart').click();
     await pg.waitForFunction(()=>location.hash==='#/cart'&&cart.length>0&&document.querySelector('#app .cl2 a[href="#/checkout"]')?.textContent.trim()==='ادامه خرید');
-    S.ok('افزودن محصول به سبد از صفحه محصول انجام می‌شود',
-      await pg.evaluate(()=>cart.length)>0);
 
     const continueButton=pg.locator('#app a[href="#/checkout"]');
     const continueCount=await continueButton.count();
@@ -101,6 +103,8 @@ export async function runCheckout(_base,browser){
     await pg.evaluate(id=>{location.hash='#/product/'+id},picked.id);
     await pg.waitForSelector('#app .pd');
     await pg.locator('#app .pd .pa button.btn').first().click();
+    await pg.waitForFunction(()=>location.hash.startsWith('#/product/')&&cart.length>0&&document.querySelector('#ts')?.textContent.trim()==='محصول با موفقیت به سبد خرید اضافه شد.'&&!document.querySelector('.tp-cart-flight'));
+    await pg.locator('#hcart').click();
     await pg.waitForFunction(()=>location.hash==='#/cart'&&cart.length>0);
     await pg.locator('#app a[href="#/checkout"]').click();
     await pg.waitForSelector('.tp-checkout-auth');
