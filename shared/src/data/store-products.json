@@ -29,7 +29,9 @@
   "category": "لباس جودو",
   "group": "بزرگسال — حرفه‌ای / مسابقه",
   "level": "پیشرفته",
-  "sizes": [],
+  "sizes": [
+   "M"
+  ],
   "colors": [],
   "source": "torob",
   "sourceId": "5e498161-2e8d-4cbb-a2cc-9a257b00a70e",
@@ -46,7 +48,9 @@
   "category": "لباس جودو",
   "group": "بزرگسال — حرفه‌ای / مسابقه",
   "level": "پیشرفته",
-  "sizes": [],
+  "sizes": [
+   "M"
+  ],
   "colors": [],
   "source": "torob",
   "sourceId": "4c06adb5-8163-4255-b3c5-ce3be7593390",
@@ -63,7 +67,9 @@
   "category": "لباس جودو",
   "group": "بزرگسال — اقتصادی / مبتدی",
   "level": "مبتدی",
-  "sizes": [],
+  "sizes": [
+   "M"
+  ],
   "colors": [],
   "source": "digikala",
   "sourceId": "16302017",
@@ -80,7 +86,9 @@
   "category": "لباس جودو",
   "group": "بزرگسال — اقتصادی / مبتدی",
   "level": "مبتدی",
-  "sizes": [],
+  "sizes": [
+   "M"
+  ],
   "colors": [],
   "source": "torob",
   "sourceId": "a9768dfd-94bc-4884-8c12-5ff45cf2ec2b",
@@ -97,7 +105,9 @@
   "category": "لباس جودو",
   "group": "بزرگسال — اقتصادی / مبتدی",
   "level": "مبتدی",
-  "sizes": [],
+  "sizes": [
+   "M"
+  ],
   "colors": [],
   "source": "torob",
   "sourceId": "3aebe0a0-4242-41af-8ca3-2f9d98efe0c9",
@@ -114,7 +124,9 @@
   "category": "لباس جودو",
   "group": "لباس جودو آبی",
   "level": "همه سطوح",
-  "sizes": [],
+  "sizes": [
+   "M"
+  ],
   "colors": [
    "آبی"
   ],
@@ -133,7 +145,9 @@
   "category": "لباس جودو",
   "group": "لباس جودو آبی",
   "level": "همه سطوح",
-  "sizes": [],
+  "sizes": [
+   "M"
+  ],
   "colors": [
    "آبی"
   ],
@@ -176,7 +190,9 @@
   "category": "لباس جودو",
   "group": "کودک و نوجوان",
   "level": "مبتدی",
-  "sizes": [],
+  "sizes": [
+   "3"
+  ],
   "colors": [],
   "source": "digikala",
   "sourceId": "17480974",
@@ -215,7 +231,9 @@
   "category": "لباس جودو",
   "group": "شلوار جداگانه",
   "level": "همه سطوح",
-  "sizes": [],
+  "sizes": [
+   "M"
+  ],
   "colors": [],
   "source": "torob",
   "sourceId": "9db78903-c762-46e4-9a30-6bf501eca478",
@@ -232,7 +250,9 @@
   "category": "لباس جودو",
   "group": "شلوار جداگانه",
   "level": "همه سطوح",
-  "sizes": [],
+  "sizes": [
+   "M"
+  ],
   "colors": [],
   "source": "torob",
   "sourceId": "0c9ac792-07d6-4b40-b65d-96aa1de424b9",
