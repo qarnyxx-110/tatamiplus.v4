@@ -140,37 +140,7 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
  await go('#/store');S.ok('فروشگاه: پیشنهادها (۳ بخش × ۴ محصول) از کاتالوگ',await cnt('section[aria-label="تازه جودو را شروع کرده‌ام"] article')===4&&await cnt('section[aria-label="برای تمرین حرفه‌ای آماده‌ام"] article')===4&&await cnt('section[aria-label="برای مسابقه آماده می‌شوم"] article')===4);
  await go('#/product/0');t=await T();S.ok('جزئیات محصول کاتالوگ: قیمت مرجع، منبع، بدون ستاره/نظر جعلی، سایزهای نام محصول',t.includes('قیمت نهایی تاتامی پلاس نیست')&&t.includes('منبع قیمت مرجع')&&!t.includes('★')&&!/نظر\)/.test(t)&&t.includes('XXL'));
  S.ok('جزئیات: قیمت منبع ۱۴٬۵۰۰٬۰۰۰ تومان (بدون تغییر)',t.includes('۱۴٬۵۰۰٬۰۰۰ تومان'));
- await pg.evaluate(()=>{cart=[];localStorage.removeItem('cart');save()});
- const noOptionId=await pg.evaluate(()=>{const p=P.find(x=>x.ref&&!x.sz.length&&!x.cl.length&&x.st>0);return p?p.id:-1});
- await go('#/product/'+noOptionId);
- S.ok('جزئیات: محصول بدون سایز و رنگ، گزینه‌های اضافی نمایش داده نمی‌شوند',noOptionId>=0&&!(await T()).includes('\nرنگ\n'));
- const plainAdd=await pg.evaluate(()=>{const before=cart.reduce((n,x)=>n+x.q,0);addP();return{hash:location.hash,delta:cart.reduce((n,x)=>n+x.q,0)-before,flight:!!document.querySelector('.tp-cart-flight'),bump:document.getElementById('hcart').classList.contains('tp-cart-bump')}});
- S.ok('افزودن از صفحه محصول: تعداد سبد زیاد می‌شود و کاربر در همان صفحه می‌ماند',plainAdd.hash.startsWith('#/product/')&&plainAdd.delta===1);
- S.ok('افزودن از صفحه محصول: تصویر پروازی و واکنش آیکون سبد شروع می‌شوند',plainAdd.flight&&plainAdd.bump);
- await wait(760);
- S.ok('افزودن از صفحه محصول: پیام موفقیت نمایش داده و تصویر موقت پاک می‌شود',await pg.locator('#ts').innerText()==='محصول با موفقیت به سبد خرید اضافه شد.'&&await pg.locator('#ts.on').count()===1&&await pg.locator('.tp-cart-flight').count()===0);
- await go('#/cart');S.ok('سبد: محصول کاتالوگ با یادداشت قیمت مرجع',(await T()).includes('قیمت مرجع'));
 
- // محصول دارای هر دو ویژگی: تا انتخاب سایز و رنگ نباید به سبد اضافه شود.
- await pg.evaluate(()=>{cart=[];localStorage.removeItem('cart');save()});
- const variantId=await pg.evaluate(()=>{const p=P.find(x=>x.sz.length&&x.cl.length&&x.st>0);return p?p.id:-1});
- if(variantId>=0){
-  await go('#/product/'+variantId);
-  const variantBefore=await pg.evaluate(()=>cart.reduce((n,x)=>n+x.q,0));
-  await pg.evaluate(()=>addP());
-  S.ok('جزئیات: سایز و رنگ اجباری‌اند و بدون انتخاب هیچ محصولی اضافه نمی‌شود',
-   await pg.locator('#pd-sz-err').count()===1&&await pg.locator('#pd-cl-err').count()===1&&await pg.evaluate(()=>cart.reduce((n,x)=>n+x.q,0))===variantBefore);
-  await pg.locator('#pd-sz .chip').first().click();
-  await pg.locator('#pd-cl .chip').first().click();
-  const selectedVariant=await pg.evaluate(()=>({id:PS.id,s:PS.s,c:PS.c}));
-  const variantAdd=await pg.evaluate(()=>{addP();return{hash:location.hash,found:cart.some(x=>x.id===PS.id&&x.s===PS.s&&x.c===PS.c),flight:!!document.querySelector('.tp-cart-flight')}});
-  S.ok('جزئیات: پس از انتخاب تنوع، همان سایز و رنگ ذخیره می‌شوند و صفحه تغییر نمی‌کند',
-   variantAdd.hash.startsWith('#/product/')&&variantAdd.found&&variantAdd.flight&&!!selectedVariant.s&&!!selectedVariant.c);
-  await wait(760);
-  S.ok('جزئیات: افزودن محصول دارای تنوع نیز پیام موفقیت می‌دهد',
-   await pg.locator('#ts').innerText()==='محصول با موفقیت به سبد خرید اضافه شد.'&&await pg.locator('.tp-cart-flight').count()===0);
- }else S.ok('کاتالوگ: محصول دارای سایز و رنگ برای تست جریان تنوع پیدا شد',false);
- await pg.evaluate(()=>{cart=[];localStorage.clear();save()});
 
  // --- کاتالوگ دوره‌های نمایشی Preview
  await go('#/courses');S.ok('دوره‌ها: فهرست سه دوره نمونه',await cnt('#app .tp-course-card')===3);
@@ -435,6 +405,37 @@ export async function runPreview(base,browser){
  S.ok('پس از خروج هم پیام ثبت‌نام‌شده دوباره ظاهر نمی‌شود',!(await T()).includes('آماده شروع هستید؟'));
  await pg.reload();await wait(300);
  S.ok('مخفی‌ماندن پیام پس از بارگذاری مجدد پایدار است',!(await T()).includes('آماده شروع هستید؟'));
+ await pg.evaluate(()=>{cart=[];localStorage.removeItem('cart');save()});
+ const noOptionId=await pg.evaluate(()=>{const p=P.find(x=>x.ref&&!x.sz.length&&!x.cl.length&&x.st>0);return p?p.id:-1});
+ await go('#/product/'+noOptionId);
+ S.ok('جزئیات: محصول بدون سایز و رنگ، گزینه‌های اضافی نمایش داده نمی‌شوند',noOptionId>=0&&!(await T()).includes('\nرنگ\n'));
+ const plainAdd=await pg.evaluate(()=>{const before=cart.reduce((n,x)=>n+x.q,0);addP();return{hash:location.hash,delta:cart.reduce((n,x)=>n+x.q,0)-before,flight:!!document.querySelector('.tp-cart-flight'),bump:document.getElementById('hcart').classList.contains('tp-cart-bump')}});
+ S.ok('افزودن از صفحه محصول: تعداد سبد زیاد می‌شود و کاربر در همان صفحه می‌ماند',plainAdd.hash.startsWith('#/product/')&&plainAdd.delta===1);
+ S.ok('افزودن از صفحه محصول: تصویر پروازی و واکنش آیکون سبد شروع می‌شوند',plainAdd.flight&&plainAdd.bump);
+ await wait(760);
+ S.ok('افزودن از صفحه محصول: پیام موفقیت نمایش داده و تصویر موقت پاک می‌شود',await pg.locator('#ts').innerText()==='محصول با موفقیت به سبد خرید اضافه شد.'&&await pg.locator('#ts.on').count()===1&&await pg.locator('.tp-cart-flight').count()===0);
+ await go('#/cart');S.ok('سبد: محصول کاتالوگ با یادداشت قیمت مرجع',(await T()).includes('قیمت مرجع'));
+
+ // محصول دارای هر دو ویژگی: تا انتخاب سایز و رنگ نباید به سبد اضافه شود.
+ await pg.evaluate(()=>{cart=[];localStorage.removeItem('cart');save()});
+ const variantId=await pg.evaluate(()=>{const p=P.find(x=>x.sz.length&&x.cl.length&&x.st>0);return p?p.id:-1});
+ if(variantId>=0){
+  await go('#/product/'+variantId);
+  const variantBefore=await pg.evaluate(()=>cart.reduce((n,x)=>n+x.q,0));
+  await pg.evaluate(()=>addP());
+  S.ok('جزئیات: سایز و رنگ اجباری‌اند و بدون انتخاب هیچ محصولی اضافه نمی‌شود',
+   await pg.locator('#pd-sz-err').count()===1&&await pg.locator('#pd-cl-err').count()===1&&await pg.evaluate(()=>cart.reduce((n,x)=>n+x.q,0))===variantBefore);
+  await pg.locator('#pd-sz .chip').first().click();
+  await pg.locator('#pd-cl .chip').first().click();
+  const selectedVariant=await pg.evaluate(()=>({id:PS.id,s:PS.s,c:PS.c}));
+  const variantAdd=await pg.evaluate(()=>{addP();return{hash:location.hash,found:cart.some(x=>x.id===PS.id&&x.s===PS.s&&x.c===PS.c),flight:!!document.querySelector('.tp-cart-flight')}});
+  S.ok('جزئیات: پس از انتخاب تنوع، همان سایز و رنگ ذخیره می‌شوند و صفحه تغییر نمی‌کند',
+   variantAdd.hash.startsWith('#/product/')&&variantAdd.found&&variantAdd.flight&&!!selectedVariant.s&&!!selectedVariant.c);
+  await wait(760);
+  S.ok('جزئیات: افزودن محصول دارای تنوع نیز پیام موفقیت می‌دهد',
+   await pg.locator('#ts').innerText()==='محصول با موفقیت به سبد خرید اضافه شد.'&&await pg.locator('.tp-cart-flight').count()===0);
+ }else S.ok('کاتالوگ: محصول دارای سایز و رنگ برای تست جریان تنوع پیدا شد',false);
+ await pg.evaluate(()=>{cart=[];localStorage.clear();save()});
  S.ok('بدون خطای JavaScript در سناریوی Preview',errors.length===0,errors.join(' | '));
  await ctx.close();return S;
 }
