@@ -440,6 +440,7 @@ export async function runPreview(base,browser){
  S.ok('ثبت‌نام: انتخاب هنرجو حالت فعال را برمی‌گرداند',await pg.locator('#rg-f button[type=submit]').isEnabled()&&await pg.locator('#rg-f').getAttribute('data-role-preview')==='');
  await pg.setViewportSize({width:390,height:850});await go('#/register');
  S.ok('ثبت‌نام موبایل: مرحله اول فرم نمایش داده می‌شود',await pg.locator('#rg-f').getAttribute('data-mobile-steps')==='true'&&await pg.locator('#rg-f [data-auth-step="2"]').isHidden());
+ await pg.locator('#rg-u').fill('mobile-preview-user');
  await pg.locator('#rg-f [data-auth-next]').click();
  S.ok('ثبت‌نام موبایل: پس از ادامه، مرحله گذرواژه نمایش داده می‌شود',await pg.locator('#rg-f').getAttribute('data-step')==='2'&&await pg.locator('#rg-f [data-auth-step="2"]').isVisible());
  await pg.locator('#rg-f [data-auth-back]').click();
