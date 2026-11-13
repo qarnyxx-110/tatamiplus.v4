@@ -112,6 +112,28 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
  await go('#/store');const sc=()=>cnt('#app .pg:not(section .pg) article.pcd'),prod=await pg.evaluate(()=>({n:P.length,names:new Set(P.map(p=>p.n)).size,skus:new Set(P.filter(p=>p.sku).map(p=>p.sku)).size,ref:P.filter(p=>p.ref).length,demo:P.filter(p=>p.demo).length}));
  S.ok('فروشگاه: ۵۹ محصول کاتالوگ + ۳ نمونه آزمایشی (دسته بدون کاتالوگ)، بدون نام/SKU تکراری',prod.ref===59&&prod.demo===3&&prod.names===prod.n&&prod.skus===59,JSON.stringify(prod));
  S.ok('فروشگاه: شمارنده ۶۲ محصول',(await T()).includes('۶۲ محصول'));
+ const initialStoreAudit=await pg.evaluate(()=>{
+  const cards=[...document.querySelectorAll('#app .sl .pg article.pcd')];
+  const ids=cards.map(card=>Number((card.querySelector('a[href^="#/product/"]')?.getAttribute('href')||'').split('/').pop()));
+  const garments=P.filter(product=>product.c==='لباس جودو');
+  return{
+   garmentCount:garments.length,
+   garmentsHaveSizes:garments.every(product=>Array.isArray(product.sz)&&product.sz.length>0),
+   firstPageCategories:ids.map(id=>P[id]?.c),
+   cardsHideVariants:cards.every(card=>!card.querySelector('.pc-variants,[data-product-size],[data-product-color]')),
+   cardsHaveDetailCta:cards.length>0&&cards.every(card=>[...card.querySelectorAll('a.btn')].some(link=>link.textContent.includes('مشاهده و انتخاب محصول')&&link.getAttribute('href')?.startsWith('#/product/'))),
+   cardsHaveNoDirectAdd:cards.every(card=>![...card.querySelectorAll('button')].some(button=>/افزودن به سبد|افزودن به خرید/.test(button.textContent)))
+  };
+ });
+ S.ok('فروشگاه: همه ۱۳ پوشاک جودو گزینه سایز دارند',initialStoreAudit.garmentCount===13&&initialStoreAudit.garmentsHaveSizes,JSON.stringify(initialStoreAudit));
+ S.ok('فروشگاه: ترتیب پیش‌فرض با لباس جودو و سپس کمربند جودو آغاز می‌شود',
+  initialStoreAudit.firstPageCategories.slice(0,13).every(category=>category==='لباس جودو')&&
+  initialStoreAudit.firstPageCategories.slice(13,23).every(category=>category==='کمربند جودو'),
+  initialStoreAudit.firstPageCategories.join(' | '));
+ S.ok('فروشگاه: کارت‌ها فقط CTA صفحه جزئیات دارند و سایز/رنگ یا افزودن مستقیم ندارند',
+  initialStoreAudit.cardsHideVariants&&initialStoreAudit.cardsHaveDetailCta&&initialStoreAudit.cardsHaveNoDirectAdd,
+  JSON.stringify(initialStoreAudit));
+
  S.ok('فروشگاه: برچسب «قیمت مرجع بازار» روی کارت‌ها و «نمونه آزمایشی» روی نمونه‌ها',(await T()).includes('قیمت مرجع بازار')&&(await T()).includes('نمونه آزمایشی'));
  // تصاویر lazy کارت‌ها را eager کن و تا پایان درخواست‌ها صبر کن؛ سپس شکست واقعی را بررسی کن.
  const productCardImages=pg.locator('#app .sl .pg article.pcd img');
@@ -169,13 +191,13 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
  await pg.evaluate(()=>localStorage.clear());
  await ctx.close();
  // --- واکنش‌گرایی، ID تکراری، خطاهای JS در همه عرض‌ها
- const routes=['#/','#/coaches','#/coaches/sara-ahmadi','#/sponsors','#/tatamipedia','#/tatamipedia/uchi-mata','#/blog','#/blog/uchi-mata-basics','#/store','#/product/2','#/cart','#/tournaments','#/tournament/1','#/videos','#/video/3','#/academy','#/instructor/0','#/dashboard','#/profile','#/ai','#/clubs','#/my-profile','#/nope'];
+ const routes=['#/','#/login','#/register','#/coaches','#/coaches/sara-ahmadi','#/sponsors','#/tatamipedia','#/tatamipedia/uchi-mata','#/blog','#/blog/uchi-mata-basics','#/store','#/product/2','#/cart','#/tournaments','#/tournament/1','#/videos','#/video/3','#/academy','#/instructor/0','#/dashboard','#/profile','#/ai','#/clubs','#/club/0','#/gems','#/search','#/my-profile','#/nope'];
  const over=[],dup=new Set();for(const w of WIDTHS){const c2=await browser.newContext({viewport:{width:w,height:800},serviceWorkers:'block'});const p2=await c2.newPage();p2.on('pageerror',e=>errs.push('PAGEERROR@'+w+' '+String(e).slice(0,80)));await p2.goto(base+'/index.html');
   for(const r of routes){await p2.evaluate(x=>{location.hash=x},r);await wait(50);const o=await p2.evaluate(OVERFLOW_JS);if(o.o)over.push(`${w}${r}`);o.dup.forEach(d=>dup.add(r+':'+d))}await c2.close()}
  S.ok(`واکنش‌گرایی: بدون اسکرول افقی (${WIDTHS.join('/')} × ${routes.length} مسیر)`,!over.length,over.slice(0,5).join(' '));S.ok('بدون شناسه تکراری',!dup.size,[...dup].join(' '));S.ok('بدون خطای JavaScript',!errs.length,errs.slice(0,3).join(' | '));
  // --- اهداف لمسی ≥۴۴px (کنترل‌های تعاملی؛ لینک درون‌متنی مستثناست)
  const c3=await browser.newContext({viewport:{width:360,height:800},serviceWorkers:'block'});const p3=await c3.newPage();await p3.goto(base+'/index.html');const small=[];
- for(const r of ['#/coaches','#/tatamipedia','#/blog','#/store','#/product/2','#/cart','#/videos','#/dashboard','#/tournaments']){await p3.evaluate(x=>{location.hash=x},r);await wait(80);const n=await p3.evaluate(()=>[...document.querySelectorAll('#app button:not([disabled]),#app a.btn,#app .chip,#app select,#app input:not([type=checkbox]):not([type=file]),#nv a,header a,.tp-pager button')].filter(e=>{const b=e.getBoundingClientRect();return b.width>0&&(b.height<43.5||b.width<43.5)&&getComputedStyle(e).visibility!=='hidden'}).map(e=>(e.tagName+'.'+e.className+':'+Math.round(e.getBoundingClientRect().width)+'x'+Math.round(e.getBoundingClientRect().height)).slice(0,50)));if(n.length)small.push(r+' '+n.slice(0,3).join(','))}
+ for(const r of routes{await p3.evaluate(x=>{location.hash=x},r);await wait(80);const n=await p3.evaluate(()=>[...document.querySelectorAll('#app button:not([disabled]),#app a.btn,#app .chip,#app select,#app input:not([type=checkbox]):not([type=file]),#nv a,header a,.tp-pager button')].filter(e=>{const b=e.getBoundingClientRect();return b.width>0&&(b.height<43.5||b.width<43.5)&&getComputedStyle(e).visibility!=='hidden'}).map(e=>(e.tagName+'.'+e.className+':'+Math.round(e.getBoundingClientRect().width)+'x'+Math.round(e.getBoundingClientRect().height)).slice(0,50)));if(n.length)small.push(r+' '+n.slice(0,3).join(','))}
  S.ok('اهداف لمسی ≥۴۴×۴۴ در کنترل‌های مهم (۳۶۰px)',!small.length,small.join(' ; '));await c3.close();
  return S}
 export async function runPwa(app,base,browser,altRoot){
@@ -407,6 +429,19 @@ export async function runPreview(base,browser){
  S.ok('پس از خروج هم پیام ثبت‌نام‌شده دوباره ظاهر نمی‌شود',!(await T()).includes('آماده شروع هستید؟'));
  await pg.reload();await wait(300);
  S.ok('مخفی‌ماندن پیام پس از بارگذاری مجدد پایدار است',!(await T()).includes('آماده شروع هستید؟'));
- S.ok('بدون خطای JavaScript در سناریوی Preview',errors.length===0,errors.join(' | '));
+ 
+ const previewMobileRoutes=['#/','#/login','#/register','#/coaches','#/coaches/sara-ahmadi','#/sponsors','#/tatamipedia','#/tatamipedia/ippon','#/blog','#/blog/uchi-mata-basics','#/store','#/product/0','#/cart','#/tournaments','#/tournament/1','#/videos','#/video/3','#/academy','#/instructor/0','#/dashboard','#/profile','#/ai','#/clubs','#/club/0','#/gems','#/search','#/courses','#/courses/judo-foundations','#/episode/judo-foundations-lesson-1'];
+ const mobileOverflow=[];
+ for(const width of [320,360,390]){
+  await pg.setViewportSize({width,height:850});
+  for(const route of previewMobileRoutes){
+   await pg.evaluate(hash=>{location.hash=hash},route);
+   await wait(35);
+   const state=await pg.evaluate(()=>({overflow:document.documentElement.scrollWidth>document.documentElement.clientWidth+1,viewport:document.documentElement.clientWidth,document:document.documentElement.scrollWidth}));
+   if(state.overflow)mobileOverflow.push(width+route+' ('+state.viewport+'/'+state.document+')');
+  }
+ }
+ S.ok('واکنش‌گرایی Preview در ۲۹ مسیر و سه عرض موبایل',mobileOverflow.length===0,mobileOverflow.slice(0,8).join(' | '));
+S.ok('بدون خطای JavaScript در سناریوی Preview',errors.length===0,errors.join(' | '));
  await ctx.close();return S;
 }
