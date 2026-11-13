@@ -10,11 +10,66 @@ const tgl=(k,v)=>{FS[k]=FS[k].includes(v)?[]:[v];storePage=1;R('x')},sF=(k,v)=>{
 const clr=()=>{q='';cat='';storePage=1;Object.assign(FS,{pmin:0,pmax:0,sz:[],col:[],lv:'',fv:false});R('x')};
 const cadd=(id,s,c,n)=>{const p=P[id];if(!p||!p.st){toast('این محصول ناموجود است','err');return false}const inCart=cart.filter(x=>x.id==id).reduce((a,x)=>a+x.q,0),room=Math.max(0,p.st-inCart);if(room<=0||n>room){toast(room?'تعداد درخواستی بیشتر از موجودی است':'به حداکثر موجودی این محصول رسیده‌اید','err');return false}const e=cart.find(x=>x.id==id&&x.s==s&&x.c==c);e?e.q+=n:cart.push({id,s,c,q:n});save();return true};
 const toast=(t,k='')=>{const e=$('#ts');e.textContent=t;e.className='tp-toast on '+(k==='err'?'error':k);e.setAttribute('role',k==='err'?'alert':'status');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),2200)};
+
+// انیمیشن محصول فقط از صفحه جزئیات محصول اجرا می‌شود؛ افزودن به سبد قبل از انیمیشن ذخیره شده است.
+let productCartFlightBusy=false;
+function flyProductToCart(){
+ if(productCartFlightBusy)return;
+ productCartFlightBusy=true;
+ const button=document.querySelector('#app .pd .pa > button.btn:not(.o)');
+ const cartLink=document.getElementById('hcart');
+ const cartIcon=cartLink?(cartLink.querySelector('.tp-ico')||cartLink):null;
+ const source=document.querySelector('#app .pd .pm .ph');
+ let clone=null,animation=null,fallbackTimer=null,finished=false;
+ if(button){button.disabled=true;button.setAttribute('aria-busy','true')}
+ const finish=()=>{
+  if(finished)return;
+  finished=true;
+  if(fallbackTimer)window.clearTimeout(fallbackTimer);
+  if(animation){animation.onfinish=null;animation.oncancel=null}
+  if(clone&&clone.parentNode)clone.parentNode.removeChild(clone);
+  if(cartLink)cartLink.classList.remove('tp-cart-bump');
+  if(button&&button.isConnected){button.disabled=false;button.removeAttribute('aria-busy')}
+  productCartFlightBusy=false;
+  toast('محصول با موفقیت به سبد خرید اضافه شد.');
+ };
+ const reduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+ if(!source||!cartIcon||reduced||typeof Element==='undefined'||!Element.prototype.animate){finish();return}
+ const from=source.getBoundingClientRect(),to=cartIcon.getBoundingClientRect();
+ if(from.width<4||from.height<4||to.width<2||to.height<2){finish();return}
+ clone=source.cloneNode(true);
+ clone.classList.add('tp-cart-flight');
+ clone.setAttribute('aria-hidden','true');
+ clone.removeAttribute('id');
+ const image=clone.querySelector('img');
+ if(image){image.loading='eager';image.decoding='sync';if(image.complete&&image.naturalWidth===0)image.remove()}
+ Object.assign(clone.style,{
+  position:'fixed',left:from.left+'px',top:from.top+'px',
+  width:from.width+'px',height:from.height+'px',margin:'0',padding:'0',
+  zIndex:'10000',pointerEvents:'none',overflow:'hidden',
+  boxSizing:'border-box',transformOrigin:'center center',willChange:'transform'
+ });
+ document.body.appendChild(clone);
+ cartLink.classList.add('tp-cart-bump');
+ const dx=(to.left+to.width/2)-(from.left+from.width/2);
+ const dy=(to.top+to.height/2)-(from.top+from.height/2);
+ const arc=-Math.min(58,Math.max(18,Math.abs(dx)*0.075));
+ try{
+  animation=clone.animate([
+   {transform:'translate3d(0,0,0) scale(1)',opacity:1},
+   {transform:'translate3d('+dx*0.55+'px,'+(dy*0.55+arc)+'px,0) scale(.62)',opacity:.96,offset:.58},
+   {transform:'translate3d('+dx+'px,'+dy+'px,0) scale(.12)',opacity:.18}
+  ],{duration:640,easing:'cubic-bezier(.22,.72,.25,1)',fill:'forwards'});
+  animation.onfinish=finish;
+  animation.oncancel=finish;
+  fallbackTimer=window.setTimeout(finish,1100);
+ }catch(error){finish()}
+}
 function qadd(id){const p=P[id];if(!p||!p.st){toast('این محصول ناموجود است','err');return}if(p.sz.length||p.cl.length){location.hash='#/product/'+id;return}if(cadd(id,'','',1))toast('محصول به سبد خرید اضافه شد.')}
 // مثل AddToCartForm: خطای «تنوع» (سایز/رنگ) و «تعداد» کنار همان فیلد؛ موفقیت ← سبد خرید
 function addP(){const p=P[PS.id];if(!p||!p.st){toast('این محصول ناموجود است','err');return}const E={};if(p.sz.length&&!PS.s)E.s='این فیلد لازم است.';if(p.cl.length&&!PS.c)E.c='این فیلد لازم است.';
  const inCart=cart.filter(x=>x.id==PS.id&&x.s==PS.s&&x.c==PS.c).reduce((a,x)=>a+x.q,0);if(!E.s&&!E.c&&inCart+PS.q>p.st)E.q='تعداد درخواستی از موجودی فعلی بیشتر است.';
- PS.err=E;if(E.s||E.c||E.q){R(E.s?'pd-sz':E.c?'pd-cl':'pd-qt');return}if(cadd(PS.id,PS.s,PS.c,PS.q)){toast('محصول به سبد خرید اضافه شد.');location.hash='#/cart'}}
+ PS.err=E;if(E.s||E.c||E.q){R(E.s?'pd-sz':E.c?'pd-cl':'pd-qt');return}if(cadd(PS.id,PS.s,PS.c,PS.q))flyProductToCart()}
 function qP(d){PS.q=Math.max(1,Math.min(P[PS.id].st,PS.q+d));if(PS.err)PS.err.q='';R('x')}
 function cq(k,d){const x=cart[k],n=x.q+d;if(n<1){toast('تعداد باید دست‌کم یک باشد.','err');return}if(n>P[x.id].st){toast('تعداد درخواستی از موجودی فعلی بیشتر است.','err');return}x.q=n;save();R('x');toast('تعداد محصول به‌روزرسانی شد.')}
 function rm(k){cart.splice(k,1);save();R('x');toast('محصول از سبد خرید حذف شد.')}
