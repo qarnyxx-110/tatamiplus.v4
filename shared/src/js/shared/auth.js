@@ -5,9 +5,9 @@
 //  وضعیت    GET  /coaches/application/ → pending_review | approved | rejected
 //  سبد: مهمان در نشست؛ پس از ورود با سبد حساب ادغام می‌شود.  باشگاه: فقط نمایشی (حساب باشگاه ساخته نمی‌شود).
 // هشدار: تا اتصال بک‌اند، همه‌چیز فقط در localStorage همین مرورگر است؛ احراز هویت واقعی نیست.
-const AUTH_ROLES=['student','coach'];                       // تنها نقش‌های مجاز برای ساخت حساب نمایشی
-const AUTH_VISIBLE_ROLES=['student','coach','club'];         // نقش‌های قابل مشاهده در طراحی فرانت‌اند
+const AUTH_ROLES=['student','coach'];                       // نقش‌های پذیرفته‌شده بک‌اند
 const APP_ROLE=APP.fixed?APP.role:null;                     // اپ ثابت: فقط همان نقش
+const CLUB_DEMO=APP_ROLE==='club';                          // اپ باشگاه: حساب ساخته نمی‌شود
 const UNAME_RE=/^[\p{L}\p{N}@.+_-]{1,150}$/u;
 const userKey=u=>String(u).toLowerCase();
 const validUser=v=>v&&typeof v==='object'&&typeof v.username==='string'&&UNAME_RE.test(v.username)&&typeof v.email==='string'&&v.email.length<=254&&AUTH_ROLES.includes(v.role)&&typeof v.h==='string'&&typeof v.salt==='string';
@@ -41,55 +41,6 @@ const hint=(id,t)=>t?`<p class="tp-hint" id="${id}-h">${t}</p>`:'';
 const field=(id,name,label,attrs,help)=>`<div class="tp-field"><label for="${id}">${label}</label><input id="${id}" name="${name}" ${attrs}${help?` aria-describedby="${id}-h"`:''}>${hint(id,help)}</div>`;
 const pwField=(id,name,label,ac,help)=>`<div class="tp-field"><label for="${id}">${label}</label><div class="tp-pw"><input id="${id}" name="${name}" type="password" autocomplete="${ac}" required dir="ltr"${help?` aria-describedby="${id}-h"`:''}><button type="button" class="tp-pw-b" aria-pressed="false" aria-label="نمایش ${label}" onclick="pwToggle(this)">نمایش</button></div>${hint(id,help)}</div>`;
 
-function authRoleMeta(role){
- return ({student:['هنرجو','🥋','یادگیری و پیگیری مسیر ورزشی'],coach:['مربی','🎓','آموزش و همراهی هنرجویان'],club:['باشگاه','🏢','معرفی و مدیریت مجموعه ورزشی']})[role];
-}
-function authRoleCard(role,index,selected,fixed){
- const meta=authRoleMeta(role);
- if(fixed)return '<div class="tp-role-option is-fixed" aria-current="true"><span class="tp-role-icon" aria-hidden="true">'+meta[1]+'</span><span class="tp-role-copy"><b>'+meta[0]+'</b><small>'+meta[2]+'</small></span><span class="tp-role-check" aria-hidden="true">✓</span></div>';
- return '<label class="tp-role-option"><input type="radio" name="role" id="rg-r'+index+'" value="'+role+'"'+(selected?' checked':'')+' required><span class="tp-role-icon" aria-hidden="true">'+meta[1]+'</span><span class="tp-role-copy"><b>'+meta[0]+'</b><small>'+meta[2]+'</small></span><span class="tp-role-check" aria-hidden="true">✓</span></label>';
-}
-function goAuthStage(form,n){
- if(!form)return;
- const stages=[...form.querySelectorAll('[data-auth-stage]')];
- if(!stages.length)return;
- const mobile=window.matchMedia&&window.matchMedia('(max-width:600px)').matches;
- const step=Math.max(1,Math.min(stages.length,Number(n)||1));
- form.dataset.authStage=String(step);
- stages.forEach((stage,index)=>{const active=index+1===step;stage.classList.toggle('is-active',active);stage.hidden=!!mobile&&!active});
- form.querySelectorAll('[data-auth-progress-step]').forEach(item=>{
-  const index=Number(item.dataset.authProgressStep);
-  item.classList.toggle('is-current',index===step);
-  item.classList.toggle('is-done',index<step);
-  if(index===step)item.setAttribute('aria-current','step');else item.removeAttribute('aria-current');
- });
-}
-function nextAuthStage(button){
- const form=button&&button.form;if(!form)return;
- const step=Number(form.dataset.authStage||1),stage=form.querySelector('[data-auth-stage="'+step+'"]');
- const invalid=stage&&[...stage.querySelectorAll('input,select,textarea')].find(field=>!field.checkValidity());
- if(invalid){invalid.focus();if(typeof invalid.reportValidity==='function')invalid.reportValidity();invalid.scrollIntoView({block:'nearest',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});return}
- goAuthStage(form,step+1);
-}
-function initAuthStepper(form){
- if(!form)return;
- const media=window.matchMedia('(max-width:600px)');
- const invalid=form.querySelector('.tp-error-text,[aria-invalid="true"]');
- const failedStage=invalid&&invalid.closest('[data-auth-stage]');
- goAuthStage(form,failedStage?Number(failedStage.dataset.authStage):1);
- const update=()=>goAuthStage(form,Number(form.dataset.authStage||1));
- if(media.addEventListener)media.addEventListener('change',update);else if(media.addListener)media.addListener(update);
-}
-function syncAuthRole(form){
- if(!form)return;
- const role=APP_ROLE||(form.querySelector('input[name=role]:checked')||{}).value||'student';
- const note=form.querySelector('[data-club-notice]');
- if(note)note.hidden=role!=='club';
- const coach=form.querySelector('[data-coach-note]');
- if(coach)coach.hidden=role!=='coach';
-}
-
-
 // ---- ثبت‌نام (اعتبارسنجی مشابه اعتبارسنج‌های پیش‌فرض Django) ----
 const COMMON_PW=['12345678','123456789','1234567890','password','password1','password123','qwertyui','qwerty123','qwertyuiop','11111111','00000000','iloveyou','admin123','abcd1234','1q2w3e4r','sunshine','football','baseball','princess','trustno1','welcome1','superman','zaq12wsx','letmein1'];// زیرمجموعه‌ای از فهرست ۲۰هزارتایی CommonPasswordValidator؛ بک‌اند فهرست کامل را بررسی می‌کند
 const qRatio=(a,b)=>{const c={};for(const ch of b)c[ch]=(c[ch]||0)+1;let m=0;for(const ch of a)if(c[ch]>0){c[ch]--;m++}return a.length+b.length?2*m/(a.length+b.length):0};
@@ -98,9 +49,8 @@ function pwValidate(p,u,em){const out=[],lp=p.toLowerCase();
  if(p.length<8)out.push('این رمز عبور خیلی کوتاه است. رمز عبور می‌بایست حداقل از ۸ حرف تشکیل شده باشد.');
  if(COMMON_PW.includes(lp.trim()))out.push('این رمز عبور بسیار رایج است.');
  if(/^\d+$/.test(p))out.push('رمز شما کلا عدد است');return out}
-async function doRegister(f){const v=k=>(f.elements[k]&&f.elements[k].value||'').trim(),E={},u=v('username'),em=v('email'),p1=f.elements.password1.value,p2=f.elements.password2.value,users=authUsers();
+async function doRegister(f){if(f.dataset.rolePreview==='club'){toast('ثبت‌نام باشگاه پس از آماده‌شدن بک‌اند فعال می‌شود.');return}const v=k=>(f.elements[k]&&f.elements[k].value||'').trim(),E={},u=v('username'),em=v('email'),p1=f.elements.password1.value,p2=f.elements.password2.value,users=authUsers();
  const r=APP_ROLE||(f.querySelector('input[name=role]:checked')||{}).value;
- if(r==='club'){goAuthStage(f,1);const note=f.querySelector('[data-club-notice]');if(note){note.hidden=false;note.focus();note.scrollIntoView({block:'nearest',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})}return}
 // پیام‌ها عیناً ترجمهٔ فارسی خود Django 5.2 هستند؛ مثل UserCreationForm خطاهای اعتبارسنج گذرواژه زیر «تکرار گذرواژه» می‌نشینند
  if(!u)E['rg-u']='این فیلد لازم است.';else if(!UNAME_RE.test(u))E['rg-u']='یک نام کاربری معتبر وارد کنید. این مقدار میتواند فقط شامل حروف، اعداد، و علامات @/./+/-/_ باشد.';else if(users[userKey(u)])E['rg-u']='کاربری با آن نام کاربری وجود دارد.';
  if(em&&(em.length>254||!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(em)))E['rg-e']='یک ایمیل آدرس معتبر وارد کنید.';
@@ -113,7 +63,7 @@ async function doRegister(f){const v=k=>(f.elements[k]&&f.elements[k].value||'')
  toast(m?'حساب شما ساخته شد و سبد خرید مهمان به حسابتان منتقل شد':'حساب شما ساخته شد و وارد شدید');location.hash=authNext()||'#/profile'}
 
 // ---- ورود (فقط با نام کاربری، مثل AuthenticationForm) ----
-async function doLogin(f){if(APP_ROLE==='club'){const note=f.querySelector('[data-club-login-notice]');if(note){note.hidden=false;note.focus()}return}const id=f.elements.username.value.trim(),p=f.elements.password.value,E={};if(!id)E['lg-u']='این فیلد لازم است.';if(!p)E['lg-p']='این فیلد لازم است.';if(!fErr(f,E))return;
+async function doLogin(f){const id=f.elements.username.value.trim(),p=f.elements.password.value,E={};if(!id)E['lg-u']='این فیلد لازم است.';if(!p)E['lg-p']='این فیلد لازم است.';if(!fErr(f,E))return;
  const b=f.querySelector('[type=submit]');b.classList.add('is-loading');b.disabled=true;const c=authUsers()[userKey(id)],x=c&&c.username===id?c:null,good=x&&await hashPw(p,x.salt)===x.h;b.classList.remove('is-loading');b.disabled=false;
  if(!good){fErr(f,{'lg-p':'لطفا نام کاربری و گذرواژه‌ای قابل قبول وارد کنید. توجه داشته باشید که ممکن است هر دو به کوچکی و بزرگی حروف حساس باشند.'});f.elements.password.value='';return}
  if(APP_ROLE&&x.role!==APP_ROLE){fErr(f,{'lg-u':`این حساب «${RN[x.role]}» است و در اپ ${RN[APP_ROLE]} قابل استفاده نیست.`});return}
@@ -140,23 +90,65 @@ function doApply(f){if(!ME||ME.role!=='coach'){location.hash='#/profile';return}
 
 // ---- نماها ----
 const goTo=h=>{setTimeout(()=>{location.hash=h});return''};// مثل redirect سمت سرور
-const authAside=mode=>'<aside class="tp-auth-aside" aria-label="معرفی تاتامی پلاس"><div class="tp-auth-aside-brand"><span class="tp-auth-aside-emblem" aria-hidden="true">TP</span><span>TATAMI PLUS</span></div><div class="tp-auth-aside-copy"><p class="tp-auth-kicker">مسیر ورزشی شما</p><h2>'+(mode==='register'?'حسابی متناسب با مسیرت بساز':'مسیر پیشرفتت را ادامه بده')+'</h2><p>'+(mode==='register'?'هنرجو، مربی یا باشگاه؛ تجربه تاتامی پلاس بر اساس نوع حساب شما شکل می‌گیرد.':'با ورود به حساب خود به تجربه آموزشی و ورزشی تاتامی پلاس بازگردید.')+'</p><ul class="tp-auth-aside-list"><li><span aria-hidden="true">✓</span> تجربه هماهنگ در دستگاه‌های مختلف</li><li><span aria-hidden="true">✓</span> فضای متناسب با نوع حساب کاربری</li><li><span aria-hidden="true">✓</span> طراحی ساده و قابل استفاده</li></ul></div><div class="tp-auth-aside-footer"><span>تاتامی پلاس</span><span>یادگیری · تمرین · پیشرفت</span></div></aside>';
-const authShell=(t,sub,body,alt,mode='login')=>'<div class="w tp-auth tp-auth-shell tp-auth-'+mode+'"><div class="tp-auth-layout"><section class="tp-auth-main" aria-labelledby="tp-auth-title"><div class="tp-auth-card"><p class="tp-auth-kicker">حساب کاربری تاتامی پلاس</p><h1 id="tp-auth-title">'+t+'</h1><p class="mu tp-auth-subtitle">'+sub+'</p>'+body+'</div></section>'+authAside(mode)+'</div>'+(alt?'<p class="tp-auth-alt">'+alt+'</p>':'')+'<p class="mu sm tp-auth-note">نسخه پیش‌نمایش: ورود و ثبت‌نام در مرورگر شبیه‌سازی می‌شود و به سرور ارسال نمی‌شود. از گذرواژه واقعی خود استفاده نکنید.</p></div>';
+const authShell=(t,sub,body,alt)=>'<div class="w tp-auth tp-auth-layout"><section class="tp-auth-main"><div class="tp-auth-card"><p class="tp-auth-kicker">TATAMI PLUS · حساب کاربری</p><h1>'+t+'</h1><p class="mu">'+sub+'</p>'+body+'</div>'+(alt?'<p class="tp-auth-alt">'+alt+'</p>':'')+'<p class="mu sm tp-auth-note">پیش‌نمایش فرانت‌اند: اطلاعات این فرم فقط در همین مرورگر ذخیره می‌شود و به سرور ارسال نمی‌شود. از گذرواژهٔ واقعی استفاده نکنید.</p></section><aside class="tp-auth-aside"><div class="tp-auth-aside-mark" aria-hidden="true"><span></span><span></span><span></span><span></span></div><p class="tp-auth-kicker">فراتر از تمرین</p><h2>مسیر پیشرفتت را در تاتامی پلاس ادامه بده.</h2><p class="mu">آموزش، مربیان، باشگاه‌ها و تجربه ورزشی‌ات را در یک فضای منسجم دنبال کن.</p><ul class="tp-auth-benefits"><li>دسترسی منظم به مسیر یادگیری</li><li>ارتباط با مربیان و باشگاه‌ها</li><li>مدیریت تجربه ورزشی در یک حساب</li></ul><span class="tp-auth-aside-foot">TATAMI PLUS</span></aside></div>';
 const clubDemo=()=>`<div class="w">${tpState('empty','حساب باشگاه فعلاً ساخته نمی‌شود','در نسخهٔ اولیه، بخش باشگاه فقط نمایشی است. هنرجویان و مربیان می‌توانند حساب بسازند.','بازگشت به داشبورد','#/dashboard')}</div>`;
+function authRoleSelect(role){
+ const f=$('#rg-f');if(!f)return;
+ const club=role==='club';f.dataset.rolePreview=club?'club':'';
+ f.querySelectorAll('input[name=role]').forEach(x=>{x.checked=!club&&x.value===role});
+ const card=f.querySelector('[data-role-preview=club]');if(card)card.setAttribute('aria-pressed',String(club));
+ const note=f.querySelector('#rg-club-preview');if(note)note.hidden=!club;
+ const submit=f.querySelector('[type=submit]');if(submit){submit.disabled=club;submit.setAttribute('aria-disabled',String(club))}
+}
+function authRegStep(step){
+ const f=$('#rg-f');if(!f)return;
+ if(+step===2){
+  const u=f.elements.username,em=f.elements.email,E={};
+  if(!u||!u.value.trim())E['rg-u']='نام کاربری را وارد کنید.';
+  if(em&&em.value.trim()&&!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]{2,}$/.test(em.value.trim()))E['rg-e']='یک ایمیل معتبر وارد کنید.';
+  if(Object.keys(E).length){fErr(f,E);const bad=f.querySelector('[aria-invalid=true]');if(bad)bad.focus();return}
+ }
+ f.dataset.step=String(+step===2?2:1);
+ const h=f.querySelector('[data-auth-step="'+f.dataset.step+'"] h2');
+ if(h){h.setAttribute('tabindex','-1');h.focus({preventScroll:true})}
+}
+let authRegisterMqBound=false;
+function authInitRegister(){
+ const f=$('#rg-f');if(!f)return;
+ const mq=window.matchMedia('(max-width: 767px)');
+ f.dataset.mobileSteps=mq.matches?'true':'false';
+ if(!f.dataset.step)f.dataset.step='1';
+ if(f.dataset.roleInit!=='1'){
+  const requested=hashParams().get('role');
+  const selected=f.querySelector('input[name=role]:checked');
+  authRoleSelect(requested==='club'?'club':(selected?selected.value:'student'));
+  f.dataset.roleInit='1';
+ }
+ if(!authRegisterMqBound){mq.addEventListener('change',e=>{const current=$('#rg-f');if(current)current.dataset.mobileSteps=e.matches?'true':'false'});authRegisterMqBound=true}
+}
+
 const coachSteps=a=>{const s=[['ساخت حساب مربی',1],['ثبت درخواست مربیگری',a?1:0],['بررسی تیم',a&&a.status!=='pending_review'?1:0],['انتشار پروفایل',0]],cur=s.findIndex(x=>!x[1]);
  return`<ol class="tp-steps" aria-label="مراحل مربی شدن">${s.map((x,i)=>`<li class="${x[1]?'done':i===cur?'on':''}"${i===cur?' aria-current="step"':''}><span>${x[1]?'✓':F(i+1)}</span>${x[0]}</li>`).join('')}</ol>`};
 Object.assign(views,{
- login:()=>{PT={t:'ورود',d:'ورود به حساب تاتامی پلاس'};if(ME)return'<div class="w">'+emp('شما وارد شده‌اید','با حساب «'+esc(ME.username)+'» وارد شده‌اید.','رفتن به حساب کاربری','#/profile')+'</div>';const nq=nextQ(),clubNotice=APP_ROLE==='club'?'<div class="tp-role-notice" data-club-login-notice tabindex="-1"><b>ورود باشگاه هنوز فعال نیست</b><p>این صفحه برای مشاهده طراحی آماده است؛ ورود واقعی حساب باشگاه پس از تحویل بک‌اند فعال می‌شود.</p></div>':'';const body='<form id="lg-f" class="tp-auth-form" novalidate onsubmit="doLogin(this);return false" oninput="fClr(event)"><p class="tp-form-sum" role="alert" hidden></p>'+clubNotice+field('lg-u','username','نام کاربری','autocomplete="username" autocapitalize="none" spellcheck="false" dir="ltr" maxlength="150" required')+pwField('lg-p','password','گذرواژه','current-password')+'<button class="btn tp-auth-btn" type="submit">ورود به حساب</button></form>';return authShell('ورود به حساب','نام کاربری و گذرواژه خود را وارد کنید.',body,'حساب کاربری ندارید؟ <a href="#/register'+(nq?'?'+nq:'')+'">ساخت حساب جدید</a>','login')},
- register:()=>{PT={t:'ثبت‌نام',d:'ساخت حساب تاتامی پلاس'};if(ME)return goTo('#/profile');
-  const pre=AUTH_VISIBLE_ROLES.includes(hashParams().get('role'))?hashParams().get('role'):'student',nq=nextQ();
-  const roleCards=APP_ROLE?authRoleCard(APP_ROLE,0,true,true):AUTH_VISIBLE_ROLES.map((r,i)=>authRoleCard(r,i,r===pre,false)).join('');
-  const roleField='<fieldset class="tp-field tp-roles"><legend>نوع حساب کاربری</legend><div class="tp-role-grid">'+roleCards+'</div><div class="tp-role-notice" data-club-notice '+(APP_ROLE==='club'||pre==='club'?'':'hidden')+' tabindex="-1"><b>حساب باشگاه در حالت پیش‌نمایش است</b><p>طراحی و چیدمان این بخش آماده است؛ ثبت واقعی حساب، اطلاعات اختصاصی و دسترسی‌های باشگاه پس از تحویل بک‌اند فعال می‌شوند.</p></div><p class="tp-hint" data-coach-note '+((APP_ROLE||pre)==='coach'?'':'hidden')+'>پروفایل مربی پس از ثبت درخواست، بررسی و انتشار توسط تیم نمایش داده می‌شود.</p></fieldset>';
-  const stageOne='<div class="tp-auth-stage is-active" data-auth-stage="1">'+field('rg-u','username','نام کاربری','autocomplete="username" autocapitalize="none" spellcheck="false" dir="ltr" maxlength="150" required','این نام برای ورود به حساب استفاده می‌شود؛ حروف، اعداد و @ . + - _')+field('rg-e','email','رایانامه <span class="mu sm">(اختیاری)</span>','type="email" autocomplete="email" autocapitalize="none" spellcheck="false" dir="ltr"')+roleField+'<div class="tp-auth-stage-actions"><button class="btn tp-auth-next" type="button" data-auth-next onclick="nextAuthStage(this)">ادامه</button></div></div>';
-  const stageTwo='<div class="tp-auth-stage" data-auth-stage="2">'+pwField('rg-p1','password1','گذرواژه','new-password','گذرواژه باید دست‌کم ۸ نویسه داشته باشد و به اطلاعات شخصی شما شبیه نباشد.')+pwField('rg-p2','password2','تکرار گذرواژه','new-password','برای تأیید، گذرواژه را دوباره وارد کنید.')+'<div class="tp-auth-stage-actions"><button class="btn o tp-auth-back" type="button" data-auth-back onclick="goAuthStage(this.form,1)">بازگشت</button><button class="btn tp-auth-btn" data-register-submit type="submit">ساخت حساب کاربری</button></div></div>';
-  const body='<form id="rg-f" class="tp-auth-form tp-auth-stepper" novalidate onsubmit="doRegister(this);return false" oninput="fClr(event)" onchange="syncAuthRole(this)"><p class="tp-form-sum" role="alert" hidden></p><div class="tp-auth-progress" aria-label="مراحل ثبت‌نام"><span class="is-current" data-auth-progress-step="1"><b>۱</b> اطلاعات حساب</span><span data-auth-progress-step="2"><b>۲</b> امنیت حساب</span></div>'+stageOne+stageTwo+'</form>';
-  const html=authShell('ساخت حساب کاربری',APP_ROLE==='coach'?'اطلاعات حساب را ثبت کنید و سپس درخواست مربیگری خود را تکمیل کنید.':APP_ROLE==='club'?'پیش‌نمایش فرم حساب باشگاه؛ ثبت واقعی پس از آماده‌شدن بک‌اند فعال می‌شود.':'نوع حساب خود را انتخاب کنید و مراحل ساخت حساب را کامل کنید.',body,'قبلاً ثبت‌نام کرده‌اید؟ <a href="#/login'+(nq?'?'+nq:'')+'">وارد شوید</a>','register');
-  setTimeout(()=>{const form=document.getElementById('rg-f');if(form){initAuthStepper(form);syncAuthRole(form)}},0);
-  return html},
+ login:()=>{PT={t:'ورود',d:'ورود به حساب تاتامی پلاس'};if(CLUB_DEMO)return clubDemo();if(ME)return`<div class="w">${emp('شما وارد شده‌اید','با حساب «'+esc(ME.username)+'» وارد شده‌اید.','رفتن به حساب کاربری','#/profile')}</div>`;const nq=nextQ();
+  return authShell('ورود به حساب','نام کاربری و گذرواژهٔ خود را وارد کنید.',`<form id="lg-f" novalidate onsubmit="doLogin(this);return false" oninput="fClr(event)"><p class="tp-form-sum" role="alert" hidden></p>
+  ${field('lg-u','username','نام کاربری','autocomplete="username" autocapitalize="none" spellcheck="false" dir="ltr" maxlength="150" required')}
+  ${pwField('lg-p','password','گذرواژه','current-password')}
+  <button class="btn tp-auth-btn" type="submit">ورود</button></form>`,`حساب ندارید؟ <a href="#/register${nq?'?'+nq:''}">ثبت‌نام کنید</a>`)},
+ register:()=>{PT={t:'ثبت‌نام',d:'ساخت حساب تاتامی پلاس'};if(CLUB_DEMO)return clubDemo();if(ME)return goTo('#/profile');// register: کاربر واردشده ← /account/
+  const requested=hashParams().get('role'),pre=AUTH_ROLES.includes(requested)?requested:'student',nq=nextQ();
+  const roles=APP_ROLE?`<p class="mu sm">نقش کاربری: <b>${RN[APP_ROLE]}</b></p>`:`<fieldset class="tp-field tp-roles"><legend>نوع حساب کاربری</legend><div class="tp-role-grid" role="radiogroup" aria-label="نوع حساب کاربری">${AUTH_ROLES.map((r,i)=>`<label class="tp-role-card"><input type="radio" name="role" id="rg-r${i}" value="${r}"${r===pre?' checked':''} onchange="authRoleSelect(this.value)"><span class="tp-role-icon" aria-hidden="true">${r==='student'?'♟':'🥋'}</span><span class="tp-role-title">${RN[r]}</span><span class="tp-role-desc">${r==='student'?'برای یادگیری و پیگیری مسیر ورزشی':'برای آموزش و مدیریت فعالیت مربیگری'}</span></label>`).join('')}<button type="button" class="tp-role-card tp-role-preview" data-role-preview="club" aria-pressed="false" onclick="authRoleSelect('club')"><span class="tp-role-icon" aria-hidden="true">🏢</span><span class="tp-role-title">باشگاه</span><span class="tp-role-desc">پیش‌نمایش حساب اختصاصی باشگاه</span><span class="tp-role-status">در دست طراحی</span></button></div><p class="tp-hint">پروفایل مربی پس از بررسی درخواست مربیگری و انتشار توسط تیم نمایش داده می‌شود.</p><div class="tp-club-preview" id="rg-club-preview" role="status" aria-live="polite" hidden><b>حساب باشگاه در حال طراحی است</b><p>ساختار معرفی باشگاه و اطلاعات مسئول در رابط کاربری پیش‌بینی شده؛ ثبت‌نام واقعی و ذخیره اطلاعات پس از تحویل قرارداد بک‌اند فعال می‌شود.</p></div></fieldset>`;
+  return authShell('ساخت حساب کاربری','حساب متناسب با نقش خود را انتخاب و اطلاعات را تکمیل کنید.',`<form id="rg-f" class="tp-auth-register" data-step="1" novalidate onsubmit="doRegister(this);return false" oninput="fClr(event)"><p class="tp-form-sum" role="alert" hidden></p>
+  <section class="tp-auth-step" data-auth-step="1"><h2>اطلاعات حساب</h2><p class="tp-hint">ابتدا اطلاعات پایه و نوع حساب را مشخص کنید.</p>
+  ${field('rg-u','username','نام کاربری','autocomplete="username" autocapitalize="none" spellcheck="false" dir="ltr" maxlength="150" required','این نام برای ورود به حساب کاربری استفاده می‌شود؛ حروف، اعداد و @ . + - _')}
+  ${field('rg-e','email','رایانامه <span class="mu sm">(اختیاری)</span>','type="email" autocomplete="email" autocapitalize="none" spellcheck="false" dir="ltr"')}
+  ${roles}
+  <div class="tp-auth-mobile-actions"><button type="button" class="btn tp-auth-btn" data-auth-next onclick="authRegStep(2)">ادامه <span aria-hidden="true">←</span></button></div></section>
+  <section class="tp-auth-step" data-auth-step="2"><h2>ایمن‌سازی حساب</h2><p class="tp-hint">گذرواژه‌ای مطمئن برای حساب خود انتخاب کنید.</p>
+  ${pwField('rg-p1','password1','گذرواژه','new-password','گذرواژه باید دست‌کم ۸ نویسه داشته باشد و به اطلاعات شخصی شما شبیه نباشد.')}
+  ${pwField('rg-p2','password2','تکرار گذرواژه','new-password','برای تأیید، گذرواژه را دوباره وارد کنید.')}
+  <div class="tp-auth-mobile-actions"><button type="button" class="btn o" data-auth-back onclick="authRegStep(1)">بازگشت</button><button class="btn tp-auth-btn" type="submit">ثبت‌نام</button></div>
+  </section></form>`,`قبلاً ثبت‌نام کرده‌اید؟ <a href="#/login${nq?'?'+nq:''}">وارد شوید</a>`)},
  'coach-apply':()=>{PT={t:'درخواست مربیگری',d:'ثبت درخواست همکاری مربیان تاتامی پلاس'};
   if(!ME)return goTo('#/login?next=%23%2Fcoach-apply');// @login_required
   if(ME.role!=='coach')return`<div class="w">${tpState('error','این صفحه فقط برای حساب مربی است','حساب شما «'+RN[ME.role]+'» است. برای درخواست مربیگری، حساب مربی بسازید.','بازگشت به حساب کاربری','#/profile')}</div>`;
@@ -181,11 +173,11 @@ Object.assign(views,{
 {const pv=views.profile;views.profile=(...a)=>`<div class="w tp-acct-w">${ME?acctIn():acctOut()}</div>`+pv(...a)}
 function acctIn(){const ap=ME.role==='coach'?myApp():null;
  return`<div class="d-c tp-acct"><span class="d-av" aria-hidden="true">${esc(ME.username.slice(0,1).toUpperCase())}</span><div><b>خوش آمدید، ${esc(ME.username)}</b><div class="mu sm">نوع حساب: ${RN[ME.role]}${ME.email?` · <span dir="ltr">${esc(ME.email)}</span>`:''}</div></div><button type="button" class="btn o s" onclick="doLogout()">خروج از حساب</button></div>
- ${ME.role==='coach'?`<div class="d-c tp-coach-next">${coachSteps(ap)}${ap?`<p>وضعیت درخواست مربیگری: <span class="tag ${APP_ST[ap.status][1]}">${APP_ST[ap.status][0]}</span></p><a class="btn o" href="#/coach-application">مشاهدهٔ وضعیت درخواست</a>`:`<p>برای نمایش در فهرست مربیان، درخواست مربیگری و مدرک خود را ثبت کنید.</p><a class="btn" href="#/coach-apply">ثبت درخواست مربیگری</a>`}</div>`:''}${ME.role==='club'?`<div class="tp-role-notice"><b>حساب باشگاه در حالت پیش‌نمایش است</b><p>اطلاعات و امکانات مدیریتی این نسخه نمونه‌اند و هنوز به حساب واقعی متصل نشده‌اند.</p><a class="btn o s" href="#/dashboard">مشاهده داشبورد نمونه باشگاه</a></div>`:''}`}
-function acctOut(){const rows=[['student','هنرجو','مسیر آموزشی و فعالیت‌های ورزشی خود را دنبال کنید.'],['coach','مربی','حساب بسازید و درخواست مربیگری خود را برای بررسی ثبت کنید.'],['club','باشگاه','فرم و تجربه حساب باشگاه در پیش‌نمایش قابل مشاهده است؛ ثبت واقعی بعداً فعال می‌شود.']].filter(r=>!APP_ROLE||r[0]===APP_ROLE);
- return '<div class="d-c tp-acct-out"><h2>حساب کاربری</h2><p class="mu">برای ادامه، نوع حساب خود را انتخاب کنید یا وارد شوید.</p><ul class="tp-roles-l">'+rows.map((r,i)=>'<li><span class="tp-role-n" aria-hidden="true">'+F(String(i+1).padStart(2,'0'))+'</span><div><b>'+r[1]+'</b><div class="mu sm">'+r[2]+'</div></div><a class="btn s" href="#/register?role='+r[0]+'">'+(r[0]==='club'?'مشاهده فرم باشگاه':'ثبت‌نام '+r[1])+'</a></li>').join('')+'</ul>'+(APP_ROLE==='club'?'<p class="tp-auth-note">ثبت و ورود واقعی حساب باشگاه پس از تحویل بک‌اند فعال می‌شود.</p>':'<p class="tp-auth-alt">قبلاً ثبت‌نام کرده‌اید؟ <a href="#/login?next=%23%2Fprofile">وارد شوید</a></p>')+'</div>'}
+ ${ME.role==='coach'?`<div class="d-c tp-coach-next">${coachSteps(ap)}${ap?`<p>وضعیت درخواست مربیگری: <span class="tag ${APP_ST[ap.status][1]}">${APP_ST[ap.status][0]}</span></p><a class="btn o" href="#/coach-application">مشاهدهٔ وضعیت درخواست</a>`:`<p>برای نمایش در فهرست مربیان، درخواست مربیگری و مدرک خود را ثبت کنید.</p><a class="btn" href="#/coach-apply">ثبت درخواست مربیگری</a>`}</div>`:''}`}
+function acctOut(){const rows=[['student','هنرجو','مربیان را ببینید و سبد خریدتان را در حساب خود نگه دارید.'],['coach','مربی','حساب بسازید و درخواست مربیگری خود را برای بررسی ثبت کنید.'],['club','باشگاه','پیش‌نمایش مسیر حساب اختصاصی باشگاه؛ فعال‌سازی پس از آماده‌شدن بک‌اند.']].filter(r=>!APP_ROLE||r[0]===APP_ROLE);
+ return`<div class="d-c tp-acct-out"><h2>حساب کاربری</h2><p class="mu">برای ادامه، حساب بسازید یا وارد حساب خود شوید.</p><ul class="tp-roles-l">${rows.map((r,i)=>`<li><span class="tp-role-n" aria-hidden="true">${F(String(i+1).padStart(2,'0'))}</span><div><b>${r[1]}</b><div class="mu sm">${r[2]}</div></div>${r[0]==='club'?`<a class="btn o s" href="#/register?role=club">مشاهده پیش‌نمایش</a>`:`<a class="btn s" href="#/register?role=${r[0]}">ثبت‌نام ${r[1]}</a>`}</li>`).join('')}</ul>${CLUB_DEMO?'':'<p class="tp-auth-alt">قبلاً ثبت‌نام کرده‌اید؟ <a href="#/login?next=%23%2Fprofile">وارد شوید</a></p>'}</div>`}
 
 // هدر و کشو: وضعیت حساب
 const ICO_USER='<svg class="tp-ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>';
-function authUI(){const a=$('#hbu');if(a){a.href=ME?'#/profile':'#/login';a.innerHTML=ICO_USER+`<span class="hb-t">${ME?esc(ME.username):'ورود / ثبت‌نام'}</span>`;a.setAttribute('aria-label',ME?'حساب کاربری: '+ME.username:'ورود یا ثبت‌نام')}
- const f=$('#mndf');if(f)f.innerHTML=ME?`<a class="btn o" href="#/profile">${ICO_USER}<span>${esc(ME.username)}</span></a><button type="button" class="btn o" onclick="doLogout()">خروج از حساب</button>`:`<a class="btn" href="#/login">ورود</a><a class="btn o" href="#/register">ثبت‌نام</a>`}
+function authUI(){const a=$('#hbu');if(a){a.href=ME?'#/profile':CLUB_DEMO?'#/profile':'#/login';a.innerHTML=ICO_USER+`<span class="hb-t">${ME?esc(ME.username):CLUB_DEMO?'حساب کاربری':'ورود / ثبت‌نام'}</span>`;a.setAttribute('aria-label',ME?'حساب کاربری: '+ME.username:CLUB_DEMO?'حساب کاربری':'ورود یا ثبت‌نام')}
+ const f=$('#mndf');if(f)f.innerHTML=ME?`<a class="btn o" href="#/profile">${ICO_USER}<span>${esc(ME.username)}</span></a><button type="button" class="btn o" onclick="doLogout()">خروج از حساب</button>`:CLUB_DEMO?`<a class="btn o" href="#/profile">حساب کاربری</a>`:`<a class="btn" href="#/login">ورود</a><a class="btn o" href="#/register">ثبت‌نام</a>`;authInitRegister()}

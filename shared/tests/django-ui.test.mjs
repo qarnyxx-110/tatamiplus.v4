@@ -6,8 +6,8 @@ const source = fs.readFileSync(new URL('../../django/static/js/tatami.js', impor
 const browser = await chromium.launch({ headless: true });
 const failures = [];
 
-async function runScenario(name, markup, verify, options = {}) {
-  const page = await browser.newPage(options);
+async function runScenario(name, markup, verify) {
+  const page = await browser.newPage();
   const pageErrors = [];
   page.on('pageerror', error => pageErrors.push(error.message));
   try {
@@ -46,31 +46,31 @@ try {
     }
   );
 
-
-  await runScenario(
-    'mobile registration keeps backend roles and advances through steps',
-    '<!doctype html><html lang="fa" dir="rtl"><body><main><form data-auth-form="register" novalidate><div class="tp-auth-stage is-active" data-auth-stage="1"><label>نام کاربری<input id="username" name="username" required></label><fieldset><label><input type="radio" name="role" value="student" checked required>هنرجو</label><label><input type="radio" name="role" value="coach" required>مربی</label><div class="tp-role-option is-unavailable" aria-disabled="true">باشگاه</div></fieldset><button type="button" data-auth-next>ادامه</button></div><div class="tp-auth-stage" data-auth-stage="2"><label>گذرواژه<input name="password1" type="password" required></label><label>تکرار گذرواژه<input name="password2" type="password" required></label><button type="button" data-auth-back>بازگشت</button><button type="submit">ثبت‌نام</button></div><span data-auth-progress-step="1"></span><span data-auth-progress-step="2"></span></form></main><div id="ts"></div></body></html>',
-    async page => {
-      assert.equal(await page.locator('[data-auth-stage="1"]').evaluate(el => el.hidden), false);
-      assert.equal(await page.locator('[data-auth-stage="2"]').evaluate(el => el.hidden), true);
-      assert.equal(await page.locator('input[name="role"]').count(), 2);
-      await page.fill('#username', 'preview-student');
-      await page.locator('[data-auth-next]').click();
-      assert.equal(await page.locator('[data-auth-stage="1"]').evaluate(el => el.hidden), true);
-      assert.equal(await page.locator('[data-auth-stage="2"]').evaluate(el => el.hidden), false);
-      await page.locator('[data-auth-back]').click();
-      assert.equal(await page.locator('[data-auth-stage="1"]').evaluate(el => el.hidden), false);
-      assert.equal(await page.locator('[data-auth-stage="2"]').evaluate(el => el.hidden), true);
-      assert.equal(await page.locator('.tp-role-option[aria-disabled="true"]').count(), 1);
-    },
-    { viewport: { width: 390, height: 844 } }
-  );
-
   await runScenario(
     'Django validation message receives focus when no field is invalid',
     '<!doctype html><html lang="fa" dir="rtl"><body><main id="app"></main><div id="ts"></div><p id="server-error" class="tp-msg error">ورودی نامعتبر است.</p></body></html>',
     async page => {
       assert.equal(await page.evaluate(() => document.activeElement?.id), 'server-error');
+    }
+  );
+
+  await runScenario(
+    'Django registration role picker, club preview guard, and mobile stages',
+    '<!doctype html><html lang="fa" dir="rtl"><body><form id="tp-register-form" method="post" data-auth-form="register"><div class="tp-field"><label for="id_username">نام کاربری</label><input id="id_username" name="username" required></div><div class="tp-field"><label for="id_email">ایمیل</label><input id="id_email" name="email" type="email"></div><div class="tp-field"><label for="id_role">نقش</label><select id="id_role" name="role" required><option value="student">هنرجو</option><option value="coach">مربی</option></select></div><div class="tp-field"><label for="id_password1">گذرواژه</label><input id="id_password1" name="password1" type="password" required></div><div class="tp-field"><label for="id_password2">تکرار گذرواژه</label><input id="id_password2" name="password2" type="password" required></div><button type="submit">ساخت حساب</button></form></body></html>',
+    async page => {
+      await page.setViewportSize({width:390,height:800});
+      assert.equal(await page.locator('.tp-role-picker [role=radio]').count(),3);
+      assert.equal(await page.locator('#tp-register-form').getAttribute('data-mobile-steps'),'true');
+      assert.equal(await page.locator('#tp-register-form [data-auth-step="2"]').isHidden(),true);
+      await page.locator('.tp-role-preview').click();
+      assert.equal(await page.locator('#tp-register-form').getAttribute('data-role-preview'),'club');
+      assert.equal(await page.locator('#tp-register-form [type=submit]').isDisabled(),true);
+      assert.equal(await page.locator('.tp-club-preview').count(),1);
+      await page.locator('.tp-role-picker [role=radio]').first().click();
+      assert.equal(await page.locator('#tp-register-form [type=submit]').isDisabled(),false);
+      await page.locator('[data-auth-next]').click();
+      assert.equal(await page.locator('#tp-register-form').getAttribute('data-step'),'2');
+      assert.equal(await page.locator('#tp-register-form [data-auth-step="2"]').isVisible(),true);
     }
   );
 } finally {
@@ -80,4 +80,4 @@ try {
 if (failures.length) {
   throw new Error(failures.join('\n\n'));
 }
-console.log('Django frontend JavaScript runtime checks: 3/3 passed');
+console.log('Django frontend JavaScript runtime checks: 4/4 passed');
