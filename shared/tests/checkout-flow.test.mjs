@@ -19,10 +19,21 @@ export async function runCheckout(_base,browser){
     if(!picked)throw new Error('No in-stock product without variant options was found for the checkout test');
     await pg.evaluate(id=>{location.hash='#/product/'+id},picked.id);
     await pg.waitForSelector('#app .pd');
-    await pg.locator('#app .pd .pa button.btn').first().click();
-    await pg.waitForFunction(()=>location.hash==='#/cart'&&cart.length>0&&document.querySelector('#app .cl2 a[href="#/checkout"]')?.textContent.trim()==='ادامه خرید');
-    S.ok('افزودن محصول به سبد از صفحه محصول انجام می‌شود',
-      await pg.evaluate(()=>cart.length)>0);
+    await pg.locator('#pd-add').click();
+    await pg.waitForSelector('.tp-cart-fly',{state:'attached',timeout:3000});
+    S.ok('پس از افزودن موفق، نسخه موقت تصویر محصول برای حرکت به سبد ساخته می‌شود',
+      await pg.locator('.tp-cart-fly').count()===1);
+    await pg.waitForFunction(id=>location.hash==='#/product/'+id&&cart.length>0,picked.id);
+    await pg.waitForFunction(()=>document.querySelector('#ts')?.classList.contains('on')&&document.querySelector('#ts')?.textContent.includes('با موفقیت به سبد خرید اضافه شد.'));
+    S.ok('پس از افزودن، مشتری در صفحه همان محصول باقی می‌ماند',
+      await pg.evaluate(id=>location.hash==='#/product/'+id,picked.id));
+    S.ok('شمارنده سبد پس از افزودن به‌روزرسانی می‌شود',
+      (await pg.locator('#cc').innerText()).trim()==='۱');
+    S.ok('پیام موفقیت پس از پایان انیمیشن نمایش داده می‌شود',
+      (await pg.locator('#ts').innerText()).includes('با موفقیت به سبد خرید اضافه شد.'));
+    await pg.waitForFunction(()=>!document.querySelector('.tp-cart-fly'),undefined,{timeout:3000});
+    await pg.evaluate(()=>{location.hash='#/cart'});
+    await pg.waitForFunction(()=>location.hash==='#/cart'&&document.querySelector('#app .cl2 a[href="#/checkout"]')?.textContent.trim()==='ادامه خرید');
 
     const continueButton=pg.locator('#app a[href="#/checkout"]');
     const continueCount=await continueButton.count();
@@ -100,8 +111,10 @@ export async function runCheckout(_base,browser){
     await pg.evaluate(()=>Object.assign(CHECKOUT,{name:'نشانی کاربر قبلی',phone:'09123456789',province:'تهران',city:'تهران',postal:'1234567890',address:'نشانی آزمایشی کاربر قبلی',notes:'یادداشت قبلی'}));
     await pg.evaluate(id=>{location.hash='#/product/'+id},picked.id);
     await pg.waitForSelector('#app .pd');
-    await pg.locator('#app .pd .pa button.btn').first().click();
-    await pg.waitForFunction(()=>location.hash==='#/cart'&&cart.length>0);
+    await pg.locator('#pd-add').click();
+    await pg.waitForFunction(()=>document.querySelector('#ts')?.classList.contains('on')&&document.querySelector('#ts')?.textContent.includes('با موفقیت به سبد خرید اضافه شد.'));
+    await pg.evaluate(()=>{location.hash='#/cart'});
+    await pg.waitForFunction(()=>location.hash==='#/cart'&&document.querySelector('#app a[href="#/checkout"]'));
     await pg.locator('#app a[href="#/checkout"]').click();
     await pg.waitForSelector('.tp-checkout-auth');
     S.ok('شروع خرید جدید، نشانی باقی‌مانده از نشست قبلی را پاک می‌کند',
@@ -119,6 +132,33 @@ export async function runCheckout(_base,browser){
     S.ok('ورود به حساب جدید، اطلاعات نشانی حساب قبلی را منتقل نمی‌کند',
       await pg.evaluate(()=>['name','phone','province','city','postal','address','notes'].every(k=>CHECKOUT[k]==='')&&CHECKOUT.delivery==='standard'&&CHECKOUT.step===0)&&
       await pg.inputValue('#co-name')==='');
+
+    // Regression: انتخاب سایز/رنگ اجباری هنوز پیش از افزودن اعتبارسنجی می‌شود.
+    const variantCtx=await browser.newContext({viewport:{width:1280,height:900},serviceWorkers:'block',reducedMotion:'no-preference'});
+    const variantPg=await variantCtx.newPage();
+    variantPg.on('pageerror',e=>errors.push(String(e)));
+    await variantPg.goto(srv.url+'/index.html');
+    await wait(180);
+    const variant=await variantPg.evaluate(()=>{const p=P.find(x=>x.st>0&&(x.sz.length||x.cl.length));return p?{id:p.id,hasSize:p.sz.length>0,hasColor:p.cl.length>0}:null});
+    if(variant){
+      await variantPg.evaluate(id=>{location.hash='#/product/'+id},variant.id);
+      await variantPg.waitForSelector('#pd-add');
+      await variantPg.locator('#pd-add').click();
+      S.ok('بدون انتخاب ویژگی اجباری، محصول به سبد اضافه نمی‌شود',
+        await variantPg.evaluate(()=>cart.length===0)&&await variantPg.locator('#pd-sz-err,#pd-cl-err').count()>0);
+      if(variant.hasSize)await variantPg.locator('#pd-sz .chip').first().click();
+      if(variant.hasColor)await variantPg.locator('#pd-cl .chip').first().click();
+      await variantPg.locator('#pd-add').click();
+      await variantPg.waitForSelector('.tp-cart-fly',{state:'attached',timeout:3000});
+      await variantPg.waitForFunction(()=>cart.length===1&&document.querySelector('#ts')?.classList.contains('on')&&document.querySelector('#ts')?.textContent.includes('با موفقیت به سبد خرید اضافه شد.'));
+      const chosen=await variantPg.evaluate(()=>cart[0]);
+      S.ok('پس از انتخاب ویژگی‌ها، همان سایز و رنگ وارد سبد می‌شوند',
+        (!variant.hasSize||!!chosen.s)&&(!variant.hasColor||!!chosen.c),
+        JSON.stringify({size:chosen.s,color:chosen.c}));
+    }else{
+      S.ok('محصول دارای تنوع برای تست انتخاب سایز/رنگ پیدا شد',false);
+    }
+    await variantCtx.close();
 
     S.ok('بدون خطای JavaScript در فلوی خرید',errors.length===0,errors.join(' | '));
   }catch(e){
