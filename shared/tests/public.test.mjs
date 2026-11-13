@@ -442,7 +442,7 @@ export async function runPreview(base,browser){
    await cards()===10&&(await pg.evaluate(()=>location.hash)).includes('category=')&&!(await pg.evaluate(()=>location.hash)).includes('page=2'));
  await go('#/register?role=club');
  S.ok('ثبت‌نام: سه نوع حساب در رابط نمایش داده می‌شوند',await pg.locator('#rg-f .tp-role-card').count()===3);
- S.ok('ثبت‌نام: حساب باشگاه فقط پیش‌نمایش است و دکمه ساخت حساب را غیرفعال می‌کند',await pg.locator('#rg-f').getAttribute('data-role-preview')==='club'&&await pg.locator('#rg-f button[type=submit]').isDisabled()&&(await T()).includes('پس از تحویل قرارداد بک‌اند'));
+ S.ok('ثبت‌نام: حساب باشگاه فقط پیش‌نمایش است و دکمه ساخت حساب را غیرفعال می‌کند',await pg.locator('#rg-f').getAttribute('data-role-preview')==='club'&&await pg.locator('#rg-f button[type=submit]').isDisabled()&&(await T()).includes('در حال حاضر ساخت حساب باشگاه از این فرم امکان‌پذیر نیست'));
  await pg.locator('#rg-f input[name=role][value=student]').check();
  S.ok('ثبت‌نام: انتخاب هنرجو حالت فعال را برمی‌گرداند',await pg.locator('#rg-f button[type=submit]').isEnabled()&&await pg.locator('#rg-f').getAttribute('data-role-preview')==='');
  await pg.setViewportSize({width:390,height:850});await go('#/register');
