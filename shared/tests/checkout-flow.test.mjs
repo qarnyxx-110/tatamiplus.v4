@@ -177,6 +177,7 @@ export async function runCheckout(_base,browser){
     await pg.waitForSelector('#rg-f');
     const username2='checkoutqa2'+Date.now().toString(36);
     await pg.fill('#rg-u',username2);
+    await pg.locator('#rg-f [data-auth-next]').click();
     await pg.fill('#rg-p1','TatamiPlus!Checkout2026');
     await pg.fill('#rg-p2','TatamiPlus!Checkout2026');
     await pg.locator('#rg-f button[type="submit"]').click();
