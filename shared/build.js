@@ -16,11 +16,11 @@ const TOK=JSON.parse(R('design/tokens.json'));delete TOK._comment;
 const tokensCss=()=>':root{'+Object.entries(TOK).flatMap(([g,o])=>Object.entries(o).map(([k,v])=>`--tp-${g}-${k}:${String(v).replace(/\{([a-z]+)\.([^}]+)\}/g,(m,a,c)=>`var(--tp-${a}-${c})`)}`)).join(';')+'}';
 const APPS={
  preview:{fixed:false,deny:['design-system','role']},
- student:{fixed:true,role:'student',home:'',deny:['role','my-profile','design-system'],name:'Tatami Plus Student',short:'Tatami Student',desc:'تاتامی پلاس برای هنرجویان جودو',start:'./',
+ student:{fixed:true,role:'student',home:'',deny:['role','my-profile','design-system','checkout'],name:'Tatami Plus Student',short:'Tatami Student',desc:'تاتامی پلاس برای هنرجویان جودو',start:'./',
   nav:[['','خانه'],['dashboard','داشبورد'],['store','فروشگاه'],['tournaments','تورنمنت‌ها'],['videos','ویدیوهای ضبط‌شده'],['ai','آنالیز هوش مصنوعی'],['academy','آکادمی اساتید'],['courses','دوره‌ها'],['gems','جم'],['coaches','مربیان تاتامی'],['clubs','باشگاه‌ها'],['blog','بلاگ'],['tatamipedia','تاتامی‌پدیا'],['sponsors','حامیان تاتامی پلاس'],['search','جستجو']]},
- coach:{fixed:true,role:'coach',home:'dashboard',deny:['role','ai','clubs','club','design-system'],name:'Tatami Plus Coach',short:'Tatami Coach',desc:'تاتامی پلاس برای مربیان جودو',start:'./#/dashboard',
+ coach:{fixed:true,role:'coach',home:'dashboard',deny:['role','ai','clubs','club','design-system','checkout'],name:'Tatami Plus Coach',short:'Tatami Coach',desc:'تاتامی پلاس برای مربیان جودو',start:'./#/dashboard',
   nav:[['','خانه'],['dashboard','داشبورد مربی'],['my-profile','پروفایل من'],['tournaments','تورنمنت‌ها'],['videos','ویدیوهای ضبط‌شده'],['academy','آکادمی اساتید'],['courses','دوره‌ها'],['gems','جم'],['coaches','مربیان تاتامی'],['blog','بلاگ'],['tatamipedia','تاتامی‌پدیا'],['store','فروشگاه'],['sponsors','حامیان تاتامی پلاس'],['search','جستجو']]},
- club:{fixed:true,role:'club',home:'dashboard',deny:['role','ai','my-profile','design-system'],name:'Tatami Plus Club',short:'Tatami Club',desc:'تاتامی پلاس برای باشگاه‌های جودو',start:'./#/dashboard',
+ club:{fixed:true,role:'club',home:'dashboard',deny:['role','ai','my-profile','design-system','checkout'],name:'Tatami Plus Club',short:'Tatami Club',desc:'تاتامی پلاس برای باشگاه‌های جودو',start:'./#/dashboard',
   nav:[['','خانه'],['dashboard','داشبورد باشگاه'],['clubs','باشگاه‌ها'],['tournaments','تورنمنت‌ها'],['videos','ویدیوهای ضبط‌شده'],['academy','آکادمی اساتید'],['courses','دوره‌ها'],['gems','جم'],['coaches','مربیان تاتامی'],['blog','بلاگ'],['tatamipedia','تاتامی‌پدیا'],['store','فروشگاه'],['sponsors','حامیان تاتامی پلاس'],['search','جستجو']]}
 };
 const walk=(d,b='')=>fs.existsSync(d)?fs.readdirSync(d,{withFileTypes:true}).flatMap(e=>e.isDirectory()?walk(path.join(d,e.name),b+e.name+'/'):[b+e.name]):[];
