@@ -14,6 +14,10 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
  await go('#/zzz');S.ok('404: دکمه «بازگشت به صفحه اصلی»',await pg.evaluate(()=>!!document.querySelector('#app a[href="#/"]')&&/بازگشت به صفحه اصلی/.test(document.getElementById('app').innerText)));
  // --- نقش‌ها
  const dwrong=[];for(const r of denied){await go(r);if(!await nf())dwrong.push(r)}S.ok('مسیرهای ممنوع این نقش 404 می‌دهند',!dwrong.length,dwrong.join(' '));
+ await go('#/login');
+ const toggle=pg.locator('#lg-f .tp-pw-b').first();
+ const metrics=await toggle.evaluate(el=>{const wrap=el.parentElement.getBoundingClientRect(),btn=el.getBoundingClientRect(),input=el.parentElement.querySelector('input'),is=getComputedStyle(input),bs=getComputedStyle(el);return{rightInset:wrap.right-btn.right,paddingRight:parseFloat(is.paddingRight),buttonWidth:btn.width,border:bs.borderTopStyle,background:bs.backgroundColor,display:bs.display,opacity:bs.opacity}});
+ S.ok('گذرواژه: دکمه نمایش همیشه دیده می‌شود و در سمت راست فیلد قرار دارد',await toggle.isVisible()&&metrics.rightInset<=4&&metrics.paddingRight>=metrics.buttonWidth&&metrics.border==='solid'&&metrics.background!=='rgba(0, 0, 0, 0)'&&metrics.display!=='none'&&metrics.opacity==='1',JSON.stringify(metrics));
  await go('#/');const nav=await pg.evaluate(()=>[...document.querySelectorAll('#nv a')].map(a=>a.textContent.trim()));
  S.ok('منو: بلاگ، تاتامی‌پدیا، مربیان، حامیان',['بلاگ','تاتامی‌پدیا','مربیان تاتامی','حامیان تاتامی پلاس'].every(x=>nav.includes(x)),nav.join('|'));S.ok('منو: دوره‌های آموزشی',nav.includes('دوره‌ها'),nav.join('|'));
  S.ok('منو: تاریخچه جم',nav.includes('جم'),nav.join('|'));
@@ -79,7 +83,7 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
 
  S.ok('جم: نشان موجودی در هدر',await pg.locator('#hgem[href="#/gems"]').count()===1);
  S.ok('منو: «باشگاه‌ها» فقط برای هنرجو/باشگاه',(app==='coach')?!nav.includes('باشگاه‌ها'):nav.includes('باشگاه‌ها'));
- const foot=await pg.evaluate(()=>[...document.querySelectorAll('footer a')].map(a=>a.textContent.trim()));S.ok('فوتر: لینک تاتامی‌پدیا و حامیان، بدون «سیستم طراحی»',foot.includes('تاتامی‌پدیا')&&foot.includes('حامیان تاتامی پلاس')&&!foot.includes('سیستم طراحی'),foot.join('|'));
+ const foot=await pg.evaluate(()=>[...document.querySelectorAll('footer a')].map(a=>({text:a.textContent.trim(),href:a.getAttribute('href')})));S.ok('فوتر: لینک مربی آنلاین به فهرست مستقل مربیان متصل است',foot.some(a=>a.text==='مربی آنلاین'&&a.href==='#/coaches')&&foot.includes('تاتامی‌پدیا')&&foot.some(a=>a.text==='حامیان تاتامی پلاس')&&!foot.some(a=>a.text==='سیستم طراحی'),JSON.stringify(foot));
  await go('#/gems');const gems=await T();S.ok('جم: صفحه تاریخچه و وضعیت عدم اتصال',gems.includes('تاریخچه تراکنش‌ها')&&gems.includes('موجودی واقعی هنوز به این نسخه متصل نشده است'));S.ok('جم: عدم نمایش تراکنش ساختگی',gems.includes('تراکنشی برای نمایش وجود ندارد'));
  await go('#/my-profile');S.ok('«پروفایل من» فقط در PWA مربی',(app==='coach')?!await nf():await nf());
  if(app!=='coach'){await go('#/coaches/sara-ahmadi');S.ok('پروفایل مربی: لینک باشگاه',await pg.evaluate(()=>!!document.querySelector('#app a[href^="#/club/"]')))}

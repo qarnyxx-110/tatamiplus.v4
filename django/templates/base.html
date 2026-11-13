@@ -81,10 +81,10 @@
 <footer class="ft">
   <div class="ftg">
     <div><b class="gold">تاتامی پلاس</b><p class="mu sm">پلتفرم فارسی جودو: مربیان تأییدشده و تجهیزات تمرین.</p></div>
-    <nav aria-label="پیوندهای تاتامی پلاس"><b>پلتفرم</b><a href="{% url 'store:product_list' %}">فروشگاه</a><a href="{% url 'coaches:directory' %}">مربیان تاتامی</a></nav>
+    <nav aria-label="پیوندهای تاتامی پلاس"><b>پلتفرم</b><a href="{% url 'store:product_list' %}">فروشگاه</a><a href="{% url 'coaches:directory' %}">مربی آنلاین</a></nav>
     <nav aria-label="پیوندهای حساب"><b>حساب</b><a href="{% url 'account' %}">حساب کاربری</a><a href="{% url 'store:cart' %}">سبد خرید</a>{% if not user.is_authenticated %}<a href="{% url 'accounts:register' %}">ثبت‌نام</a>{% endif %}</nav>
   </div>
-  <p class="mu sm">{% block footer_note %}تاتامی پلاس — نسخهٔ آزمایشی{% endblock %}</p>
+  <p class="mu sm">{% block footer_note %}تاتامی پلاس — همراه شما در مسیر یادگیری و پیشرفت جودو.{% endblock %}</p>
 </footer>
 {% endwith %}
 {% block extra_scripts %}{% endblock %}

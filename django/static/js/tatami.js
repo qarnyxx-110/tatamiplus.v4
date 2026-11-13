@@ -65,7 +65,7 @@
         const icon = document.createElement('span'); icon.className = 'tp-role-icon'; icon.textContent = '🏢'; icon.setAttribute('aria-hidden', 'true');
         const title = document.createElement('span'); title.className = 'tp-role-title'; title.textContent = 'باشگاه';
         const desc = document.createElement('span'); desc.className = 'tp-role-desc'; desc.textContent = 'پیش‌نمایش حساب اختصاصی باشگاه';
-        const status = document.createElement('span'); status.className = 'tp-role-status'; status.textContent = 'در دست طراحی';
+        const status = document.createElement('span'); status.className = 'tp-role-status'; status.textContent = 'ثبت‌نام از این مسیر در دسترس نیست';
         club.append(icon, title, desc, status);
         club.addEventListener('click', () => {
           form.dataset.rolePreview = 'club';
@@ -77,7 +77,7 @@
             panel.className = 'tp-club-preview';
             panel.setAttribute('role', 'status');
             panel.setAttribute('aria-live', 'polite');
-            panel.innerHTML = '<b>حساب باشگاه در حال طراحی است</b><p>ساختار اطلاعات باشگاه در رابط کاربری پیش‌بینی شده؛ ثبت‌نام و ذخیره واقعی پس از تحویل قرارداد بک‌اند فعال می‌شود.</p>';
+            panel.innerHTML = '<b>ثبت‌نام حساب باشگاه</b><p>در حال حاضر ساخت حساب باشگاه از این فرم امکان‌پذیر نیست. برای ثبت‌نام، نوع «هنرجو» یا «مربی» را انتخاب کنید.</p>';
             picker.insertAdjacentElement('afterend', panel);
           } else note.hidden = false;
           const submit = form.querySelector('[type=submit]');

@@ -306,8 +306,9 @@ html:has(.tp-drawer[open]){overflow:hidden}
 .tp-auth-note{text-align:center}
 .tp-pw{position:relative;display:flex}
 .tp-pw input{flex:1;padding-inline-end:4.5rem}
-.tp-pw-b{position:absolute;inset-inline-end:2px;top:2px;bottom:2px;min-width:var(--tp-control-touch);padding-inline:var(--tp-space-sm);border:0;border-radius:var(--tp-radius-xs);background:transparent;color:var(--tp-color-text-secondary);font-size:var(--tp-font-size-sm);font-weight:var(--tp-font-weight-medium)}
-.tp-pw-b:hover{color:var(--tp-color-text-primary);background:var(--tp-color-surface-hover)}
+.tp-pw-b{position:absolute;inset-inline-start:2px;inset-inline-end:auto;top:2px;bottom:2px;z-index:2;min-width:var(--tp-control-touch);padding-inline:var(--tp-space-sm);display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--tp-color-border-strong);border-radius:var(--tp-radius-xs);background:var(--tp-color-surface);color:var(--tp-color-text-primary);font-size:var(--tp-font-size-sm);font-weight:var(--tp-font-weight-medium);cursor:pointer;transition:border-color .18s ease,background-color .18s ease,color .18s ease}
+.tp-pw-b:hover{border-color:var(--tp-color-brand);color:var(--tp-color-text-primary);background:var(--tp-color-surface-hover)}
+.tp-pw-b:focus-visible{outline:2px solid var(--tp-color-ring);outline-offset:2px}
 /* موقعیت دکمه نمایش رمز در RTL: input با dir=ltr، دکمه در انتهای منطقی کادر */
 .tp-roles{border:0;padding:0;margin:var(--tp-space-sm) 0}.tp-roles legend{font-size:var(--tp-font-size-sm);margin-bottom:var(--tp-space-2xs);padding:0}
 .tp-radio{position:relative;gap:var(--tp-space-xs);cursor:pointer;padding-inline:var(--tp-space-md)}

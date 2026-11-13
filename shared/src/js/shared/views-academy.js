@@ -30,7 +30,7 @@ function tpCourseCard(c){
 function tpCourseList(){
  PT={t:'دوره‌های آموزشی',d:'فهرست نمایشی دوره‌های آموزشی تاتامی پلاس'};
  return `<div class="w"><h1>دوره‌های آموزشی</h1><p class="mu">دوره‌ها و قسمت‌ها در این صفحه برای نمایش رابط کاربری نمونه‌سازی شده‌اند.</p>
- <div class="d-c" role="note"><b>نسخه پیش‌نمایش</b><p class="mu sm" style="margin:var(--tp-space-2xs) 0 0">اطلاعات دوره‌ها آزمایشی است؛ ثبت‌نام، خرید، دسترسی به محتوای قفل‌شده و پخش ویدئوی واقعی هنوز به بک‌اند و قرارداد نهایی نیاز دارند.</p></div>
+ <div class="d-c" role="note"><b>نسخه پیش‌نمایش</b><p class="mu sm" style="margin:var(--tp-space-2xs) 0 0">اطلاعات دوره‌ها نمونه است؛ ثبت‌نام، خرید، دسترسی به محتوای قفل‌شده و پخش ویدئوی واقعی هنوز به بک‌اند و قرارداد نهایی نیاز دارند.</p></div>
  <div class="pg" style="margin-top:var(--tp-space-lg)">${TP_DEMO_COURSES.map(tpCourseCard).join('')}</div></div>`;
 }
 function tpCourseDetail(slug){
