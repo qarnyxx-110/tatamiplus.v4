@@ -32,8 +32,8 @@
   // ۰-ب. ثبت‌نام مرحله‌ای در موبایل؛ دسکتاپ همه فیلدها را یکجا نشان می‌دهد.
   const registerForm = $('form[data-auth-form="register"]');
   if (registerForm) {
-    const stages = $('[data-auth-stage]', registerForm);
-    const progress = $('[data-auth-progress-step]', registerForm);
+    const stages = Array.from(registerForm.querySelectorAll('[data-auth-stage]'));
+    const progress = Array.from(registerForm.querySelectorAll('[data-auth-progress-step]'));
     const media = window.matchMedia('(max-width: 600px)');
     let current = 1;
     const setStage = step => {
