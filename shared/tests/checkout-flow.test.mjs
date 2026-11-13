@@ -15,44 +15,35 @@ export async function runCheckout(_base,browser){
     await pg.goto(srv.url+'/index.html');
     await wait(250);
 
-    // Regression: هر گروه گزینه روی کارت همان محصول در فهرست فروشگاه نمایش داده می‌شود.
+    // Regression: cards are navigation only; selection and adding to cart happen on product detail.
     await pg.evaluate(()=>{location.hash='#/store'});
     await pg.waitForSelector('.pcd');
-    const variantIds=await pg.evaluate(()=>({
-      size:P.findIndex(p=>p.ref&&p.sz.length),
-      color:P.findIndex(p=>p.ref&&p.cl.length),
-      plain:P.findIndex(p=>p.ref&&!p.sz.length&&!p.cl.length)
-    }));
-    const readProductCard=async id=>{
-      if(id<0)return null;
-      await pg.evaluate(id=>{q=P[id].n;storePage=1;R('x')},id);
-      await pg.waitForSelector('.pcd a[href="#/product/'+id+'"]');
-      return pg.evaluate(id=>{
-        const product=P[id];
-        const card=document.querySelector('.pcd a[href="#/product/'+id+'"]')?.closest('.pcd');
-        if(!card)return null;
+    const cardAudit=await pg.evaluate(()=>{
+      const cards=[...document.querySelectorAll('#app .sl .pg .pcd')].slice(0,4);
+      return cards.map(card=>{
+        const detail=card.querySelector('a[href^="#/product/"]');
+        const id=Number((detail?.getAttribute('href')||'').split('/').pop());
+        const cta=[...card.querySelectorAll('a.btn')].find(a=>a.getAttribute('href')==='#/product/'+id);
         return{
-          name:product.n,
-          expectedSizes:product.sz,
-          expectedColors:product.cl,
-          shownSizes:[...card.querySelectorAll('[data-product-size]')].map(node=>node.getAttribute('data-product-size')),
-          shownColors:[...card.querySelectorAll('[data-product-color]')].map(node=>node.getAttribute('data-product-color')),
-          hasVariantBlock:!!card.querySelector('.pc-variants')
+          id,
+          hasVariant:!!card.querySelector('.pc-variants,[data-product-size],[data-product-color]'),
+          hasDirectAdd:[...card.querySelectorAll('button')].some(button=>/افزودن به سبد|افزودن به خرید/.test(button.textContent)),
+          hasDetailCta:!!cta&&cta.textContent.includes('مشاهده و انتخاب محصول')
         };
-      },id);
-    };
-    const sizeCard=await readProductCard(variantIds.size);
-    const colorCard=await readProductCard(variantIds.color);
-    const plainCard=await readProductCard(variantIds.plain);
-    S.ok('کارت محصول، سایزهای ثبت‌شده در کاتالوگ را دقیق نمایش می‌دهد',
-      !!sizeCard&&JSON.stringify(sizeCard.shownSizes)===JSON.stringify(sizeCard.expectedSizes),
-      sizeCard?JSON.stringify({expected:sizeCard.expectedSizes,shown:sizeCard.shownSizes}):'محصول دارای سایز در کاتالوگ پیدا نشد');
-    S.ok('کارت محصول، رنگ‌های ثبت‌شده در کاتالوگ را دقیق نمایش می‌دهد',
-      !!colorCard&&JSON.stringify(colorCard.shownColors)===JSON.stringify(colorCard.expectedColors),
-      colorCard?JSON.stringify({expected:colorCard.expectedColors,shown:colorCard.shownColors}):'محصول دارای رنگ در کاتالوگ پیدا نشد');
-    S.ok('برای محصول بدون تنوع، برچسب ساختگی سایز و رنگ نمایش داده نمی‌شود',
-      !!plainCard&&!plainCard.hasVariantBlock);
-
+      });
+    });
+    S.ok('کارت‌های محصول سایز و رنگ را نمایش نمی‌دهند',
+      cardAudit.length===4&&cardAudit.every(card=>!card.hasVariant),
+      JSON.stringify(cardAudit));
+    S.ok('کارت‌ها فقط مسیر ورود به صفحه جزئیات دارند و افزودن مستقیم ندارند',
+      cardAudit.length===4&&cardAudit.every(card=>card.hasDetailCta&&!card.hasDirectAdd),
+      JSON.stringify(cardAudit));
+    const firstCardId=cardAudit[0]?.id;
+    if(!Number.isInteger(firstCardId))throw new Error('Product detail CTA was not found on the first store card');
+    await pg.locator('#app .sl .pg .pcd').first().locator('a.btn[href^="#/product/"]').click();
+    await pg.waitForFunction(id=>location.hash==='#/product/'+id,firstCardId);
+    S.ok('انتخاب از کارت وارد صفحه جزئیات می‌شود و سبد تا آن مرحله تغییر نمی‌کند',
+      await pg.evaluate(()=>cart.length===0));
     const picked=await pg.evaluate(()=>{const i=P.findIndex(p=>p.st>0&&(!p.sz||!p.sz.length)&&(!p.cl||!p.cl.length));return i<0?null:{id:i,name:P[i].n}});
     if(!picked)throw new Error('No in-stock product without variant options was found for the checkout test');
     await pg.evaluate(id=>{location.hash='#/product/'+id},picked.id);
