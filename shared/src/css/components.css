@@ -48,7 +48,6 @@ footer{border-top:1px solid var(--tp-color-border);padding:var(--tp-space-lg);te
  box-shadow:var(--tp-shadow-popover);
  opacity:1;
  backface-visibility:hidden;
- contain:paint;
 }
 .tp-cart-fly img{object-fit:contain!important;background:var(--tp-color-surface)}
 #hcart .tp-ico.tp-cart-icon-receive{
@@ -56,6 +55,7 @@ footer{border-top:1px solid var(--tp-color-border);padding:var(--tp-space-lg);te
  transform-origin:50% 58%;
 }
 #cc.tp-cart-count-pop{
+ display:inline-block;
  animation:tp-cart-count-pop .34s cubic-bezier(.2,.8,.25,1) both;
  transform-origin:center;
 }
