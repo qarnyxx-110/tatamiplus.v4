@@ -11,10 +11,62 @@ const clr=()=>{q='';cat='';storePage=1;Object.assign(FS,{pmin:0,pmax:0,sz:[],col
 const cadd=(id,s,c,n)=>{const p=P[id];if(!p||!p.st){toast('این محصول ناموجود است','err');return false}const inCart=cart.filter(x=>x.id==id).reduce((a,x)=>a+x.q,0),room=Math.max(0,p.st-inCart);if(room<=0||n>room){toast(room?'تعداد درخواستی بیشتر از موجودی است':'به حداکثر موجودی این محصول رسیده‌اید','err');return false}const e=cart.find(x=>x.id==id&&x.s==s&&x.c==c);e?e.q+=n:cart.push({id,s,c,q:n});save();return true};
 const toast=(t,k='')=>{const e=$('#ts');e.textContent=t;e.className='tp-toast on '+(k==='err'?'error':k);e.setAttribute('role',k==='err'?'alert':'status');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),2200)};
 function qadd(id){const p=P[id];if(!p||!p.st){toast('این محصول ناموجود است','err');return}if(p.sz.length||p.cl.length){location.hash='#/product/'+id;return}if(cadd(id,'','',1))toast('محصول به سبد خرید اضافه شد.')}
-// مثل AddToCartForm: خطای «تنوع» (سایز/رنگ) و «تعداد» کنار همان فیلد؛ موفقیت ← سبد خرید
-function addP(){const p=P[PS.id];if(!p||!p.st){toast('این محصول ناموجود است','err');return}const E={};if(p.sz.length&&!PS.s)E.s='این فیلد لازم است.';if(p.cl.length&&!PS.c)E.c='این فیلد لازم است.';
+// انیمیشن افزودن به سبد فقط برای صفحه محصول Preview اجرا می‌شود؛ کارت‌های فهرست دست‌نخورده می‌مانند.
+let productAddBusy=false;
+function flyProductToCart(){
+ const source=$('#app .pd .pm .ph'),target=$('#hcart .tp-ico')||$('#hcart');
+ if(!source||!target)return Promise.resolve(false);
+ if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)return Promise.resolve(false);
+ const from=source.getBoundingClientRect(),to=target.getBoundingClientRect();
+ if(from.width<2||from.height<2||to.width<2||to.height<2)return Promise.resolve(false);
+ const ghost=source.cloneNode(true);
+ ghost.className='ph tp-cart-fly';
+ ghost.removeAttribute('data-slot');
+ ghost.setAttribute('aria-hidden','true');
+ const caption=ghost.querySelector('figcaption');if(caption)caption.remove();
+ const clonedImage=ghost.querySelector('img');
+ if(clonedImage){clonedImage.removeAttribute('onload');clonedImage.removeAttribute('onerror');clonedImage.loading='eager';}
+ Object.assign(ghost.style,{position:'fixed',left:from.left+'px',top:from.top+'px',width:from.width+'px',height:from.height+'px',margin:'0',padding:'0',zIndex:'10000',pointerEvents:'none',transformOrigin:'center center',willChange:'transform,opacity'});
+ document.body.appendChild(ghost);
+ const dx=to.left+to.width/2-(from.left+from.width/2),dy=to.top+to.height/2-(from.top+from.height/2);
+ const pop=()=>{
+  const link=$('#hcart');if(!link)return;
+  link.classList.remove('tp-cart-pop');void link.offsetWidth;link.classList.add('tp-cart-pop');
+  link.addEventListener('animationend',()=>link.classList.remove('tp-cart-pop'),{once:true});
+ };
+ if(typeof ghost.animate!=='function'){ghost.remove();pop();return Promise.resolve(false)}
+ try{
+  const animation=ghost.animate([
+   {transform:'translate3d(0,0,0) scale(1) rotate(0deg)',opacity:1,offset:0},
+   {transform:`translate3d(${dx*.34}px,${dy*.28-44}px,0) scale(.72) rotate(-8deg)`,opacity:1,offset:.34},
+   {transform:`translate3d(${dx*.76}px,${dy*.72-22}px,0) scale(.34) rotate(7deg)`,opacity:.9,offset:.78},
+   {transform:`translate3d(${dx}px,${dy}px,0) scale(.08) rotate(0deg)`,opacity:0,offset:1}
+  ],{duration:680,easing:'cubic-bezier(.22,.76,.3,1)',fill:'forwards'});
+  return animation.finished.then(()=>{ghost.remove();pop();return true;}).catch(()=>{ghost.remove();pop();return false;});
+ }catch(e){ghost.remove();pop();return Promise.resolve(false)}
+}
+// مثل AddToCartForm: اعتبارسنجی سایز/رنگ و تعداد قبل از افزودن حفظ می‌شود.
+function addP(){
+ if(productAddBusy)return;
+ const p=P[PS.id];if(!p||!p.st){toast('این محصول ناموجود است','err');return}
+ const E={};if(p.sz.length&&!PS.s)E.s='این فیلد لازم است.';if(p.cl.length&&!PS.c)E.c='این فیلد لازم است.';
  const inCart=cart.filter(x=>x.id==PS.id&&x.s==PS.s&&x.c==PS.c).reduce((a,x)=>a+x.q,0);if(!E.s&&!E.c&&inCart+PS.q>p.st)E.q='تعداد درخواستی از موجودی فعلی بیشتر است.';
- PS.err=E;if(E.s||E.c||E.q){R(E.s?'pd-sz':E.c?'pd-cl':'pd-qt');return}if(cadd(PS.id,PS.s,PS.c,PS.q)){toast('محصول به سبد خرید اضافه شد.');location.hash='#/cart'}}
+ PS.err=E;if(E.s||E.c||E.q){R(E.s?'pd-sz':E.c?'pd-cl':'pd-qt');return}
+ if(!cadd(PS.id,PS.s,PS.c,PS.q))return;
+ // برنامه‌های نقش‌محور همان رفتار قبلی را حفظ می‌کنند؛ انیمیشن و ماندن در صفحه مخصوص Preview است.
+ if(APP.fixed){toast('محصول به سبد خرید اضافه شد.');location.hash='#/cart';return}
+ productAddBusy=true;
+ const button=$('#pd-add');if(button){button.disabled=true;button.setAttribute('aria-busy','true')}
+ flyProductToCart().then(()=>{
+  productAddBusy=false;
+  if(button&&button.isConnected){button.disabled=false;button.removeAttribute('aria-busy')}
+  toast('محصول با موفقیت به سبد خرید اضافه شد.');
+ },()=>{
+  productAddBusy=false;
+  if(button&&button.isConnected){button.disabled=false;button.removeAttribute('aria-busy')}
+  toast('محصول با موفقیت به سبد خرید اضافه شد.');
+ });
+}
 function qP(d){PS.q=Math.max(1,Math.min(P[PS.id].st,PS.q+d));if(PS.err)PS.err.q='';R('x')}
 function cq(k,d){const x=cart[k],n=x.q+d;if(n<1){toast('تعداد باید دست‌کم یک باشد.','err');return}if(n>P[x.id].st){toast('تعداد درخواستی از موجودی فعلی بیشتر است.','err');return}x.q=n;save();R('x');toast('تعداد محصول به‌روزرسانی شد.')}
 function rm(k){cart.splice(k,1);save();R('x');toast('محصول از سبد خرید حذف شد.')}
