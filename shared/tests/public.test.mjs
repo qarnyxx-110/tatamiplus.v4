@@ -142,7 +142,13 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
  }else S.ok('کاتالوگ: نشانگر سایز تخمینی در محصولات تکمیل‌شده وجود دارد',false);
 
 
- S.ok('فروشگاه: برچسب «قیمت مرجع بازار» روی کارت‌ها و «نمونه آزمایشی» روی نمونه‌ها',(await T()).includes('قیمت مرجع بازار')&&(await T()).includes('نمونه آزمایشی'));
+ S.ok('فروشگاه: برچسب «قیمت مرجع بازار» روی کارت‌های کاتالوگ',(await T()).includes('قیمت مرجع بازار'));
+ const demoProductName=await pg.evaluate(()=>P.find(product=>product.demo&&product.st>0)?.n||'');
+ if(demoProductName){
+  await pg.fill('#fq',demoProductName);await wait(140);
+  S.ok('فروشگاه: جستجوی نمونه آزمایشی، برچسب نمونه را نمایش می‌دهد',(await T()).includes('نمونه آزمایشی'));
+  await pg.fill('#fq','');await wait(100);
+ }else S.ok('فروشگاه: نمونه آزمایشی قابل جستجو برای کنترل برچسب وجود دارد',false);
  // تصاویر lazy کارت‌ها را eager کن و تا پایان درخواست‌ها صبر کن؛ سپس شکست واقعی را بررسی کن.
  const productCardImages=pg.locator('#app .sl .pg article.pcd img');
  await productCardImages.evaluateAll(images=>images.forEach(img=>{img.loading='eager'}));
@@ -205,7 +211,7 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
  S.ok(`واکنش‌گرایی: بدون اسکرول افقی (${WIDTHS.join('/')} × ${routes.length} مسیر)`,!over.length,over.slice(0,5).join(' '));S.ok('بدون شناسه تکراری',!dup.size,[...dup].join(' '));S.ok('بدون خطای JavaScript',!errs.length,errs.slice(0,3).join(' | '));
  // --- اهداف لمسی ≥۴۴px (کنترل‌های تعاملی؛ لینک درون‌متنی مستثناست)
  const c3=await browser.newContext({viewport:{width:360,height:800},serviceWorkers:'block'});const p3=await c3.newPage();await p3.goto(base+'/index.html');const small=[];
- for(const r of routes){await p3.evaluate(x=>{location.hash=x},r);await wait(80);const n=await p3.evaluate(()=>[...document.querySelectorAll('#app button:not([disabled]),#app a.btn,#app .chip,#app select,#app input:not([type=checkbox]):not([type=file]),#nv a,header a,.tp-pager button')].filter(e=>{const b=e.getBoundingClientRect();return b.width>0&&(b.height<43.5||b.width<43.5)&&getComputedStyle(e).visibility!=='hidden'}).map(e=>(e.tagName+'.'+e.className+':'+Math.round(e.getBoundingClientRect().width)+'x'+Math.round(e.getBoundingClientRect().height)).slice(0,50)));if(n.length)small.push(r+' '+n.slice(0,3).join(','))}
+ for(const r of routes){await p3.evaluate(x=>{location.hash=x},r);await wait(80);const n=await p3.evaluate(()=>[...document.querySelectorAll('#app button:not([disabled]),#app a.btn,#app .chip,#app select,#app input:not([type=checkbox]):not([type=file]),#nv a,header a.ib,.tp-pager button')].filter(e=>{const b=e.getBoundingClientRect();return b.width>0&&(b.height<43.5||b.width<43.5)&&getComputedStyle(e).visibility!=='hidden'}).map(e=>(e.tagName+'.'+e.className+':'+Math.round(e.getBoundingClientRect().width)+'x'+Math.round(e.getBoundingClientRect().height)).slice(0,50)));if(n.length)small.push(r+' '+n.slice(0,3).join(','))}
  S.ok('اهداف لمسی ≥۴۴×۴۴ در کنترل‌های مهم (۳۶۰px)',!small.length,small.join(' ; '));await c3.close();
  return S}
 export async function runPwa(app,base,browser,altRoot){
