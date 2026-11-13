@@ -133,6 +133,14 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
  S.ok('فروشگاه: کارت‌ها فقط CTA صفحه جزئیات دارند و سایز/رنگ یا افزودن مستقیم ندارند',
   initialStoreAudit.cardsHideVariants&&initialStoreAudit.cardsHaveDetailCta&&initialStoreAudit.cardsHaveNoDirectAdd,
   JSON.stringify(initialStoreAudit));
+ const estimatedSizeProduct=await pg.evaluate(()=>P.find(product=>product.szEstimated)?.id??-1);
+ if(estimatedSizeProduct>=0){
+  await go('#/product/'+estimatedSizeProduct);
+  S.ok('جزئیات محصول: سایز حدسی با توضیح شفاف نمایش داده می‌شود',
+   (await T()).includes('تخمینی است')&&await cnt('#pd-sz .chip')===1);
+  await go('#/store');
+ }else S.ok('کاتالوگ: نشانگر سایز تخمینی در محصولات تکمیل‌شده وجود دارد',false);
+
 
  S.ok('فروشگاه: برچسب «قیمت مرجع بازار» روی کارت‌ها و «نمونه آزمایشی» روی نمونه‌ها',(await T()).includes('قیمت مرجع بازار')&&(await T()).includes('نمونه آزمایشی'));
  // تصاویر lazy کارت‌ها را eager کن و تا پایان درخواست‌ها صبر کن؛ سپس شکست واقعی را بررسی کن.
