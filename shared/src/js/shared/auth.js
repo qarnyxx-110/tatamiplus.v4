@@ -105,7 +105,7 @@ function authRegStep(step){
  if(+step===2){
   const u=f.elements.username,em=f.elements.email,E={};
   if(!u||!u.value.trim())E['rg-u']='نام کاربری را وارد کنید.';
-  if(em&&em.value.trim()&&!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]{2,}$/.test(em.value.trim()))E['rg-e']='یک ایمیل معتبر وارد کنید.';
+  if(em&&em.value.trim()&&!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(em.value.trim()))E['rg-e']='یک ایمیل معتبر وارد کنید.';
   if(Object.keys(E).length){fErr(f,E);const bad=f.querySelector('[aria-invalid=true]');if(bad)bad.focus();return}
  }
  f.dataset.step=String(+step===2?2:1);

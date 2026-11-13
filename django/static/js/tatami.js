@@ -99,12 +99,13 @@
       firstFields.forEach(node => first.append(node));
       secondFields.forEach(node => second.append(node));
       form.append(second);
-      const nav = document.createElement('div'); nav.className = 'tp-auth-mobile-actions';
+      const firstNav = document.createElement('div'); firstNav.className = 'tp-auth-mobile-actions';
+      const secondNav = document.createElement('div'); secondNav.className = 'tp-auth-mobile-actions';
       const back = document.createElement('button'); back.type = 'button'; back.className = 'btn o'; back.dataset.authBack = ''; back.textContent = 'بازگشت';
       const next = document.createElement('button'); next.type = 'button'; next.className = 'btn'; next.dataset.authNext = ''; next.textContent = 'ادامه';
       const submit = form.querySelector('[type=submit]');
-      nav.append(back, next);
-      second.append(nav);
+      firstNav.append(next); first.append(firstNav);
+      secondNav.append(back); second.append(secondNav);
       if (submit) second.append(submit);
       back.addEventListener('click', () => { form.dataset.step = '1'; const h = first.querySelector('h2'); if (h) h.focus(); });
       next.addEventListener('click', () => {

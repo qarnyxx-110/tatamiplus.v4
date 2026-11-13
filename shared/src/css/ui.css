@@ -335,7 +335,7 @@ html:has(.tp-drawer[open]){overflow:hidden}
 .tp-role-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--tp-space-xs);margin-top:var(--tp-space-xs)}
 .tp-role-card{position:relative;min-width:0;min-height:8.5rem;display:flex;flex-direction:column;align-items:flex-start;gap:var(--tp-space-2xs);padding:var(--tp-space-sm);border:1px solid var(--tp-color-border);border-radius:var(--tp-radius-control);background:var(--tp-color-bg);color:var(--tp-color-text-primary);text-align:start;cursor:pointer;transition:border-color .18s ease,background-color .18s ease,transform .18s ease;font:inherit}
 .tp-role-card:hover{border-color:var(--tp-color-border-strong);transform:translateY(-2px)}
-.tp-role-card:has(input:checked),.tp-role-card[aria-pressed=true]{border-color:var(--tp-color-brand);background:var(--tp-color-brand-tint)}
+.tp-role-card:has(input:checked),.tp-role-card[aria-pressed=true],.tp-role-card[aria-checked=true],.tp-role-card.is-selected{border-color:var(--tp-color-brand);background:var(--tp-color-brand-tint)}
 .tp-role-card input{position:absolute;opacity:0;inset:0;width:100%;height:100%;cursor:pointer}
 .tp-role-card input:focus-visible,.tp-role-card:focus-visible{outline:2px solid var(--tp-color-ring);outline-offset:3px}
 .tp-role-icon{font-size:1.5rem;line-height:1.5}
