@@ -37,3 +37,10 @@ footer{border-top:1px solid var(--tp-color-border);padding:var(--tp-space-lg);te
 @media(max-width:900px){body>header{flex-wrap:wrap;gap:var(--tp-space-xs) var(--tp-space-sm);padding:var(--tp-space-xs) var(--tp-space-sm)}nav{order:3;flex:1 1 100%}.logo{font-size:var(--tp-font-size-lg)}}
 @media(max-width:420px){.ftg{grid-template-columns:1fr}.w{padding-inline:var(--tp-space-sm)}h1{font-size:var(--tp-font-size-3xl)}}
 @media(min-width:1600px){.w,.d-l,.ftg{max-width:1360px}}
+
+/* افزودن محصول به سبد: فقط انیمیشن صفحه جزئیات محصول در Preview */
+.tp-cart-fly{overflow:hidden!important;border:1px solid var(--tp-color-border)!important;border-radius:var(--tp-radius-card)!important;background:var(--tp-color-surface)!important;box-shadow:var(--tp-shadow-popover);opacity:1}
+.tp-cart-fly img{object-fit:contain!important;background:var(--tp-color-surface)}
+#hcart.tp-cart-pop{animation:tp-cart-pop .46s cubic-bezier(.2,.8,.25,1) both;transform-origin:center}
+@keyframes tp-cart-pop{0%,100%{transform:scale(1)}38%{transform:scale(1.2)}72%{transform:scale(.96)}}
+@media(prefers-reduced-motion:reduce){.tp-cart-fly{display:none!important}#hcart.tp-cart-pop{animation:none!important}}
