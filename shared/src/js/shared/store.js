@@ -11,39 +11,141 @@ const clr=()=>{q='';cat='';storePage=1;Object.assign(FS,{pmin:0,pmax:0,sz:[],col
 const cadd=(id,s,c,n)=>{const p=P[id];if(!p||!p.st){toast('این محصول ناموجود است','err');return false}const inCart=cart.filter(x=>x.id==id).reduce((a,x)=>a+x.q,0),room=Math.max(0,p.st-inCart);if(room<=0||n>room){toast(room?'تعداد درخواستی بیشتر از موجودی است':'به حداکثر موجودی این محصول رسیده‌اید','err');return false}const e=cart.find(x=>x.id==id&&x.s==s&&x.c==c);e?e.q+=n:cart.push({id,s,c,q:n});save();return true};
 const toast=(t,k='')=>{const e=$('#ts');e.textContent=t;e.className='tp-toast on '+(k==='err'?'error':k);e.setAttribute('role',k==='err'?'alert':'status');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),2200)};
 function qadd(id){const p=P[id];if(!p||!p.st){toast('این محصول ناموجود است','err');return}if(p.sz.length||p.cl.length){location.hash='#/product/'+id;return}if(cadd(id,'','',1))toast('محصول به سبد خرید اضافه شد.')}
-// انیمیشن افزودن به سبد فقط برای صفحه محصول Preview اجرا می‌شود؛ کارت‌های فهرست دست‌نخورده می‌مانند.
+// تعامل افزودن به سبد فقط در صفحه جزئیات محصول Preview اجرا می‌شود.
 let productAddBusy=false;
-function flyProductToCart(){
+const cartCountText=count=>count?F(count):'';
+function writeCartCount(count){
+ const node=$('#cc');
+ if(node)node.textContent=cartCountText(count);
+}
+function animateCartCount(from,to){
+ const node=$('#cc');
+ if(!node)return Promise.resolve();
+ const reduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+ if(reduced||typeof window.requestAnimationFrame!=='function'||document.visibilityState==='hidden'){
+  node.textContent=cartCountText(to);
+  return Promise.resolve();
+ }
+ const duration=250;
+ return new Promise(resolve=>{
+  let startTime=null;
+  const frame=now=>{
+   if(startTime===null)startTime=now;
+   const progress=Math.min(1,(now-startTime)/duration);
+   const eased=1-Math.pow(1-progress,3);
+   const value=Math.round(from+(to-from)*eased);
+   node.textContent=cartCountText(value);
+   if(progress<1){
+    window.requestAnimationFrame(frame);
+    return;
+   }
+   node.textContent=cartCountText(to);
+   node.classList.remove('tp-cart-count-pop');
+   void node.offsetWidth;
+   node.classList.add('tp-cart-count-pop');
+   node.addEventListener('animationend',()=>node.classList.remove('tp-cart-count-pop'),{once:true});
+   resolve();
+  };
+  window.requestAnimationFrame(frame);
+ });
+}
+function receiveCart(target){
+ const icon=target&&target.matches('.tp-ico')?target:target&&target.querySelector('.tp-ico');
+ if(!icon)return;
+ icon.classList.remove('tp-cart-icon-receive');
+ void icon.getBoundingClientRect();
+ icon.classList.add('tp-cart-icon-receive');
+ icon.addEventListener('animationend',()=>icon.classList.remove('tp-cart-icon-receive'),{once:true});
+}
+function flyProductToCart(previousCount,nextCount){
  const source=$('#app .pd .pm .ph'),target=$('#hcart .tp-ico')||$('#hcart');
- if(!source||!target)return Promise.resolve(false);
- if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)return Promise.resolve(false);
+ const reduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+ if(!source||!target||reduced||typeof window.requestAnimationFrame!=='function')return Promise.resolve(false);
  const from=source.getBoundingClientRect(),to=target.getBoundingClientRect();
  if(from.width<2||from.height<2||to.width<2||to.height<2)return Promise.resolve(false);
  const ghost=source.cloneNode(true);
  ghost.className='ph tp-cart-fly';
+ ghost.removeAttribute('id');
  ghost.removeAttribute('data-slot');
  ghost.setAttribute('aria-hidden','true');
- const caption=ghost.querySelector('figcaption');if(caption)caption.remove();
- const clonedImage=ghost.querySelector('img');
- if(clonedImage){clonedImage.removeAttribute('onload');clonedImage.removeAttribute('onerror');clonedImage.loading='eager';}
- Object.assign(ghost.style,{position:'fixed',left:from.left+'px',top:from.top+'px',width:from.width+'px',height:from.height+'px',margin:'0',padding:'0',zIndex:'10000',pointerEvents:'none',transformOrigin:'center center',willChange:'transform,opacity'});
+ ghost.setAttribute('tabindex','-1');
+ ghost.querySelectorAll('[id]').forEach(node=>node.removeAttribute('id'));
+ ghost.querySelectorAll('figcaption').forEach(node=>node.remove());
+ ghost.querySelectorAll('img').forEach(img=>{
+  img.removeAttribute('onload');
+  img.removeAttribute('onerror');
+  img.loading='eager';
+  img.draggable=false;
+ });
+ Object.assign(ghost.style,{
+  position:'fixed',left:from.left+'px',top:from.top+'px',
+  width:from.width+'px',height:from.height+'px',boxSizing:'border-box',
+  margin:'0',padding:'0',zIndex:'10000',pointerEvents:'none',
+  transformOrigin:'center center',willChange:'transform,opacity',
+  borderRadius:getComputedStyle(source).borderRadius
+ });
  document.body.appendChild(ghost);
- const dx=to.left+to.width/2-(from.left+from.width/2),dy=to.top+to.height/2-(from.top+from.height/2);
- const pop=()=>{
-  const link=$('#hcart');if(!link)return;
-  link.classList.remove('tp-cart-pop');void link.offsetWidth;link.classList.add('tp-cart-pop');
-  link.addEventListener('animationend',()=>link.classList.remove('tp-cart-pop'),{once:true});
+ source.classList.add('tp-product-flight-source');
+ // save() شمارنده واقعی را به‌روز کرده؛ تا رسیدن تصویر، مقدار قبلی را فقط در UI نگه می‌داریم.
+ writeCartCount(previousCount);
+ const startX=from.left+from.width/2,startY=from.top+from.height/2;
+ const duration=1040,pageHash=location.hash;
+ const easeInOut=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+ const cubic=(a,b,c,d,t)=>{
+  const u=1-t;
+  return u*u*u*a+3*u*u*t*b+3*u*t*t*c+t*t*t*d;
  };
- if(typeof ghost.animate!=='function'){ghost.remove();pop();return Promise.resolve(false)}
- try{
-  const animation=ghost.animate([
-   {transform:'translate3d(0,0,0) scale(1) rotate(0deg)',opacity:1,offset:0},
-   {transform:`translate3d(${dx*.34}px,${dy*.28-44}px,0) scale(.72) rotate(-8deg)`,opacity:1,offset:.34},
-   {transform:`translate3d(${dx*.76}px,${dy*.72-22}px,0) scale(.34) rotate(7deg)`,opacity:.9,offset:.78},
-   {transform:`translate3d(${dx}px,${dy}px,0) scale(.08) rotate(0deg)`,opacity:0,offset:1}
-  ],{duration:680,easing:'cubic-bezier(.22,.76,.3,1)',fill:'forwards'});
-  return animation.finished.then(()=>{ghost.remove();pop();return true;}).catch(()=>{ghost.remove();pop();return false;});
- }catch(e){ghost.remove();pop();return Promise.resolve(false)}
+ return new Promise(resolve=>{
+  let finished=false,frameId=0;
+  const finish=arrived=>{
+   if(finished)return;
+   finished=true;
+   if(frameId)window.cancelAnimationFrame(frameId);
+   ghost.remove();
+   source.classList.remove('tp-product-flight-source');
+   if(!arrived){
+    writeCartCount(nextCount);
+    resolve(false);
+    return;
+   }
+   receiveCart(target);
+   animateCartCount(previousCount,nextCount).then(()=>resolve(true),()=>resolve(true));
+  };
+  const tick=now=>{
+   try{
+    if(!ghost.isConnected||!source.isConnected||location.hash!==pageHash||document.visibilityState==='hidden'){
+     finish(false);
+     return;
+    }
+    const currentTarget=target.getBoundingClientRect();
+    if(currentTarget.width<2||currentTarget.height<2){finish(false);return}
+    const endX=currentTarget.left+currentTarget.width/2;
+    const endY=currentTarget.top+currentTarget.height/2;
+    const dx=endX-startX,dy=endY-startY;
+    const arc=Math.min(104,Math.max(30,Math.abs(dx)*.055+Math.abs(dy)*.035));
+    const p1x=startX+dx*.24,p1y=startY+dy*.2-arc;
+    const p2x=startX+dx*.77,p2y=startY+dy*.78-arc*.22;
+    const progress=Math.min(1,Math.max(0,(now-startTime)/duration));
+    const pathProgress=easeInOut(progress);
+    const x=cubic(startX,p1x,p2x,endX,pathProgress);
+    const y=cubic(startY,p1y,p2y,endY,pathProgress);
+    const shrinkProgress=.46*progress+.54*pathProgress;
+    const scale=1-.78*shrinkProgress;
+    const rotation=Math.sin(progress*Math.PI)*2.2;
+    const fadeProgress=Math.max(0,(progress-.84)/.16);
+    const opacity=1-Math.pow(fadeProgress,1.15);
+    ghost.style.transform=`translate3d(${x-startX}px,${y-startY}px,0) scale(${scale}) rotate(${rotation}deg)`;
+    ghost.style.opacity=String(opacity);
+    if(progress<1)frameId=window.requestAnimationFrame(tick);
+    else finish(true);
+   }catch(error){finish(false)}
+  };
+  let startTime=null;
+  frameId=window.requestAnimationFrame(now=>{
+   startTime=now;
+   tick(now);
+  });
+ });
 }
 // مثل AddToCartForm: اعتبارسنجی سایز/رنگ و تعداد قبل از افزودن حفظ می‌شود.
 function addP(){
@@ -52,18 +154,21 @@ function addP(){
  const E={};if(p.sz.length&&!PS.s)E.s='این فیلد لازم است.';if(p.cl.length&&!PS.c)E.c='این فیلد لازم است.';
  const inCart=cart.filter(x=>x.id==PS.id&&x.s==PS.s&&x.c==PS.c).reduce((a,x)=>a+x.q,0);if(!E.s&&!E.c&&inCart+PS.q>p.st)E.q='تعداد درخواستی از موجودی فعلی بیشتر است.';
  PS.err=E;if(E.s||E.c||E.q){R(E.s?'pd-sz':E.c?'pd-cl':'pd-qt');return}
+ const previousCartCount=cart.reduce((total,item)=>total+item.q,0);
  if(!cadd(PS.id,PS.s,PS.c,PS.q))return;
  // برنامه‌های نقش‌محور همان رفتار قبلی را حفظ می‌کنند؛ انیمیشن و ماندن در صفحه مخصوص Preview است.
  if(APP.fixed){toast('محصول به سبد خرید اضافه شد.');location.hash='#/cart';return}
+ const nextCartCount=cart.reduce((total,item)=>total+item.q,0);
  productAddBusy=true;
  const button=$('#pd-add');if(button){button.disabled=true;button.setAttribute('aria-busy','true')}
- flyProductToCart().then(()=>{
+ flyProductToCart(previousCartCount,nextCartCount).then(()=>{
   productAddBusy=false;
   if(button&&button.isConnected){button.disabled=false;button.removeAttribute('aria-busy')}
   toast('محصول با موفقیت به سبد خرید اضافه شد.');
  },()=>{
   productAddBusy=false;
   if(button&&button.isConnected){button.disabled=false;button.removeAttribute('aria-busy')}
+  writeCartCount(nextCartCount);
   toast('محصول با موفقیت به سبد خرید اضافه شد.');
  });
 }
