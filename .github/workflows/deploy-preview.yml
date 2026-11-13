@@ -10,6 +10,7 @@ on:
       - "shared/build.js"
       - "shared/package.json"
       - "shared/tests/**"
+      - "django/static/js/**"
       - ".github/workflows/deploy-preview.yml"
   pull_request:
     branches:
@@ -20,6 +21,7 @@ on:
       - "shared/build.js"
       - "shared/package.json"
       - "shared/tests/**"
+      - "django/static/js/**"
       - ".github/workflows/deploy-preview.yml"
   workflow_dispatch:
 
@@ -30,10 +32,13 @@ jobs:
   build:
     name: Build and validate preview
     runs-on: ubuntu-latest
+    timeout-minutes: 45
 
     steps:
       - name: Check out source
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -45,6 +50,32 @@ jobs:
         run: |
           npm install --no-package-lock --no-audit --no-fund
           npx playwright install --with-deps chromium
+
+      - name: Run Student PWA browser regression suite
+        working-directory: shared
+        env:
+          ONLY: student
+        run: npm test
+
+      - name: Run Coach PWA browser regression suite
+        working-directory: shared
+        env:
+          ONLY: coach
+        run: npm test
+
+      - name: Run Club PWA browser regression suite
+        working-directory: shared
+        env:
+          ONLY: club
+        run: npm test
+
+      - name: Run global card alignment regression tests
+        working-directory: shared
+        run: node tests/card-layout.test.mjs
+
+      - name: Run Django browser runtime regression tests
+        working-directory: shared
+        run: node tests/django-ui.test.mjs
 
       - name: Run focused clubs and map browser tests
         working-directory: shared
@@ -131,6 +162,32 @@ jobs:
           path: tatami-pwa-neshan-config.zip
           if-no-files-found: error
           retention-days: 7
+
+      - name: Package exact changed frontend source files
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          set -euo pipefail
+          BASE_REF="${BASE_SHA:-origin/${DEFAULT_BRANCH}}"
+          git rev-parse --verify "${BASE_REF}^{commit}" >/dev/null
+          git diff --name-only "${BASE_REF}"...HEAD > /tmp/tatami-changed-files.txt
+          mkdir -p source-handoff
+          while IFS= read -r file; do
+            [[ -f "$file" ]] || continue
+            mkdir -p "source-handoff/$(dirname "$file")"
+            cp "$file" "source-handoff/$file"
+          done < /tmp/tatami-changed-files.txt
+          test -n "$(find source-handoff -type f -print -quit)"
+          (cd source-handoff && zip -qr "$GITHUB_WORKSPACE/tatami-nine-phase-source-files.zip" .)
+
+      - name: Upload exact changed source files
+        uses: actions/upload-artifact@v4
+        with:
+          name: tatami-nine-phase-source-files
+          path: tatami-nine-phase-source-files.zip
+          if-no-files-found: error
+          retention-days: 14
 
   deploy:
     name: Publish Preview to cPanel

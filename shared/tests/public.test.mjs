@@ -1,8 +1,8 @@
 // تست‌های سه PWA عمومی (هنرجو/مربی/باشگاه). هر PWA جداگانه گزارش می‌شود.
 import {Suite,WIDTHS,OVERFLOW_JS,wait} from './helpers.mjs';
 const is404=()=>/۴۰۴/.test(document.getElementById('app').innerText);
-export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA '+app),denied={student:['#/role','#/my-profile','#/design-system'],coach:['#/role','#/ai','#/clubs','#/club/0','#/design-system'],club:['#/role','#/ai','#/my-profile','#/design-system']}[app];
- const ctx=await browser.newContext({viewport:{width:390,height:800},serviceWorkers:'block'});const pg=await ctx.newPage();const errs=[];
+export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA '+app),denied={student:['#/role','#/my-profile','#/design-system','#/checkout'],coach:['#/role','#/ai','#/clubs','#/club/0','#/design-system','#/checkout'],club:['#/role','#/ai','#/my-profile','#/design-system','#/checkout']}[app];
+ const ctx=await browser.newContext({viewport:{width:390,height:800},serviceWorkers:'block'});const pg=await ctx.newPage();pg.setDefaultTimeout(15000);pg.setDefaultNavigationTimeout(15000);const errs=[];
  pg.on('pageerror',e=>errs.push('PAGEERROR '+String(e).slice(0,100)));pg.on('console',m=>{if(m.type()==='error'&&!/fonts\.g|ERR_NAME_NOT_RESOLVED|ERR_INTERNET|Failed to load resource/.test(m.text()))errs.push(m.text().slice(0,100))});
  const go=async h=>{await pg.evaluate(x=>{location.hash=x},h);await wait(60)},T=()=>pg.evaluate(()=>document.getElementById('app').innerText),cnt=sel=>pg.locator(sel).count(),nf=()=>pg.evaluate(is404);
  await pg.goto(base+'/index.html');await wait(300);
@@ -113,7 +113,21 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
  S.ok('فروشگاه: ۵۹ محصول کاتالوگ + ۳ نمونه آزمایشی (دسته بدون کاتالوگ)، بدون نام/SKU تکراری',prod.ref===59&&prod.demo===3&&prod.names===prod.n&&prod.skus===59,JSON.stringify(prod));
  S.ok('فروشگاه: شمارنده ۶۲ محصول',(await T()).includes('۶۲ محصول'));
  S.ok('فروشگاه: برچسب «قیمت مرجع بازار» روی کارت‌ها و «نمونه آزمایشی» روی نمونه‌ها',(await T()).includes('قیمت مرجع بازار')&&(await T()).includes('نمونه آزمایشی'));
- S.ok('فروشگاه: بدون <img> شکسته (تصویری هنوز موجود نیست ← جای‌نگهدار)',await cnt('#app img')===0);
+ // تصاویر lazy کارت‌ها را eager کن و تا پایان درخواست‌ها صبر کن؛ سپس شکست واقعی را بررسی کن.
+ const productCardImages=pg.locator('#app .sl .pg article.pcd img');
+ await productCardImages.evaluateAll(images=>images.forEach(img=>{img.loading='eager'}));
+ await pg.waitForFunction(()=>{const images=[...document.querySelectorAll('#app .sl .pg article.pcd img')];return images.length>0&&images.every(img=>img.complete)},null,{timeout:15000});
+ S.ok('فروشگاه: تصاویر همه کارت‌های بارگذاری‌شده شکسته نیستند',await productCardImages.evaluateAll(images=>images.every(img=>img.naturalWidth>0)));
+ // Checkout نمایشی فقط در Preview؛ PWAهای نقش‌محور نباید CTA یا مسیر فعال داشته باشند.
+ const checkoutTestProduct=await pg.evaluate(()=>P.findIndex(p=>!p.sz.length&&!p.cl.length&&p.st>0));
+ if(checkoutTestProduct>=0){
+  await go('#/product/'+checkoutTestProduct);
+  await pg.locator('#app .pa button.btn').first().click();
+  await pg.waitForFunction(()=>location.hash.split('?')[0]==='#/cart',null,{timeout:5000});
+  S.ok('PWA نقش‌محور: دکمه ادامه خرید به Checkout نمایشی نمایش داده نمی‌شود',await cnt('#app a[href="#/checkout"]')===0);
+  await pg.evaluate(()=>{cart=[];S('cart',cart)});
+  await go('#/store');
+ }else S.ok('PWA نقش‌محور: محصول آزمایشی بدون تنوع برای تست سبد پیدا شد',false);
  await pg.fill('#fq','سامکو');await wait(150);const nSam=await pg.evaluate(()=>P.filter(p=>p.n.includes('سامکو')).length);S.ok('فروشگاه: جست‌وجوی «سامکو» برابر تعداد محصولات دارای این نام در داده ('+nSam+')',nSam>=4&&await cnt('#app .sl .pg article.pcd')===nSam,String(await cnt('#app .sl .pg article.pcd')));
  await pg.fill('#fq','جودو  سامکو');await wait(150);const nMulti=await pg.evaluate(()=>P.filter(p=>p.n.includes('جودو سامکو')).length);S.ok('فروشگاه: جست‌وجوی چندکلمه‌ای با فاصله اضافه ('+nMulti+' نتیجه)',nMulti>=1&&await cnt('#app .sl .pg article.pcd')===nMulti,String(await cnt('#app .sl .pg article.pcd')));
  await pg.fill('#fq','');await wait(100);
@@ -167,7 +181,8 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
 export async function runPwa(app,base,browser,altRoot){
  const S=new Suite('PWA-فنی '+app);
  const ctx=await browser.newContext({viewport:{width:390,height:800},serviceWorkers:'allow'});
- const pg=await ctx.newPage();
+ const pg=await ctx.newPage();pg.setDefaultTimeout(15000);pg.setDefaultNavigationTimeout(15000);
+ const swConsoleErrors=[];pg.on('console',message=>{if(message.type()==='error')swConsoleErrors.push(message.text())});
  await pg.goto(base+'/index.html');
  const neshanConfig=await pg.evaluate(async()=>{const r=await fetch('assets/neshan-config.js');return{status:r.status,text:await r.text()}});
  S.ok('تنظیمات نشان در خروجی PWA قابل دریافت است',neshanConfig.status===200&&neshanConfig.text.includes('TP_NESHAN_WEB_KEY')&&neshanConfig.text.includes('TP_CLUBS_JSON_URL'),String(neshanConfig.status));
@@ -178,7 +193,20 @@ export async function runPwa(app,base,browser,altRoot){
  for(const i of man.icons)if(await pg.evaluate(u=>fetch(u).then(r=>r.status),i.src)!==200)ok=false;
  S.ok('آیکون‌ها 200',ok);
  S.ok('offline.html موجود',await pg.evaluate(()=>fetch('offline.html').then(r=>r.status))===200);
- await pg.evaluate(()=>navigator.serviceWorker.ready.then(()=>1));
+ const precache=await pg.evaluate(async()=>{
+  const source=await fetch('sw.js').then(r=>r.text());
+  const match=source.match(/SHELL=(\[[^;]+\]);/);
+  if(!match)return{ok:false,missing:['Unable to parse generated precache list']};
+  const paths=JSON.parse(match[1]),missing=[];
+  for(const path of paths){try{const response=await fetch(path);if(!response.ok)missing.push(path+' → HTTP '+response.status)}catch(error){missing.push(path+' → '+String(error))}}
+  return{ok:missing.length===0,missing};
+ });
+ S.ok('همه مسیرهای پیش‌کش PWA قابل دریافت‌اند',precache.ok,precache.missing.join(' | '));
+ const registrations=await pg.evaluate(async()=>Promise.all((await navigator.serviceWorker.getRegistrations()).map(async registration=>({scope:registration.scope,active:registration.active?.state||null,installing:registration.installing?.state||null,waiting:registration.waiting?.state||null}))));
+ S.ok('Service Worker registration exists',registrations.length>0,JSON.stringify(registrations));
+ const swReady=await pg.evaluate(()=>Promise.race([navigator.serviceWorker.ready.then(()=>true),new Promise(resolve=>setTimeout(()=>resolve(false),10000))]));
+ S.ok('Service Worker registration becomes ready within 10 seconds',swReady,swReady?'ready':'timed out');
+ S.ok('Service Worker console has no registration/install error',!swConsoleErrors.length,swConsoleErrors.join(' | '));
  await wait(900);
  await pg.reload();
  await wait(500);
@@ -249,7 +277,7 @@ export async function runPwa(app,base,browser,altRoot){
 export async function runClubs(app,base,browser){
  const S=new Suite('Club list/map '+app);
  const ctx=await browser.newContext({viewport:{width:390,height:850},serviceWorkers:'block'});
- const pg=await ctx.newPage();
+ const pg=await ctx.newPage();pg.setDefaultTimeout(15000);pg.setDefaultNavigationTimeout(15000);
  const errors=[];
  pg.on('pageerror',e=>errors.push(String(e)));
  await pg.goto(base+'/index.html');
@@ -322,7 +350,7 @@ export async function runClubs(app,base,browser){
 export async function runPreview(base,browser){
  const S=new Suite('Preview: access, account CTA, and 24-product pagination');
  const ctx=await browser.newContext({viewport:{width:1280,height:900},serviceWorkers:'block'});
- const pg=await ctx.newPage(),errors=[];
+ const pg=await ctx.newPage();pg.setDefaultTimeout(15000);pg.setDefaultNavigationTimeout(15000);const errors=[];
  pg.on('pageerror',e=>errors.push(String(e).slice(0,140)));
  await pg.addInitScript(()=>localStorage.setItem('role',JSON.stringify('student')));
  await pg.goto(base+'/index.html');await wait(350);
