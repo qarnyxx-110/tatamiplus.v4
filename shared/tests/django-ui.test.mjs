@@ -69,6 +69,7 @@ try {
       await page.locator('.tp-role-picker [role=radio]').first().click();
       assert.equal(await page.locator('#tp-register-form [type=submit]').isDisabled(),false);
       await page.locator('#id_username').fill('sample-user');
+      await page.locator('#id_username').fill('qa-student');
       await page.locator('[data-auth-next]').click();
       assert.equal(await page.locator('#tp-register-form').getAttribute('data-step'),'2');
       assert.equal(await page.locator('#tp-register-form [data-auth-step="2"]').isVisible(),true);
