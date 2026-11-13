@@ -69,7 +69,7 @@ function qadd(id){const p=P[id];if(!p||!p.st){toast('این محصول نامو�
 // مثل AddToCartForm: خطای «تنوع» (سایز/رنگ) و «تعداد» کنار همان فیلد؛ موفقیت ← سبد خرید
 function addP(){const p=P[PS.id];if(!p||!p.st){toast('این محصول ناموجود است','err');return}const E={};if(p.sz.length&&!PS.s)E.s='این فیلد لازم است.';if(p.cl.length&&!PS.c)E.c='این فیلد لازم است.';
  const inCart=cart.filter(x=>x.id==PS.id&&x.s==PS.s&&x.c==PS.c).reduce((a,x)=>a+x.q,0);if(!E.s&&!E.c&&inCart+PS.q>p.st)E.q='تعداد درخواستی از موجودی فعلی بیشتر است.';
- PS.err=E;if(E.s||E.c||E.q){R(E.s?'pd-sz':E.c?'pd-cl':'pd-qt');return}if(cadd(PS.id,PS.s,PS.c,PS.q))flyProductToCart()}
+ PS.err=E;if(E.s||E.c||E.q){R(E.s?'pd-sz':E.c?'pd-cl':'pd-qt');return}if(cadd(PS.id,PS.s,PS.c,PS.q)){if(APP.fixed){toast('محصول به سبد خرید اضافه شد.');location.hash='#/cart';return}flyProductToCart()}}
 function qP(d){PS.q=Math.max(1,Math.min(P[PS.id].st,PS.q+d));if(PS.err)PS.err.q='';R('x')}
 function cq(k,d){const x=cart[k],n=x.q+d;if(n<1){toast('تعداد باید دست‌کم یک باشد.','err');return}if(n>P[x.id].st){toast('تعداد درخواستی از موجودی فعلی بیشتر است.','err');return}x.q=n;save();R('x');toast('تعداد محصول به‌روزرسانی شد.')}
 function rm(k){cart.splice(k,1);save();R('x');toast('محصول از سبد خرید حذف شد.')}
