@@ -100,7 +100,7 @@ function pwValidate(p,u,em){const out=[],lp=p.toLowerCase();
  if(/^\d+$/.test(p))out.push('رمز شما کلا عدد است');return out}
 async function doRegister(f){const v=k=>(f.elements[k]&&f.elements[k].value||'').trim(),E={},u=v('username'),em=v('email'),p1=f.elements.password1.value,p2=f.elements.password2.value,users=authUsers();
  const r=APP_ROLE||(f.querySelector('input[name=role]:checked')||{}).value;
- if(r==='club'){goAuthStage(f,1);const note=f.querySelector('[data-club-notice]');if(note){note.hidden=false;note.focus();note.scrollIntoView({block:'nearest',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth')}return}
+ if(r==='club'){goAuthStage(f,1);const note=f.querySelector('[data-club-notice]');if(note){note.hidden=false;note.focus();note.scrollIntoView({block:'nearest',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})}return}
 // پیام‌ها عیناً ترجمهٔ فارسی خود Django 5.2 هستند؛ مثل UserCreationForm خطاهای اعتبارسنج گذرواژه زیر «تکرار گذرواژه» می‌نشینند
  if(!u)E['rg-u']='این فیلد لازم است.';else if(!UNAME_RE.test(u))E['rg-u']='یک نام کاربری معتبر وارد کنید. این مقدار میتواند فقط شامل حروف، اعداد، و علامات @/./+/-/_ باشد.';else if(users[userKey(u)])E['rg-u']='کاربری با آن نام کاربری وجود دارد.';
  if(em&&(em.length>254||!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(em)))E['rg-e']='یک ایمیل آدرس معتبر وارد کنید.';
