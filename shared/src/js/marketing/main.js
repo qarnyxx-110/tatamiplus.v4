@@ -15,3 +15,6 @@ let routeSeq=0;async function route(){const my=++routeSeq;if(!ME){try{ME=await D
  const sd=$('#f-seo_description'),st=$('#f-seo_title');if(sd){const u=()=>{const c=$('#c-sd');c.textContent=F(sd.value.length)+' / ۱۶۰ نویسه (توصیه‌شده)';c.classList.toggle('over',sd.value.length>160)},v=()=>{const c=$('#c-st');c.textContent=F(st.value.length)+' / ۶۰ نویسه (توصیه‌شده)';c.classList.toggle('over',st.value.length>60)};sd.addEventListener('input',u);st.addEventListener('input',v);u();v()}
  const ti=$('#f-title'),sl=$('#f-slug');if(ti&&sl&&!AE.slugTouched){ti.addEventListener('input',()=>{if(!AE.slugTouched)sl.value=slugify(ti.value)});sl.addEventListener('input',()=>{AE.slugTouched=true})}}
 addEventListener('hashchange',route);route();
+
+// نمایش/مخفی‌کردن رمز عبور در فرم ورود پنل مارکتینگ.
+function toggleMarketingPassword(button){const input=button.parentElement?.querySelector('input');if(!input)return;const show=input.type==='password';input.type=show?'text':'password';button.textContent=show?'پنهان':'نمایش';button.setAttribute('aria-pressed',String(show));button.setAttribute('aria-label',show?'مخفی‌کردن رمز عبور':'نمایش رمز عبور');input.focus({preventScroll:true})}

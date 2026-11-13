@@ -10,6 +10,10 @@ export async function runMarketingApi(base,pubBase,browser){const S=new Suite('�
  const ctx=await browser.newContext({viewport:{width:1280,height:900}}),pg=await ctx.newPage(),errs=[];pg.on('pageerror',e=>errs.push(String(e).slice(0,100)));pg.on('console',m=>{if(m.type()==='error'&&!/fonts\.g|ERR_NAME|ERR_INTERNET|status of 40[0-9]/.test(m.text()))errs.push(m.text().slice(0,100))});
  // ورود
  await pg.goto(base+'/marketing/index.html');await wait(400);S.ok('بدون ورود: فرم ورود نمایش داده می‌شود',await pg.locator('#lu').count()===1);
+ const marketingToggle=pg.locator('#lp').locator('xpath=..').locator('.tp-pw-b');
+ S.ok('ورود مارکتینگ: دکمه نمایش رمز همیشه قابل مشاهده است',await marketingToggle.count()===1&&await marketingToggle.isVisible()&&await marketingToggle.textContent()==='نمایش');
+ await marketingToggle.click();S.ok('ورود مارکتینگ: نمایش و مخفی‌کردن رمز کار می‌کند',await pg.locator('#lp').getAttribute('type')==='text'&&await marketingToggle.textContent()==='پنهان');
+ await marketingToggle.click();S.ok('ورود مارکتینگ: مخفی‌سازی مجدد رمز',await pg.locator('#lp').getAttribute('type')==='password'&&await marketingToggle.textContent()==='نمایش');
  S.ok('بدون ورود: API مدیریتی ← ۴۰۱',(await api(pg,'GET','/cms/articles')).s===401);
  await pg.fill('#lu',pg.url()&&'marketing');await pg.fill('#lp','bad');await pg.click('button.btn:has-text("ورود")');await wait(400);S.ok('رمز اشتباه ← پیام خطا',(await txt(pg)).includes('درست نیست'));
  await login(pg,base,'student','student123');S.ok('هنرجو: ورود می‌شود اما مقالات «دسترسی ندارید»',(await pg.goto(base+'/marketing/index.html#/articles'),await wait(400),(await txt(pg)).includes('دسترسی ندارید')));
