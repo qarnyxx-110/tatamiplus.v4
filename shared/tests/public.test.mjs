@@ -441,9 +441,11 @@ export async function runPreview(base,browser){
  await pg.setViewportSize({width:390,height:850});await go('#/register');
  S.ok('ثبت‌نام موبایل: مرحله اول فرم نمایش داده می‌شود',await pg.locator('#rg-f').getAttribute('data-mobile-steps')==='true'&&await pg.locator('#rg-f [data-auth-step="2"]').isHidden());
  await pg.locator('#rg-u').fill('mobile-preview-user');
+ const beforeStep=await pg.evaluate(()=>({username:document.querySelector('#rg-u')?.value,formUsername:document.querySelector('#rg-f')?.elements.username?.value,mobile:document.querySelector('#rg-f')?.dataset.mobileSteps,step:document.querySelector('#rg-f')?.dataset.step}));
  await pg.locator('#rg-f [data-auth-next]').click();
- S.ok('ثبت‌نام موبایل: پس از ادامه، مرحله گذرواژه نمایش داده می‌شود',await pg.locator('#rg-f').getAttribute('data-step')==='2'&&await pg.locator('#rg-f [data-auth-step="2"]').isVisible());
- await pg.locator('#rg-f [data-auth-back]').click();
+ const afterStep=await pg.evaluate(()=>({username:document.querySelector('#rg-u')?.value,mobile:document.querySelector('#rg-f')?.dataset.mobileSteps,step:document.querySelector('#rg-f')?.dataset.step,errors:[...document.querySelectorAll('#rg-f [aria-invalid=true]')].map(x=>x.id)}));
+ S.ok('ثبت‌نام موبایل: پس از ادامه، مرحله گذرواژه نمایش داده می‌شود',afterStep.step==='2'&&await pg.locator('#rg-f [data-auth-step="2"]').isVisible(),JSON.stringify({beforeStep,afterStep}));
+ if(afterStep.step==='2')await pg.locator('#rg-f [data-auth-back]').click();
  await pg.setViewportSize({width:1280,height:900});await go('#/register');
  S.ok('ثبت‌نام دسکتاپ: هر دو بخش فرم هم‌زمان در دسترس‌اند',await pg.locator('#rg-f [data-auth-step="1"]').isVisible()&&await pg.locator('#rg-f [data-auth-step="2"]').isVisible());
  const username='previewqa'+Date.now().toString(36);
