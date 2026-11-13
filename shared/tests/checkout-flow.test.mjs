@@ -15,36 +15,43 @@ export async function runCheckout(_base,browser){
     await pg.goto(srv.url+'/index.html');
     await wait(250);
 
-    // Regression: گزینه‌های سایز و رنگ کاتالوگ روی کارت فروشگاه و محصولات مرتبط قابل مشاهده‌اند.
+    // Regression: هر گروه گزینه روی کارت همان محصول در فهرست فروشگاه نمایش داده می‌شود.
     await pg.evaluate(()=>{location.hash='#/store'});
     await pg.waitForSelector('.pcd');
-    const cardVariants=await pg.evaluate(()=>{
-      const product=P.find(p=>p.ref&&p.sz.length&&p.cl.length);
-      if(!product)return null;
-      const card=document.querySelector('.pcd a[href="#/product/'+product.id+'"]')?.closest('.pcd');
-      if(!card)return null;
-      return{
-        name:product.n,
-        expectedSizes:product.sz,
-        expectedColors:product.cl,
-        shownSizes:[...card.querySelectorAll('[data-product-size]')].map(node=>node.getAttribute('data-product-size')),
-        shownColors:[...card.querySelectorAll('[data-product-color]')].map(node=>node.getAttribute('data-product-color')),
-        noVariantCardHasNoPlaceholder:(()=>{
-          const plain=P.find(p=>p.ref&&!p.sz.length&&!p.cl.length);
-          if(!plain)return true;
-          const plainCard=document.querySelector('.pcd a[href="#/product/'+plain.id+'"]')?.closest('.pcd');
-          return !!plainCard&&!plainCard.querySelector('.pc-variants');
-        })()
-      };
-    });
+    const variantIds=await pg.evaluate(()=>({
+      size:P.findIndex(p=>p.ref&&p.sz.length),
+      color:P.findIndex(p=>p.ref&&p.cl.length),
+      plain:P.findIndex(p=>p.ref&&!p.sz.length&&!p.cl.length)
+    }));
+    const readProductCard=async id=>{
+      if(id<0)return null;
+      await pg.evaluate(id=>{q=P[id].n;storePage=1;R('x')},id);
+      await pg.waitForSelector('.pcd a[href="#/product/'+id+'"]');
+      return pg.evaluate(id=>{
+        const product=P[id];
+        const card=document.querySelector('.pcd a[href="#/product/'+id+'"]')?.closest('.pcd');
+        if(!card)return null;
+        return{
+          name:product.n,
+          expectedSizes:product.sz,
+          expectedColors:product.cl,
+          shownSizes:[...card.querySelectorAll('[data-product-size]')].map(node=>node.getAttribute('data-product-size')),
+          shownColors:[...card.querySelectorAll('[data-product-color]')].map(node=>node.getAttribute('data-product-color')),
+          hasVariantBlock:!!card.querySelector('.pc-variants')
+        };
+      },id);
+    };
+    const sizeCard=await readProductCard(variantIds.size);
+    const colorCard=await readProductCard(variantIds.color);
+    const plainCard=await readProductCard(variantIds.plain);
     S.ok('کارت محصول، سایزهای ثبت‌شده در کاتالوگ را دقیق نمایش می‌دهد',
-      !!cardVariants&&JSON.stringify(cardVariants.shownSizes)===JSON.stringify(cardVariants.expectedSizes),
-      cardVariants?JSON.stringify({expected:cardVariants.expectedSizes,shown:cardVariants.shownSizes}):'محصول دارای سایز و رنگ در فهرست پیدا نشد');
+      !!sizeCard&&JSON.stringify(sizeCard.shownSizes)===JSON.stringify(sizeCard.expectedSizes),
+      sizeCard?JSON.stringify({expected:sizeCard.expectedSizes,shown:sizeCard.shownSizes}):'محصول دارای سایز در کاتالوگ پیدا نشد');
     S.ok('کارت محصول، رنگ‌های ثبت‌شده در کاتالوگ را دقیق نمایش می‌دهد',
-      !!cardVariants&&JSON.stringify(cardVariants.shownColors)===JSON.stringify(cardVariants.expectedColors),
-      cardVariants?JSON.stringify({expected:cardVariants.expectedColors,shown:cardVariants.shownColors}):'محصول دارای سایز و رنگ در فهرست پیدا نشد');
+      !!colorCard&&JSON.stringify(colorCard.shownColors)===JSON.stringify(colorCard.expectedColors),
+      colorCard?JSON.stringify({expected:colorCard.expectedColors,shown:colorCard.shownColors}):'محصول دارای رنگ در کاتالوگ پیدا نشد');
     S.ok('برای محصول بدون تنوع، برچسب ساختگی سایز و رنگ نمایش داده نمی‌شود',
-      !!cardVariants&&cardVariants.noVariantCardHasNoPlaceholder);
+      !!plainCard&&!plainCard.hasVariantBlock);
 
     const picked=await pg.evaluate(()=>{const i=P.findIndex(p=>p.st>0&&(!p.sz||!p.sz.length)&&(!p.cl||!p.cl.length));return i<0?null:{id:i,name:P[i].n}});
     if(!picked)throw new Error('No in-stock product without variant options was found for the checkout test');
