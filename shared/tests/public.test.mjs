@@ -197,7 +197,7 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
  await go('#/blog?q='+encodeURIComponent('اوچی ماتا'));S.ok('بلاگ: جست‌وجوی بدون نیم‌فاصله/فاصله',await cnt('#app article')>=1);
  await go('#/blog/uchi-mata-basics');S.ok('بلاگ: صفحه مقاله با slug خوانا',(await T()).includes('اوچی‌ماتا')&&(await pg.title()).includes('اوچی‌ماتا'));
  // --- حامیان
- await go('#/sponsors');S.ok('حامیان: ۶ جایگاه نمونه با برچسب «جایگاه نمونه»',await cnt('#app .tp-sponsors li')===6&&(await T()).includes('نمونه آزمایشی'));
+ await go('#/sponsors');S.ok('حامیان: شش جایگاه نمونه با توضیح شفاف',await cnt('#app .tp-sponsors li')===6&&(await T()).includes('موارد زیر جایگاه‌های نمونه هستند'));
  // --- امنیت: داده localStorage و آدرس
  await pg.evaluate(()=>{localStorage.setItem('cart',JSON.stringify([{id:1,s:'<img src=x onerror=window.__ls=1>',c:'<b>x</b>',q:99999},{id:9999,s:'',c:'',q:1},{id:'x'},null]));localStorage.setItem('prog',JSON.stringify({3:500,abc:5,'-1':3}));localStorage.setItem('fav',JSON.stringify([1,1,'a',9999]));localStorage.setItem('saved','"nope"');localStorage.setItem('lastWatched','"<script>"');localStorage.setItem('role','"<img src=x>"')});
  await pg.goto('about:blank');await pg.goto(base+'/index.html#/cart');await wait(400);
