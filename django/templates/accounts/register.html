@@ -2,15 +2,98 @@
 
 {% block title %}ساخت حساب کاربری | تاتامی پلاس{% endblock %}
 {% block content %}
-<div class="w tp-auth">
-  <div class="tp-auth-card">
-    <h1>ساخت حساب کاربری</h1>
-    <p class="mu">هنرجو یا مربی را انتخاب کنید. پروفایل مربی پس از بررسی تیم منتشر می‌شود.</p>
-    <form id="tp-register-form" method="post" novalidate data-auth-form="register">
-      {% csrf_token %}
-      {% include 'includes/form_fields.html' %}
-      <button class="btn tp-auth-btn" type="submit">ثبت‌نام</button>
-    </form>
+<div class="w tp-auth tp-auth-shell tp-auth-register">
+  <div class="tp-auth-layout">
+    <section class="tp-auth-main" aria-labelledby="tp-register-title">
+      <div class="tp-auth-card">
+        <p class="tp-auth-kicker">حساب کاربری تاتامی پلاس</p>
+        <h1 id="tp-register-title">ساخت حساب کاربری</h1>
+        <p class="mu tp-auth-subtitle">نوع حساب خود را انتخاب کنید و مراحل ثبت‌نام را کامل کنید.</p>
+        <form id="tp-register-form" class="tp-auth-form" method="post" novalidate data-auth-form="register">
+          {% csrf_token %}
+          {% if form.errors %}
+            <div class="tp-form-sum" role="alert" aria-live="assertive" tabindex="-1">
+              {% if form.non_field_errors %}{% for error in form.non_field_errors %}<p class="tp-form-errors">{{ error }}</p>{% endfor %}{% else %}لطفاً موارد مشخص‌شده را اصلاح کنید.{% endif %}
+            </div>
+          {% endif %}
+          {% for field in form.hidden_fields %}{{ field }}{% endfor %}
+          <div class="tp-auth-progress" aria-label="مراحل ثبت‌نام">
+            <span class="is-current" data-auth-progress-step="1"><b>۱</b> اطلاعات حساب</span>
+            <span data-auth-progress-step="2"><b>۲</b> امنیت حساب</span>
+          </div>
+          <div class="tp-auth-stage is-active" data-auth-stage="1">
+            {% for field in form.visible_fields %}
+              {% if field.name != 'password1' and field.name != 'password2' %}
+                {% if field.name == 'role' %}
+                  <fieldset class="tp-field tp-roles">
+                    <legend>نوع حساب کاربری</legend>
+                    <div class="tp-role-grid">
+                      {% for value, label in field.field.choices %}
+                        {% if value %}
+                          <label class="tp-role-option">
+                            <input type="radio" name="{{ field.html_name }}" id="{{ field.auto_id }}_{{ value }}" value="{{ value }}" {% if field.value == value %}checked{% endif %} {% if field.field.required %}required{% endif %} {% if field.errors %}aria-invalid="true"{% endif %} autocomplete="off">
+                            <span class="tp-role-icon" aria-hidden="true">{% if value == 'student' %}🥋{% elif value == 'coach' %}🎓{% endif %}</span>
+                            <span class="tp-role-copy"><b>{{ label }}</b><small>{% if value == 'student' %}یادگیری و پیگیری مسیر ورزشی{% elif value == 'coach' %}آموزش و همراهی هنرجویان{% endif %}</small></span>
+                            <span class="tp-role-check" aria-hidden="true">✓</span>
+                          </label>
+                        {% endif %}
+                      {% endfor %}
+                      <div class="tp-role-option is-unavailable" aria-disabled="true">
+                        <span class="tp-role-icon" aria-hidden="true">🏢</span>
+                        <span class="tp-role-copy"><b>باشگاه</b><small>معرفی و مدیریت مجموعه ورزشی</small></span>
+                        <span class="tp-role-status">پس از آماده‌سازی بک‌اند</span>
+                      </div>
+                    </div>
+                    {% if field.help_text %}<p class="tp-hint" id="{{ field.auto_id }}_helptext">{{ field.help_text }}</p>{% endif %}
+                    {% for error in field.errors %}<p class="tp-error-text" id="{{ field.auto_id }}_error_{{ forloop.counter }}">{{ error }}</p>{% endfor %}
+                    <div class="tp-role-notice"><b>حساب باشگاه در حال آماده‌سازی است</b><p>ظاهر گزینه باشگاه در این طرح لحاظ شده؛ انتخاب و ثبت واقعی آن پس از تحویل قرارداد بک‌اند فعال خواهد شد.</p></div>
+                    <p class="tp-hint">پروفایل مربی پس از ثبت درخواست و بررسی تیم منتشر می‌شود.</p>
+                  </fieldset>
+                {% else %}
+                  <div class="tp-field">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}{% if not field.field.required %} <span class="mu sm">(اختیاری)</span>{% endif %}</label>
+                    {{ field }}
+                    {% if field.help_text %}<p class="tp-hint" id="{{ field.auto_id }}_helptext">{{ field.help_text }}</p>{% endif %}
+                    {% for error in field.errors %}<p class="tp-error-text" id="{{ field.auto_id }}_error_{{ forloop.counter }}">{{ error }}</p>{% endfor %}
+                  </div>
+                {% endif %}
+              {% endif %}
+            {% endfor %}
+            <div class="tp-auth-stage-actions"><button class="btn tp-auth-next" type="button" data-auth-next>ادامه</button></div>
+          </div>
+          <div class="tp-auth-stage" data-auth-stage="2">
+            {% for field in form.visible_fields %}
+              {% if field.name == 'password1' or field.name == 'password2' %}
+                <div class="tp-field">
+                  <label for="{{ field.id_for_label }}">{{ field.label }}{% if not field.field.required %} <span class="mu sm">(اختیاری)</span>{% endif %}</label>
+                  {{ field }}
+                  {% if field.help_text %}<p class="tp-hint" id="{{ field.auto_id }}_helptext">{{ field.help_text }}</p>{% endif %}
+                  {% for error in field.errors %}<p class="tp-error-text" id="{{ field.auto_id }}_error_{{ forloop.counter }}">{{ error }}</p>{% endfor %}
+                </div>
+              {% endif %}
+            {% endfor %}
+            <div class="tp-auth-stage-actions">
+              <button class="btn o tp-auth-back" type="button" data-auth-back>بازگشت</button>
+              <button class="btn tp-auth-btn" type="submit">ساخت حساب کاربری</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </section>
+    <aside class="tp-auth-aside" aria-label="معرفی تاتامی پلاس">
+      <div class="tp-auth-aside-brand"><span class="tp-auth-aside-emblem" aria-hidden="true">TP</span><span>TATAMI PLUS</span></div>
+      <div class="tp-auth-aside-copy">
+        <p class="tp-auth-kicker">مسیر ورزشی شما</p>
+        <h2>حسابی متناسب با مسیرت بساز</h2>
+        <p>هنرجو یا مربی؛ تجربه تاتامی پلاس بر اساس نوع حساب شما شکل می‌گیرد. حساب باشگاه نیز پس از آماده‌شدن زیرساخت به همین مسیر اضافه می‌شود.</p>
+        <ul class="tp-auth-aside-list">
+          <li><span aria-hidden="true">✓</span> مراحل ساده و قابل دنبال‌کردن</li>
+          <li><span aria-hidden="true">✓</span> انتخاب نوع حساب در ابتدای مسیر</li>
+          <li><span aria-hidden="true">✓</span> طراحی هماهنگ در موبایل و دسکتاپ</li>
+        </ul>
+      </div>
+      <div class="tp-auth-aside-footer"><span>تاتامی پلاس</span><span>یادگیری · تمرین · پیشرفت</span></div>
+    </aside>
   </div>
   <p class="tp-auth-alt">قبلاً ثبت‌نام کرده‌اید؟ <a href="{% url 'accounts:login' %}">وارد شوید</a></p>
 </div>

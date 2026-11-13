@@ -434,6 +434,20 @@ export async function runPreview(base,browser){
  S.ok('تغییر فیلتر صفحه را به ۱ برمی‌گرداند و فیلتر حفظ می‌شود',
    await cards()===10&&(await pg.evaluate(()=>location.hash)).includes('category=')&&!(await pg.evaluate(()=>location.hash)).includes('page=2'));
  await go('#/register');
+ S.ok('ثبت‌نام Preview سه نوع حساب را نمایش می‌دهد',await pg.locator('#rg-f .tp-role-option').count()===3);
+ const clubPreviewUser='clubpreview'+Date.now().toString(36);
+ await pg.fill('#rg-u',clubPreviewUser);await pg.locator('#rg-r2').check({force:true});
+ await pg.waitForFunction(()=>!document.querySelector('[data-club-notice]')?.hidden);
+ await pg.locator('#rg-f').evaluate(form=>doRegister(form));await wait(70);
+ const clubPreview=await pg.evaluate(name=>({notice:!document.querySelector('[data-club-notice]')?.hidden,created:!!JSON.parse(localStorage.getItem('tp:users')||'{}')[name]}),clubPreviewUser);
+ S.ok('باشگاه فقط پیش‌نمایش است و حساب محلی/واقعی نمی‌سازد',clubPreview.notice&&!clubPreview.created,JSON.stringify(clubPreview));
+ await pg.locator('#rg-r0').check({force:true});await pg.setViewportSize({width:390,height:850});await wait(80);
+ await pg.fill('#rg-u','mobilepreview'+Date.now().toString(36));
+ await pg.locator('[data-auth-next]').click();await wait(60);
+ S.ok('ثبت‌نام موبایل: مرحله دوم پس از تکمیل اطلاعات اولیه نمایش داده می‌شود',await pg.locator('[data-auth-stage="1"]').evaluate(el=>el.hidden)&&!await pg.locator('[data-auth-stage="2"]').evaluate(el=>el.hidden));
+ await pg.locator('[data-auth-back]').click();await wait(40);
+ S.ok('ثبت‌نام موبایل: بازگشت به مرحله اطلاعات حساب کار می‌کند',!await pg.locator('[data-auth-stage="1"]').evaluate(el=>el.hidden));
+ await pg.setViewportSize({width:1280,height:900});await wait(80);
  const username='previewqa'+Date.now().toString(36);
  await pg.fill('#rg-u',username);await pg.fill('#rg-p1','TatamiPlus!Preview2026');await pg.fill('#rg-p2','TatamiPlus!Preview2026');
  await pg.locator('#rg-f button[type="submit"]').click();

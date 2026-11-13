@@ -29,6 +29,54 @@
     });
   });
 
+  // ۰-ب. ثبت‌نام مرحله‌ای در موبایل؛ دسکتاپ همه فیلدها را یکجا نشان می‌دهد.
+  const registerForm = $('form[data-auth-form="register"]');
+  if (registerForm) {
+    const stages = $('[data-auth-stage]', registerForm);
+    const progress = $('[data-auth-progress-step]', registerForm);
+    const media = window.matchMedia('(max-width: 600px)');
+    let current = 1;
+    const setStage = step => {
+      current = Math.max(1, Math.min(stages.length, Number(step) || 1));
+      registerForm.dataset.authStage = String(current);
+      stages.forEach((stage, index) => {
+        const active = index + 1 === current;
+        stage.classList.toggle('is-active', active);
+        stage.hidden = media.matches && !active;
+      });
+      progress.forEach(item => {
+        const index = Number(item.dataset.authProgressStep);
+        item.classList.toggle('is-current', index === current);
+        item.classList.toggle('is-done', index < current);
+        if (index === current) item.setAttribute('aria-current', 'step');
+        else item.removeAttribute('aria-current');
+      });
+    };
+    registerForm.addEventListener('click', event => {
+      const next = event.target.closest('[data-auth-next]');
+      const back = event.target.closest('[data-auth-back]');
+      if (next) {
+        const stage = registerForm.querySelector('[data-auth-stage="' + current + '"]');
+        const invalid = stage && [...stage.querySelectorAll('input,select,textarea')].find(field => !field.checkValidity());
+        if (invalid) {
+          invalid.focus();
+          if (typeof invalid.reportValidity === 'function') invalid.reportValidity();
+          return;
+        }
+        setStage(current + 1);
+      } else if (back) {
+        setStage(current - 1);
+      }
+    });
+    const invalid = registerForm.querySelector('.tp-error-text,[aria-invalid="true"]');
+    const errorStage = invalid && invalid.closest('[data-auth-stage]');
+    if (errorStage) current = Number(errorStage.dataset.authStage || 1);
+    setStage(current);
+    const update = () => setStage(current);
+    if (media.addEventListener) media.addEventListener('change', update);
+    else if (media.addListener) media.addListener(update);
+  }
+
   // ۱. منوی کشویی موبایل (dialog بومی: تله فوکوس، Esc، بازگشت فوکوس)
   const d = $('#mnd'), b = $('#mnb');
   if (d && b && typeof d.showModal === 'function') {

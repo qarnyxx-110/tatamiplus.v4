@@ -2,17 +2,36 @@
 
 {% block title %}ورود | تاتامی پلاس{% endblock %}
 {% block content %}
-<div class="w tp-auth">
-  <div class="tp-auth-card">
-    <h1>ورود به حساب</h1>
-    <p class="mu">نام کاربری و گذرواژهٔ خود را وارد کنید.</p>
-    <form id="tp-login-form" method="post" novalidate data-auth-form="login">
-      {% csrf_token %}
-      {% include 'includes/form_fields.html' %}
-      {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
-      <button class="btn tp-auth-btn" type="submit">ورود</button>
-    </form>
+<div class="w tp-auth tp-auth-shell">
+  <div class="tp-auth-layout">
+    <section class="tp-auth-main" aria-labelledby="tp-login-title">
+      <div class="tp-auth-card">
+        <p class="tp-auth-kicker">حساب کاربری تاتامی پلاس</p>
+        <h1 id="tp-login-title">ورود به حساب کاربری</h1>
+        <p class="mu tp-auth-subtitle">برای ادامه مسیر، نام کاربری و گذرواژه خود را وارد کنید.</p>
+        <form id="tp-login-form" class="tp-auth-form" method="post" novalidate data-auth-form="login">
+          {% csrf_token %}
+          {% include 'includes/form_fields.html' %}
+          {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+          <button class="btn tp-auth-btn" type="submit">ورود به حساب</button>
+        </form>
+      </div>
+    </section>
+    <aside class="tp-auth-aside" aria-label="معرفی تاتامی پلاس">
+      <div class="tp-auth-aside-brand"><span class="tp-auth-aside-emblem" aria-hidden="true">TP</span><span>TATAMI PLUS</span></div>
+      <div class="tp-auth-aside-copy">
+        <p class="tp-auth-kicker">مسیر ورزشی شما</p>
+        <h2>مسیر پیشرفتت را ادامه بده</h2>
+        <p>با ورود به حساب خود به تجربه آموزشی و ورزشی تاتامی پلاس بازگردید.</p>
+        <ul class="tp-auth-aside-list">
+          <li><span aria-hidden="true">✓</span> تجربه هماهنگ در دستگاه‌های مختلف</li>
+          <li><span aria-hidden="true">✓</span> فضای متناسب با نوع حساب کاربری</li>
+          <li><span aria-hidden="true">✓</span> طراحی ساده و قابل استفاده</li>
+        </ul>
+      </div>
+      <div class="tp-auth-aside-footer"><span>تاتامی پلاس</span><span>یادگیری · تمرین · پیشرفت</span></div>
+    </aside>
   </div>
-  <p class="tp-auth-alt">حساب ندارید؟ <a href="{% url 'accounts:register' %}">ثبت‌نام کنید</a></p>
+  <p class="tp-auth-alt">حساب کاربری ندارید؟ <a href="{% url 'accounts:register' %}">ساخت حساب جدید</a></p>
 </div>
 {% endblock %}
