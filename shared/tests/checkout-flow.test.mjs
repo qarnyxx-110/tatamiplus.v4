@@ -19,18 +19,41 @@ export async function runCheckout(_base,browser){
     if(!picked)throw new Error('No in-stock product without variant options was found for the checkout test');
     await pg.evaluate(id=>{location.hash='#/product/'+id},picked.id);
     await pg.waitForSelector('#app .pd');
+    const countBeforeFlight=await pg.locator('#cc').innerText();
+    await pg.evaluate(()=>{
+      const icon=document.querySelector('#hcart .tp-ico');
+      window.__tpCartReceiveMotion=false;
+      if(icon)new MutationObserver(()=>{
+        if(icon.classList.contains('tp-cart-icon-receive'))window.__tpCartReceiveMotion=true;
+      }).observe(icon,{attributes:true,attributeFilter:['class']});
+    });
+    const flightStartedAt=Date.now();
     await pg.locator('#pd-add').click();
     await pg.waitForSelector('.tp-cart-fly',{state:'attached',timeout:3000});
     S.ok('پس از افزودن موفق، نسخه موقت تصویر محصول برای حرکت به سبد ساخته می‌شود',
       await pg.locator('.tp-cart-fly').count()===1);
     await pg.waitForFunction(id=>location.hash==='#/product/'+id&&cart.length>0,picked.id);
+    S.ok('شمارنده تا لحظه رسیدن تصویر، مقدار قبلی را حفظ می‌کند',
+      (await pg.locator('#cc').innerText())===countBeforeFlight);
+    S.ok('دکمه افزودن در طول حرکت برای جلوگیری از ثبت تکراری غیرفعال است',
+      await pg.locator('#pd-add').isDisabled()&&await pg.locator('#pd-add').getAttribute('aria-busy')==='true');
+    await pg.evaluate(()=>addP());
+    S.ok('درخواست افزودن تکراری در زمان اجرای انیمیشن نادیده گرفته می‌شود',
+      await pg.evaluate(()=>cart.length===1&&cart[0].q===1));
     await pg.waitForFunction(()=>document.querySelector('#ts')?.classList.contains('on')&&document.querySelector('#ts')?.textContent.includes('با موفقیت به سبد خرید اضافه شد.'));
+    const flightElapsed=Date.now()-flightStartedAt;
+    S.ok('حرکت آهسته‌تر از نسخه قبلی و در بازه طبیعی اجرا می‌شود',
+      flightElapsed>=1000&&flightElapsed<5000, 'elapsed='+flightElapsed+'ms');
     S.ok('پس از افزودن، مشتری در صفحه همان محصول باقی می‌ماند',
       await pg.evaluate(id=>location.hash==='#/product/'+id,picked.id));
-    S.ok('شمارنده سبد پس از افزودن به‌روزرسانی می‌شود',
+    S.ok('شمارنده سبد پس از رسیدن تصویر با مقدار صحیح نمایش داده می‌شود',
       (await pg.locator('#cc').innerText()).trim()==='۱');
-    S.ok('پیام موفقیت پس از پایان انیمیشن نمایش داده می‌شود',
+    S.ok('آیکون سبد هنگام دریافت محصول واکنش ظریف نشان می‌دهد',
+      await pg.evaluate(()=>window.__tpCartReceiveMotion===true));
+    S.ok('پیام موفقیت پس از پایان حرکت محصول نمایش داده می‌شود',
       (await pg.locator('#ts').innerText()).includes('با موفقیت به سبد خرید اضافه شد.'));
+    S.ok('دکمه پس از پایان تعامل دوباره فعال می‌شود',
+      !(await pg.locator('#pd-add').isDisabled())&&await pg.locator('#pd-add').getAttribute('aria-busy')===null);
     await pg.waitForFunction(()=>!document.querySelector('.tp-cart-fly'),undefined,{timeout:3000});
     await pg.evaluate(()=>{location.hash='#/cart'});
     await pg.waitForFunction(()=>location.hash==='#/cart'&&document.querySelector('#app .cl2 a[href="#/checkout"]')?.textContent.trim()==='ادامه خرید');
@@ -159,6 +182,22 @@ export async function runCheckout(_base,browser){
       S.ok('محصول دارای تنوع برای تست انتخاب سایز/رنگ پیدا شد',false);
     }
     await variantCtx.close();
+
+    // Regression: تنظیم کاهش حرکت، انیمیشن را حذف می‌کند اما عملیات سبد را سالم نگه می‌دارد.
+    const reducedCtx=await browser.newContext({viewport:{width:1280,height:900},serviceWorkers:'block',reducedMotion:'reduce'});
+    const reducedPg=await reducedCtx.newPage();
+    reducedPg.on('pageerror',e=>errors.push(String(e)));
+    await reducedPg.goto(srv.url+'/index.html');
+    await wait(180);
+    await reducedPg.evaluate(id=>{location.hash='#/product/'+id},picked.id);
+    await reducedPg.waitForSelector('#pd-add');
+    await reducedPg.locator('#pd-add').click();
+    await reducedPg.waitForFunction(()=>document.querySelector('#ts')?.classList.contains('on')&&document.querySelector('#ts')?.textContent.includes('با موفقیت به سبد خرید اضافه شد.'));
+    S.ok('در حالت کاهش حرکت، پرواز تصویر اجرا نمی‌شود اما افزودن محصول موفق است',
+      await reducedPg.locator('.tp-cart-fly').count()===0&&
+      (await reducedPg.locator('#cc').innerText()).trim()==='۱'&&
+      await reducedPg.evaluate(()=>cart.length===1));
+    await reducedCtx.close();
 
     S.ok('بدون خطای JavaScript در فلوی خرید',errors.length===0,errors.join(' | '));
   }catch(e){
