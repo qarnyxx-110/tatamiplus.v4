@@ -83,7 +83,7 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
 
  S.ok('جم: نشان موجودی در هدر',await pg.locator('#hgem[href="#/gems"]').count()===1);
  S.ok('منو: «باشگاه‌ها» فقط برای هنرجو/باشگاه',(app==='coach')?!nav.includes('باشگاه‌ها'):nav.includes('باشگاه‌ها'));
- const foot=await pg.evaluate(()=>[...document.querySelectorAll('footer a')].map(a=>({text:a.textContent.trim(),href:a.getAttribute('href')})));S.ok('فوتر: لینک مربی آنلاین به فهرست مستقل مربیان متصل است',foot.some(a=>a.text==='مربی آنلاین'&&a.href==='#/coaches')&&foot.includes('تاتامی‌پدیا')&&foot.some(a=>a.text==='حامیان تاتامی پلاس')&&!foot.some(a=>a.text==='سیستم طراحی'),JSON.stringify(foot));
+ const foot=await pg.evaluate(()=>[...document.querySelectorAll('footer a')].map(a=>({text:a.textContent.trim(),href:a.getAttribute('href')})));S.ok('فوتر: لینک مربی آنلاین به فهرست مستقل مربیان متصل است',foot.some(a=>a.text==='مربی آنلاین'&&a.href==='#/coaches')&&foot.some(a=>a.text==='تاتامی‌پدیا')&&foot.some(a=>a.text==='حامیان تاتامی پلاس')&&!foot.some(a=>a.text==='سیستم طراحی'),JSON.stringify(foot));
  await go('#/gems');const gems=await T();S.ok('جم: صفحه تاریخچه و وضعیت عدم اتصال',gems.includes('تاریخچه تراکنش‌ها')&&gems.includes('موجودی واقعی هنوز به این نسخه متصل نشده است'));S.ok('جم: عدم نمایش تراکنش ساختگی',gems.includes('تراکنشی برای نمایش وجود ندارد'));
  await go('#/my-profile');S.ok('«پروفایل من» فقط در PWA مربی',(app==='coach')?!await nf():await nf());
  if(app!=='coach'){await go('#/coaches/sara-ahmadi');S.ok('پروفایل مربی: لینک باشگاه',await pg.evaluate(()=>!!document.querySelector('#app a[href^="#/club/"]')))}
@@ -150,9 +150,9 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
  const demoProductName=await pg.evaluate(()=>P.find(product=>product.demo&&product.st>0)?.n||'');
  if(demoProductName){
   await pg.fill('#fq',demoProductName);await wait(140);
-  S.ok('فروشگاه: جستجوی نمونه آزمایشی، برچسب نمونه را نمایش می‌دهد',(await T()).includes('نمونه آزمایشی'));
+  S.ok('فروشگاه: جستجوی محصول نمونه، برچسب اطلاعات نمونه را نمایش می‌دهد',(await T()).includes('اطلاعات نمونه'));
   await pg.fill('#fq','');await wait(100);
- }else S.ok('فروشگاه: نمونه آزمایشی قابل جستجو برای کنترل برچسب وجود دارد',false);
+ }else S.ok('فروشگاه: محصول نمونه برای کنترل برچسب وجود دارد',false);
  // تصاویر lazy کارت‌ها را eager کن و تا پایان درخواست‌ها صبر کن؛ سپس شکست واقعی را بررسی کن.
  const productCardImages=pg.locator('#app .sl .pg article.pcd img');
  await productCardImages.evaluateAll(images=>images.forEach(img=>{img.loading='eager'}));
@@ -197,7 +197,7 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
  await go('#/blog?q='+encodeURIComponent('اوچی ماتا'));S.ok('بلاگ: جست‌وجوی بدون نیم‌فاصله/فاصله',await cnt('#app article')>=1);
  await go('#/blog/uchi-mata-basics');S.ok('بلاگ: صفحه مقاله با slug خوانا',(await T()).includes('اوچی‌ماتا')&&(await pg.title()).includes('اوچی‌ماتا'));
  // --- حامیان
- await go('#/sponsors');S.ok('حامیان: ۶ جایگاه نمونه با برچسب «نمونه آزمایشی»',await cnt('#app .tp-sponsors li')===6&&(await T()).includes('نمونه آزمایشی'));
+ await go('#/sponsors');S.ok('حامیان: ۶ جایگاه نمونه با برچسب «جایگاه نمونه»',await cnt('#app .tp-sponsors li')===6&&(await T()).includes('نمونه آزمایشی'));
  // --- امنیت: داده localStorage و آدرس
  await pg.evaluate(()=>{localStorage.setItem('cart',JSON.stringify([{id:1,s:'<img src=x onerror=window.__ls=1>',c:'<b>x</b>',q:99999},{id:9999,s:'',c:'',q:1},{id:'x'},null]));localStorage.setItem('prog',JSON.stringify({3:500,abc:5,'-1':3}));localStorage.setItem('fav',JSON.stringify([1,1,'a',9999]));localStorage.setItem('saved','"nope"');localStorage.setItem('lastWatched','"<script>"');localStorage.setItem('role','"<img src=x>"')});
  await pg.goto('about:blank');await pg.goto(base+'/index.html#/cart');await wait(400);
