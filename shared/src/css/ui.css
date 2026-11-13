@@ -577,3 +577,15 @@ input[aria-invalid=true],select[aria-invalid=true],textarea[aria-invalid=true]{b
 .tp-club-cards>.tp-club-card{height:100%;min-width:0}
 .tp-coaches>li{display:flex;min-width:0}
 .tp-coaches>li>.tp-coach{width:100%;flex:1;min-width:0}
+
+
+/* Mobile usability refinements: preserve content width, form legibility and touch targets. */
+@media(max-width:767px){
+ #app .w{padding-inline:var(--tp-space-sm)}
+ #app :is(.d-s,.d-c,.card,.tp-note,.tp-article,.tp-checkout,.tp-profile,.tp-auth-card){min-width:0;max-width:100%}
+ #app :is(input,select,textarea){min-width:0;max-width:100%;min-height:44px;font-size:16px}
+ #app table{display:block;max-width:100%;overflow-x:auto;overscroll-behavior-inline:contain;-webkit-overflow-scrolling:touch}
+ #app :is(button,.btn,.chip,.fv,.ptb,.qt button){min-height:44px}
+ #app :is(.fv,.ptb,.qt button){min-width:44px}
+}
+@media(max-width:380px){#app .pg{grid-template-columns:minmax(0,1fr)}}
