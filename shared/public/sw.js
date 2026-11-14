@@ -9,14 +9,14 @@ async function cacheResponse(request,response){
   if(hasNewerVersion&&!self.registration.installing&&!self.registration.waiting)await caches.delete(V);
  }catch{}
 }
-self.addEventListener('install',e=>{e.waitUntil((async()=>{
+self.addEventListener('install',e=>{console.info('[Tatami SW] install',V);e.waitUntil((async()=>{
  const c=await caches.open(V),core=SHELL.slice(0,7),routes=SHELL.slice(7);
  await c.addAll(core);
  const results=await Promise.allSettled(routes.map(url=>c.add(url)));
  results.forEach((result,index)=>{if(result.status==='rejected')console.warn('[Tatami SW] optional route was not precached:',routes[index],result.reason)});
- self.skipWaiting();
+ self.skipWaiting().then(()=>console.info('[Tatami SW] skipWaiting resolved',V),error=>console.error('[Tatami SW] skipWaiting rejected',V,String(error)));
 })().catch(async error=>{try{await caches.delete(V)}catch{}console.error('[Tatami SW] install failed',error);throw error}))});
-self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==V).map(x=>caches.delete(x)))).then(()=>self.clients.claim()))});
+self.addEventListener('activate',e=>{console.info('[Tatami SW] activate',V);e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==V).map(x=>caches.delete(x)))).then(()=>self.clients.claim()))});
 self.addEventListener('fetch',e=>{const r=e.request;if(r.method!=='GET')return;
 if(r.mode==='navigate'){e.respondWith(fetch(r).then(async x=>{const u=new URL(r.url),root=new URL('./',self.registration.scope).pathname;if(x.ok&&(u.pathname===root||u.pathname===root+'index.html'))await cacheResponse('index.html',x.clone());return x}).catch(()=>caches.match(r).then(cached=>cached||caches.match('index.html').then(x=>x||caches.match('offline.html')))));return}
 e.respondWith(caches.match(r).then(c=>c||fetch(r).then(async x=>{if(x.ok&&(new URL(r.url).origin===location.origin||/fonts\.(googleapis|gstatic)\.com/.test(r.url)))await cacheResponse(r,x.clone());return x}).catch(()=>c)))});
