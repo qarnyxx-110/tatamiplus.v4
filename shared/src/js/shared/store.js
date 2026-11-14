@@ -175,7 +175,7 @@ function qP(d){PS.q=Math.max(1,Math.min(P[PS.id].st,PS.q+d));if(PS.err)PS.err.q=
 function cq(k,d){const x=cart[k],n=x.q+d;if(n<1){toast('تعداد باید دست‌کم یک باشد.','err');return}if(n>P[x.id].st){toast('تعداد درخواستی از موجودی فعلی بیشتر است.','err');return}x.q=n;save();R('x');toast('تعداد محصول به‌روزرسانی شد.')}
 function rm(k){cart.splice(k,1);save();R('x');toast('محصول از سبد خرید حذف شد.')}
 function tf(i){fav=fav.includes(i)?fav.filter(x=>x!=i):[...fav,i];save();R('x')}
-const rate=p=>p.rv?`<span class="mu sm">★ ${F(p.r)} (${F(p.rv)} نظر)</span>`:'',sk=p=>p.st==0?tg('ناموجود','m'):p.st<5?tg('تنها '+F(p.st)+' عدد','g lo'):tg('موجود','ok');
+const rate=p=>p.rv?`<span class="mu sm">★ ${F(p.r)} (${F(p.rv)} نظر)</span>`:'',sk=p=>p.ref||p.demo?tg('موجودی نمونه','m'):p.st==0?tg('ناموجود','m'):p.st<5?tg('تنها '+F(p.st)+' عدد','g lo'):tg('موجود','ok');
 const fvb=(p,c='')=>`<button class="fv ${fav.includes(p.id)?'on':''} ${c}" aria-pressed="${fav.includes(p.id)}" aria-label="${fav.includes(p.id)?'حذف از':'افزودن به'} علاقه‌مندی‌ها: ${p.n}" onclick="tf(${p.id})">${fav.includes(p.id)?'♥':'♡'}</button>`;
 const pc=p=>`<article class="card pcd"><a href="#/product/${p.id}" aria-label="مشاهده ${p.n}">${im.p(p)}</a><div class="b"><a href="#/product/${p.id}"><b>${p.n}</b></a><div class="mu sm">${p.c}</div>${rate(p)}<div class="gold">${T(p.p)}</div>${p.ref?'<div class="mu sm">قیمت مرجع بازار</div>':p.demo?`<div>${tg('اطلاعات نمونه','m')}</div>`:''}${sk(p)}<div class="pa"><a class="btn s" href="#/product/${p.id}" aria-label="مشاهده و انتخاب ${p.n}">مشاهده و انتخاب محصول</a>${fvb(p)}</div></div></article>`;
 const chp=(t,on,fn,x='')=>`<button class="chip ${on?'on':''}" aria-pressed="${!!on}" ${x} onclick="${fn}">${t}</button>`;

@@ -199,6 +199,7 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
 
 
  S.ok('فروشگاه: برچسب «قیمت مرجع بازار» روی کارت‌های کاتالوگ',(await T()).includes('قیمت مرجع بازار'));
+ S.ok('فروشگاه: موجودی کاتالوگ به‌عنوان موجودی واقعی نمایش داده نمی‌شود',(await T()).includes('موجودی نمونه'));
  const demoProductName=await pg.evaluate(()=>P.find(product=>product.demo&&product.st>0)?.n||'');
  if(demoProductName){
   await pg.fill('#fq',demoProductName);await wait(140);
@@ -232,6 +233,7 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
  await go('#/store');S.ok('فروشگاه: پیشنهادها (۳ بخش × ۴ محصول) از کاتالوگ',await cnt('section[aria-label="تازه جودو را شروع کرده‌ام"] article')===4&&await cnt('section[aria-label="برای تمرین حرفه‌ای آماده‌ام"] article')===4&&await cnt('section[aria-label="برای مسابقه آماده می‌شوم"] article')===4);
  await go('#/product/0');t=await T();S.ok('جزئیات محصول کاتالوگ: قیمت مرجع، منبع، بدون ستاره/نظر جعلی، سایزهای نام محصول',t.includes('قیمت نهایی تاتامی پلاس نیست')&&t.includes('منبع قیمت مرجع')&&!t.includes('★')&&!/نظر\)/.test(t)&&t.includes('XXL'));
  S.ok('جزئیات: قیمت منبع ۱۴٬۵۰۰٬۰۰۰ تومان (بدون تغییر)',t.includes('۱۴٬۵۰۰٬۰۰۰ تومان'));
+ S.ok('جزئیات محصول: موجودی نمونه به‌صورت شفاف برچسب خورده است',t.includes('موجودی نمونه'));
  await go('#/product/'+await pg.evaluate(()=>P.find(p=>p.ref&&!p.sz.length&&!p.cl.length).id));S.ok('جزئیات: محصول بدون رنگ/سایز، بخش رنگ نمایش داده نمی‌شود و افزودن به سبد کار می‌کند',!(await T()).includes('\nرنگ\n')&&await pg.evaluate(()=>{addP();return JSON.parse(localStorage.getItem('cart')).length>=1}));
  await go('#/cart');S.ok('سبد: محصول کاتالوگ با یادداشت قیمت مرجع',(await T()).includes('قیمت مرجع'));
  await pg.evaluate(()=>localStorage.clear());
