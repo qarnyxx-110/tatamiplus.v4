@@ -7,6 +7,7 @@ on:
     paths:
       - "shared/src/**"
       - "shared/public/assets/**"
+      - "shared/public/sw.js"
       - "shared/build.js"
       - "shared/package.json"
       - "shared/tests/**"
@@ -18,6 +19,7 @@ on:
     paths:
       - "shared/src/**"
       - "shared/public/assets/**"
+      - "shared/public/sw.js"
       - "shared/build.js"
       - "shared/package.json"
       - "shared/tests/**"
