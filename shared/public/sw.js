@@ -14,7 +14,7 @@ self.addEventListener('install',e=>{e.waitUntil((async()=>{
  await c.addAll(core);
  const results=await Promise.allSettled(routes.map(url=>c.add(url)));
  results.forEach((result,index)=>{if(result.status==='rejected')console.warn('[Tatami SW] optional route was not precached:',routes[index],result.reason)});
- await self.skipWaiting();
+ self.skipWaiting();
 })().catch(async error=>{try{await caches.delete(V)}catch{}console.error('[Tatami SW] install failed',error);throw error}))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==V).map(x=>caches.delete(x)))).then(()=>self.clients.claim()))});
 self.addEventListener('fetch',e=>{const r=e.request;if(r.method!=='GET')return;
