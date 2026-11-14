@@ -7,7 +7,7 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
  const go=async h=>{await pg.evaluate(x=>{location.hash=x},h);await wait(60)},T=()=>pg.evaluate(()=>document.getElementById('app').innerText),cnt=sel=>pg.locator(sel).count(),nf=()=>pg.evaluate(is404);
  await pg.goto(base+'/index.html');await wait(300);
  // --- مسیرهای معتبر/نامعتبر
- const valid=['#/','#/store','#/store/','#/product/3','#/product?id=3','#/video/3','#/video?id=3','#/blog','#/blog/uchi-mata-basics','#/blog/2','#/tournaments','#/tournament/1','#/instructor/1','#/academy','#/profile','#/gems','#/cart','#/dashboard','#/videos','#/search','#/coaches','#/coaches/sara-ahmadi','#/sponsors','#/tatamipedia','#/tatamipedia/ippon','#/tatamipedia?q=ippon&cat=refereeing','#/blog?page=2'];
+ const valid=['#/','#/store','#/online-coach','#/store/','#/product/3','#/product?id=3','#/video/3','#/video?id=3','#/blog','#/blog/uchi-mata-basics','#/blog/2','#/tournaments','#/tournament/1','#/instructor/1','#/academy','#/profile','#/gems','#/cart','#/dashboard','#/videos','#/search','#/coaches','#/coaches/sara-ahmadi','#/sponsors','#/tatamipedia','#/tatamipedia/ippon','#/tatamipedia?q=ippon&cat=refereeing','#/blog?page=2'];
  const bad=[];for(const r of valid){await go(r);if(await nf())bad.push(r)}S.ok('مسیرهای معتبر 404 نمی‌دهند ('+valid.length+' مسیر)',!bad.length,bad.join(' '));
  const invalid=['#/gems/extra','#/courses/unknown','#/episode/unknown-lesson-1','#/store/x/y','#/product/abc','#/product/1/2','#/product/999','#/product','#/product/','#/video/','#/video/99','#/video?id=','#/tournament/abc','#/tournament/99','#/tournament/','#/instructor/99','#/instructor/','#/blog/not-a-real-slug','#/blog/a/b','#/coaches/nobody','#/coaches/','#/coaches/a/b','#/tatamipedia/nobody','#/tatamipedia/','#/tatamipedia/a/b','#/nonexistent','#/a/b/c/d/e','#/'+'x'.repeat(420),'#store','#/club/99'];
  const wrong=[];for(const r of invalid){await go(r);if(!await nf())wrong.push(r.slice(0,40))}S.ok('مسیرهای نامعتبر همه 404 دارند ('+invalid.length+' مسیر)',!wrong.length,wrong.join(' '));
@@ -17,6 +17,14 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
  await go('#/');const nav=await pg.evaluate(()=>[...document.querySelectorAll('#nv a')].map(a=>a.textContent.trim()));
  S.ok('منو: بلاگ، تاتامی‌پدیا، مربیان، حامیان',['بلاگ','تاتامی‌پدیا','مربیان تاتامی','حامیان تاتامی پلاس'].every(x=>nav.includes(x)),nav.join('|'));S.ok('منو: دوره‌های آموزشی',nav.includes('دوره‌ها'),nav.join('|'));
  S.ok('منو: تاریخچه جم',nav.includes('جم'),nav.join('|'));
+ S.ok('منو: مربی آنلاین برای هنرجو',app!=='student'||nav.includes('مربی آنلاین'),nav.join('|'));
+ await go('#/online-coach');const oc=await T();
+ S.ok('مربی آنلاین: صفحه مستقل و ابزار دوربین',oc.includes('مربی آنلاین')&&oc.includes('روشن کردن دوربین')&&await pg.locator('#tp-oc-video').count()===1);
+ S.ok('مربی آنلاین: شمارش واقعی جعل نمی‌شود',await pg.locator('#tp-oc-count').innerText()==='—'&&oc.includes('ربات هنوز متصل نشده است')&&await pg.locator('#tp-oc-count-start').isDisabled());
+ S.ok('مربی آنلاین: فعلاً فقط پیش‌نمایش محلی و بدون ورودی فایل',oc.includes('تصویر به سرور ارسال نمی‌شود')&&await pg.locator('#tp-oc-video').count()===1&&await pg.locator('#tp-oc input[type=file]').count()===0);
+ const ocWidths=[];for(const width of [320,360,390]){await pg.setViewportSize({width,height:800});await go('#/online-coach');ocWidths.push(await pg.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1&&document.body.scrollWidth<=innerWidth+1));}
+ S.ok('مربی آنلاین: بدون اسکرول افقی در موبایل ۳۲۰/۳۶۰/۳۹۰',ocWidths.every(Boolean),ocWidths.join(','));
+ await pg.setViewportSize({width:390,height:800});await go('#/');
  if(app!=='coach'){
   await go('#/clubs');const clubList=await T();
   S.ok('باشگاه‌ها: صفحه جستجو و فهرست',clubList.includes('جستجوی باشگاه‌ها')&&clubList.includes('فهرست باشگاه‌ها'));
