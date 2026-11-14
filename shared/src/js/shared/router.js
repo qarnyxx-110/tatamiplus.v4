@@ -24,6 +24,7 @@ if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)&&!window.__
   watchWorker(registration.waiting);
   watchWorker(registration.installing);
   registration.addEventListener('updatefound',()=>watchWorker(registration.installing));
+  registration.update().then(()=>requestWorkerActivation(registration.waiting)).catch(()=>{});
   return registration;
  }).catch(error=>console.error('[Tatami SW] registration failed',error));
  if(document.readyState==='complete')registerTatamiServiceWorker();
