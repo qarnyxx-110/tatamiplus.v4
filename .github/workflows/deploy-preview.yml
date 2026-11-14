@@ -24,6 +24,12 @@ on:
       - "django/static/js/**"
       - ".github/workflows/deploy-preview.yml"
   workflow_dispatch:
+    inputs:
+      deploy_to_cpanel:
+        description: "Publish to cPanel (normally upload the generated package manually)"
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -192,7 +198,7 @@ jobs:
   deploy:
     name: Publish Preview to cPanel
     needs: build
-    if: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/main' }}
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.deploy_to_cpanel == true && github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
 
     steps:
