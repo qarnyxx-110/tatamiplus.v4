@@ -32,6 +32,8 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
  const ocWidths=[];for(const width of [320,360,390]){await pg.setViewportSize({width,height:800});await go('#/online-coach');ocWidths.push(await pg.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1&&document.body.scrollWidth<=innerWidth+1));}
  S.ok('مربی آنلاین: بدون اسکرول افقی در موبایل ۳۲۰/۳۶۰/۳۹۰',ocWidths.every(Boolean),ocWidths.join(','));
  await pg.setViewportSize({width:390,height:800});await go('#/');
+  const homeOnlineCoachLinks=await pg.locator('#app a[href="#/online-coach"]').count();
+  S.ok('صفحه اصلی هنرجو: دکمه و کارت مربی آنلاین در دسترس‌اند',app==='student'?homeOnlineCoachLinks>=2:homeOnlineCoachLinks===0,String(homeOnlineCoachLinks));
  if(app!=='coach'){
   await go('#/clubs');const clubList=await T();
   S.ok('باشگاه‌ها: صفحه جستجو و فهرست',clubList.includes('جستجوی باشگاه‌ها')&&clubList.includes('فهرست باشگاه‌ها'));
@@ -94,7 +96,7 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
 
  S.ok('جم: نشان موجودی در هدر',await pg.locator('#hgem[href="#/gems"]').count()===1);
  S.ok('منو: «باشگاه‌ها» فقط برای هنرجو/باشگاه',(app==='coach')?!nav.includes('باشگاه‌ها'):nav.includes('باشگاه‌ها'));
- const foot=await pg.evaluate(()=>[...document.querySelectorAll('footer a')].map(a=>({text:a.textContent.trim(),href:a.getAttribute('href')})));S.ok('فوتر: لینک مربی آنلاین به فهرست مستقل مربیان متصل است',foot.some(a=>a.text==='مربی آنلاین'&&a.href==='#/coaches')&&foot.some(a=>a.text==='تاتامی‌پدیا')&&foot.some(a=>a.text==='حامیان تاتامی پلاس')&&!foot.some(a=>a.text==='سیستم طراحی'),JSON.stringify(foot));
+ const foot=await pg.evaluate(()=>[...document.querySelectorAll('footer a')].map(a=>({text:a.textContent.trim(),href:a.getAttribute('href')})));S.ok('فوتر: لینک مربی آنلاین به صفحه مستقل مربی آنلاین متصل است',foot.some(a=>a.text==='مربی آنلاین'&&a.href==='#/online-coach')&&foot.some(a=>a.text==='تاتامی‌پدیا')&&foot.some(a=>a.text==='حامیان تاتامی پلاس')&&!foot.some(a=>a.text==='سیستم طراحی'),JSON.stringify(foot));
  await go('#/gems');const gems=await T();S.ok('جم: صفحه تاریخچه و وضعیت عدم اتصال',gems.includes('تاریخچه تراکنش‌ها')&&gems.includes('موجودی واقعی هنوز به این نسخه متصل نشده است'));S.ok('جم: عدم نمایش تراکنش ساختگی',gems.includes('تراکنشی برای نمایش وجود ندارد'));
  await go('#/my-profile');S.ok('«پروفایل من» فقط در PWA مربی',(app==='coach')?!await nf():await nf());
  if(app!=='coach'){await go('#/coaches/sara-ahmadi');S.ok('پروفایل مربی: لینک باشگاه',await pg.evaluate(()=>!!document.querySelector('#app a[href^="#/club/"]')))}
@@ -409,6 +411,7 @@ export async function runPreview(base,browser){
  const fresh=await freshCtx.newPage();await fresh.goto(base+'/index.html');await wait(250);
  S.ok('بازدیدکننده بدون نقش در صفحه اصلی می‌ماند',await fresh.evaluate(()=>!location.hash||location.hash==='#/'));
  S.ok('بازدیدکننده بدون نقش محتوای خانه را می‌بیند',/نسل جدید تجربه جودو/.test(await fresh.locator('#app').innerText()));
+  S.ok('صفحه اصلی عمومی: لینک مربی آنلاین در دسترس است',await fresh.locator('#app a[href="#/online-coach"]').count()>=2);
  await freshCtx.close();
  const go=async h=>{await pg.evaluate(x=>{location.hash=x},h);await wait(100)};
  const T=()=>pg.locator('#app').innerText();
@@ -416,6 +419,10 @@ export async function runPreview(base,browser){
  await go('#/');
  S.ok('صفحه اصلی در بازدید اول پیام «آماده شروع هستید؟» را دارد',(await T()).includes('آماده شروع هستید؟'));
  S.ok('CTA خانه به ثبت‌نام هدایت می‌کند',await pg.locator('#app .cta a[href="#/register"]').count()===1);
+  S.ok('صفحه اصلی Preview: دکمه و کارت مربی آنلاین در دسترس‌اند',await pg.locator('#app a[href="#/online-coach"]').count()>=2);
+  await go('#/online-coach');
+  S.ok('صفحه مربی آنلاین در Preview باز می‌شود',(await T()).includes('روشن کردن دوربین')&&await pg.locator('#tp-oc-video').count()===1);
+  await go('#/');
  S.ok('لینک سیستم طراحی از فوتر حذف شده است',await pg.locator('footer a[href="#/design-system"]').count()===0);
  S.ok('لینک انتخاب نوع حساب از فوتر حذف شده است',await pg.locator('footer a[href="#/role"]').count()===0);
  await go('#/design-system');
