@@ -276,7 +276,7 @@ export async function runPwa(app,base,browser,altRoot){
  const S=new Suite('PWA-فنی '+app);
  const ctx=await browser.newContext({viewport:{width:390,height:800},serviceWorkers:'allow'});
  const pg=await ctx.newPage();pg.setDefaultTimeout(15000);pg.setDefaultNavigationTimeout(15000);
- const swConsoleErrors=[];pg.on('console',message=>{if(message.type()==='error')swConsoleErrors.push(message.text())});
+ const swConsoleErrors=[],pageConsoleLogs=[];pg.on('console',message=>{pageConsoleLogs.push(message.type()+': '+message.text());if(message.type()==='error')swConsoleErrors.push(message.text())});
  await pg.goto(base+'/index.html');
  const neshanConfig=await pg.evaluate(async()=>{const r=await fetch('assets/neshan-config.js');return{status:r.status,text:await r.text()}});
  S.ok('تنظیمات نشان در خروجی PWA قابل دریافت است',neshanConfig.status===200&&neshanConfig.text.includes('TP_NESHAN_WEB_KEY')&&neshanConfig.text.includes('TP_CLUBS_JSON_URL'),String(neshanConfig.status));
