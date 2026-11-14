@@ -351,7 +351,8 @@ export async function runPwa(app,base,browser,altRoot){
    after=await pg.evaluate(()=>caches.keys());
    if(after.length===1&&after[0]!==before)break;
   }
-  S.ok('به‌روزرسانی: Cache نسخه جدید جایگزین قدیمی شد',after.length===1&&after[0]!==before,before+' → '+after.join());
+  const updateState=await pg.evaluate(async()=>{const registration=await navigator.serviceWorker.getRegistration();const describe=worker=>worker?{state:worker.state,scriptURL:worker.scriptURL}:null;return{active:describe(registration?.active),waiting:describe(registration?.waiting),installing:describe(registration?.installing),controller:describe(navigator.serviceWorker.controller),keys:await caches.keys()}});
+  S.ok('به‌روزرسانی: Cache نسخه جدید جایگزین قدیمی شد',after.length===1&&after[0]!==before,before+' → '+after.join()+' | SW='+JSON.stringify(updateState));
   S.ok('به‌روزرسانی: محتوای نسخه جدید نمایش داده می‌شود',await pg.evaluate(()=>document.documentElement.outerHTML.includes('UPDATE_MARKER')));
   altRoot.reset();
  }
