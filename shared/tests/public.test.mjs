@@ -353,7 +353,7 @@ export async function runPwa(app,base,browser,altRoot){
   }
   const servedSw=await (await pg.request.get(base+'/sw.js')).text();
   const updateState=await pg.evaluate(async()=>{const registration=await navigator.serviceWorker.getRegistration();const describe=worker=>worker?{state:worker.state,scriptURL:worker.scriptURL}:null;return{active:describe(registration?.active),waiting:describe(registration?.waiting),installing:describe(registration?.installing),controller:describe(navigator.serviceWorker.controller),keys:await caches.keys()}});
-  updateState.servedSwHasSkipWaiting=servedSw.includes('self.skipWaiting();');updateState.servedSwAwaitsSkipWaiting=servedSw.includes('await self.skipWaiting()');updateState.workerConsoleErrors=swConsoleErrors;updateState.workerConsoleLogs=swConsoleLogs;
+  updateState.servedSwHasSkipWaiting=servedSw.includes('self.skipWaiting();');updateState.servedSwAwaitsSkipWaiting=servedSw.includes('await self.skipWaiting()');updateState.workerConsoleErrors=swConsoleErrors;updateState.workerConsoleLogs=swConsoleLogs;updateState.openPages=ctx.pages().map(page=>page.url());
   S.ok('به‌روزرسانی: Cache نسخه جدید جایگزین قدیمی شد',after.length===1&&after[0]!==before,before+' → '+after.join()+' | SW='+JSON.stringify(updateState));
   S.ok('به‌روزرسانی: محتوای نسخه جدید نمایش داده می‌شود',await pg.evaluate(()=>document.documentElement.outerHTML.includes('UPDATE_MARKER')));
   altRoot.reset();
