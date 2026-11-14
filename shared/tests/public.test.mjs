@@ -112,8 +112,14 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
    R();
   });
   const ownProfile=await T();
+  const profileDebug=await pg.evaluate(()=>JSON.stringify({
+   me:typeof ME==='undefined'?'undefined':ME,
+   application:typeof myApp==='function'?myApp():null,
+   storedApplication:localStorage.getItem('tp:coachapps'),
+   visibleText:document.querySelector('#app')?.innerText||''
+  }));
   S.ok('پروفایل مربی فقط اطلاعات درخواست متعلق به همان حساب را نشان می‌دهد',
-   ownProfile.includes('مربی آزمایشی درجه ۲')&&ownProfile.includes('ناژه‌وازه آزمایشی')&&ownProfile.includes('باشگاه آزمایشی')&&ownProfile.includes('coach-test.pdf')&&!ownProfile.includes('سارا احمدی'));
+   ownProfile.includes('مربی آزمایشی درجه ۲')&&ownProfile.includes('ناژه‌وازه آزمایشی')&&ownProfile.includes('باشگاه آزمایشی')&&ownProfile.includes('coach-test.pdf')&&!ownProfile.includes('سارا احمدی'),profileDebug);
   await pg.evaluate(()=>{ME=null;localStorage.removeItem('tp:coachapps');R()});
  }
  if(app!=='coach'){await go('#/coaches/sara-ahmadi');S.ok('پروفایل مربی: لینک باشگاه',await pg.evaluate(()=>!!document.querySelector('#app a[href^="#/club/"]')))}
