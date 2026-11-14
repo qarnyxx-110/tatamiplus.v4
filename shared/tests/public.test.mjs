@@ -420,6 +420,9 @@ export async function runPreview(base,browser){
  S.ok('صفحه اصلی در بازدید اول پیام «آماده شروع هستید؟» را دارد',(await T()).includes('آماده شروع هستید؟'));
  S.ok('CTA خانه به ثبت‌نام هدایت می‌کند',await pg.locator('#app .cta a[href="#/register"]').count()===1);
   S.ok('صفحه اصلی Preview: دکمه و کارت مربی آنلاین در دسترس‌اند',await pg.locator('#app a[href="#/online-coach"]').count()>=2);
+  S.ok('منوی اصلی Preview: مربی آنلاین مسیر مستقل دارد',await pg.locator('#nv a[href="#/online-coach"]').count()===1);
+  S.ok('فوتر Preview: مربی آنلاین به مسیر مستقل می‌رود',await pg.locator('footer a[href="#/online-coach"]').count()===1);
+  S.ok('دکمه مربی آنلاین در ابتدای صفحه اصلی قابل مشاهده است',await pg.locator('#app a[href="#/online-coach"]').first().isVisible());
   await go('#/online-coach');
   S.ok('صفحه مربی آنلاین در Preview باز می‌شود',(await T()).includes('روشن کردن دوربین')&&await pg.locator('#tp-oc-video').count()===1);
   await go('#/');
