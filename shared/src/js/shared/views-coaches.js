@@ -27,7 +27,7 @@ ${secC('راه ارتباطی',c.contact?`<p>${c.contact}</p>`:'<p class="mu">ر
 ${rel.length?secC('مربیان مشابه',`<div class="pg">${rel.map(ccoach).join('')}</div>`):''}</div>`}
 function shareCoach(slug){const c=COACHES.find(x=>x.slug===slug),u=/^https?:$/.test(location.protocol)?new URL('coaches/'+slug+'/',location.href.replace(/[#?].*$/,'').replace(/[^/]*$/,'')).href:location.href;try{if(navigator.share){navigator.share({title:cName(c),url:u}).catch(()=>{});return}navigator.clipboard.writeText(u).then(()=>toast('پیوند پروفایل کپی شد'),()=>toast('کپی پیوند ممکن نشد','error'))}catch{toast('اشتراک‌گذاری در این مرورگر در دسترس نیست','error')}}
 const myProfile=()=>{
- if(!ME||ME.role!=='coach')return`<div class="w">${tpState('empty','ورود به حساب مربی لازم است','برای مشاهده اطلاعات مربوط به حساب خود ابتدا وارد شوید.','ورود به حساب','#/login?next=%23%2Fmy-profile')}</div>`;
+ if(!ME||ME.role!=='coach')return`<div class="w">${tpState('empty','ورود به حساب مربی لازم است','برای مشاهده اطلاعات مربوط به حساب خود، ابتدا وارد حساب کاربری شوید.','بازگشت به حساب کاربری','#/profile')}</div>`;
  const a=myApp();PT={t:'پروفایل من',d:'اطلاعات درخواست مربیگری ثبت‌شده برای حساب شما.'};
  if(!a)return`<div class="w">${crumb([['خانه','#/'],['داشبورد','#/dashboard'],['پروفایل من']])}<h1>پروفایل من</h1><div class="warn">اطلاعات این صفحه فقط پس از ثبت درخواست مربیگری و در همین مرورگر نمایش داده می‌شود؛ هنوز پروفایل عمومی متصل به حساب شما از سرور دریافت نمی‌شود.</div>${tpState('empty','اطلاعات پروفایل ثبت نشده است','برای ثبت اطلاعات خود، ابتدا درخواست مربیگری را تکمیل کنید.','ثبت درخواست مربیگری','#/coach-apply')}</div>`;
  const status=APP_ST[a.status]||APP_ST.pending_review;
