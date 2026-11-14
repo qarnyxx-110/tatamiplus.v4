@@ -1,12 +1,12 @@
 const V='tatami-v2',SHELL=['./','index.html','offline.html','manifest.webmanifest','icons/icon-192.png','icons/icon-512.png'];
-self.addEventListener('install',e=>{console.info('[Tatami SW] install:start');self.skipWaiting().then(()=>console.info('[Tatami SW] skip-waiting:resolved'),error=>console.error('[Tatami SW] skip-waiting:rejected',error));console.info('[Tatami SW] install:skip-waiting-requested');e.waitUntil((async()=>{const clients=await self.clients.matchAll({includeUncontrolled:true});console.info('[Tatami SW] install:clients',clients.length);
+self.addEventListener('install',e=>{e.waitUntil((async()=>{
  const c=await caches.open(V),core=SHELL.slice(0,7),routes=SHELL.slice(7);
  await c.addAll(core);
  const results=await Promise.allSettled(routes.map(url=>c.add(url)));
  results.forEach((result,index)=>{if(result.status==='rejected')console.warn('[Tatami SW] optional route was not precached:',routes[index],result.reason)});
- console.info('[Tatami SW] install:cache-ready');
 })().catch(error=>{console.error('[Tatami SW] install failed',error);throw error}))});
-self.addEventListener('activate',e=>{console.info('[Tatami SW] activate:start');e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==V).map(x=>caches.delete(x)))).then(()=>self.clients.claim()).then(()=>console.info('[Tatami SW] activate:done')))});
+self.addEventListener('message',e=>{if(e.data==='TP_SKIP_WAITING')self.skipWaiting()});
+self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==V).map(x=>caches.delete(x)))).then(()=>self.clients.claim()))});
 self.addEventListener('fetch',e=>{const r=e.request;if(r.method!=='GET')return;
 if(r.mode==='navigate'){e.respondWith(fetch(r).then(x=>{const u=new URL(r.url),root=new URL('./',self.registration.scope).pathname;if(x.ok&&(u.pathname===root||u.pathname===root+'index.html')){const c=x.clone();caches.open(V).then(h=>h.put('index.html',c))}return x}).catch(()=>caches.match(r).then(cached=>cached||caches.match('index.html').then(x=>x||caches.match('offline.html')))));return}
 e.respondWith(caches.match(r).then(c=>c||fetch(r).then(x=>{if(x.ok&&(new URL(r.url).origin===location.origin||/fonts\.(googleapis|gstatic)\.com/.test(r.url))){const y=x.clone();caches.open(V).then(h=>h.put(r,y))}return x}).catch(()=>c)))});
