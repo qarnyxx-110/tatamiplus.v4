@@ -276,7 +276,7 @@ export async function runPwa(app,base,browser,altRoot){
  const S=new Suite('PWA-فنی '+app);
  const ctx=await browser.newContext({viewport:{width:390,height:800},serviceWorkers:'allow'});
  const pg=await ctx.newPage();pg.setDefaultTimeout(15000);pg.setDefaultNavigationTimeout(15000);
- const swConsoleErrors=[];pg.on('console',message=>{if(message.type()==='error')swConsoleErrors.push(message.text())});
+ const swConsoleErrors=[],pageSWLogs=[],workerSWLogs=[];pg.on('console',message=>{if(message.text().includes('[Tatami SW]'))pageSWLogs.push(message.type()+': '+message.text());if(message.type()==='error')swConsoleErrors.push(message.text())});ctx.on('serviceworker',worker=>worker.on('console',message=>{if(message.text().includes('[Tatami SW]'))workerSWLogs.push(message.type()+': '+message.text())}));
  await pg.goto(base+'/index.html');
  const neshanConfig=await pg.evaluate(async()=>{const r=await fetch('assets/neshan-config.js');return{status:r.status,text:await r.text()}});
  S.ok('تنظیمات نشان در خروجی PWA قابل دریافت است',neshanConfig.status===200&&neshanConfig.text.includes('TP_NESHAN_WEB_KEY')&&neshanConfig.text.includes('TP_CLUBS_JSON_URL'),String(neshanConfig.status));
@@ -351,7 +351,8 @@ export async function runPwa(app,base,browser,altRoot){
    after=await pg.evaluate(()=>caches.keys());
    if(after.length===1&&after[0]!==before)break;
   }
-  S.ok('به‌روزرسانی: Cache نسخه جدید جایگزین قدیمی شد',after.length===1&&after[0]!==before,before+' → '+after.join());
+  const updateState=await pg.evaluate(async()=>{const regs=await navigator.serviceWorker.getRegistrations();return{registrations:regs.map(r=>({scope:r.scope,active:r.active?.state,waiting:r.waiting?.state,installing:r.installing?.state})),controller:navigator.serviceWorker.controller?.state||null,keys:await caches.keys()}});
+  S.ok('به‌روزرسانی: Cache نسخه جدید جایگزین قدیمی شد',after.length===1&&after[0]!==before,before+' → '+after.join()+' | state='+JSON.stringify(updateState)+' | page='+pageSWLogs.join(' || ')+' | worker='+workerSWLogs.join(' || '));
   S.ok('به‌روزرسانی: محتوای نسخه جدید نمایش داده می‌شود',await pg.evaluate(()=>document.documentElement.outerHTML.includes('UPDATE_MARKER')));
   altRoot.reset();
  }
