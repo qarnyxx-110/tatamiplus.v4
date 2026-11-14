@@ -11,7 +11,7 @@ async function cacheResponse(request,response){
   if(hasNewerVersion&&!self.registration.installing&&!self.registration.waiting){await caches.delete(V);console.info('[Tatami SW] cache:old-version-removed',V)}
  }catch{}
 }
-self.addEventListener('install',e=>{e.waitUntil((async()=>{
+self.addEventListener('install',e=>{console.info('[Tatami SW] install:start',V);self.skipWaiting().then(()=>console.info('[Tatami SW] install:skip-waiting-resolved',V)).catch(error=>console.error('[Tatami SW] install:skip-waiting-rejected',V,String(error)));e.waitUntil((async()=>{
  const c=await caches.open(V),core=SHELL.slice(0,7),routes=SHELL.slice(7);
  await c.addAll(core);
  const results=await Promise.allSettled(routes.map(url=>c.add(url)));
