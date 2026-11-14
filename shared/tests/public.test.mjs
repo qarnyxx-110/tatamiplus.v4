@@ -112,14 +112,15 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
    R();
   });
   const ownProfile=await T();
-  const profileDebug=await pg.evaluate(()=>JSON.stringify({
-   me:typeof ME==='undefined'?'undefined':ME,
-   application:typeof myApp==='function'?myApp():null,
-   storedApplication:localStorage.getItem('tp:coachapps'),
-   visibleText:document.querySelector('#app')?.innerText||''
+  const ownFields=await pg.evaluate(()=>({
+   username:document.querySelector('#mp-u')?.value||'',
+   level:document.querySelector('#mp-l')?.value||'',
+   specialties:document.querySelector('#mp-s')?.value||'',
+   club:document.querySelector('#mp-c')?.value||'',
+   certificate:document.querySelector('#mp-doc')?.value||''
   }));
   S.ok('پروفایل مربی فقط اطلاعات درخواست متعلق به همان حساب را نشان می‌دهد',
-   ownProfile.includes('مربی آزمایشی درجه ۲')&&ownProfile.includes('ناژه‌وازه آزمایشی')&&ownProfile.includes('باشگاه آزمایشی')&&ownProfile.includes('coach-test.pdf')&&!ownProfile.includes('سارا احمدی'),profileDebug);
+   ownFields.username==='coach-test-۱۴'&&ownFields.level==='مربی آزمایشی درجه ۲'&&ownFields.specialties==='ناژه‌وازه آزمایشی'&&ownFields.club==='باشگاه آزمایشی'&&ownFields.certificate==='coach-test.pdf'&&!ownProfile.includes('سارا احمدی'),JSON.stringify(ownFields));
   await pg.evaluate(()=>{ME=null;localStorage.removeItem('tp:coachapps');R()});
  }
  if(app!=='coach'){await go('#/coaches/sara-ahmadi');S.ok('پروفایل مربی: لینک باشگاه',await pg.evaluate(()=>!!document.querySelector('#app a[href^="#/club/"]')))}
