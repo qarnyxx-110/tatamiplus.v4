@@ -15,7 +15,16 @@ try{
   if(syntax.status!==0)throw new Error('Generated Service Worker syntax failed for '+app+': '+(syntax.stderr||syntax.stdout));
   console.log('PASS generated Service Worker syntax:',app);
  }
- if(process.env.ONLY==='clubs'){
+ if(process.env.ONLY==='marketing'){
+  const pubSrv=await serve(path.join(PUB,'student'));
+  console.log('→ marketing (API)');
+  out.push(await runMarketingApi(`http://127.0.0.1:${MOCK}`,pubSrv.url,browser));
+  await pubSrv.close();
+  const demoSrv=await serve(A);
+  console.log('→ marketing (Demo)');
+  out.push(await runMarketingDemo(demoSrv.url,browser));
+  await demoSrv.close();
+ }else if(process.env.ONLY==='clubs'){
   for(const app of ['student','club']){
    const srv=await serve(()=>path.join(root,app));
    console.log('→ clubs integration:',app);
