@@ -1,5 +1,5 @@
 const V='tatami-v2',SHELL=['./','index.html','offline.html','manifest.webmanifest','icons/icon-192.png','icons/icon-512.png'];
-self.addEventListener('install',e=>{console.info('[Tatami SW] install:start');self.skipWaiting();console.info('[Tatami SW] install:skip-waiting-requested');e.waitUntil((async()=>{
+self.addEventListener('install',e=>{console.info('[Tatami SW] install:start');self.skipWaiting().then(()=>console.info('[Tatami SW] skip-waiting:resolved'),error=>console.error('[Tatami SW] skip-waiting:rejected',error));console.info('[Tatami SW] install:skip-waiting-requested');e.waitUntil((async()=>{const clients=await self.clients.matchAll({includeUncontrolled:true});console.info('[Tatami SW] install:clients',clients.length);
  const c=await caches.open(V),core=SHELL.slice(0,7),routes=SHELL.slice(7);
  await c.addAll(core);
  const results=await Promise.allSettled(routes.map(url=>c.add(url)));
