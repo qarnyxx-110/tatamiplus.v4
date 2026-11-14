@@ -276,7 +276,7 @@ export async function runPwa(app,base,browser,altRoot){
  const S=new Suite('PWA-فنی '+app);
  const ctx=await browser.newContext({viewport:{width:390,height:800},serviceWorkers:'allow'});
  const pg=await ctx.newPage();pg.setDefaultTimeout(15000);pg.setDefaultNavigationTimeout(15000);
- const swConsoleErrors=[];pg.on('console',message=>{if(message.type()==='error')swConsoleErrors.push(message.text())});ctx.on('serviceworker',worker=>worker.on('console',message=>{if(message.type()==='error')swConsoleErrors.push('[Service Worker] '+message.text())}));
+ const swConsoleErrors=[],swConsoleLogs=[];pg.on('console',message=>{if(message.type()==='error')swConsoleErrors.push(message.text())});ctx.on('serviceworker',worker=>worker.on('console',message=>{const entry=message.type()+': '+message.text();swConsoleLogs.push(entry);if(message.type()==='error')swConsoleErrors.push('[Service Worker] '+message.text())}));
  await pg.goto(base+'/index.html');
  const neshanConfig=await pg.evaluate(async()=>{const r=await fetch('assets/neshan-config.js');return{status:r.status,text:await r.text()}});
  S.ok('تنظیمات نشان در خروجی PWA قابل دریافت است',neshanConfig.status===200&&neshanConfig.text.includes('TP_NESHAN_WEB_KEY')&&neshanConfig.text.includes('TP_CLUBS_JSON_URL'),String(neshanConfig.status));
@@ -353,7 +353,7 @@ export async function runPwa(app,base,browser,altRoot){
   }
   const servedSw=await (await pg.request.get(base+'/sw.js')).text();
   const updateState=await pg.evaluate(async()=>{const registration=await navigator.serviceWorker.getRegistration();const describe=worker=>worker?{state:worker.state,scriptURL:worker.scriptURL}:null;return{active:describe(registration?.active),waiting:describe(registration?.waiting),installing:describe(registration?.installing),controller:describe(navigator.serviceWorker.controller),keys:await caches.keys()}});
-  updateState.servedSwHasSkipWaiting=servedSw.includes('self.skipWaiting();');updateState.servedSwAwaitsSkipWaiting=servedSw.includes('await self.skipWaiting()');updateState.workerConsoleErrors=swConsoleErrors;
+  updateState.servedSwHasSkipWaiting=servedSw.includes('self.skipWaiting();');updateState.servedSwAwaitsSkipWaiting=servedSw.includes('await self.skipWaiting()');updateState.workerConsoleErrors=swConsoleErrors;updateState.workerConsoleLogs=swConsoleLogs;
   S.ok('به‌روزرسانی: Cache نسخه جدید جایگزین قدیمی شد',after.length===1&&after[0]!==before,before+' → '+after.join()+' | SW='+JSON.stringify(updateState));
   S.ok('به‌روزرسانی: محتوای نسخه جدید نمایش داده می‌شود',await pg.evaluate(()=>document.documentElement.outerHTML.includes('UPDATE_MARKER')));
   altRoot.reset();
