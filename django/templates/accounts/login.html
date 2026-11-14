@@ -2,17 +2,28 @@
 
 {% block title %}ورود | تاتامی پلاس{% endblock %}
 {% block content %}
-<div class="w tp-auth">
-  <div class="tp-auth-card">
-    <h1>ورود به حساب</h1>
-    <p class="mu">نام کاربری و گذرواژهٔ خود را وارد کنید.</p>
-    <form id="tp-login-form" method="post" novalidate data-auth-form="login">
-      {% csrf_token %}
-      {% include 'includes/form_fields.html' %}
-      {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
-      <button class="btn tp-auth-btn" type="submit">ورود</button>
-    </form>
-  </div>
-  <p class="tp-auth-alt">حساب ندارید؟ <a href="{% url 'accounts:register' %}">ثبت‌نام کنید</a></p>
+<div class="w tp-auth tp-auth-layout">
+  <section class="tp-auth-main">
+    <div class="tp-auth-card">
+      <p class="tp-auth-kicker">TATAMI PLUS · حساب کاربری</p>
+      <h1>ورود به حساب</h1>
+      <p class="mu">نام کاربری و گذرواژهٔ خود را وارد کنید.</p>
+      <form id="tp-login-form" method="post" novalidate data-auth-form="login">
+        {% csrf_token %}
+        {% include 'includes/form_fields.html' %}
+        {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+        <button class="btn tp-auth-btn" type="submit">ورود به حساب کاربری</button>
+      </form>
+    </div>
+    <p class="tp-auth-alt">حساب ندارید؟ <a href="{% url 'accounts:register' %}">ثبت‌نام کنید</a></p>
+  </section>
+  <aside class="tp-auth-aside">
+    <div class="tp-auth-aside-mark" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+    <p class="tp-auth-kicker">فراتر از تمرین</p>
+    <h2>مسیر پیشرفتت را در تاتامی پلاس ادامه بده.</h2>
+    <p class="mu">به تجربه‌ای منسجم برای یادگیری، مربیان، باشگاه‌ها و مسیر ورزشی خود دسترسی داشته باش.</p>
+    <ul class="tp-auth-benefits"><li>دسترسی به مسیر یادگیری</li><li>آشنایی با مربیان و باشگاه‌ها</li><li>مدیریت حساب ورزشی</li></ul>
+    <span class="tp-auth-aside-foot">TATAMI PLUS</span>
+  </aside>
 </div>
 {% endblock %}

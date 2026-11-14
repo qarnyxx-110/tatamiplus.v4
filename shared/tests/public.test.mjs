@@ -14,7 +14,14 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
  await go('#/zzz');S.ok('404: دکمه «بازگشت به صفحه اصلی»',await pg.evaluate(()=>!!document.querySelector('#app a[href="#/"]')&&/بازگشت به صفحه اصلی/.test(document.getElementById('app').innerText)));
  // --- نقش‌ها
  const dwrong=[];for(const r of denied){await go(r);if(!await nf())dwrong.push(r)}S.ok('مسیرهای ممنوع این نقش 404 می‌دهند',!dwrong.length,dwrong.join(' '));
- await go('#/');const nav=await pg.evaluate(()=>[...document.querySelectorAll('#nv a')].map(a=>a.textContent.trim()));
+ if(app!=='club'){
+  await go('#/login');
+  const toggle=pg.locator('#lg-f .tp-pw-b').first();
+  const metrics=await toggle.evaluate(el=>{const wrap=el.parentElement.getBoundingClientRect(),btn=el.getBoundingClientRect(),input=el.parentElement.querySelector('input'),is=getComputedStyle(input),bs=getComputedStyle(el);return{rightInset:wrap.right-btn.right,paddingRight:parseFloat(is.paddingRight),buttonWidth:btn.width,border:bs.borderTopStyle,background:bs.backgroundColor,display:bs.display,opacity:bs.opacity}});
+  S.ok('گذرواژه: دکمه نمایش همیشه دیده می‌شود و در سمت راست فیلد قرار دارد',await toggle.isVisible()&&metrics.rightInset<=4&&metrics.paddingRight>=metrics.buttonWidth&&metrics.border==='solid'&&metrics.background!=='rgba(0, 0, 0, 0)'&&metrics.display!=='none'&&metrics.opacity==='1',JSON.stringify(metrics));
+  await go('#/');
+ }
+ const nav=await pg.evaluate(()=>[...document.querySelectorAll('#nv a')].map(a=>a.textContent.trim()));
  S.ok('منو: بلاگ، تاتامی‌پدیا، مربیان، حامیان',['بلاگ','تاتامی‌پدیا','مربیان تاتامی','حامیان تاتامی پلاس'].every(x=>nav.includes(x)),nav.join('|'));S.ok('منو: دوره‌های آموزشی',nav.includes('دوره‌ها'),nav.join('|'));
  S.ok('منو: تاریخچه جم',nav.includes('جم'),nav.join('|'));
  S.ok('منو: مربی آنلاین برای هنرجو',app!=='student'||nav.includes('مربی آنلاین'),nav.join('|'));
@@ -87,7 +94,7 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
 
  S.ok('جم: نشان موجودی در هدر',await pg.locator('#hgem[href="#/gems"]').count()===1);
  S.ok('منو: «باشگاه‌ها» فقط برای هنرجو/باشگاه',(app==='coach')?!nav.includes('باشگاه‌ها'):nav.includes('باشگاه‌ها'));
- const foot=await pg.evaluate(()=>[...document.querySelectorAll('footer a')].map(a=>a.textContent.trim()));S.ok('فوتر: لینک تاتامی‌پدیا و حامیان، بدون «سیستم طراحی»',foot.includes('تاتامی‌پدیا')&&foot.includes('حامیان تاتامی پلاس')&&!foot.includes('سیستم طراحی'),foot.join('|'));
+ const foot=await pg.evaluate(()=>[...document.querySelectorAll('footer a')].map(a=>({text:a.textContent.trim(),href:a.getAttribute('href')})));S.ok('فوتر: لینک مربی آنلاین به فهرست مستقل مربیان متصل است',foot.some(a=>a.text==='مربی آنلاین'&&a.href==='#/coaches')&&foot.some(a=>a.text==='تاتامی‌پدیا')&&foot.some(a=>a.text==='حامیان تاتامی پلاس')&&!foot.some(a=>a.text==='سیستم طراحی'),JSON.stringify(foot));
  await go('#/gems');const gems=await T();S.ok('جم: صفحه تاریخچه و وضعیت عدم اتصال',gems.includes('تاریخچه تراکنش‌ها')&&gems.includes('موجودی واقعی هنوز به این نسخه متصل نشده است'));S.ok('جم: عدم نمایش تراکنش ساختگی',gems.includes('تراکنشی برای نمایش وجود ندارد'));
  await go('#/my-profile');S.ok('«پروفایل من» فقط در PWA مربی',(app==='coach')?!await nf():await nf());
  if(app!=='coach'){await go('#/coaches/sara-ahmadi');S.ok('پروفایل مربی: لینک باشگاه',await pg.evaluate(()=>!!document.querySelector('#app a[href^="#/club/"]')))}
@@ -154,9 +161,9 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
  const demoProductName=await pg.evaluate(()=>P.find(product=>product.demo&&product.st>0)?.n||'');
  if(demoProductName){
   await pg.fill('#fq',demoProductName);await wait(140);
-  S.ok('فروشگاه: جستجوی نمونه آزمایشی، برچسب نمونه را نمایش می‌دهد',(await T()).includes('نمونه آزمایشی'));
+  S.ok('فروشگاه: جستجوی محصول نمونه، برچسب اطلاعات نمونه را نمایش می‌دهد',(await T()).includes('اطلاعات نمونه'));
   await pg.fill('#fq','');await wait(100);
- }else S.ok('فروشگاه: نمونه آزمایشی قابل جستجو برای کنترل برچسب وجود دارد',false);
+ }else S.ok('فروشگاه: محصول نمونه برای کنترل برچسب وجود دارد',false);
  // تصاویر lazy کارت‌ها را eager کن و تا پایان درخواست‌ها صبر کن؛ سپس شکست واقعی را بررسی کن.
  const productCardImages=pg.locator('#app .sl .pg article.pcd img');
  await productCardImages.evaluateAll(images=>images.forEach(img=>{img.loading='eager'}));
@@ -201,7 +208,7 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
  await go('#/blog?q='+encodeURIComponent('اوچی ماتا'));S.ok('بلاگ: جست‌وجوی بدون نیم‌فاصله/فاصله',await cnt('#app article')>=1);
  await go('#/blog/uchi-mata-basics');S.ok('بلاگ: صفحه مقاله با slug خوانا',(await T()).includes('اوچی‌ماتا')&&(await pg.title()).includes('اوچی‌ماتا'));
  // --- حامیان
- await go('#/sponsors');S.ok('حامیان: ۶ جایگاه نمونه با برچسب «نمونه آزمایشی»',await cnt('#app .tp-sponsors li')===6&&(await T()).includes('نمونه آزمایشی'));
+ await go('#/sponsors');S.ok('حامیان: شش جایگاه نمونه با توضیح شفاف',await cnt('#app .tp-sponsors li')===6&&(await T()).includes('موارد زیر جایگاه‌های نمونه هستند'));
  // --- امنیت: داده localStorage و آدرس
  await pg.evaluate(()=>{localStorage.setItem('cart',JSON.stringify([{id:1,s:'<img src=x onerror=window.__ls=1>',c:'<b>x</b>',q:99999},{id:9999,s:'',c:'',q:1},{id:'x'},null]));localStorage.setItem('prog',JSON.stringify({3:500,abc:5,'-1':3}));localStorage.setItem('fav',JSON.stringify([1,1,'a',9999]));localStorage.setItem('saved','"nope"');localStorage.setItem('lastWatched','"<script>"');localStorage.setItem('role','"<img src=x>"')});
  await pg.goto('about:blank');await pg.goto(base+'/index.html#/cart');await wait(400);
@@ -441,7 +448,21 @@ export async function runPreview(base,browser){
  await pg.locator('.cn .chip',{hasText:'کمربند جودو'}).first().click();await wait(140);
  S.ok('تغییر فیلتر صفحه را به ۱ برمی‌گرداند و فیلتر حفظ می‌شود',
    await cards()===10&&(await pg.evaluate(()=>location.hash)).includes('category=')&&!(await pg.evaluate(()=>location.hash)).includes('page=2'));
- await go('#/register');
+ await go('#/register?role=club');
+ S.ok('ثبت‌نام: سه نوع حساب در رابط نمایش داده می‌شوند',await pg.locator('#rg-f .tp-role-card').count()===3);
+ S.ok('ثبت‌نام: حساب باشگاه فقط پیش‌نمایش است و دکمه ساخت حساب را غیرفعال می‌کند',await pg.locator('#rg-f').getAttribute('data-role-preview')==='club'&&await pg.locator('#rg-f button[type=submit]').isDisabled()&&(await T()).includes('در حال حاضر ساخت حساب باشگاه از این فرم امکان‌پذیر نیست'));
+ await pg.locator('#rg-f input[name=role][value=student]').check();
+ S.ok('ثبت‌نام: انتخاب هنرجو حالت فعال را برمی‌گرداند',await pg.locator('#rg-f button[type=submit]').isEnabled()&&await pg.locator('#rg-f').getAttribute('data-role-preview')==='');
+ await pg.setViewportSize({width:390,height:850});await go('#/register');
+ S.ok('ثبت‌نام موبایل: مرحله اول فرم نمایش داده می‌شود',await pg.locator('#rg-f').getAttribute('data-mobile-steps')==='true'&&await pg.locator('#rg-f [data-auth-step="2"]').isHidden());
+ await pg.locator('#rg-u').fill('mobile-preview-user');
+ const beforeStep=await pg.evaluate(()=>({username:document.querySelector('#rg-u')?.value,formUsername:document.querySelector('#rg-f')?.elements.username?.value,mobile:document.querySelector('#rg-f')?.dataset.mobileSteps,step:document.querySelector('#rg-f')?.dataset.step}));
+ await pg.locator('#rg-f [data-auth-next]').click();
+ const afterStep=await pg.evaluate(()=>({username:document.querySelector('#rg-u')?.value,mobile:document.querySelector('#rg-f')?.dataset.mobileSteps,step:document.querySelector('#rg-f')?.dataset.step,errors:[...document.querySelectorAll('#rg-f [aria-invalid=true]')].map(x=>x.id)}));
+ S.ok('ثبت‌نام موبایل: پس از ادامه، مرحله گذرواژه نمایش داده می‌شود',afterStep.step==='2'&&await pg.locator('#rg-f [data-auth-step="2"]').isVisible(),JSON.stringify({beforeStep,afterStep}));
+ if(afterStep.step==='2')await pg.locator('#rg-f [data-auth-back]').click();
+ await pg.setViewportSize({width:1280,height:900});await go('#/register');
+ S.ok('ثبت‌نام دسکتاپ: هر دو بخش فرم هم‌زمان در دسترس‌اند',await pg.locator('#rg-f [data-auth-step="1"]').isVisible()&&await pg.locator('#rg-f [data-auth-step="2"]').isVisible());
  const username='previewqa'+Date.now().toString(36);
  await pg.fill('#rg-u',username);await pg.fill('#rg-p1','TatamiPlus!Preview2026');await pg.fill('#rg-p2','TatamiPlus!Preview2026');
  await pg.locator('#rg-f button[type="submit"]').click();

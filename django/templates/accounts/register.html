@@ -2,16 +2,27 @@
 
 {% block title %}ساخت حساب کاربری | تاتامی پلاس{% endblock %}
 {% block content %}
-<div class="w tp-auth">
-  <div class="tp-auth-card">
-    <h1>ساخت حساب کاربری</h1>
-    <p class="mu">هنرجو یا مربی را انتخاب کنید. پروفایل مربی پس از بررسی تیم منتشر می‌شود.</p>
-    <form id="tp-register-form" method="post" novalidate data-auth-form="register">
-      {% csrf_token %}
-      {% include 'includes/form_fields.html' %}
-      <button class="btn tp-auth-btn" type="submit">ثبت‌نام</button>
-    </form>
-  </div>
-  <p class="tp-auth-alt">قبلاً ثبت‌نام کرده‌اید؟ <a href="{% url 'accounts:login' %}">وارد شوید</a></p>
+<div class="w tp-auth tp-auth-layout">
+  <section class="tp-auth-main">
+    <div class="tp-auth-card">
+      <p class="tp-auth-kicker">TATAMI PLUS · حساب کاربری</p>
+      <h1>ساخت حساب کاربری</h1>
+      <p class="mu">نوع حساب خود را انتخاب کنید و اطلاعات را مرحله‌به‌مرحله تکمیل کنید.</p>
+      <form id="tp-register-form" class="tp-auth-register" method="post" novalidate data-auth-form="register">
+        {% csrf_token %}
+        {% include 'includes/form_fields.html' %}
+        <button class="btn tp-auth-btn" type="submit">ساخت حساب</button>
+      </form>
+    </div>
+    <p class="tp-auth-alt">قبلاً ثبت‌نام کرده‌اید؟ <a href="{% url 'accounts:login' %}">وارد شوید</a></p>
+  </section>
+  <aside class="tp-auth-aside">
+    <div class="tp-auth-aside-mark" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+    <p class="tp-auth-kicker">شروع یک مسیر تازه</p>
+    <h2>حسابی متناسب با نقش ورزشی خود بساز.</h2>
+    <p class="mu">هنرجو، مربی یا باشگاه؛ تجربه کاربری هر نقش در تاتامی پلاس متناسب با نیاز آن طراحی می‌شود.</p>
+    <ul class="tp-auth-benefits"><li>ساخت حساب هنرجویی</li><li>درخواست و بررسی مربیگری</li><li>ثبت‌نام باشگاه از این فرم امکان‌پذیر نیست</li></ul>
+    <span class="tp-auth-aside-foot">TATAMI PLUS</span>
+  </aside>
 </div>
 {% endblock %}

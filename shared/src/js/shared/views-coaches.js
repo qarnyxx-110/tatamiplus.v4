@@ -9,7 +9,7 @@ const clrK=()=>{kfq='';ksp='';klv='';kSync();R('x')};
 function coachesList(){try{const hp=hashParams();kfq=hp.get('q')||'';ksp=SPECS.includes(hp.get('sp'))?hp.get('sp'):'';klv=LEVELS.includes(hp.get('lv'))?hp.get('lv'):'';const n=nz(kfq),l=COACHES.filter(c=>(!ksp||c.specialties.includes(ksp))&&(!klv||c.level==klv)&&(!n||nz(cName(c)+' '+c.specialties.join(' ')).includes(n))),fc=(ksp?1:0)+(klv?1:0)+(kfq?1:0);
 PT={t:'مربیان تاتامی',d:'فهرست مربیان جودو تاتامی پلاس با جستجو و فیلتر بر اساس تخصص و سطح مربیگری (اطلاعات نمونه).'};
 const grp=(lab,items,cur,v)=>`<div class="tp-field"><span class="tp-label" id="g-${v}">${lab}</span><div class="chips" role="group" aria-labelledby="g-${v}" style="margin:0">${[['','همه'],...items.map(x=>[x,x])].map(([k,t])=>chp(t,cur==k,`${v}='${k}';kSync();R('x')`)).join('')}</div></div>`;
-return`<div class="w"><h1>مربیان تاتامی</h1><p class="mu">مربیان جودو را پیدا کنید و پروفایل عمومی‌شان را ببینید. همه اطلاعات این صفحه نمایشی است.</p>
+return`<div class="w"><h1>مربیان تاتامی</h1><p class="mu">مربیان جودو را پیدا کنید و پروفایل عمومی‌شان را ببینید. اطلاعات این پروفایل‌ها تا زمان دریافت تأییدیه از منبع رسمی، قطعی نیست.</p>
 <div class="sbar"><label class="tp-sr-only" for="kfq">جستجوی مربی بر اساس نام یا تخصص</label><input id="kfq" type="search" placeholder="جستجوی نام یا تخصص..." value="${esc(kfq)}" oninput="kfq=this.value;kSync();R('kfq')"></div>
 ${grp('تخصص',SPECS,ksp,'ksp')}${LEVELS.length>1?grp('سطح مربیگری (نمونه)',LEVELS,klv,'klv'):''}
 <div class="tp-cluster" style="margin:var(--tp-space-sm) 0"><b aria-live="polite">${F(l.length)} مربی</b>${fc?`<button type="button" class="chip" onclick="clrK()">پاک کردن فیلترها</button>`:''}</div>

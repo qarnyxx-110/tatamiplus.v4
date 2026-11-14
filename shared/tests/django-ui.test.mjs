@@ -53,6 +53,58 @@ try {
       assert.equal(await page.evaluate(() => document.activeElement?.id), 'server-error');
     }
   );
+
+  await runScenario(
+    'Django registration role picker, club preview guard, and mobile stages',
+    '<!doctype html><html lang="fa" dir="rtl"><head><style>@media(max-width:767px){.tp-auth-register[data-mobile-steps="true"][data-step="1"] [data-auth-step="2"]{display:none}.tp-auth-register[data-mobile-steps="true"][data-step="2"] [data-auth-step="1"]{display:none}}</style></head><body><form id="tp-register-form" method="post" data-auth-form="register"><div class="tp-field"><label for="id_username">نام کاربری</label><input id="id_username" name="username" required></div><div class="tp-field"><label for="id_email">ایمیل</label><input id="id_email" name="email" type="email"></div><div class="tp-field"><label for="id_role">نقش</label><select id="id_role" name="role" required><option value="student">هنرجو</option><option value="coach">مربی</option></select></div><div class="tp-field"><label for="id_password1">گذرواژه</label><input id="id_password1" name="password1" type="password" required></div><div class="tp-field"><label for="id_password2">تکرار گذرواژه</label><input id="id_password2" name="password2" type="password" required></div><button type="submit">ساخت حساب</button></form></body></html>',
+    async page => {
+      await page.setViewportSize({width:390,height:800});
+      assert.equal(await page.locator('.tp-role-picker [role=radio]').count(),3);
+      assert.equal(await page.locator('#tp-register-form').getAttribute('data-mobile-steps'),'true');
+      assert.equal(await page.locator('#tp-register-form').getAttribute('data-step'),'1');
+      const toggles = page.locator('#tp-register-form .tp-pw-b');
+      assert.equal(await toggles.count(), 2);
+      for (let index = 0; index < 2; index++) {
+        assert.equal(await toggles.nth(index).isVisible(), true);
+        assert.equal(await toggles.nth(index).textContent(), 'نمایش');
+      }
+      await toggles.first().click();
+      assert.equal(await page.locator('#id_password1').getAttribute('type'), 'text');
+      assert.equal(await toggles.first().textContent(), 'پنهان');
+      await toggles.first().click();
+      assert.equal(await page.locator('#id_password1').getAttribute('type'), 'password');
+      await page.locator('.tp-role-preview').click();
+      assert.equal(await page.locator('#tp-register-form').getAttribute('data-role-preview'),'club');
+      assert.equal(await page.locator('#tp-register-form [type=submit]').isDisabled(),true);
+      assert.equal(await page.locator('.tp-club-preview').count(),1);
+      assert.equal(await page.locator('.tp-role-picker .tp-role-card.is-selected').count(),1);
+      assert.equal(await page.locator('.tp-role-preview').evaluate(el => el.classList.contains('is-selected')),true);
+      await page.locator('.tp-role-picker [role=radio]').first().click();
+      assert.equal(await page.locator('#tp-register-form [type=submit]').isDisabled(),false);
+      assert.equal(await page.locator('.tp-role-picker .tp-role-card.is-selected').count(),1);
+      assert.equal(await page.locator('.tp-role-preview').evaluate(el => el.classList.contains('is-selected')),false);
+      await page.locator('#id_username').fill('sample-user');
+      await page.locator('#id_username').fill('qa-student');
+      await page.locator('[data-auth-next]').click();
+      assert.equal(await page.locator('#tp-register-form').getAttribute('data-step'),'2');
+      assert.equal(await page.locator('#tp-register-form [data-auth-step="2"]').isVisible(),true);
+    }
+  );
+  await runScenario(
+    'Django login form: visible password toggle is created',
+    '<!doctype html><html lang="fa" dir="rtl"><body><form id="tp-login-form" method="post" data-auth-form="login"><div class="tp-field"><label for="id_username">نام کاربری</label><input id="id_username" name="username"></div><div class="tp-field"><label for="id_password">گذرواژه</label><input id="id_password" name="password" type="password" required></div><button type="submit">ورود</button></form></body></html>',
+    async page => {
+      const toggle = page.locator('#tp-login-form .tp-pw-b');
+      assert.equal(await toggle.count(), 1);
+      assert.equal(await toggle.isVisible(), true);
+      assert.equal(await toggle.textContent(), 'نمایش');
+      await toggle.click();
+      assert.equal(await page.locator('#id_password').getAttribute('type'), 'text');
+      await toggle.click();
+      assert.equal(await page.locator('#id_password').getAttribute('type'), 'password');
+    }
+  );
+
 } finally {
   await browser.close();
 }
@@ -60,4 +112,4 @@ try {
 if (failures.length) {
   throw new Error(failures.join('\n\n'));
 }
-console.log('Django frontend JavaScript runtime checks: 3/3 passed');
+console.log('Django frontend JavaScript runtime checks: 5/5 passed');

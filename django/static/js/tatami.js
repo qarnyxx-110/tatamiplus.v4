@@ -5,6 +5,138 @@
   const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 
   // ۰. قرارداد فیلدهای ورود/ثبت‌نام؛ نام‌ها و اعتبارسنجی همچنان متعلق به Django هستند.
+
+  function enhanceDjangoRegister(form) {
+    if (form.dataset.roleEnhanced === 'true') return;
+    form.dataset.roleEnhanced = 'true';
+    const role = form.elements.namedItem('role');
+    if (role && role.tagName === 'SELECT') {
+      const field = role.closest('.tp-field');
+      if (field) {
+        field.classList.add('tp-role-field');
+        const label = field.querySelector('label');
+        if (label) label.classList.add('tp-visually-hidden');
+        role.classList.add('tp-visually-hidden');
+        role.setAttribute('aria-hidden', 'true');
+        role.tabIndex = -1;
+        const picker = document.createElement('div');
+        picker.className = 'tp-role-picker';
+        picker.setAttribute('role', 'radiogroup');
+        picker.setAttribute('aria-label', 'نوع حساب کاربری');
+        const choices = [...role.options].filter(option => option.value);
+        choices.forEach(option => {
+          const card = document.createElement('button');
+          card.type = 'button';
+          card.className = 'tp-role-card';
+          card.setAttribute('role', 'radio');
+          card.setAttribute('aria-checked', String(option.value === role.value));
+          const title = document.createElement('span');
+          title.className = 'tp-role-title';
+          title.textContent = option.textContent.trim();
+          const desc = document.createElement('span');
+          desc.className = 'tp-role-desc';
+          desc.textContent = option.value === 'coach' ? 'برای آموزش و مدیریت فعالیت مربیگری' : 'برای یادگیری و پیگیری مسیر ورزشی';
+          const icon = document.createElement('span');
+          icon.className = 'tp-role-icon';
+          icon.setAttribute('aria-hidden', 'true');
+          icon.textContent = option.value === 'coach' ? '🥋' : '♟';
+          card.append(icon, title, desc);
+          card.addEventListener('click', () => {
+            role.value = option.value;
+            role.dispatchEvent(new Event('change', { bubbles: true }));
+            form.dataset.rolePreview = '';
+            picker.querySelectorAll('[role=radio]').forEach(item => {
+              item.setAttribute('aria-checked', String(item === card));
+              item.classList.toggle('is-selected', item === card);
+            });
+            const note = form.querySelector('.tp-club-preview');
+            if (note) note.hidden = true;
+            const submit = form.querySelector('[type=submit]');
+            if (submit) submit.disabled = false;
+          });
+          if (option.value === role.value) card.classList.add('is-selected');
+          picker.append(card);
+        });
+        const club = document.createElement('button');
+        club.type = 'button';
+        club.className = 'tp-role-card tp-role-preview';
+        club.setAttribute('role', 'radio');
+        club.setAttribute('aria-checked', 'false');
+        const icon = document.createElement('span'); icon.className = 'tp-role-icon'; icon.textContent = '🏢'; icon.setAttribute('aria-hidden', 'true');
+        const title = document.createElement('span'); title.className = 'tp-role-title'; title.textContent = 'باشگاه';
+        const desc = document.createElement('span'); desc.className = 'tp-role-desc'; desc.textContent = 'پیش‌نمایش حساب اختصاصی باشگاه';
+        const status = document.createElement('span'); status.className = 'tp-role-status'; status.textContent = 'ثبت‌نام از این مسیر در دسترس نیست';
+        club.append(icon, title, desc, status);
+        club.addEventListener('click', () => {
+          form.dataset.rolePreview = 'club';
+          picker.querySelectorAll('[role=radio]').forEach(item => {
+            const selected = item === club;
+            item.setAttribute('aria-checked', String(selected));
+            item.classList.toggle('is-selected', selected);
+          });
+          const note = form.querySelector('.tp-club-preview');
+          if (!note) {
+            const panel = document.createElement('div');
+            panel.className = 'tp-club-preview';
+            panel.setAttribute('role', 'status');
+            panel.setAttribute('aria-live', 'polite');
+            panel.innerHTML = '<b>ثبت‌نام حساب باشگاه</b><p>در حال حاضر ساخت حساب باشگاه از این فرم امکان‌پذیر نیست. برای ثبت‌نام، نوع «هنرجو» یا «مربی» را انتخاب کنید.</p>';
+            picker.insertAdjacentElement('afterend', panel);
+          } else note.hidden = false;
+          const submit = form.querySelector('[type=submit]');
+          if (submit) submit.disabled = true;
+        });
+        picker.append(club);
+        role.insertAdjacentElement('afterend', picker);
+      }
+    }
+    const fieldNodes = [...form.querySelectorAll(':scope > .tp-field')];
+    const firstFields = fieldNodes.filter(node => ['username', 'email', 'role'].includes(node.querySelector('input,select,textarea')?.name));
+    const secondFields = fieldNodes.filter(node => ['password1', 'password2'].includes(node.querySelector('input,select,textarea')?.name));
+    if (firstFields.length && secondFields.length && !form.querySelector('[data-auth-step="1"]')) {
+      const first = document.createElement('section'); first.className = 'tp-auth-step'; first.dataset.authStep = '1';
+      first.innerHTML = '<h2>اطلاعات حساب</h2><p class="tp-hint">اطلاعات پایه و نوع حساب را مشخص کنید.</p>';
+      const second = document.createElement('section'); second.className = 'tp-auth-step'; second.dataset.authStep = '2';
+      second.innerHTML = '<h2>ایمن‌سازی حساب</h2><p class="tp-hint">گذرواژه‌ای مطمئن برای حساب خود انتخاب کنید.</p>';
+      const firstNode = firstFields[0]; form.insertBefore(first, firstNode);
+      firstFields.forEach(node => first.append(node));
+      secondFields.forEach(node => second.append(node));
+      form.append(second);
+      const firstNav = document.createElement('div'); firstNav.className = 'tp-auth-mobile-actions';
+      const secondNav = document.createElement('div'); secondNav.className = 'tp-auth-mobile-actions';
+      const back = document.createElement('button'); back.type = 'button'; back.className = 'btn o'; back.dataset.authBack = ''; back.textContent = 'بازگشت';
+      const next = document.createElement('button'); next.type = 'button'; next.className = 'btn'; next.dataset.authNext = ''; next.textContent = 'ادامه';
+      const submit = form.querySelector('[type=submit]');
+      firstNav.append(next); first.append(firstNav);
+      secondNav.append(back); second.append(secondNav);
+      if (submit) second.append(submit);
+      back.addEventListener('click', () => { form.dataset.step = '1'; const h = first.querySelector('h2'); if (h) h.focus(); });
+      next.addEventListener('click', () => {
+        const controls = [...first.querySelectorAll('input[required],select[required],textarea[required]')];
+        const invalid = controls.find(control => !control.checkValidity());
+        if (invalid) { invalid.reportValidity(); invalid.focus(); return; }
+        form.dataset.step = '2';
+        const h = second.querySelector('h2'); if (h) h.focus();
+      });
+      form.dataset.step = second.querySelector('[aria-invalid=true]') ? '2' : '1';
+    }
+    const mq = window.matchMedia('(max-width: 767px)');
+    form.dataset.mobileSteps = mq.matches ? 'true' : 'false';
+    if (!form.__tpAuthMqBound) {
+      mq.addEventListener('change', event => { form.dataset.mobileSteps = event.matches ? 'true' : 'false'; });
+      form.__tpAuthMqBound = true;
+    }
+    form.addEventListener('submit', event => {
+      if (form.dataset.rolePreview === 'club') {
+        event.preventDefault();
+        let note = form.querySelector('.tp-club-preview');
+        if (note) note.hidden = false;
+        const submit = form.querySelector('[type=submit]');
+        if (submit) submit.disabled = true;
+      }
+    }, true);
+  }
+
   $$('form[data-auth-form]').forEach(form => {
     const username = form.elements.namedItem('username');
     if (username && username instanceof HTMLElement) {
@@ -27,6 +159,7 @@
       const field = form.elements.namedItem(name);
       if (field && field instanceof HTMLInputElement) field.autocomplete = 'new-password';
     });
+    if (form.dataset.authForm === 'register') enhanceDjangoRegister(form);
   });
 
   // ۱. منوی کشویی موبایل (dialog بومی: تله فوکوس، Esc، بازگشت فوکوس)
