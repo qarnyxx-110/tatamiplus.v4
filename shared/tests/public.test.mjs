@@ -276,7 +276,7 @@ export async function runPwa(app,base,browser,altRoot){
  const S=new Suite('PWA-فنی '+app);
  const ctx=await browser.newContext({viewport:{width:390,height:800},serviceWorkers:'allow'});
  const pg=await ctx.newPage();pg.setDefaultTimeout(15000);pg.setDefaultNavigationTimeout(15000);
- const swConsoleErrors=[],pageConsoleLogs=[];pg.on('console',message=>{pageConsoleLogs.push(message.type()+': '+message.text());if(message.type()==='error')swConsoleErrors.push(message.text())});
+ const swConsoleErrors=[],pageConsoleLogs=[],workerConsoleLogs=[];pg.on('console',message=>{pageConsoleLogs.push(message.type()+': '+message.text());if(message.type()==='error')swConsoleErrors.push(message.text())});ctx.on('serviceworker',worker=>worker.on('console',message=>workerConsoleLogs.push(message.type()+': '+message.text())));
  await pg.goto(base+'/index.html');
  const neshanConfig=await pg.evaluate(async()=>{const r=await fetch('assets/neshan-config.js');return{status:r.status,text:await r.text()}});
  S.ok('تنظیمات نشان در خروجی PWA قابل دریافت است',neshanConfig.status===200&&neshanConfig.text.includes('TP_NESHAN_WEB_KEY')&&neshanConfig.text.includes('TP_CLUBS_JSON_URL'),String(neshanConfig.status));
@@ -351,7 +351,8 @@ export async function runPwa(app,base,browser,altRoot){
    after=await pg.evaluate(()=>caches.keys());
    if(after.length===1&&after[0]!==before)break;
   }
-  S.ok('به‌روزرسانی: Cache نسخه جدید جایگزین قدیمی شد',after.length===1&&after[0]!==before,before+' → '+after.join());
+  const lifecycle=await pg.evaluate(async()=>{const regs=await navigator.serviceWorker.getRegistrations();return regs.map(r=>({scope:r.scope,active:r.active?.state,waiting:r.waiting?.state,installing:r.installing?.state}))});
+  S.ok('به‌روزرسانی: Cache نسخه جدید جایگزین قدیمی شد',after.length===1&&after[0]!==before,before+' → '+after.join()+' | registrations='+JSON.stringify(lifecycle)+' | page='+pageConsoleLogs.filter(x=>x.includes('[Tatami SW]')).join(' || ')+' | worker='+workerConsoleLogs.filter(x=>x.includes('[Tatami SW]')).join(' || '));
   S.ok('به‌روزرسانی: محتوای نسخه جدید نمایش داده می‌شود',await pg.evaluate(()=>document.documentElement.outerHTML.includes('UPDATE_MARKER')));
   altRoot.reset();
  }
