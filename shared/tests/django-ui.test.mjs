@@ -77,8 +77,12 @@ try {
       assert.equal(await page.locator('#tp-register-form').getAttribute('data-role-preview'),'club');
       assert.equal(await page.locator('#tp-register-form [type=submit]').isDisabled(),true);
       assert.equal(await page.locator('.tp-club-preview').count(),1);
+      assert.equal(await page.locator('.tp-role-picker .tp-role-card.is-selected').count(),1);
+      assert.equal(await page.locator('.tp-role-preview').evaluate(el => el.classList.contains('is-selected')),true);
       await page.locator('.tp-role-picker [role=radio]').first().click();
       assert.equal(await page.locator('#tp-register-form [type=submit]').isDisabled(),false);
+      assert.equal(await page.locator('.tp-role-picker .tp-role-card.is-selected').count(),1);
+      assert.equal(await page.locator('.tp-role-preview').evaluate(el => el.classList.contains('is-selected')),false);
       await page.locator('#id_username').fill('sample-user');
       await page.locator('#id_username').fill('qa-student');
       await page.locator('[data-auth-next]').click();

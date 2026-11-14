@@ -69,8 +69,11 @@
         club.append(icon, title, desc, status);
         club.addEventListener('click', () => {
           form.dataset.rolePreview = 'club';
-          picker.querySelectorAll('[role=radio]').forEach(item => item.setAttribute('aria-checked', String(item === club)));
-          club.classList.add('is-selected');
+          picker.querySelectorAll('[role=radio]').forEach(item => {
+            const selected = item === club;
+            item.setAttribute('aria-checked', String(selected));
+            item.classList.toggle('is-selected', selected);
+          });
           const note = form.querySelector('.tp-club-preview');
           if (!note) {
             const panel = document.createElement('div');
