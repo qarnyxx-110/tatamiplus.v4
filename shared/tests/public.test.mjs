@@ -99,6 +99,30 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
  const foot=await pg.evaluate(()=>[...document.querySelectorAll('footer a')].map(a=>({text:a.textContent.trim(),href:a.getAttribute('href')})));S.ok('فوتر: لینک مربی آنلاین به صفحه مستقل مربی آنلاین متصل است',foot.some(a=>a.text==='مربی آنلاین'&&a.href==='#/online-coach')&&foot.some(a=>a.text==='تاتامی‌پدیا')&&foot.some(a=>a.text==='حامیان تاتامی پلاس')&&!foot.some(a=>a.text==='سیستم طراحی'),JSON.stringify(foot));
  await go('#/gems');const gems=await T();S.ok('جم: صفحه تاریخچه و وضعیت عدم اتصال',gems.includes('تاریخچه تراکنش‌ها')&&gems.includes('موجودی واقعی هنوز به این نسخه متصل نشده است'));S.ok('جم: عدم نمایش تراکنش ساختگی',gems.includes('تراکنشی برای نمایش وجود ندارد'));
  await go('#/my-profile');S.ok('«پروفایل من» فقط در PWA مربی',(app==='coach')?!await nf():await nf());
+ if(app==='coach'){
+  const loggedOutProfile=await T();
+  S.ok('پروفایل مربی بدون ورود، اطلاعات مربی نمونه دیگری را نمایش نمی‌دهد',loggedOutProfile.includes('ورود به حساب مربی لازم است')&&!loggedOutProfile.includes('سارا احمدی'));
+  await pg.evaluate(()=>{
+   ME={username:'coach-test-۱۴',role:'coach'};
+   localStorage.setItem('tp:coachapps',JSON.stringify({'coach-test-۱۴':{
+    coaching_level:'مربی آزمایشی درجه ۲',specializations:'ناژه‌وازه آزمایشی',years_experience:7,
+    club_name:'باشگاه آزمایشی',certificate_details:'مدرک آزمایشی',certificate_document:{name:'coach-test.pdf',size:1024},
+    status:'pending_review',submitted_at:Date.now()
+   }}));
+   R();
+  });
+  const ownProfile=await T();
+  const ownFields=await pg.evaluate(()=>({
+   username:document.querySelector('#mp-u')?.value||'',
+   level:document.querySelector('#mp-l')?.value||'',
+   specialties:document.querySelector('#mp-s')?.value||'',
+   club:document.querySelector('#mp-c')?.value||'',
+   certificate:document.querySelector('#mp-doc')?.value||''
+  }));
+  S.ok('پروفایل مربی فقط اطلاعات درخواست متعلق به همان حساب را نشان می‌دهد',
+   ownFields.username==='coach-test-۱۴'&&ownFields.level==='مربی آزمایشی درجه ۲'&&ownFields.specialties==='ناژه‌وازه آزمایشی'&&ownFields.club==='باشگاه آزمایشی'&&ownFields.certificate==='coach-test.pdf'&&!ownProfile.includes('سارا احمدی'),JSON.stringify(ownFields));
+  await pg.evaluate(()=>{ME=null;localStorage.removeItem('tp:coachapps');R()});
+ }
  if(app!=='coach'){await go('#/coaches/sara-ahmadi');S.ok('پروفایل مربی: لینک باشگاه',await pg.evaluate(()=>!!document.querySelector('#app a[href^="#/club/"]')))}
  // --- مربیان: جست‌وجو و فیلتر
  await go('#/coaches');const c=async q=>{await pg.fill('#kfq',q);await wait(120);return cnt('#app article')};
