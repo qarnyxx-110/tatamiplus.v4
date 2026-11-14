@@ -6,6 +6,21 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
  pg.on('pageerror',e=>errs.push('PAGEERROR '+String(e).slice(0,100)));pg.on('console',m=>{if(m.type()==='error'&&!/fonts\.g|ERR_NAME_NOT_RESOLVED|ERR_INTERNET|Failed to load resource/.test(m.text()))errs.push(m.text().slice(0,100))});
  const go=async h=>{await pg.evaluate(x=>{location.hash=x},h);await wait(60)},T=()=>pg.evaluate(()=>document.getElementById('app').innerText),cnt=sel=>pg.locator(sel).count(),nf=()=>pg.evaluate(is404);
  await pg.goto(base+'/index.html');await wait(300);
+ // --- وضعیت داده‌های مسابقات با تاریخ سپری‌شده
+ await go('#/tournaments');
+ const tournamentNames=['جام بهاره تهران','لیگ باشگاه‌های اصفهان','مسابقات کشوری نوجوانان','جام دوستی شیراز'];
+ const upcomingTournaments=await T();
+ S.ok('مسابقات با تاریخ سپری‌شده به‌عنوان پیش‌رو نمایش داده نمی‌شوند',
+  tournamentNames.every(name=>!upcomingTournaments.includes(name)));
+ await pg.getByRole('tab',{name:'نیازمند بررسی'}).click();await wait(60);
+ const reviewTournaments=await T();
+ S.ok('مسابقات دارای وضعیت نامطمئن در گروه نیازمند بررسی قابل مشاهده‌اند',
+  tournamentNames.every(name=>reviewTournaments.includes(name)));
+ await go('#/tournament/0');
+ const tournamentDetail=await T();
+ S.ok('جزئیات مسابقه وضعیت ثبت‌نام را به‌اشتباه باز/بسته/پایان‌یافته اعلام نمی‌کند',
+  tournamentDetail.includes('نیازمند تأیید'));
+ await go('#/');
  // --- مسیرهای معتبر/نامعتبر
  const valid=['#/','#/store','#/online-coach','#/store/','#/product/3','#/product?id=3','#/video/3','#/video?id=3','#/blog','#/blog/uchi-mata-basics','#/blog/2','#/tournaments','#/tournament/1','#/instructor/1','#/academy','#/profile','#/gems','#/cart','#/dashboard','#/videos','#/search','#/coaches','#/coaches/sara-ahmadi','#/sponsors','#/tatamipedia','#/tatamipedia/ippon','#/tatamipedia?q=ippon&cat=refereeing','#/blog?page=2'];
  const bad=[];for(const r of valid){await go(r);if(await nf())bad.push(r)}S.ok('مسیرهای معتبر 404 نمی‌دهند ('+valid.length+' مسیر)',!bad.length,bad.join(' '));
