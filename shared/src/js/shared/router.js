@@ -11,7 +11,7 @@ if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)&&!window.__
   if(!registration)return registration;
   const activationRequested=new WeakSet();
   const requestWorkerActivation=worker=>{
-   if(registration.active&&worker&&worker.state==='installed'&&!activationRequested.has(worker)){
+   if(worker&&worker.state==='installed'&&!activationRequested.has(worker)){
     activationRequested.add(worker);
     worker.postMessage('TP_SKIP_WAITING');
    }
