@@ -13,7 +13,7 @@ if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)&&!window.__
   const requestWorkerActivation=worker=>{
    if(worker&&worker.state==='installed'&&registration.active&&!activationRequested.has(worker)){
     activationRequested.add(worker);
-    console.info('[Tatami SW] page:request-activation',worker.state,!!registration.active);
+    console.info('[Tatami SW] page:request-activation',worker.state,worker.scriptURL,'waiting',registration.waiting?.scriptURL,'active',registration.active?.scriptURL);
     worker.postMessage('TP_SKIP_WAITING');
    }
   };
