@@ -8,23 +8,26 @@ function sc(){const c=$('#cine');if(!c||matchMedia('(prefers-reduced-motion:redu
 addEventListener('hashchange',()=>R());addEventListener('scroll',sc,{passive:true});R();
 if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)&&!window.__ARTIFACT__){
  const registerTatamiServiceWorker=()=>navigator.serviceWorker.register(new URL('sw.js',document.baseURI),{scope:'./'}).then(registration=>{
+  console.info('[Tatami SW] page:register-resolved',!!registration);
   if(!registration)return registration;
   const activationRequested=new WeakSet();
   const requestWorkerActivation=worker=>{
    if(worker&&worker.state==='installed'&&!activationRequested.has(worker)){
     activationRequested.add(worker);
+    console.info('[Tatami SW] page:post-activation-message',worker.state);
     worker.postMessage('TP_SKIP_WAITING');
    }
   };
   const watchWorker=worker=>{
    if(!worker)return;
-   worker.addEventListener('statechange',()=>requestWorkerActivation(worker));
+   console.info('[Tatami SW] page:watch-worker',worker.state);
+   worker.addEventListener('statechange',()=>{console.info('[Tatami SW] page:worker-state',worker.state);requestWorkerActivation(worker)});
    requestWorkerActivation(worker);
   };
   watchWorker(registration.waiting);
   watchWorker(registration.installing);
-  registration.addEventListener('updatefound',()=>watchWorker(registration.installing));
-  registration.update().then(()=>requestWorkerActivation(registration.waiting)).catch(()=>{});
+  registration.addEventListener('updatefound',()=>{console.info('[Tatami SW] page:updatefound');watchWorker(registration.installing)});
+  registration.update().then(()=>{console.info('[Tatami SW] page:update-checked',registration.waiting?.state||'none');requestWorkerActivation(registration.waiting)}).catch(error=>console.warn('[Tatami SW] page:update-check-failed',String(error)));
   return registration;
  }).catch(error=>console.error('[Tatami SW] registration failed',error));
  if(document.readyState==='complete')registerTatamiServiceWorker();
