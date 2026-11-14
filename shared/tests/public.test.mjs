@@ -344,6 +344,7 @@ export async function runPwa(app,base,browser,altRoot){
   altRoot.use();
   await pg.goto(base+'/index.html');
   await wait(1200);
+  await pg.evaluate(async()=>{const registration=await navigator.serviceWorker.getRegistration();if(registration)await registration.update()});
   await pg.reload();
   let after=[];
   for(let i=0;i<20;i++){
