@@ -275,7 +275,7 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
 export async function runPwa(app,base,browser,altRoot){
  const S=new Suite('PWA-فنی '+app);
  const ctx=await browser.newContext({viewport:{width:390,height:800},serviceWorkers:'allow'});
- const pg=await ctx.newPage();pg.setDefaultTimeout(15000);pg.setDefaultNavigationTimeout(15000);const swLogs=[];pg.on('console',m=>{if(m.text().includes('[Tatami SW]'))swLogs.push('page:'+m.text())});ctx.on('serviceworker',w=>w.on('console',m=>{if(m.text().includes('[Tatami SW]'))swLogs.push('worker:'+m.text())}));const swLogs=[];pg.on('console',m=>{if(m.type()==='error'&&m.text().includes('[Tatami SW]'))swLogs.push(m.text())});
+ const pg=await ctx.newPage();pg.setDefaultTimeout(15000);pg.setDefaultNavigationTimeout(15000);const swLogs=[];pg.on('console',m=>{if(m.text().includes('[Tatami SW]'))swLogs.push('page:'+m.text())});ctx.on('serviceworker',w=>w.on('console',m=>{if(m.text().includes('[Tatami SW]'))swLogs.push('worker:'+m.text())}));
  const swConsoleErrors=[];pg.on('console',message=>{if(message.type()==='error')swConsoleErrors.push(message.text())});
  await pg.goto(base+'/index.html');
  const neshanConfig=await pg.evaluate(async()=>{const r=await fetch('assets/neshan-config.js');return{status:r.status,text:await r.text()}});
