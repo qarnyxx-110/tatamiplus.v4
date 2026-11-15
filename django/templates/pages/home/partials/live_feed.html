@@ -1,0 +1,23 @@
+<section class="w d-s tp-home-feed-section" aria-labelledby="{{ heading_id }}">
+  {% include "pages/home/partials/section_heading.html" with eyebrow=eyebrow heading_id=heading_id heading=heading copy=copy %}
+  <div
+    class="tp-home-feed{% if layout == 'products' %} is-products{% else %} is-rows{% endif %}"
+    data-home-feed
+    data-source="{{ source_url }}"
+    data-selector="{{ selector }}"
+    data-layout="{{ layout }}"
+    data-limit="3"
+    data-empty-selector=".empty-state"
+    data-empty-title="{{ empty_title }}"
+    data-empty-copy="{{ empty_copy }}"
+    data-error-title="محتوا فعلاً در دسترس نیست"
+    data-error-copy="برای مشاهده آخرین اطلاعات، صفحه اصلی این بخش را باز کنید."
+    aria-live="polite"
+    aria-busy="true"
+  >
+    <p class="tp-home-feed-loading">در حال دریافت اطلاعات واقعی این بخش…</p>
+  </div>
+  <div class="tp-home-feed-footer">
+    <a class="btn o" href="{{ source_url }}">{{ action_label }}</a>
+  </div>
+</section>
