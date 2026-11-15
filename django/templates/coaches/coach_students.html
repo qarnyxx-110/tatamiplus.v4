@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% load persian %}
+{% load jformat %}
+
+{% block title %}هنرجوها و کدهای دعوت | پنل مربی تاتامی پلاس{% endblock %}
+{% block content %}
+<main class="w tp-coach-panel">
+  <header class="sh"><div><span class="eyebrow">COACH COMMUNITY</span><h1>هنرجوهای من</h1><p class="mu">کد دعوت بسازید و هنرجویانی را که با آن به شما پیوسته‌اند مدیریت کنید.</p></div></header>
+  <nav class="tp-panel-nav" aria-label="بخش‌های پنل مربی">
+    <a class="chip" href="{% url 'coach_panel:course_list' %}">دوره‌های من</a>
+    <a class="chip on" href="{% url 'coach_students:list' %}">هنرجوها و کدهای دعوت</a>
+    <a class="chip" href="{% url 'coaches:portfolio' %}">پروفایل مربی</a>
+    <a class="chip" href="{% url 'coaches:application_status' %}">وضعیت درخواست</a>
+  </nav>
+
+  <section class="d-c tp-editor-form" aria-labelledby="invite-create-title">
+    <h2 id="invite-create-title">ساخت کد دعوت</h2>
+    <p class="mu sm">برای هر کلاس یا گروه می‌توانید برچسب و سقف استفاده مشخص کنید.</p>
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {% include 'includes/form_fields.html' %}
+      <button class="btn" type="submit">ساخت کد دعوت</button>
+    </form>
+  </section>
+
+  <section class="d-s" aria-labelledby="invites-title">
+    <div class="dh"><h2 id="invites-title">کدهای دعوت من</h2><span class="mu sm">{{ invites|length|persian_digits }} کد</span></div>
+    {% if invites %}
+      <div class="tp-invite-grid">
+        {% for invite in invites %}
+          <article class="d-c tp-invite-card">
+            <div class="dh">
+              <strong class="tp-invite-code">{{ invite.code }}</strong>
+              {% if not invite.is_active %}<span class="tag m">غیرفعال</span>
+              {% elif invite.is_expired %}<span class="tag m">منقضی</span>
+              {% elif invite.is_exhausted %}<span class="tag m">ظرفیت پر</span>
+              {% else %}<span class="tag ok">فعال</span>{% endif %}
+            </div>
+            {% if invite.label %}<p class="mu sm">{{ invite.label }}</p>{% endif %}
+            <p class="mu sm">{{ invite.uses|persian_digits }} استفاده{% if invite.max_uses %} از {{ invite.max_uses|persian_digits }}{% endif %}</p>
+            <label class="tp-invite-link-label" for="invite-link-{{ invite.pk }}">پیوند دعوت</label>
+            <input id="invite-link-{{ invite.pk }}" class="tp-invite-link" type="text" readonly value="{{ request.scheme }}://{{ request.get_host }}{% url 'coaches:join_coach' invite.code %}">
+            <form method="post" action="{% url 'coach_students:toggle_invite' invite.pk %}">
+              {% csrf_token %}
+              <button class="btn o s" type="submit">{% if invite.is_active %}غیرفعال کردن{% else %}فعال کردن{% endif %}</button>
+            </form>
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="tp-state"><b>هنوز کد دعوتی نساخته‌اید</b><p>با فرم بالا اولین کد دعوت را ایجاد کنید.</p></div>
+    {% endif %}
+  </section>
+
+  <section class="d-s" aria-labelledby="students-title">
+    <div class="dh"><h2 id="students-title">فهرست هنرجویان</h2><span class="mu sm">{{ students|length|persian_digits }} هنرجو</span></div>
+    {% if students %}
+      <div class="tp-student-list">
+        {% for link in students %}
+          <article class="tp-episode-row">
+            <span class="d-av" aria-hidden="true">{{ link.student.first_name|first|default:'ه' }}</span>
+            <div class="tp-episode-copy">
+              <b>{{ link.student.get_full_name|default:link.student.first_name|default:'هنرجو' }}</b>
+              <span class="mu sm">{% if link.student.phone %}{{ link.student.phone|slice:':4'|persian_digits }}***{{ link.student.phone|slice:'-2:'|persian_digits }}{% else %}شماره‌ای ثبت نشده است{% endif %}</span>
+            </div>
+            <span class="mu sm">عضویت: {{ link.created_at|jformat:'%Y/%m/%d'|persian_digits }}</span>
+            <span class="mu sm">کد: {% if link.invite %}{{ link.invite.code }}{% else %}—{% endif %}</span>
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="tp-state"><b>هنوز هنرجویی به فهرست شما اضافه نشده است</b><p>پیوند یکی از کدهای دعوت فعال را برای هنرجویان ارسال کنید.</p></div>
+    {% endif %}
+  </section>
+</main>
+{% endblock %}
