@@ -275,7 +275,7 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
 export async function runPwa(app,base,browser,altRoot){
  const S=new Suite('PWA-فنی '+app);
  const ctx=await browser.newContext({viewport:{width:390,height:800},serviceWorkers:'allow'});
- const pg=await ctx.newPage();pg.setDefaultTimeout(15000);pg.setDefaultNavigationTimeout(15000);const swLogs=[];pg.on('console',m=>{if(m.text().includes('[Tatami SW]'))swLogs.push('page:'+m.text())});ctx.on('serviceworker',w=>w.on('console',m=>{if(m.text().includes('[Tatami SW]'))swLogs.push('worker:'+m.text())}));
+ const pg=await ctx.newPage();pg.setDefaultTimeout(15000);pg.setDefaultNavigationTimeout(15000);const swLogs=[];pg.on('console',m=>{if(m.type()==='error'&&m.text().includes('[Tatami SW]'))swLogs.push(m.text())});
  const swConsoleErrors=[];pg.on('console',message=>{if(message.type()==='error')swConsoleErrors.push(message.text())});
  await pg.goto(base+'/index.html');
  const neshanConfig=await pg.evaluate(async()=>{const r=await fetch('assets/neshan-config.js');return{status:r.status,text:await r.text()}});
@@ -352,8 +352,7 @@ export async function runPwa(app,base,browser,altRoot){
    after=await pg.evaluate(()=>caches.keys());
    if(after.length===1&&after[0]!==before)break;
   }
-  const state=await pg.evaluate(async()=>{const rs=await navigator.serviceWorker.getRegistrations();return{registrations:rs.map(r=>({scope:r.scope,active:r.active?.state,waiting:r.waiting?.state,installing:r.installing?.state})),controller:navigator.serviceWorker.controller?.state||null,keys:await caches.keys()}});
-  S.ok('به‌روزرسانی: Cache نسخه جدید جایگزین قدیمی شد',after.length===1&&after[0]!==before,before+' → '+after.join()+' | state='+JSON.stringify(state)+' | logs='+swLogs.join(' || '));
+  S.ok('به‌روزرسانی: Cache نسخه جدید جایگزین قدیمی شد',after.length===1&&after[0]!==before,before+' → '+after.join());
   S.ok('به‌روزرسانی: محتوای نسخه جدید نمایش داده می‌شود',await pg.evaluate(()=>document.documentElement.outerHTML.includes('UPDATE_MARKER')));
   altRoot.reset();
  }
