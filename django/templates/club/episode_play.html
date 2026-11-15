@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% load persian %}
+{% load club_format %}
+
+{% block title %}{{ episode.title }} | تاتامی پلاس{% endblock %}
+{% block content %}
+<main class="w tp-course-page tp-episode-page">
+  <nav class="tp-crumbs" aria-label="مسیر صفحه">
+    <ol><li><a href="{% url 'home' %}">خانه</a></li><li><a href="{% url 'club:course_list' %}">باشگاه مجازی</a></li><li><a href="{% url 'club:course_detail' episode.course.slug %}">{{ episode.course.title }}</a></li><li aria-current="page">{{ episode.title }}</li></ol>
+  </nav>
+  <header class="sh tp-episode-heading">
+    <div><span class="eyebrow">COURSE PLAYER</span><h1>{{ episode.order|persian_digits }}. {{ episode.title }}</h1><p class="mu">{{ episode.course.title }} · {{ episode.duration|duration_mmss|persian_digits }} دقیقه</p></div>
+  </header>
+
+  <div class="tp-episode-player">
+    <video class="course-video" controls preload="metadata" playsinline controlsList="nodownload"
+      src="{% url 'club:episode_stream' episode.pk %}">
+      مرورگر شما از پخش ویدیو پشتیبانی نمی‌کند.
+    </video>
+  </div>
+
+  <section class="d-c tp-episode-completion">
+    {% if user.is_authenticated %}
+      {% if completed %}
+        <p class="lesson-done">این قسمت در پیشرفت شما ثبت شده است.</p>
+      {% else %}
+        <p class="mu">پس از تماشای قسمت، می‌توانید اتمام آن را در حساب خود ثبت کنید.</p>
+        <form method="post" action="{% url 'club:episode_complete' episode.pk %}">
+          {% csrf_token %}
+          <button class="btn" type="submit">این قسمت را تمام کردم</button>
+        </form>
+      {% endif %}
+    {% else %}
+      <p class="mu">برای ثبت پیشرفت، <a class="text-link" href="{% url 'phone_auth:login' %}?next={{ request.path|urlencode }}">وارد حساب کاربری</a> شوید.</p>
+    {% endif %}
+    <a class="btn o" href="{% url 'club:course_detail' episode.course.slug %}">بازگشت به فهرست قسمت‌ها</a>
+  </section>
+</main>
+{% endblock %}
