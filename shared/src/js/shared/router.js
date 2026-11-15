@@ -14,7 +14,7 @@ if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)&&!window.__
     if(!registration)return;
     const requestActivation=worker=>{
      console.info('[Tatami SW] page:activation-check',!!registration.active,worker&&worker.state);
-     if(registration.active&&worker&&worker.state==='installed'){worker.postMessage('TP_SKIP_WAITING');console.info('[Tatami SW] page:activation-message-sent')}
+     if(registration.active&&worker&&worker.state==='installed'){console.info('[Tatami SW] page:activation-target',worker.scriptURL,registration.active.scriptURL,registration.waiting===worker);worker.postMessage('TP_SKIP_WAITING');console.info('[Tatami SW] page:activation-message-sent')}
     };
     const watchInstall=worker=>{
      if(worker)worker.addEventListener('statechange',()=>requestActivation(worker));
