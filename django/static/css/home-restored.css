@@ -71,6 +71,7 @@
   font-size: var(--tp-font-size-lg);
 }
 .tp-home-actions { margin-top: var(--tp-space-lg); gap: var(--tp-space-sm); }
+.tp-home-hero .w > *:not(.tp-home-hero-mark) { position: relative; z-index: 1; }
 .tp-home-hero-mark {
   position: absolute;
   inset-inline-end: 5%;
@@ -351,6 +352,9 @@ a.tp-home-feature-card:hover {
 }
 .tp-home-cta p { margin-bottom: var(--tp-space-md); }
 .tp-home-cta .chips { margin-bottom: 0; }
+@media (min-width: 601px) and (max-width: 900px) {
+  .tp-home-cine .stk { top: 112px; height: calc(100vh - 112px); }
+}
 @media (max-width: 900px) {
   .tp-home-section-head { display: block; }
   .tp-home-section-head>p { margin-top: var(--tp-space-xs); }
