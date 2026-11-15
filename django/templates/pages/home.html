@@ -1,32 +1,21 @@
 {% extends 'base.html' %}
 {% load static %}
-
 {% block title %}تاتامی پلاس | نسل جدید تجربه جودو{% endblock %}
-{% block description %}تاتامی پلاس؛ دوره‌های آموزشی جودو، مربیان تأییدشده و فروشگاه تجهیزات تمرین.{% endblock %}
-
-{% block extra_head %}
-<link rel="stylesheet" href="{% static 'css/home-restored.css' %}">
-{% endblock %}
-
+{% block description %}تاتامی پلاس؛ آموزش آنلاین جودو، مربیان تأییدشده و فروشگاه تجهیزات تمرین.{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'css/home-restored.css' %}">{% endblock %}
 {% block content %}
 <main id="tp-home-main" class="tp-home">
   {% include "pages/home/partials/hero.html" %}
   {% include "pages/home/partials/intro.html" %}
+  {% include "pages/home/partials/techniques.html" %}
   {% include "pages/home/partials/features.html" %}
-
   {% url 'club:course_list' as home_courses_url %}
-  {% include "pages/home/partials/live_feed.html" with eyebrow="LEARN & PRACTICE" heading_id="home-courses-title" heading="دوره‌های آموزشی" copy="آخرین دوره‌های منتشرشده را از فهرست واقعی باشگاه مجازی ببینید." source_url=home_courses_url selector=".coach-list .coach-row" layout="courses" empty_title="هنوز دورهٔ منتشرشده‌ای وجود ندارد" empty_copy="پس از انتشار دوره توسط مربیان، موارد قابل مشاهده در این بخش نمایش داده می‌شوند." action_label="مشاهده همه دوره‌ها" %}
-
+  {% include "pages/home/partials/live_feed.html" with eyebrow="LEARN & PRACTICE" heading_id="home-courses-title" heading="دوره‌های آموزشی آنلاین" copy="آخرین دوره‌های منتشرشده را از باشگاه مجازی ببینید و وارد صفحهٔ هر دوره شوید." source_url=home_courses_url selector=".tp-course-grid > .tp-course-card" layout="courses" empty_title="هنوز دورهٔ منتشرشده‌ای وجود ندارد" empty_copy="پس از انتشار دوره توسط مربیان، موارد قابل مشاهده در این بخش نمایش داده می‌شوند." action_label="مشاهده همه دوره‌ها" %}
   {% url 'coaches:directory' as home_coaches_url %}
-  {% include "pages/home/partials/live_feed.html" with eyebrow="MEET YOUR COACH" heading_id="home-coaches-title" heading="مربیان تاتامی پلاس" copy="پروفایل مربیانی را ببینید که تأیید شده‌اند و برای عموم انتشار یافته‌اند." source_url=home_coaches_url selector=".coach-list .coach-row" layout="coaches" empty_title="هنوز پروفایل عمومی منتشرشده‌ای وجود ندارد" empty_copy="پس از تأیید مربیان و انتشار پروفایل آن‌ها، فهرست در این بخش نمایش داده می‌شود." action_label="مشاهده فهرست مربیان" %}
-
+  {% include "pages/home/partials/live_feed.html" with eyebrow="MEET YOUR COACH" heading_id="home-coaches-title" heading="مربیان تاتامی پلاس" copy="پروفایل مربیانی را ببینید که تأیید شده‌اند و برای عموم انتشار یافته‌اند." source_url=home_coaches_url selector=".tp-coaches > li" layout="coaches" empty_title="هنوز پروفایل عمومی منتشرشده‌ای وجود ندارد" empty_copy="پس از تأیید مربیان و انتشار پروفایل آن‌ها، فهرست در این بخش نمایش داده می‌شود." action_label="مشاهده فهرست مربیان" %}
   {% url 'store:product_list' as home_store_url %}
-  {% include "pages/home/partials/live_feed.html" with eyebrow="EQUIPMENT STORE" heading_id="home-store-title" heading="فروشگاه تجهیزات جودو" copy="محصولات فعال فروشگاه و اطلاعات واقعی قیمت و موجودی آن‌ها را بررسی کنید." source_url=home_store_url selector=".product-grid .product-item" layout="products" empty_title="محصولی برای نمایش وجود ندارد" empty_copy="پس از ثبت محصولات فعال و موجودی آن‌ها، کالاهای فروشگاه در این بخش نمایش داده می‌شوند." action_label="ورود به فروشگاه" %}
-
+  {% include "pages/home/partials/live_feed.html" with eyebrow="EQUIPMENT STORE" heading_id="home-store-title" heading="فروشگاه تجهیزات جودو" copy="محصولات فعال فروشگاه، تصویر، قیمت و دسته‌بندی آن‌ها را بررسی کنید." source_url=home_store_url selector=".pg > .pcd" layout="products" empty_title="محصولی برای نمایش وجود ندارد" empty_copy="پس از ثبت محصولات فعال و تنوع دارای موجودی، کالاهای فروشگاه در این بخش نمایش داده می‌شوند." action_label="ورود به فروشگاه" %}
   {% include "pages/home/partials/cta.html" %}
 </main>
 {% endblock %}
-
-{% block extra_scripts %}
-<script src="{% static 'js/home-restored.js' %}" defer></script>
-{% endblock %}
+{% block extra_scripts %}<script src="{% static 'js/home-restored.js' %}" defer></script>{% endblock %}
