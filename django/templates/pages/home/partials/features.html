@@ -1,0 +1,32 @@
+<section class="w d-s tp-home-features" aria-labelledby="home-features-title">
+  {% include "pages/home/partials/section_heading.html" with eyebrow="EXPLORE TATAMI PLUS" heading_id="home-features-title" heading="امکانات پلتفرم" copy="سه مسیر عملیاتی که اکنون به صفحات واقعی تاتامی پلاس متصل هستند." %}
+  <div class="grid tp-home-feature-grid">
+    <a class="card tp-home-feature-card" href="{% url 'club:course_list' %}">
+      <span class="tp-home-card-index">01</span>
+      <div class="b">
+        <span class="tag">دوره‌های آموزشی</span>
+        <h3>باشگاه مجازی</h3>
+        <p class="mu sm">دوره‌های منتشرشده را بر اساس مربی و سطح آموزشی پیدا کنید و جزئیات هر دوره را ببینید.</p>
+        <span class="text-link">مشاهده دوره‌ها ←</span>
+      </div>
+    </a>
+    <a class="card tp-home-feature-card" href="{% url 'coaches:directory' %}">
+      <span class="tp-home-card-index">02</span>
+      <div class="b">
+        <span class="tag">مربیان</span>
+        <h3>آکادمی اساتید</h3>
+        <p class="mu sm">فهرست مربیان تأییدشده و پروفایل‌هایی را ببینید که توسط تیم تاتامی پلاس منتشر شده‌اند.</p>
+        <span class="text-link">مشاهده مربیان ←</span>
+      </div>
+    </a>
+    <a class="card tp-home-feature-card" href="{% url 'store:product_list' %}">
+      <span class="tp-home-card-index">03</span>
+      <div class="b">
+        <span class="tag">تجهیزات جودو</span>
+        <h3>فروشگاه تاتامی</h3>
+        <p class="mu sm">محصولات فعال را مرور کنید و پیش از افزودن به سبد، تنوع و موجودی را بررسی کنید.</p>
+        <span class="text-link">ورود به فروشگاه ←</span>
+      </div>
+    </a>
+  </div>
+</section>
