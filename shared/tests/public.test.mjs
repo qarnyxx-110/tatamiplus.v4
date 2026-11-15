@@ -347,6 +347,7 @@ export async function runPwa(app,base,browser,altRoot){
   await pg.evaluate(async()=>{const registration=await navigator.serviceWorker.getRegistration();if(registration)await registration.update()});
   await pg.close();
   await wait(1800);
+  const idleWorkerState=await Promise.all((typeof ctx.serviceWorkers==='function'?ctx.serviceWorkers():[]).map(async worker=>{try{return await worker.evaluate(()=>({url:self.location.href,active:self.registration.active?.state||null,waiting:self.registration.waiting?.state||null,installing:self.registration.installing?.state||null}))}catch(error){return{url:worker.url(),error:String(error)}}}));
   pg=await ctx.newPage();pg.setDefaultTimeout(15000);pg.setDefaultNavigationTimeout(15000);
   await pg.goto(base+'/index.html');
   await wait(300);
@@ -357,7 +358,7 @@ export async function runPwa(app,base,browser,altRoot){
    if(after.length===1&&after[0]!==before)break;
   }
   const state=await pg.evaluate(async()=>{const rs=await navigator.serviceWorker.getRegistrations();return{registrations:rs.map(r=>({scope:r.scope,active:r.active?.state,waiting:r.waiting?.state,installing:r.installing?.state})),controller:navigator.serviceWorker.controller?.state||null,keys:await caches.keys()}});
-  S.ok('به‌روزرسانی: Cache نسخه جدید جایگزین قدیمی شد',after.length===1&&after[0]!==before,before+' → '+after.join()+' | state='+JSON.stringify(state)+' | logs='+swLogs.join(' || '));
+  S.ok('به‌روزرسانی: Cache نسخه جدید جایگزین قدیمی شد',after.length===1&&after[0]!==before,before+' → '+after.join()+' | idleWorkers='+JSON.stringify(idleWorkerState)+' | state='+JSON.stringify(state)+' | logs='+swLogs.join(' || '));
   S.ok('به‌روزرسانی: محتوای نسخه جدید نمایش داده می‌شود',await pg.evaluate(()=>document.documentElement.outerHTML.includes('UPDATE_MARKER')));
   altRoot.reset();
  }
