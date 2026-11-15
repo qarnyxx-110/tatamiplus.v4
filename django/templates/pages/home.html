@@ -1,23 +1,192 @@
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %}تاتامی پلاس | پلتفرم فارسی جودو{% endblock %}
+{% block title %}تاتامی پلاس | نسل جدید تجربه جودو{% endblock %}
+{% block description %}تاتامی پلاس؛ آموزش جودو، دسترسی به مربیان و تجهیزات تمرین در یک پلتفرم یکپارچه.{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/home-restored.css' %}">
+{% endblock %}
+
 {% block content %}
-<section class="hero">
-  <div class="w">
-    <h1>مسیر بعدی جودوی خود را پیدا کنید</h1>
-    <p class="gold">مربی تأییدشده پیدا کنید و تجهیزات تمرین را از فروشگاه تاتامی پلاس ببینید.</p>
-    <p class="mu">پروفایل مربیان پس از بررسی مدارک و تأیید تیم تاتامی پلاس منتشر می‌شود.</p>
-    <a class="btn" href="{% url 'coaches:directory' %}">مشاهدهٔ مربیان</a>
-    <a class="btn o" href="{% url 'store:product_list' %}">رفتن به فروشگاه</a>
-  </div>
-</section>
+<main class="tp-home">
+  <!-- Hero مطابق ساختار صفحه اصلی Preview -->
+  <section class="hero tp-home-hero" aria-labelledby="home-title">
+    <div class="w">
+      <span class="tag">پلتفرم جامعه جودو</span>
+      <h1 id="home-title">نسل جدید تجربه جودو</h1>
+      <h2 class="gold tp-home-lead">جودو را یاد بگیر، هوشمندانه تمرین کن، حرفه‌ای‌تر پیشرفت کن.</h2>
+      <p class="mu tp-home-copy">
+        آموزش تخصصی، مربیان و تجهیزات جودو؛ همه در یک مسیر یکپارچه برای جامعه جودو.
+      </p>
+      <div class="chips tp-home-actions">
+        <a class="btn" href="{% url 'club:course_list' %}">شروع یادگیری</a>
+        <a class="btn o" href="{% url 'coaches:directory' %}">مشاهده مربیان</a>
+      </div>
+    </div>
+  </section>
 
-<section class="w d-s" aria-labelledby="home-links">
-  <h2 id="home-links">از کجا شروع کنیم؟</h2>
-  <div class="d-qa tp-home-links">
-    <a class="qa" href="{% url 'coaches:directory' %}"><span class="ic" aria-hidden="true">۰۱</span><div><b>پیدا کردن مربی</b><div class="mu sm">مشاهدهٔ مربیان تأییدشده</div></div></a>
-    <a class="qa" href="{% url 'store:product_list' %}"><span class="ic" aria-hidden="true">۰۲</span><div><b>خرید تجهیزات</b><div class="mu sm">مرور محصولات فروشگاه</div></div></a>
-    <a class="qa" href="{% url 'account' %}"><span class="ic" aria-hidden="true">۰۳</span><div><b>حساب کاربری</b><div class="mu sm">ورود یا ثبت‌نام هنرجو و مربی</div></div></a>
-  </div>
-</section>
+  <!-- معرفی پلتفرم؛ بدون شمارنده‌های آزمایشی Preview -->
+  <section class="w d-s tp-home-intro" aria-labelledby="home-intro-title">
+    <div class="dh">
+      <h2 id="home-intro-title">تاتامی پلاس چیست؟</h2>
+    </div>
+    <p class="mu tp-home-intro-copy">
+      تاتامی پلاس فضایی برای همراهی هنرجویان، مربیان و علاقه‌مندان جودو است؛
+      از مشاهده دوره‌های آموزشی تا پیدا کردن مربی و تهیه تجهیزات تمرین.
+    </p>
+    <div class="d-stats tp-home-stats">
+      <article class="sc2">
+        <span class="ic" aria-hidden="true">🎬</span>
+        <div><b>آموزش جودو</b><p class="mu sm">دسترسی به دوره‌های آموزشی موجود</p></div>
+      </article>
+      <article class="sc2">
+        <span class="ic" aria-hidden="true">🥋</span>
+        <div><b>مربیان تاتامی</b><p class="mu sm">مشاهده مربیان و پروفایل‌های ثبت‌شده</p></div>
+      </article>
+      <article class="sc2">
+        <span class="ic" aria-hidden="true">🏯</span>
+        <div><b>جامعه جودو</b><p class="mu sm">ارتباط هنرجو و مربی در یک مسیر مشترک</p></div>
+      </article>
+      <article class="sc2">
+        <span class="ic" aria-hidden="true">🛒</span>
+        <div><b>تجهیزات تمرین</b><p class="mu sm">مشاهده محصولات فروشگاه</p></div>
+      </article>
+    </div>
+  </section>
+
+  <!-- بخش تصویری فنون جودو؛ تصویرهای ساختگی یا عکس‌های ناموجود استفاده نشده‌اند -->
+  <section class="w d-s" aria-labelledby="home-techniques-title">
+    <div class="dh">
+      <h2 id="home-techniques-title">فنون جودو</h2>
+      <span class="mu sm">نگاهی به اصول و تکنیک‌های پایه</span>
+    </div>
+    <div class="grid tp-home-tech-grid">
+      <article class="card tp-home-tech-card">
+        <figure class="ph r169 tp-home-figure" style="--h:205">
+          <svg viewBox="0 0 40 40" fill="currentColor" aria-hidden="true">
+            <circle cx="14" cy="8" r="4"/><circle cx="27" cy="10" r="4"/>
+            <path d="M8 34l3-18 8 3 3 15zM22 30l4-15 8 4-3 14z"/>
+          </svg>
+          <figcaption>UCHI MATA</figcaption>
+        </figure>
+        <div class="b">
+          <span class="tag">پرتاب</span>
+          <h3>اوچی‌ماتا</h3>
+          <p class="mu sm">پرتاب با ران داخلی؛ نیازمند حفظ تعادل، زمان‌بندی و چرخش صحیح لگن.</p>
+        </div>
+      </article>
+
+      <article class="card tp-home-tech-card">
+        <figure class="ph r169 tp-home-figure" style="--h:225">
+          <svg viewBox="0 0 40 40" fill="currentColor" aria-hidden="true">
+            <circle cx="14" cy="8" r="4"/><circle cx="27" cy="10" r="4"/>
+            <path d="M8 34l3-18 8 3 3 15zM22 30l4-15 8 4-3 14z"/>
+          </svg>
+          <figcaption>SEOI NAGE</figcaption>
+        </figure>
+        <div class="b">
+          <span class="tag">پرتاب</span>
+          <h3>سئوی‌ناگه</h3>
+          <p class="mu sm">پرتاب از روی شانه؛ با ورود عمیق، کنترل آستین و استفاده از تعادل حریف.</p>
+        </div>
+      </article>
+
+      <article class="card tp-home-tech-card">
+        <figure class="ph r169 tp-home-figure" style="--h:245">
+          <svg viewBox="0 0 40 40" fill="currentColor" aria-hidden="true">
+            <circle cx="14" cy="8" r="4"/><circle cx="27" cy="10" r="4"/>
+            <path d="M8 34l3-18 8 3 3 15zM22 30l4-15 8 4-3 14z"/>
+          </svg>
+          <figcaption>OSOTO GARI</figcaption>
+        </figure>
+        <div class="b">
+          <span class="tag">پرتاب</span>
+          <h3>اوسوتو‌گاری</h3>
+          <p class="mu sm">دروگر بیرونی؛ با انتقال وزن، کنترل بالاتنه و زمان‌بندی ضربه پا.</p>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- مسیرهای قابل استفاده در نسخه فعلی Django -->
+  <section class="w d-s" aria-labelledby="home-features-title">
+    <div class="dh">
+      <h2 id="home-features-title">امکانات پلتفرم</h2>
+    </div>
+    <div class="grid tp-home-feature-grid">
+      <a class="card tp-home-feature-card" href="{% url 'club:course_list' %}">
+        <div class="b">
+          <span class="tag">آموزش</span>
+          <h3>دوره‌های آموزشی</h3>
+          <p class="mu sm">مشاهده دوره‌های ثبت‌شده و محتوای آموزشی قابل دسترس.</p>
+          <span class="text-link">مشاهده دوره‌ها ←</span>
+        </div>
+      </a>
+      <a class="card tp-home-feature-card" href="{% url 'coaches:directory' %}">
+        <div class="b">
+          <span class="tag">مربیان</span>
+          <h3>آکادمی اساتید</h3>
+          <p class="mu sm">آشنایی با مربیان و مشاهده پروفایل‌های منتشرشده.</p>
+          <span class="text-link">مشاهده مربیان ←</span>
+        </div>
+      </a>
+      <a class="card tp-home-feature-card" href="{% url 'store:product_list' %}">
+        <div class="b">
+          <span class="tag">تجهیزات</span>
+          <h3>فروشگاه</h3>
+          <p class="mu sm">مرور محصولات ثبت‌شده در فروشگاه تاتامی پلاس.</p>
+          <span class="text-link">رفتن به فروشگاه ←</span>
+        </div>
+      </a>
+      <a class="card tp-home-feature-card" href="{% url 'account' %}">
+        <div class="b">
+          <span class="tag">حساب کاربری</span>
+          <h3>حساب من</h3>
+          <p class="mu sm">دسترسی به حساب و اطلاعات کاربری.</p>
+          <span class="text-link">ورود به حساب ←</span>
+        </div>
+      </a>
+      <article class="card tp-home-feature-card is-pending">
+        <div class="b">
+          <span class="tag">در حال آماده‌سازی</span>
+          <h3>تورنمنت‌ها</h3>
+          <p class="mu sm">بخش مسابقات پس از اتصال قابلیت مربوطه در دسترس قرار می‌گیرد.</p>
+        </div>
+      </article>
+      <article class="card tp-home-feature-card is-pending">
+        <div class="b">
+          <span class="tag">در حال آماده‌سازی</span>
+          <h3>بلاگ و تاتامی‌پدیا</h3>
+          <p class="mu sm">محتوای آموزشی پس از آماده‌شدن صفحات و داده‌های واقعی منتشر می‌شود.</p>
+        </div>
+      </article>
+      <article class="card tp-home-feature-card is-pending">
+        <div class="b">
+          <span class="tag">در حال آماده‌سازی</span>
+          <h3>باشگاه‌ها</h3>
+          <p class="mu sm">صفحه باشگاه‌ها پس از آماده‌شدن مسیر و اطلاعات واقعی فعال می‌شود.</p>
+        </div>
+      </article>
+      <article class="card tp-home-feature-card is-pending">
+        <div class="b">
+          <span class="tag">در حال آماده‌سازی</span>
+          <h3>تحلیل هوشمند حرکت</h3>
+          <p class="mu sm">این قابلیت در نسخه فعلی به‌صورت عملیاتی ارائه نشده است.</p>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="w d-s" aria-labelledby="home-start-title">
+    <div class="cta tp-home-cta">
+      <h2 id="home-start-title">آماده شروع هستید؟</h2>
+      <p class="mu">مسیر یادگیری و پیشرفت جودو را با تاتامی پلاس ادامه دهید.</p>
+      <div class="chips">
+        <a class="btn" href="{% url 'club:course_list' %}">مشاهده دوره‌ها</a>
+        <a class="btn o" href="{% url 'coaches:directory' %}">پیدا کردن مربی</a>
+      </div>
+    </div>
+  </section>
+</main>
 {% endblock %}
