@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% load persian %}
+{% block title %}دعوت مربی {{ invite.coach.display_name }} | تاتامی پلاس{% endblock %}
+{% block content %}
+<main class="w tp-coach-join-page">
+  <nav class="tp-crumbs" aria-label="مسیر صفحه"><ol><li><a href="{% url 'home' %}">خانه</a></li><li><a href="{% url 'coaches:directory' %}">مربیان</a></li><li aria-current="page">دعوت مربی</li></ol></nav>
+  <section class="d-c tp-coach-join-card">
+    <span class="eyebrow">COACH INVITATION</span>
+    <h1>{{ invite.coach.display_name }}</h1>
+    {% if invite.coach.headline %}<p class="mu">{{ invite.coach.headline }}</p>{% endif %}
+    <p>با کد <strong>{{ invite.code }}</strong>{% if invite.label %} ({{ invite.label }}){% endif %} می‌توانید به فهرست هنرجویان این مربی اضافه شوید.</p>
+    {% if already %}
+      <p class="tp-note">شما از قبل در فهرست هنرجویان این مربی هستید.</p>
+      <a class="btn" href="{% url 'club:coach_detail' invite.coach_id %}">مشاهده صفحه مربی</a>
+    {% elif not invite.is_usable %}
+      <p class="tp-error-text">این کد دیگر قابل استفاده نیست. از مربی یک کد تازه دریافت کنید.</p>
+    {% else %}
+      <form method="post">
+        {% csrf_token %}
+        <button class="btn" type="submit">عضویت در فهرست هنرجویان</button>
+      </form>
+    {% endif %}
+    <a class="btn o" href="{% url 'coaches:directory' %}">بازگشت به فهرست مربیان</a>
+  </section>
+</main>
+{% endblock %}
