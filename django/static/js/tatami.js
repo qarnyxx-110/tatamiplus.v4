@@ -162,6 +162,35 @@
     if (form.dataset.authForm === 'register') enhanceDjangoRegister(form);
   });
 
+  // ۰-ب. قرارداد واقعی ورود Django با OTP (بدون تغییر نام فیلدها یا منطق سرور)
+  const phoneInput = $('#id_phone');
+  if (phoneInput) {
+    phoneInput.type = 'tel';
+    phoneInput.autocomplete = 'tel';
+    phoneInput.inputMode = 'tel';
+    phoneInput.dir = 'ltr';
+    phoneInput.maxLength = 20;
+    phoneInput.setAttribute('aria-describedby', [phoneInput.getAttribute('aria-describedby'), 'tp-phone-hint'].filter(Boolean).join(' '));
+  }
+  const otpInput = $('#id_code');
+  if (otpInput) {
+    otpInput.inputMode = 'numeric';
+    otpInput.autocomplete = 'one-time-code';
+    otpInput.dir = 'ltr';
+    otpInput.maxLength = 5;
+    otpInput.pattern = '[0-9۰-۹٠-٩]{5}';
+    otpInput.setAttribute('aria-label', 'کد یک‌بارمصرف پنج‌رقمی');
+  }
+  const roleInput = $('#id_role');
+  if (roleInput) roleInput.autocomplete = 'off';
+  const otpResendForm = $('form[action$="/auth/otp/send/"]');
+  if (otpResendForm && !$('.tp-otp-resend-note', otpResendForm.parentElement || document)) {
+    const note = document.createElement('p');
+    note.className = 'field-help tp-otp-resend-note';
+    note.textContent = 'ارسال دوباره با محدودیت ۶۰ ثانیه‌ای سمت سرور انجام می‌شود؛ کد پس از ۱۲۰ ثانیه منقضی خواهد شد.';
+    otpResendForm.insertAdjacentElement('beforebegin', note);
+  }
+
   // ۱. منوی کشویی موبایل (dialog بومی: تله فوکوس، Esc، بازگشت فوکوس)
   const d = $('#mnd'), b = $('#mnb');
   if (d && b && typeof d.showModal === 'function') {
