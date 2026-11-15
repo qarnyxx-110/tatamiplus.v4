@@ -1,0 +1,103 @@
+/* Home page restoration. Scoped to .tp-home to avoid changing other Django pages. */
+.tp-home { overflow: clip; }
+.tp-home-hero {
+  position: relative;
+  isolation: isolate;
+  min-height: min(78vh, 760px);
+  display: grid;
+  align-items: center;
+  background:
+    radial-gradient(80% 60% at 20% 30%, var(--tp-color-brand-tint), transparent 72%),
+    var(--tp-color-bg);
+}
+.tp-home-hero .w {
+  width: min(100%, 1200px);
+  padding-block: clamp(64px, 10vh, 132px);
+}
+.tp-home-hero h1 {
+  max-width: 900px;
+  margin: 18px 0 12px;
+  color: var(--tp-color-text-primary);
+  font-family: var(--tp-font-family-display, var(--tp-font-family));
+  font-size: clamp(2.5rem, 6.5vw, 5rem);
+  font-weight: 900;
+  line-height: 1.3;
+}
+.tp-home-hero .tp-home-lead {
+  max-width: 760px;
+  margin: 0 0 14px;
+  font-size: clamp(1.2rem, 2.5vw, 1.7rem);
+  line-height: 1.85;
+}
+.tp-home-copy {
+  max-width: 650px;
+  line-height: 2;
+}
+.tp-home-actions { margin-top: var(--tp-space-lg); }
+.tp-home-intro-copy { max-width: 760px; line-height: 2.1; }
+.tp-home-stats {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 225px), 1fr));
+  margin-top: var(--tp-space-lg);
+}
+.tp-home-stats .sc2 { align-items: flex-start; min-height: 92px; }
+.tp-home-stats .sc2 p { margin: 5px 0 0; line-height: 1.7; }
+.tp-home-tech-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 265px), 1fr)); }
+.tp-home-tech-card .ph { margin: 0; }
+.tp-home-figure {
+  min-height: 190px;
+  align-items: flex-end;
+  background:
+    radial-gradient(75% 100% at 50% 0%, hsla(var(--h, 205), 65%, 52%, .30), transparent 68%),
+    linear-gradient(135deg, hsl(var(--h, 205), 42%, 20%), var(--tp-color-surface));
+}
+.tp-home-figure svg {
+  width: 104px;
+  height: 104px;
+  opacity: .42;
+}
+.tp-home-figure figcaption {
+  z-index: 1;
+  padding: 5px 9px;
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: var(--tp-radius-control);
+  background: rgba(0,0,0,.24);
+  letter-spacing: .12em;
+}
+.tp-home-tech-card .b { padding: var(--tp-space-md); }
+.tp-home-tech-card h3 { margin-top: 10px; }
+.tp-home-tech-card p { margin: 0; line-height: 1.9; }
+.tp-home-feature-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 235px), 1fr)); }
+.tp-home-feature-card {
+  min-height: 190px;
+  transition: border-color var(--tp-motion-fast), transform var(--tp-motion-fast);
+}
+.tp-home-feature-card:hover {
+  border-color: var(--tp-color-brand);
+  transform: translateY(-2px);
+}
+.tp-home-feature-card .b { height: 100%; padding: var(--tp-space-md); }
+.tp-home-feature-card h3 { margin: 12px 0 7px; }
+.tp-home-feature-card p { min-height: 52px; line-height: 1.8; }
+.tp-home-feature-card .text-link { display: inline-block; margin-top: 7px; }
+.tp-home-feature-card.is-pending {
+  opacity: .78;
+  cursor: default;
+}
+.tp-home-feature-card.is-pending:hover { border-color: var(--tp-color-border); transform: none; }
+.tp-home-cta {
+  padding: clamp(24px, 5vw, 48px);
+  border: 1px solid var(--tp-color-border);
+  border-radius: var(--tp-radius-card);
+  background:
+    radial-gradient(65% 120% at 100% 0%, var(--tp-color-brand-tint), transparent 72%),
+    var(--tp-color-surface);
+}
+.tp-home-cta p { margin-bottom: var(--tp-space-md); }
+.tp-home-cta .chips { margin-bottom: 0; }
+@media (max-width: 600px) {
+  .tp-home-hero { min-height: 68vh; }
+  .tp-home-hero .w { padding-block: 56px; }
+  .tp-home-hero h1 { font-size: clamp(2.25rem, 10vw, 3.5rem); }
+  .tp-home-feature-card { min-height: 0; }
+  .tp-home-feature-card p { min-height: 0; }
+}
