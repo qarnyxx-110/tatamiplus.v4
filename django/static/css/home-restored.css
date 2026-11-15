@@ -253,3 +253,180 @@ a.tp-home-feature-card:hover {
   .tp-home-feature-card { transition: none; }
   .tp-home-feature-card:hover { transform: none; }
 }
+
+/* Original Preview-style judo technique story */
+.tp-home-cine {
+  position: relative;
+  height: 310vh;
+  margin-top: var(--tp-space-2xl);
+  background: linear-gradient(180deg, transparent, var(--tp-color-surface) 14%, var(--tp-color-surface) 86%, transparent);
+}
+.tp-home-cine-heading {
+  position: relative;
+  z-index: 2;
+  width: min(100% - 36px, 1120px);
+  margin: 0 auto;
+  padding-top: var(--tp-space-xl);
+}
+.tp-home-cine-heading h2 {
+  margin: 0 0 var(--tp-space-2xs);
+  font-family: var(--tp-font-family-display, var(--tp-font-family));
+  font-size: clamp(1.6rem, 3vw, 2.3rem);
+}
+.tp-home-cine-heading p { max-width: 540px; line-height: 1.9; }
+.tp-home-cine-track {
+  position: sticky;
+  top: 68px;
+  height: calc(100vh - 68px);
+  margin-top: -8px;
+  overflow: hidden;
+}
+.tp-home-technique {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: minmax(0, .85fr) minmax(0, 1.35fr);
+  align-items: center;
+  gap: clamp(20px, 5vw, 72px);
+  padding: 0 max(18px, calc((100% - 1120px)/2));
+  opacity: 0;
+  pointer-events: none;
+  will-change: opacity, transform;
+}
+.tp-home-technique:first-child { opacity: 1; pointer-events: auto; }
+.tp-home-technique-copy { max-width: 460px; }
+.tp-home-technique-copy h3 {
+  margin: 12px 0;
+  font-family: var(--tp-font-family-display, var(--tp-font-family));
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  line-height: 1.35;
+}
+.tp-home-technique-copy h3 span {
+  display: block;
+  color: var(--tp-color-brand-text);
+  font: 800 .78rem/1.6 var(--tp-font-family);
+  letter-spacing: .16em;
+  direction: ltr;
+  text-align: right;
+}
+.tp-home-technique-copy p { line-height: 2; }
+.tp-home-technique-note {
+  margin-top: var(--tp-space-md);
+  padding-inline-start: var(--tp-space-md);
+  border-inline-start: 2px solid var(--tp-color-brand);
+  color: var(--tp-color-text-primary);
+  font-size: var(--tp-font-size-sm);
+}
+.tp-home-technique-art {
+  display: flex;
+  width: 100%;
+  min-height: 260px;
+  max-height: 68vh;
+  aspect-ratio: 16 / 10;
+  align-items: flex-end;
+  justify-content: flex-start;
+  border: 1px solid var(--tp-color-border);
+  border-radius: var(--tp-radius-lg);
+  background:
+    radial-gradient(70% 90% at 50% 5%, hsla(var(--h, 205), 65%, 52%, .27), transparent 68%),
+    linear-gradient(135deg, hsl(var(--h, 205), 42%, 20%), var(--tp-color-surface));
+  box-shadow: var(--tp-shadow-card);
+}
+.tp-home-technique-art svg {
+  width: clamp(110px, 18vw, 190px);
+  height: clamp(110px, 18vw, 190px);
+  margin: 0 auto;
+  opacity: .45;
+}
+.tp-home-technique-art figcaption {
+  z-index: 1;
+  padding: 6px 10px;
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: var(--tp-radius-control);
+  background: rgba(0,0,0,.28);
+  letter-spacing: .14em;
+}
+.tp-home-cine-progress {
+  position: sticky;
+  bottom: 22px;
+  z-index: 3;
+  width: min(180px, 30vw);
+  height: 3px;
+  margin: -18px auto 0;
+  overflow: hidden;
+  border-radius: 99px;
+  background: var(--tp-color-border);
+}
+.tp-home-cine-progress span {
+  display: block;
+  width: 0;
+  height: 100%;
+  background: var(--tp-color-brand);
+}
+
+/* Four active destination cards */
+.tp-home-feature-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+/* Homepage live previews use the exact card classes of each Django source page. */
+.tp-home-feed.is-products .tp-product-grid,
+.tp-home-feed.is-courses .tp-course-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--tp-space-md);
+}
+.tp-home-feed.is-products .tp-product-card,
+.tp-home-feed.is-courses .tp-course-card {
+  min-width: 0;
+  height: 100%;
+}
+.tp-home-feed.is-coaches .tp-coaches {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.tp-home-feed.is-coaches .tp-coaches > li { display: flex; min-width: 0; }
+.tp-home-feed.is-coaches .tp-coaches > li > .tp-coach { width: 100%; }
+.tp-home-feed.is-coaches .tp-coach { min-width: 0; }
+.tp-home-feed.is-coaches .tp-coach b { overflow-wrap: anywhere; }
+
+@media (max-width: 900px) {
+  .tp-home-feature-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .tp-home-technique { grid-template-columns: minmax(0, 1fr); gap: var(--tp-space-md); align-content: center; }
+  .tp-home-technique-copy { max-width: 680px; }
+  .tp-home-technique-art { min-height: 200px; max-height: 38vh; }
+  .tp-home-feed.is-products .tp-product-grid,
+  .tp-home-feed.is-courses .tp-course-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .tp-home-feed.is-coaches .tp-coaches { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 600px) {
+  .tp-home-cine { height: 290vh; }
+  .tp-home-cine-heading { width: calc(100% - 36px); padding-top: var(--tp-space-lg); }
+  .tp-home-cine-track { top: 92px; height: calc(100vh - 92px); }
+  .tp-home-technique { padding-inline: 18px; }
+  .tp-home-technique-copy h3 { font-size: 2rem; }
+  .tp-home-technique-art { min-height: 155px; }
+  .tp-home-feature-grid { grid-template-columns: minmax(0, 1fr); }
+  .tp-home-feed.is-products .tp-product-grid,
+  .tp-home-feed.is-courses .tp-course-grid,
+  .tp-home-feed.is-coaches .tp-coaches { grid-template-columns: minmax(0, 1fr); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tp-home-cine { height: auto; min-height: 0; }
+  .tp-home-cine-track {
+    position: static;
+    top: auto;
+    height: auto;
+    margin-top: 0;
+    overflow: visible;
+  }
+  .tp-home-technique {
+    position: relative;
+    inset: auto;
+    display: grid;
+    opacity: 1 !important;
+    transform: none !important;
+    pointer-events: auto !important;
+    min-height: 0;
+    margin-block: var(--tp-space-lg);
+    padding-block: var(--tp-space-md);
+    transition: none !important;
+  }
+  .tp-home-cine-progress { display: none; }
+}
