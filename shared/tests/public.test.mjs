@@ -346,7 +346,7 @@ export async function runPwa(app,base,browser,altRoot){
   await wait(1200);
   await pg.evaluate(async()=>{const registration=await navigator.serviceWorker.getRegistration();if(registration)await registration.update()});
   await pg.close();
-  await wait(300);
+  await wait(1800);
   pg=await ctx.newPage();pg.setDefaultTimeout(15000);pg.setDefaultNavigationTimeout(15000);
   await pg.goto(base+'/index.html');
   await wait(300);
