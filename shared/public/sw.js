@@ -5,7 +5,7 @@ self.addEventListener('install',e=>{e.waitUntil((async()=>{
  const results=await Promise.allSettled(routes.map(url=>c.add(url)));
  results.forEach((result,index)=>{if(result.status==='rejected')console.warn('[Tatami SW] optional route was not precached:',routes[index],result.reason)});
 })().catch(error=>{console.error('[Tatami SW] install failed',error);throw error}))});
-self.addEventListener('message',e=>{if(e.data==='TP_SKIP_WAITING'){console.info('[Tatami SW] message:skip-waiting');self.skipWaiting()}});
+self.addEventListener('message',e=>{if(e.data==='TP_SKIP_WAITING'){console.info('[Tatami SW] message:skip-waiting',self.registration.active===self,self.registration.waiting===self);const activation=self.skipWaiting();activation.then(()=>console.info('[Tatami SW] skip-waiting:resolved'),error=>console.error('[Tatami SW] skip-waiting:rejected',String(error)))}});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==V).map(x=>caches.delete(x)))).then(()=>self.clients.claim()))});
 self.addEventListener('fetch',e=>{const r=e.request;if(r.method!=='GET')return;
 if(r.mode==='navigate'){e.respondWith(fetch(r).then(async x=>{const u=new URL(r.url),root=new URL('./',self.registration.scope).pathname;if(x.ok&&(u.pathname===root||u.pathname===root+'index.html')){const c=await caches.open(V);await c.put('index.html',x.clone())}return x}).catch(()=>caches.match(r).then(cached=>cached||caches.match('index.html').then(x=>x||caches.match('offline.html')))));return}
