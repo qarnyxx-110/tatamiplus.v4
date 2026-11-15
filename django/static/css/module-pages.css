@@ -1,0 +1,299 @@
+/* Module page refinements.
+   All rules are scoped to page-root classes to avoid changing unrelated templates. */
+
+/* ---------------- Store ---------------- */
+.tp-store-page .tp-store-heading { margin-bottom: var(--tp-space-lg); }
+.tp-store-page .tp-store-heading h1 { margin-bottom: var(--tp-space-2xs); }
+.tp-store-page .tp-store-lead { margin: 0 0 var(--tp-space-xs); font-size: var(--tp-font-size-xl); }
+.tp-store-page .tp-store-heading p { max-width: 720px; line-height: 1.9; }
+.tp-store-page .tp-store-categories { margin-block: var(--tp-space-sm) var(--tp-space-md); }
+.tp-store-page .tp-store-categories .chip { white-space: nowrap; }
+.tp-store-page .tp-store-filter .sbar { display: flex; gap: var(--tp-space-xs); align-items: center; }
+.tp-store-page .tp-store-filter .sbar input { flex: 1; min-width: 0; }
+.tp-store-page .tp-store-filter .sbar .btn { flex: 0 0 auto; }
+.tp-store-page .tp-store-results { min-width: 0; }
+.tp-store-page .tp-product-grid {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
+  align-items: stretch;
+}
+.tp-store-page .tp-product-card {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  overflow: hidden;
+}
+.tp-store-page .tp-product-card > a { display: block; }
+.tp-store-page .tp-product-card .ph { aspect-ratio: 4 / 3; border-radius: 0; }
+.tp-store-page .tp-product-card .b {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--tp-space-2xs);
+}
+.tp-store-page .tp-product-card h3 { overflow-wrap: anywhere; line-height: 1.75; }
+.tp-store-page .tp-product-card .tp-price { margin-top: auto; padding-top: var(--tp-space-sm); }
+.tp-store-page .tp-product-card .pa { margin-top: var(--tp-space-sm); }
+.tp-store-page .tp-pagination { display: flex; justify-content: center; margin-top: var(--tp-space-lg); }
+.tp-store-page .tp-product-detail { align-items: start; }
+.tp-store-page .tp-product-gallery { min-width: 0; }
+.tp-store-page .tp-product-gallery .pm {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--tp-space-sm);
+}
+.tp-store-page .tp-product-gallery .pm .ph:first-child { grid-column: 1 / -1; }
+.tp-store-page .tp-product-gallery .ph { width: 100%; }
+.tp-store-page .tp-product-gallery .ph img { border-radius: inherit; }
+.tp-store-page .tp-product-purchase { min-width: 0; }
+.tp-store-page .tp-product-purchase h1 { font-size: clamp(1.7rem, 3.8vw, 2.7rem); line-height: 1.5; }
+.tp-store-page .tp-product-description { margin-block: var(--tp-space-md); line-height: 2; }
+.tp-store-page .tp-product-form {
+  display: grid;
+  gap: var(--tp-space-sm);
+  padding: var(--tp-space-md);
+  border: 1px solid var(--tp-color-border);
+  border-radius: var(--tp-radius-card);
+  background: var(--tp-color-surface);
+}
+.tp-store-page .tp-product-form .btn { width: 100%; }
+.tp-store-page .tp-cart-layout { align-items: start; }
+.tp-store-page .tp-cart-item { align-items: flex-start; min-width: 0; }
+.tp-store-page .tp-cart-thumb {
+  display: block;
+  flex: 0 0 104px;
+  width: 104px;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: var(--tp-radius-control);
+  background: var(--tp-color-neutral-tint);
+}
+.tp-store-page .tp-cart-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.tp-store-page .tp-cart-price { margin-top: var(--tp-space-xs); color: var(--tp-color-text-secondary); font-size: var(--tp-font-size-sm); }
+.tp-store-page .tp-cart-summary { position: sticky; top: 80px; }
+.tp-store-page .tp-cart-summary h2 { margin-bottom: var(--tp-space-md); font-size: var(--tp-font-size-lg); }
+.tp-store-page .tp-cart-summary .btn { width: 100%; margin-top: var(--tp-space-xs); }
+.tp-store-page .tp-cart-empty { margin-top: var(--tp-space-lg); }
+
+/* ---------------- Online academy ---------------- */
+.tp-course-page .tp-course-lead { margin: 0 0 var(--tp-space-xs); font-size: var(--tp-font-size-xl); }
+.tp-course-page .sh p { max-width: 720px; line-height: 1.9; }
+.tp-course-page .tp-course-filter {
+  margin-block: var(--tp-space-lg);
+  padding: var(--tp-space-md);
+  border: 1px solid var(--tp-color-border);
+  border-radius: var(--tp-radius-card);
+  background: var(--tp-color-surface);
+}
+.tp-course-page .tp-course-filter .sbar { display: flex; gap: var(--tp-space-xs); }
+.tp-course-page .tp-course-filter .sbar input { flex: 1; min-width: 0; }
+.tp-course-page .tp-course-filter-row {
+  display: flex;
+  align-items: end;
+  flex-wrap: wrap;
+  gap: var(--tp-space-sm);
+  overflow: visible;
+  padding: 0;
+}
+.tp-course-page .tp-course-filter-row .fl { flex: 1 1 180px; margin: 0; }
+.tp-course-page .tp-course-filter-row .btn,
+.tp-course-page .tp-course-filter-row .chip { flex: 0 0 auto; }
+.tp-course-page .tp-course-grid {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr));
+  align-items: stretch;
+}
+.tp-course-page .tp-course-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+}
+.tp-course-page .tp-course-card > a:first-child { display: block; }
+.tp-course-page .tp-course-card .ph { aspect-ratio: 16 / 10; border-radius: 0; }
+.tp-course-page .tp-course-card .ph svg { color: var(--tp-color-brand-text); }
+.tp-course-page .tp-course-card .b {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--tp-space-xs);
+}
+.tp-course-page .tp-course-card-tags { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tp-space-xs); }
+.tp-course-page .tp-course-card h3 { line-height: 1.8; }
+.tp-course-page .tp-course-card .tp-course-card-coach { color: var(--tp-color-text-secondary); font-size: var(--tp-font-size-sm); }
+.tp-course-page .tp-course-card-bottom {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--tp-space-xs);
+  margin-top: auto;
+  padding-top: var(--tp-space-sm);
+}
+.tp-course-page .tp-course-card-bottom strong { color: var(--tp-color-brand-text); }
+.tp-course-page .tp-course-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr);
+  gap: clamp(22px, 4vw, 56px);
+  align-items: center;
+  padding: var(--tp-space-lg);
+  border: 1px solid var(--tp-color-border);
+  border-radius: var(--tp-radius-card);
+  background: var(--tp-color-surface);
+}
+.tp-course-page .tp-course-cover {
+  overflow: hidden;
+  min-width: 0;
+  aspect-ratio: 16 / 10;
+  border-radius: var(--tp-radius-card);
+  background: var(--tp-color-neutral-tint);
+}
+.tp-course-page .tp-course-cover img { width: 100%; height: 100%; object-fit: cover; }
+.tp-course-page .tp-course-cover-placeholder {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  place-items: center;
+  background: radial-gradient(circle at 45% 40%, var(--tp-color-brand-tint), transparent 65%), var(--tp-color-surface);
+}
+.tp-course-page .tp-course-cover-placeholder span { color: var(--tp-color-brand-text); font: 900 clamp(5rem, 12vw, 9rem)/1 serif; opacity: .75; }
+.tp-course-page .tp-course-summary h1 { margin-block: var(--tp-space-xs); font-size: clamp(1.75rem, 3.6vw, 2.8rem); line-height: 1.5; }
+.tp-course-page .tp-course-instructor {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--tp-space-sm);
+  margin-block: var(--tp-space-sm);
+}
+.tp-course-page .tp-course-instructor img {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.tp-course-page .tp-course-instructor span:last-child { display: grid; gap: 2px; }
+.tp-course-page .tp-course-instructor small { color: var(--tp-color-text-secondary); }
+.tp-course-page .tp-course-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--tp-space-xs);
+  margin-block: var(--tp-space-sm);
+}
+.tp-course-page .tp-course-meta strong { margin-inline-start: auto; color: var(--tp-color-brand-text); }
+.tp-course-page .tp-course-summary form { margin-top: var(--tp-space-sm); }
+.tp-course-page .tp-course-description { max-width: 900px; line-height: 2; }
+.tp-course-page .tp-episode-list { display: grid; gap: var(--tp-space-xs); }
+.tp-course-page .tp-episode-row {
+  display: flex;
+  align-items: center;
+  gap: var(--tp-space-sm);
+  min-width: 0;
+  padding: var(--tp-space-sm) var(--tp-space-md);
+  border: 1px solid var(--tp-color-border);
+  border-radius: var(--tp-radius-control);
+  background: var(--tp-color-surface);
+}
+.tp-course-page .tp-episode-number {
+  display: grid;
+  flex: 0 0 38px;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border-radius: var(--tp-radius-control);
+  background: var(--tp-color-brand-tint);
+  color: var(--tp-color-brand-text);
+  font-weight: 800;
+}
+.tp-course-page .tp-episode-copy { display: grid; flex: 1; min-width: 0; gap: 4px; }
+.tp-course-page .tp-episode-copy b { overflow-wrap: anywhere; }
+.tp-course-page .tp-episode-locked {
+  color: var(--tp-color-text-secondary);
+  font-size: var(--tp-font-size-sm);
+}
+.tp-course-page .tp-episode-player {
+  overflow: hidden;
+  border: 1px solid var(--tp-color-border);
+  border-radius: var(--tp-radius-card);
+  background: #000;
+}
+.tp-course-page .tp-episode-player .course-video {
+  display: block;
+  width: 100%;
+  max-height: 76vh;
+  margin: 0;
+  border-radius: 0;
+  background: #000;
+}
+.tp-course-page .tp-episode-completion {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--tp-space-sm);
+  margin-block: var(--tp-space-md);
+}
+.tp-course-page .tp-episode-completion p { flex: 1 1 100%; margin: 0; }
+
+/* ---------------- Coach pages and panel ---------------- */
+.tp-coach-detail-page .tp-coach-hero { grid-template-columns: minmax(0, 1fr) auto; }
+.tp-coach-detail-page .tp-coach-avatar {
+  width: clamp(92px, 13vw, 150px);
+  height: clamp(92px, 13vw, 150px);
+  flex: 0 0 auto;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--tp-color-border);
+}
+.tp-coach-detail-page .tp-coach-facts { display: flex; flex-wrap: wrap; gap: var(--tp-space-xs); }
+.tp-coach-detail-page .tp-coach-biography { max-width: 860px; line-height: 2; }
+.tp-coach-panel .sh { align-items: center; }
+.tp-coach-panel .tp-panel-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--tp-space-xs);
+  margin-block: var(--tp-space-md);
+}
+.tp-coach-panel .tp-panel-course-list { display: grid; gap: var(--tp-space-sm); }
+.tp-coach-panel .tp-panel-course {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--tp-space-md);
+}
+.tp-coach-panel .tp-panel-course h2 { margin: var(--tp-space-xs) 0; font-size: var(--tp-font-size-lg); }
+.tp-coach-panel .tp-panel-course-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--tp-space-xs); }
+.tp-coach-panel .tp-editor-form { display: grid; gap: var(--tp-space-sm); max-width: 820px; }
+.tp-coach-panel .tp-editor-actions { display: flex; flex-wrap: wrap; gap: var(--tp-space-xs); }
+.tp-coach-panel .tp-editor-note {
+  padding: var(--tp-space-sm);
+  border: 1px solid var(--tp-color-border);
+  border-radius: var(--tp-radius-control);
+  background: var(--tp-color-bg);
+}
+.tp-coach-panel .tp-editor-note p { margin: 4px 0 0; line-height: 1.8; }
+.tp-coach-panel .tp-episode-row { margin-block: var(--tp-space-xs); }
+
+@media (max-width: 900px) {
+  .tp-store-page .sl { grid-template-columns: minmax(0, 1fr); }
+  .tp-store-page .tp-cart-layout { grid-template-columns: minmax(0, 1fr); }
+  .tp-store-page .tp-cart-summary { position: static; }
+  .tp-course-page .tp-course-hero { grid-template-columns: minmax(0, 1fr); }
+  .tp-coach-detail-page .tp-coach-hero { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 600px) {
+  .tp-store-page .tp-store-filter .sbar { align-items: stretch; flex-direction: column; }
+  .tp-store-page .tp-store-filter .sbar .btn { width: 100%; }
+  .tp-store-page .tp-product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--tp-space-sm); }
+  .tp-store-page .tp-product-card .b { padding: var(--tp-space-sm); }
+  .tp-store-page .tp-cart-thumb { flex-basis: 72px; width: 72px; }
+  .tp-course-page .tp-course-filter .sbar { flex-direction: column; }
+  .tp-course-page .tp-course-filter .sbar .btn { width: 100%; }
+  .tp-course-page .tp-course-filter-row .fl { flex-basis: 100%; }
+  .tp-course-page .tp-course-hero { padding: var(--tp-space-sm); }
+  .tp-course-page .tp-course-meta strong { margin-inline-start: 0; width: 100%; }
+  .tp-course-page .tp-episode-row { align-items: flex-start; flex-wrap: wrap; }
+  .tp-course-page .tp-episode-copy { flex: 1 1 calc(100% - 52px); }
+  .tp-course-page .tp-episode-row > .btn,
+  .tp-course-page .tp-episode-row > .tp-episode-locked { margin-inline-start: 48px; }
+  .tp-coach-panel .tp-panel-course { align-items: flex-start; }
+  .tp-coach-panel .tp-panel-course-actions { width: 100%; }
+  .tp-coach-panel .tp-editor-actions > * { flex: 1 1 100%; }
+}
