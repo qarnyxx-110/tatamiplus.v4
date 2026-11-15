@@ -10,16 +10,27 @@
   </nav>
 
   <div class="pd tp-product-detail">
-    <section class="tp-product-gallery" aria-label="تصاویر محصول">
-      <div class="pm">
-        {% for image in product.images.all %}
-          <figure class="ph r43 ok">
-            <img src="{{ image.image.url }}" alt="{{ image.alt_text|default:product.name }}"{% if not forloop.first %} loading="lazy"{% endif %} decoding="async">
-          </figure>
-        {% empty %}
-          <figure class="ph r43"><figcaption>تصویری برای این محصول ثبت نشده است</figcaption></figure>
-        {% endfor %}
-      </div>
+    <section class="tp-product-gallery" data-product-gallery aria-label="تصاویر محصول">
+      {% with main_image=product.images.all|first %}
+        <figure class="ph r43 tp-product-gallery-main{% if main_image %} ok{% endif %}" data-gallery-main>
+          {% if main_image %}
+            <img data-gallery-main-image src="{{ main_image.image.url }}" alt="{{ main_image.alt_text|default:product.name }}" decoding="async">
+          {% else %}
+            <figcaption>تصویری برای این محصول ثبت نشده است</figcaption>
+          {% endif %}
+        </figure>
+      {% endwith %}
+      {% if product.images.count > 1 %}
+        <div class="tp-product-gallery-thumbs" role="group" aria-label="انتخاب تصویر محصول">
+          {% for image in product.images.all %}
+            <button type="button" class="tp-product-thumb{% if forloop.first %} is-active{% endif %}"
+              data-gallery-select data-src="{{ image.image.url }}" data-alt="{{ image.alt_text|default:product.name }}"
+              aria-label="نمایش تصویر {{ forloop.counter }}" aria-pressed="{% if forloop.first %}true{% else %}false{% endif %}">
+              <img src="{{ image.image.url }}" alt="" loading="lazy" decoding="async">
+            </button>
+          {% endfor %}
+        </div>
+      {% endif %}
     </section>
 
     <section class="tp-product-purchase" aria-labelledby="pd-title">
@@ -42,6 +53,5 @@
       <a class="btn o" href="{% url 'store:cart' %}">مشاهده سبد خرید</a>
     </section>
   </div>
-
 </main>
 {% endblock %}
