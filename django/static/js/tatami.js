@@ -170,7 +170,12 @@
     phoneInput.inputMode = 'tel';
     phoneInput.dir = 'ltr';
     phoneInput.maxLength = 20;
-    phoneInput.setAttribute('aria-describedby', [phoneInput.getAttribute('aria-describedby'), 'tp-phone-hint'].filter(Boolean).join(' '));
+    const phoneField = phoneInput.closest('.form-field');
+    const phoneHint = phoneField && phoneField.querySelector('.field-help');
+    if (phoneHint) {
+      if (!phoneHint.id) phoneHint.id = 'tp-phone-hint';
+      phoneInput.setAttribute('aria-describedby', [phoneInput.getAttribute('aria-describedby'), phoneHint.id].filter(Boolean).join(' '));
+    }
   }
   const otpInput = $('#id_code');
   if (otpInput) {
