@@ -297,3 +297,74 @@
   .tp-coach-panel .tp-panel-course-actions { width: 100%; }
   .tp-coach-panel .tp-editor-actions > * { flex: 1 1 100%; }
 }
+
+/* Coach cards, profile imagery, invitations and member list */
+.tp-coach-directory .tp-coach-avatar,
+.tp-coach-profile-page .tp-coach-avatar,
+.tp-coach-detail-page .tp-coach-avatar {
+  display: block;
+  width: clamp(64px, 8vw, 92px);
+  height: clamp(64px, 8vw, 92px);
+  flex: 0 0 auto;
+  border: 1px solid var(--tp-color-border);
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--tp-color-neutral-tint);
+}
+.tp-coach-directory .tp-coach-card-copy { display: grid; min-width: 0; gap: 4px; }
+.tp-coach-directory .tp-coach-card-copy b { overflow-wrap: anywhere; }
+.tp-coach-directory .tp-coach > .text-link { margin-inline-start: auto; white-space: nowrap; }
+.tp-coach-profile-page .tp-coach-profile-hero { grid-template-columns: minmax(0,1fr) auto; }
+.tp-coach-profile-page .pf-cta { display: flex; flex-wrap: wrap; gap: var(--tp-space-xs); }
+.tp-coach-panel .tp-coach-publish-state { margin-block: var(--tp-space-md); }
+.tp-coach-panel .tp-coach-publish-state .btn { margin-top: var(--tp-space-xs); }
+.tp-coach-panel .tp-invite-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(min(100%,260px),1fr)); gap: var(--tp-space-sm); }
+.tp-coach-panel .tp-invite-card { min-width: 0; }
+.tp-coach-panel .tp-invite-code {
+  font: 900 var(--tp-font-size-xl)/1.4 var(--tp-font-family);
+  letter-spacing: .08em;
+  direction: ltr;
+}
+.tp-coach-panel .tp-invite-link-label {
+  display: block;
+  margin-top: var(--tp-space-sm);
+  color: var(--tp-color-text-secondary);
+  font-size: var(--tp-font-size-caption);
+}
+.tp-coach-panel .tp-invite-link {
+  width: 100%;
+  min-width: 0;
+  margin-block: 4px var(--tp-space-xs);
+  padding: var(--tp-space-xs);
+  border: 1px dashed var(--tp-color-border);
+  border-radius: var(--tp-radius-control);
+  background: var(--tp-color-bg);
+  color: var(--tp-color-text-secondary);
+  font: var(--tp-font-size-caption)/1.7 var(--tp-font-family);
+  direction: ltr;
+}
+.tp-coach-panel .tp-invite-card form { margin-top: var(--tp-space-xs); }
+.tp-coach-panel .tp-student-list { display: grid; gap: var(--tp-space-xs); }
+.tp-coach-panel .tp-student-list .tp-episode-row { margin: 0; }
+.tp-coach-join-page .tp-coach-join-card {
+  display: grid;
+  justify-items: start;
+  gap: var(--tp-space-sm);
+  max-width: 680px;
+  margin-inline: auto;
+  padding: clamp(22px, 4vw, 42px);
+}
+.tp-coach-join-page .tp-coach-join-card h1 { margin: 0; }
+.tp-coach-join-page .tp-coach-join-card form,
+.tp-coach-join-page .tp-coach-join-card .btn { width: 100%; }
+
+@media (max-width: 900px) {
+  .tp-coach-profile-page .tp-coach-profile-hero { grid-template-columns: minmax(0,1fr); }
+}
+@media (max-width: 600px) {
+  .tp-coach-directory .tp-coach > .text-link { display: none; }
+  .tp-coach-panel .tp-invite-grid { grid-template-columns: minmax(0,1fr); }
+  .tp-coach-panel .tp-student-list .tp-episode-row { flex-wrap: wrap; }
+  .tp-coach-panel .tp-student-list .tp-episode-copy { flex-basis: calc(100% - 52px); }
+  .tp-coach-panel .tp-student-list .tp-episode-row > .mu { margin-inline-start: 48px; width: 100%; }
+}
