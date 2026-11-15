@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% load store_format %}
+{% load persian %}
+{% load club_format %}
+
+{% block title %}{{ course.title }} | باشگاه مجازی تاتامی پلاس{% endblock %}
+{% block content %}
+<main class="w tp-course-page tp-course-detail-page">
+  <nav class="tp-crumbs" aria-label="مسیر صفحه">
+    <ol><li><a href="{% url 'home' %}">خانه</a></li><li><a href="{% url 'club:course_list' %}">باشگاه مجازی</a></li><li aria-current="page">{{ course.title }}</li></ol>
+  </nav>
+
+  <section class="tp-course-hero">
+    <div class="tp-course-cover">
+      {% if course.cover %}
+        <img src="{{ course.cover.url }}" alt="{{ course.title }}">
+      {% else %}
+        <div class="tp-course-cover-placeholder" aria-hidden="true"><span>道</span></div>
+      {% endif %}
+    </div>
+    <div class="tp-course-summary">
+      <span class="eyebrow">ONLINE COURSE</span>
+      <h1>{{ course.title }}</h1>
+      <a class="tp-course-instructor" href="{% url 'club:coach_detail' course.coach.pk %}">
+        {% if course.coach.avatar %}<img src="{{ course.coach.avatar.url }}" alt="" loading="lazy">{% else %}<span class="d-av" aria-hidden="true">{{ course.coach.display_name|first }}</span>{% endif %}
+        <span><b>{{ course.coach.display_name }}</b><small>مربی دوره</small></span>
+      </a>
+      <div class="tp-course-meta">
+        <span class="tag">{{ course.get_level_display }}</span>
+        <span class="tag m">{{ episodes|length|price_fa }} قسمت</span>
+        <strong>{% if course.price > 0 %}{{ course.price|price_fa }} تومان{% else %}رایگان{% endif %}</strong>
+      </div>
+      {% if owner %}
+        <p class="tp-note">شما مربی این دوره هستید و به تمام قسمت‌ها دسترسی دارید.</p>
+        <a class="btn o" href="{% url 'coach_panel:course_edit' course.pk %}">مدیریت دوره</a>
+      {% elif enrolled %}
+        <p class="tp-note">این دوره در حساب شما فعال است.</p>
+      {% elif course.price > 0 %}
+        <p class="mu">برای دسترسی به قسمت‌های قفل‌شده، دوره را تهیه کنید.</p>
+        <form method="post" action="{% url 'club:buy_course' course.slug %}">
+          {% csrf_token %}
+          <button class="btn" type="submit">تهیه دوره — {{ course.price|price_fa }} تومان</button>
+        </form>
+      {% else %}
+        <p class="mu">برای فعال‌سازی دسترسی رایگان، دکمه زیر را انتخاب کنید.</p>
+        <form method="post" action="{% url 'club:buy_course' course.slug %}">
+          {% csrf_token %}
+          <button class="btn" type="submit">فعال‌سازی دسترسی رایگان</button>
+        </form>
+      {% endif %}
+    </div>
+  </section>
+
+  {% if course.description %}
+    <section class="d-s tp-course-description" aria-labelledby="course-description-title">
+      <h2 id="course-description-title">درباره این دوره</h2>
+      <div class="mu">{{ course.description|linebreaks }}</div>
+    </section>
+  {% endif %}
+
+  <section class="d-s tp-course-episodes" aria-labelledby="episodes-title">
+    <div class="dh"><h2 id="episodes-title">محتوای دوره</h2><span class="mu sm">{{ episodes|length|price_fa }} قسمت</span></div>
+    <div class="tp-episode-list">
+      {% for episode in episodes %}
+        <article class="tp-episode-row">
+          <span class="tp-episode-number">{{ episode.order|price_fa }}</span>
+          <div class="tp-episode-copy">
+            <b>{{ episode.title }}</b>
+            <span class="mu sm">{{ episode.duration|duration_mmss|persian_digits }} دقیقه{% if episode.is_free %} · نمونه رایگان{% endif %}{% if episode.completed %} · <span class="lesson-done">تمام‌شده</span>{% endif %}</span>
+          </div>
+          {% if episode.can_watch %}
+            <a class="btn s" href="{% url 'club:episode_play' episode.pk %}">تماشا</a>
+          {% else %}
+            <span class="tp-episode-locked" aria-label="قفل‌شده">قفل شده</span>
+          {% endif %}
+        </article>
+      {% empty %}
+        <div class="tp-state"><b>هنوز قسمتی برای این دوره ثبت نشده است</b><p>محتوای دوره پس از بارگذاری توسط مربی نمایش داده می‌شود.</p></div>
+      {% endfor %}
+    </div>
+  </section>
+</main>
+{% endblock %}
