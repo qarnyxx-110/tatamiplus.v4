@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if episode %}ویرایش قسمت{% else %}افزودن قسمت{% endif %} | تاتامی پلاس{% endblock %}
+{% block content %}
+<main class="w tp-coach-panel">
+  <nav class="tp-crumbs" aria-label="مسیر صفحه"><ol><li><a href="{% url 'coach_panel:course_list' %}">پنل مربی</a></li><li><a href="{% url 'coach_panel:course_edit' course.pk %}">{{ course.title }}</a></li><li aria-current="page">{% if episode %}ویرایش قسمت{% else %}افزودن قسمت{% endif %}</li></ol></nav>
+  <header class="sh"><div><span class="eyebrow">EPISODE EDITOR</span><h1>{% if episode %}{{ episode.title }}{% else %}افزودن قسمت جدید{% endif %}</h1><p class="mu">{{ course.title }}</p></div></header>
+  <form class="d-c tp-editor-form" method="post" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+    {% include 'includes/form_fields.html' %}
+    <div class="tp-editor-note"><b>توجه به فایل ویدیو</b><p class="mu sm">فایل ویدیو به‌صورت خصوصی ذخیره می‌شود. فقط MP4 مجاز است و دسترسی هنرجو از طریق مجوز دوره بررسی خواهد شد. قسمت اول دوره همیشه رایگان است.</p></div>
+    <div class="tp-editor-actions"><button class="btn" type="submit">{% if episode %}ذخیره تغییرات{% else %}افزودن قسمت{% endif %}</button><a class="btn o" href="{% url 'coach_panel:course_edit' course.pk %}">بازگشت به دوره</a></div>
+  </form>
+</main>
+{% endblock %}
