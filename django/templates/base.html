@@ -24,7 +24,7 @@
     <a href="{% url 'home' %}"{% if route == 'home' %} class="on" aria-current="page"{% endif %}>خانه</a>
     <a href="{% url 'store:product_list' %}"{% if app == 'store' and route != 'cart' %} class="on" aria-current="page"{% endif %}>فروشگاه</a>
     <a href="{% url 'club:course_list' %}"{% if app == 'club' %} class="on" aria-current="page"{% endif %}>باشگاه مجازی</a>
-    <a href="{% url 'coaches:directory' %}"{% if app == 'coaches' and route == 'directory' or route == 'profile_detail' %} class="on" aria-current="page"{% endif %}>مربیان</a>
+    <a href="{% url 'coaches:directory' %}"{% if app == 'coaches' and route == 'directory' or app == 'coaches' and route == 'profile_detail' %} class="on" aria-current="page"{% endif %}>مربیان</a>
     <a href="{% url 'store:cart' %}"{% if app == 'store' and route == 'cart' %} class="on" aria-current="page"{% endif %}>سبد خرید</a>
     <a href="{% url 'account' %}"{% if route == 'account' %} class="on" aria-current="page"{% endif %}>حساب کاربری</a>
   </nav>
