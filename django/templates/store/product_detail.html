@@ -26,7 +26,7 @@
       <a class="mu sm" href="{% url 'store:product_list' %}?category={{ product.category.pk }}">{{ product.category.name }}</a>
       <h1 id="pd-title">{{ product.name }}</h1>
       {% if product.training_level %}<p class="mu sm">سطح تمرین: {{ product.training_level }}</p>{% endif %}
-      {% if starting_price is not None %}
+      {% if starting_price or starting_price == 0 %}
         <p class="sv">از {{ starting_price|price_fa }}</p>
       {% else %}
         <p><span class="tag m">در حال حاضر ناموجود</span></p>
@@ -36,18 +36,12 @@
       <form method="post" class="tp-product-form" novalidate>
         {% csrf_token %}
         {% include 'includes/form_fields.html' %}
-        <button class="btn" type="submit"{% if starting_price is None %} disabled{% endif %}>افزودن به سبد خرید</button>
+        <button class="btn" type="submit"{% if not starting_price and starting_price != 0 %} disabled{% endif %}>افزودن به سبد خرید</button>
       </form>
       <p class="mu sm">قیمت و موجودی نهایی هنگام ثبت درخواست از سمت سرور بررسی می‌شود.</p>
       <a class="btn o" href="{% url 'store:cart' %}">مشاهده سبد خرید</a>
     </section>
   </div>
 
-  {% if product.description %}
-    <section class="d-s tp-product-description-section" aria-labelledby="product-description-title">
-      <h2 id="product-description-title">توضیحات محصول</h2>
-      <div class="mu">{{ product.description|linebreaks }}</div>
-    </section>
-  {% endif %}
 </main>
 {% endblock %}
