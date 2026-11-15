@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% load persian %}
+
+{% block title %}{% if course %}ویرایش دوره{% else %}ساخت دوره{% endif %} | پنل مربی تاتامی پلاس{% endblock %}
+{% block content %}
+<main class="w tp-coach-panel">
+  <nav class="tp-crumbs" aria-label="مسیر صفحه"><ol><li><a href="{% url 'home' %}">خانه</a></li><li><a href="{% url 'coach_panel:course_list' %}">پنل مربی</a></li><li aria-current="page">{% if course %}ویرایش دوره{% else %}دوره جدید{% endif %}</li></ol></nav>
+  <header class="sh"><div><span class="eyebrow">COURSE EDITOR</span><h1>{% if course %}{{ course.title }}{% else %}ساخت دوره جدید{% endif %}</h1>{% if course %}<p class="mu">وضعیت فعلی: {{ course.get_status_display }}</p>{% else %}<p class="mu">پس از ثبت، دوره برای بررسی تیم ارسال می‌شود.</p>{% endif %}</div></header>
+
+  <form class="d-c tp-editor-form" method="post" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+    {% include 'includes/form_fields.html' %}
+    <div class="tp-editor-actions"><button class="btn" type="submit">{% if course %}ذخیره تغییرات{% else %}ثبت دوره برای بررسی{% endif %}</button><a class="btn o" href="{% url 'coach_panel:course_list' %}">انصراف</a></div>
+  </form>
+
+  {% if course %}
+    <section class="d-s" aria-labelledby="course-episodes-title">
+      <div class="dh"><h2 id="course-episodes-title">قسمت‌های دوره</h2><a class="btn s" href="{% url 'coach_panel:episode_create' course.pk %}">افزودن قسمت</a></div>
+      {% for episode in course.episodes.all %}
+        <article class="tp-episode-row">
+          <span class="tp-episode-number">{{ episode.order|persian_digits }}</span>
+          <div class="tp-episode-copy"><b>{{ episode.title }}</b><span class="mu sm">{% if episode.is_free %}نمونه رایگان{% else %}قسمت ویژه{% endif %}</span></div>
+          <a class="btn o s" href="{% url 'coach_panel:episode_edit' episode.pk %}">ویرایش</a>
+        </article>
+      {% empty %}
+        <div class="tp-state"><b>هنوز قسمتی ثبت نشده است</b><p>برای افزودن ویدیو، دکمه افزودن قسمت را انتخاب کنید.</p></div>
+      {% endfor %}
+    </section>
+  {% endif %}
+</main>
+{% endblock %}
