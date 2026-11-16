@@ -1,0 +1,78 @@
+name: Validate cPanel frontend manifest
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "deploy/frontend-manifest.json"
+      - "django/templates/**"
+      - "django/static/**"
+      - ".github/workflows/validate-cpanel-manifest.yml"
+  push:
+    branches: [main]
+    paths:
+      - "deploy/frontend-manifest.json"
+      - "django/templates/**"
+      - "django/static/**"
+      - ".github/workflows/validate-cpanel-manifest.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate-manifest:
+    name: Check safe frontend deployment scope
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out frontend repository
+        uses: actions/checkout@v4
+
+      - name: Validate manifest and selected files
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          path = Path("deploy/frontend-manifest.json")
+          manifest = json.loads(path.read_text(encoding="utf-8"))
+          assert manifest.get("schema_version") == 1
+          mappings = manifest.get("mappings")
+          assert isinstance(mappings, list) and mappings
+
+          forbidden = {".py", ".pyc", ".php", ".phtml", ".sh", ".cgi", ".pl", ".env"}
+          destinations = set()
+
+          for mapping in mappings:
+              source = mapping["source"]
+              destination = mapping["destination"]
+              assert destination in {"templates", "static"}
+              expected = "django/templates" if destination == "templates" else "django/static"
+              assert source == expected or source.startswith(expected + "/")
+              extensions = {item.lower() for item in mapping["extensions"]}
+              excludes = mapping.get("exclude", [])
+              source_root = Path(source)
+              assert source_root.is_dir(), f"Missing source root: {source}"
+
+              for item in source_root.rglob("*"):
+                  if not item.is_file():
+                      continue
+                  relative = item.relative_to(source_root).as_posix()
+                  if any(relative == excluded or relative.startswith(excluded.rstrip("/") + "/")
+                         for excluded in excludes):
+                      continue
+                  suffix = item.suffix.lower()
+                  if suffix not in extensions:
+                      continue
+                  assert not item.is_symlink(), f"Symlinks are not deployable: {item}"
+                  assert suffix not in forbidden, f"Forbidden extension selected: {item}"
+                  target = f"{destination}/{relative}"
+                  assert target not in destinations, f"Duplicate destination: {target}"
+                  destinations.add(target)
+
+          assert destinations, "Manifest selected zero files"
+          assert "static/css/styles.css" not in destinations, "Backend-owned styles.css must be excluded"
+          assert not any(item.startswith("templates/clubs/") for item in destinations)
+          assert "static/css/clubs-map.css" not in destinations
+          assert "static/js/clubs-map.js" not in destinations
+          print(f"CPANEL_FRONTEND_MANIFEST_OK | files={len(destinations)}")
+          PY
