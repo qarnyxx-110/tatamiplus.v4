@@ -24,6 +24,7 @@ on:
       - "shared/build.js"
       - "shared/package.json"
       - ".github/workflows/django-frontend-contract.yml"
+      - "deploy/frontend-manifest.json"
   workflow_dispatch:
 
 permissions:
