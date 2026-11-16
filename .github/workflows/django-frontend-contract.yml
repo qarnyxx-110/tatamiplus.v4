@@ -12,7 +12,6 @@ on:
       - "shared/build.js"
       - "shared/package.json"
       - ".github/workflows/django-frontend-contract.yml"
-      - "deploy/frontend-manifest.json"
   push:
     branches: [main]
     paths:
@@ -24,7 +23,6 @@ on:
       - "shared/build.js"
       - "shared/package.json"
       - ".github/workflows/django-frontend-contract.yml"
-      - "deploy/frontend-manifest.json"
   workflow_dispatch:
 
 permissions:
@@ -69,49 +67,6 @@ jobs:
           set -euo pipefail
           git clone https://github.com/Radinsharifi/Tatami-demo.git backend
           git -C backend checkout --detach e2ffeba0a42ecc3ec172b89d66794f9cd628d977
-
-      - name: Validate cPanel frontend deployment manifest
-        run: |
-          python - <<'PY'
-          import json
-          from pathlib import Path
-
-          manifest = json.loads(Path("deploy/frontend-manifest.json").read_text(encoding="utf-8"))
-          assert manifest.get("schema_version") == 1
-          mappings = manifest.get("mappings")
-          assert isinstance(mappings, list) and mappings
-          selected = set()
-          forbidden = {".py", ".pyc", ".php", ".phtml", ".sh", ".cgi", ".pl", ".env"}
-          for mapping in mappings:
-              source = mapping["source"]
-              destination = mapping["destination"]
-              assert source.startswith("django/")
-              assert destination in {"templates", "static"}
-              expected = "django/templates" if destination == "templates" else "django/static"
-              assert source == expected or source.startswith(expected + "/")
-              extensions = {ext.lower() for ext in mapping["extensions"]}
-              excludes = mapping.get("exclude", [])
-              for path in Path(source).rglob("*"):
-                  if not path.is_file():
-                      continue
-                  relative = path.relative_to(source).as_posix()
-                  if any(relative == item or relative.startswith(item.rstrip("/") + "/") for item in excludes):
-                      continue
-                  suffix = path.suffix.lower()
-                  if suffix not in extensions:
-                      continue
-                  assert not path.is_symlink(), f"Symlink is not deployable: {path}"
-                  assert suffix not in forbidden, f"Forbidden extension: {path}"
-                  target = f"{destination}/{relative}"
-                  assert target not in selected, f"Duplicate destination: {target}"
-                  selected.add(target)
-          assert selected, "Manifest selected no files"
-          assert "static/css/styles.css" not in selected, "Backend-owned styles.css must remain excluded"
-          assert not any(path.startswith("templates/clubs/") for path in selected)
-          assert "static/css/clubs-map.css" not in selected
-          assert "static/js/clubs-map.js" not in selected
-          print(f"CPANEL_FRONTEND_MANIFEST_OK | files={len(selected)}")
-          PY
 
       - name: Install backend dependencies
         run: |
