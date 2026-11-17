@@ -123,3 +123,35 @@
 آزمون تعداد کارت‌ها باید همین selectorها را به‌کار ببرد؛ جست‌وجوی کلاس‌های قدیمی مانند `.product-item`، `.coach-row` یا `.course-row` برای قالب‌های جدید معتبر نیست. نبود کارت فقط وقتی empty state واقعی همان صفحه نیز دیده شود، به معنی خالی‌بودن نتیجهٔ query است.
 
 قالب تاریخچهٔ جم باید در مسیر واقعی `templates/gems/history.html` قرار گیرد و از context بک‌اند یعنی `page`، `balance` و `rules` استفاده کند. فایل‌های checkout، OTP و تکمیل پروفایل که در این بسته نیستند، متعلق به بک‌اند هستند و باید بدون جایگزینی/حذف حفظ شوند.
+
+## پل مسیرهای Preview به صفحات واقعی Django
+
+فایل استاتیک preview/index.html اسکریپت preview/assets/django-route-bridge.js را بارگذاری می‌کند. این اسکریپت فقط مسیرهای دارای قرارداد واقعی را به صفحات Django هدایت می‌کند؛ API جدید، CORS، احراز هویت توکنی یا منطق مالی در مرورگر ایجاد نمی‌کند.
+
+| مسیر hash در Preview | مقصد واقعی Django |
+| --- | --- |
+| #/store | /store/؛ فیلترهای پشتیبانی‌شده به query string سرور منتقل می‌شوند |
+| #/product/<id> | نام محصول محلی فقط برای یافتن همان محصول در HTML فروشگاه استفاده می‌شود؛ مقصد نهایی slug واقعی Django است. در نبود تطبیق، جست‌وجوی واقعی نام محصول اجرا می‌شود |
+| #/cart | /store/cart/ |
+| #/checkout | /checkout/address/ |
+| #/login، #/register و #/role | /auth/login/ |
+| #/coaches | /coaches/ |
+| #/coach-apply و #/coach-application | /coaches/apply/ |
+| #/courses | /club/ |
+| #/episode/<id> با شناسه عددی | /club/episode/<id>/ |
+| #/gems | /account/gems/ |
+| #/profile و #/my-profile | /account/ |
+| #/orders | /orders/ |
+
+این پل از navigation هم‌مبدأ استفاده می‌کند؛ بنابراین کوکی Session مرورگر به Django می‌رسد و POSTها همچنان از فرم‌های رندرشدهٔ Django، توکن CSRF و اعتبارسنجی سرور استفاده می‌کنند. اسکریپت هیچ قیمت، موجودی، سبد یا تراکنشی را در مرورگر معتبر نمی‌داند.
+
+ماژول‌هایی که در قرارداد بک‌اند وجود ندارند (از جمله نقشه جغرافیایی باشگاه‌ها، داشبوردهای برنامه‌ریزی‌نشده، مربی آنلاین و خرج جم در Checkout) عمداً به مسیر Django هدایت نمی‌شوند و نباید به‌عنوان قابلیت عملیاتی بک‌اند معرفی شوند.
+
+### ترتیب انتشار پل
+
+1. ابتدا فایل‌های django/templates و django/static مجاز در deploy/frontend-manifest.json به اپ Django منتقل شوند؛ فایل‌های backend-owned حفظ شوند.
+2. سپس collectstatic اجرا و /store/، /store/cart/، /auth/login/ و /club/ روی دامنه آزمایش شوند.
+3. بعد فقط دو فایل preview/index.html و preview/assets/django-route-bridge.js در مسیر عمومی preview/ جایگزین/اضافه شوند.
+4. در پایان، مسیرهای hash جدول بالا در مرورگر آزمایش شوند. /preview/ بدون hash باید همچنان همان صفحهٔ اصلی قبلی را نمایش دهد.
+
+اگر کاتالوگ محصول در دیتابیس خالی باشد، فروشگاه باید empty state واقعی Django را نشان دهد؛ هیچ‌گاه برای پرکردن صفحه به کاتالوگ محلی نمایشی برنگردد.
