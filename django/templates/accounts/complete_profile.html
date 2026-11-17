@@ -9,7 +9,7 @@
 
   <form id="tp-complete-profile-form" method="post" novalidate aria-labelledby="auth-page-title">
     {% csrf_token %}
-    {% include "includes/form_fields.html" %}
+    {% include 'includes/form_fields.html' %}
     <button class="btn tp-auth-btn" type="submit">ذخیره و ادامه</button>
   </form>
 {% endblock %}

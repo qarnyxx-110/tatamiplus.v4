@@ -9,7 +9,7 @@
 
   <form id="tp-login-form" method="post" novalidate data-auth-form="login" aria-labelledby="auth-page-title">
     {% csrf_token %}
-    {% include "includes/form_fields.html" %}
+    {% include 'includes/form_fields.html' %}
     <button class="btn tp-auth-btn" type="submit">دریافت کد یک‌بارمصرف</button>
   </form>
 {% endblock %}

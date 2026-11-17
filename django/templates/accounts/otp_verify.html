@@ -13,7 +13,7 @@
 
   <form id="tp-otp-verify-form" method="post" action="{% url 'phone_auth:verify_otp' %}" novalidate aria-labelledby="auth-page-title">
     {% csrf_token %}
-    {% include "includes/form_fields.html" %}
+    {% include 'includes/form_fields.html' %}
     <button class="btn tp-auth-btn" type="submit">تأیید و ادامه</button>
   </form>
 
