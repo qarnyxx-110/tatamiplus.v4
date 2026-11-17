@@ -45,32 +45,81 @@
   async function resolveStoreFilters(params) {
     const query = new URLSearchParams();
 
-    ['query', 'size', 'color', 'training_level', 'min_price', 'max_price', 'sort', 'page']
-      .forEach((key) => {
-        const value = (params.get(key) || '').trim();
-        if (value) query.set(key, value);
-      });
+    const textQuery = (params.get('query') || '').trim();
+    if (textQuery) query.set('query', textQuery);
 
-    const category = (params.get('category') || '').trim();
-    if (category) {
-      if (/^\d+$/.test(category)) {
-        query.set('category', category);
-      } else {
-        try {
-          const djangoStore = await fetchDjangoPage('/store/');
-          const select = djangoStore.querySelector('select[name="category"]');
-          const option = select && Array.from(select.options).find((item) =>
-            normalize(item.textContent) === normalize(category)
+    ['min_price', 'max_price', 'page'].forEach((key) => {
+      const value = (params.get(key) || '').trim();
+      if (value && /^\d+$/.test(value)) query.set(key, value);
+    });
+
+    const keys = ['category', 'size', 'color', 'training_level', 'sort'];
+    if (keys.some((key) => (params.get(key) || '').trim())) {
+      try {
+        const djangoStore = await fetchDjangoPage('/store/');
+        keys.forEach((key) => {
+          const value = (params.get(key) || '').trim();
+          if (!value) return;
+
+          const select = djangoStore.querySelector('select[name="' + key + '"]');
+          if (!select) return;
+
+          const option = Array.from(select.options).find((item) =>
+            item.value === value ||
+            normalize(item.textContent) === normalize(value)
           );
-          if (option && option.value) query.set('category', option.value);
-        } catch {
-          // Keep the server as the only source of product/category data.
-        }
+          if (option && option.value) query.set(key, option.value);
+        });
+      } catch {
+        // Invalid or unavailable server-side choices are not sent to Django.
       }
     }
 
     const suffix = query.toString();
     return '/store/' + (suffix ? '?' + suffix : '');
+  }
+
+  async function resolveRealCoach(rawId) {
+    let coachName = '';
+    try {
+      if (typeof COACHES !== 'undefined' && Array.isArray(COACHES)) {
+        const bySlug = COACHES.find((coach) => coach.slug === rawId);
+        const numericId = /^\d+$/.test(rawId) ? Number(rawId) : -1;
+        const coach = bySlug || COACHES[numericId];
+        if (coach) coachName = [coach.firstName, coach.lastName].filter(Boolean).join(' ');
+      }
+    } catch {
+      coachName = '';
+    }
+
+    if (!coachName) return '/coaches/';
+
+    try {
+      const directory = await fetchDjangoPage('/coaches/');
+      const matches = [];
+
+      directory.querySelectorAll('.tp-coaches > li').forEach((item) => {
+        const name = item.querySelector('.tp-coach-card-copy b')?.textContent || '';
+        if (normalize(name) !== normalize(coachName)) return;
+
+        const href = item.querySelector('a[href]')?.getAttribute('href') || '';
+        try {
+          const url = new URL(href, location.origin);
+          if (url.origin === location.origin && /^\/coaches\/\d+\/?$/.test(url.pathname)) {
+            matches.push(url.pathname);
+          }
+        } catch {
+          // Ignore a malformed directory link.
+        }
+      });
+
+      const uniqueMatches = Array.from(new Set(matches));
+      if (uniqueMatches.length === 1) return uniqueMatches[0];
+    } catch {
+      // The public directory is still the safe destination when no exact profile match exists.
+    }
+
+    return '/coaches/';
   }
 
   async function resolveRealProduct(rawId) {
@@ -141,7 +190,8 @@
     if (route === 'login' || route === 'register' || route === 'role') {
       const query = new URLSearchParams();
       const role = params.get('role');
-      if (role === 'coach' || role === 'student') query.set('role', role);
+      if (role && role !== 'coach' && role !== 'student') return '';
+      if (role) query.set('role', role);
 
       const next = nextPathFromHash(params.get('next') || params.get('next_url'));
       if (next) query.set('next', next);
@@ -150,7 +200,12 @@
       return '/auth/login/' + (suffix ? '?' + suffix : '');
     }
 
-    if (route === 'coaches') return '/coaches/';
+    if (route === 'coaches') {
+      return parts[1] ? resolveRealCoach(parts[1]) : '/coaches/';
+    }
+    if (route === 'instructor') {
+      return parts[1] ? resolveRealCoach(parts[1]) : '/coaches/';
+    }
     if (route === 'coach-apply') return '/coaches/apply/';
     if (route === 'coach-application') return '/coaches/application/';
     if (route === 'courses' || route === 'club' || route === 'episode') return '/club/';
