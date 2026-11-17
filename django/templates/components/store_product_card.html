@@ -1,0 +1,38 @@
+{% load store_format %}
+<article class="card pcd tp-product-card" data-availability="{{ availability_status|default:'inventory_unregistered' }}">
+  <a class="tp-product-card-media" href="{% url 'store:product_detail' product.slug %}" aria-label="مشاهده {{ product.name }}">
+    <figure class="ph r43{% if image %} ok{% endif %}">
+      {% if image %}
+        <img src="{{ image.image.url }}" alt="{{ image.alt_text|default:product.name }}" loading="lazy" decoding="async">
+      {% else %}
+        <svg viewBox="0 0 40 40" fill="currentColor" aria-hidden="true"><path d="M8 8h24v24H8zM12 27l6-7 4 4 3-3 5 6z"/></svg>
+        <figcaption>تصویر محصول</figcaption>
+      {% endif %}
+    </figure>
+  </a>
+  <div class="b">
+    <div class="mu sm">{{ product.category.name }}</div>
+    <h3><a href="{% url 'store:product_detail' product.slug %}">{{ product.name }}</a></h3>
+    {% if product.training_level %}<div class="mu sm">سطح تمرین: {{ product.training_level }}</div>{% endif %}
+
+    {% if availability_status == 'in_stock' %}
+      <span class="tp-product-stock tp-product-stock--available">موجود</span>
+    {% elif availability_status == 'out_of_stock' %}
+      <span class="tp-product-stock tp-product-stock--unavailable">ناموجود</span>
+    {% else %}
+      <span class="tp-product-stock tp-product-stock--unregistered">موجودی ثبت نشده</span>
+    {% endif %}
+
+    {% if starting_price is not None %}
+      <div class="tp-price">از {{ starting_price|price_fa }}</div>
+    {% else %}
+      <div class="tp-product-no-price">قیمت فروش ثبت نشده</div>
+    {% endif %}
+
+    <div class="pa">
+      <a class="btn s{% if availability_status != 'in_stock' %} o{% endif %}" href="{% url 'store:product_detail' product.slug %}">
+        {% if availability_status == 'in_stock' %}مشاهده و انتخاب تنوع{% else %}مشاهده جزئیات{% endif %}
+      </a>
+    </div>
+  </div>
+</article>

@@ -442,3 +442,37 @@
   font-variant-numeric: tabular-nums;
 }
 .tp-video-upload-progress .tp-video-upload-cancel { justify-self: start; }
+
+
+/* Shared product-card availability state: values are supplied by Django only. */
+.tp-store-page .tp-product-card .tp-product-stock {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  min-height: 24px;
+  padding: 1px var(--tp-space-xs);
+  border: 1px solid transparent;
+  border-radius: var(--tp-radius-badge);
+  font-size: var(--tp-font-size-xs);
+  font-weight: var(--tp-font-weight-bold, 700);
+}
+.tp-store-page .tp-product-card .tp-product-stock--available {
+  color: var(--tp-color-success);
+  background: var(--tp-color-success-soft);
+  border-color: var(--tp-color-success);
+}
+.tp-store-page .tp-product-card .tp-product-stock--unavailable {
+  color: var(--tp-color-danger);
+  background: var(--tp-color-danger-tint);
+  border-color: var(--tp-color-danger);
+}
+.tp-store-page .tp-product-card .tp-product-stock--unregistered {
+  color: var(--tp-color-text-secondary);
+  background: var(--tp-color-neutral-tint);
+  border-color: var(--tp-color-border);
+}
+.tp-store-page .tp-product-card .tp-product-no-price {
+  padding-top: var(--tp-space-sm);
+  color: var(--tp-color-text-secondary);
+  font-size: var(--tp-font-size-sm);
+}

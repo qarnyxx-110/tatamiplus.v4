@@ -67,27 +67,9 @@
         {% if page.object_list %}
           <div class="pg tp-product-grid">
             {% for product in page %}
-              <article class="card pcd tp-product-card">
-                <a class="tp-product-card-media" href="{% url 'store:product_detail' product.slug %}" aria-label="مشاهده {{ product.name }}">
-                  {% with image=product.images.all|first %}
-                    <figure class="ph r43{% if image %} ok{% endif %}">
-                      {% if image %}
-                        <img src="{{ image.image.url }}" alt="{{ image.alt_text|default:product.name }}" loading="lazy" decoding="async">
-                      {% else %}
-                        <svg viewBox="0 0 40 40" fill="currentColor" aria-hidden="true"><path d="M8 8h24v24H8zM12 27l6-7 4 4 3-3 5 6z"/></svg>
-                        <figcaption>تصویر محصول</figcaption>
-                      {% endif %}
-                    </figure>
-                  {% endwith %}
-                </a>
-                <div class="b">
-                  <div class="mu sm">{{ product.category.name }}</div>
-                  <h3><a href="{% url 'store:product_detail' product.slug %}">{{ product.name }}</a></h3>
-                  {% if product.training_level %}<div class="mu sm">سطح تمرین: {{ product.training_level }}</div>{% endif %}
-                  <div class="tp-price">از {{ product.starting_price|price_fa }}</div>
-                  <div class="pa"><a class="btn s" href="{% url 'store:product_detail' product.slug %}">مشاهده و انتخاب تنوع</a></div>
-                </div>
-              </article>
+              {% with image=product.images.all|first %}
+                {% include 'components/store_product_card.html' with product=product image=image starting_price=product.starting_price availability_status='in_stock' only %}
+              {% endwith %}
             {% endfor %}
           </div>
           {% if page.has_other_pages %}
