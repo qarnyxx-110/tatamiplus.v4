@@ -88,6 +88,7 @@ jobs:
           store_template = Path("django/templates/store/product_list.html").read_text(encoding="utf-8")
           store_card = Path("django/templates/components/store_product_card.html").read_text(encoding="utf-8")
           reference_catalog = json.loads(Path("django/static/data/reference-store-catalog.json").read_text(encoding="utf-8"))
+          import_catalog = json.loads(Path("deploy/store-catalog-import.json").read_text(encoding="utf-8"))
           episode = Path("django/templates/club/coach/episode_form.html").read_text(encoding="utf-8")
           js = Path("django/static/js/tatami.js").read_text(encoding="utf-8")
           admin_css = Path("django/static/css/tatami-admin.css").read_text(encoding="utf-8")
@@ -118,6 +119,19 @@ jobs:
           assert "accounts/login.html" not in next(item for item in frontend_manifest["mappings"] if item["destination"] == "templates").get("exclude", [])
           assert "data-reference-store" in store_template and "صرفاً جهت مشاهده، بدون امکان خرید" in store_template
           assert len(reference_catalog["products"]) == 59
+          imported_products = import_catalog["products"]
+          assert import_catalog["classification"] == "REFERENCE_ONLY_NOT_A_SALE_PRICE"
+          assert import_catalog["records_count"] == 59 and len(imported_products) == 59
+          assert len({p["catalog_key"] for p in imported_products}) == 59
+          assert len({p["product_slug"] for p in imported_products}) == 59
+          assert len(import_catalog["categories"]) == 7
+          assert sum(c["count"] for c in import_catalog["categories"]) == 59
+          assert all(p["inventory_status"] == "unverified" for p in imported_products)
+          assert all(p["import_policy"]["create_sellable_variant"] is False for p in imported_products)
+          assert all(p["import_policy"]["initial_stock_quantity"] is None for p in imported_products)
+          assert all(p["import_policy"]["publish_for_purchase"] is False for p in imported_products)
+          assert all(p["image_asset_path"].startswith("preview/assets/images/products/") for p in imported_products)
+          assert all(p["price_source"] in ("torob", "digikala") for p in imported_products)
           assert "{% include 'components/store_product_card.html'" in store_template
           assert all(token in store_card for token in ("in_stock", "out_of_stock", "inventory_unregistered"))
           assert 'data-availability="{{ availability_status|default:' in store_card
