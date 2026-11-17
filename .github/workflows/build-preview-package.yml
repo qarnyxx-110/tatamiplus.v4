@@ -5,6 +5,7 @@ on:
     branches:
       - "feat/preview-course-catalog"
       - "feat/tatami-frontend-fixes-20261117"
+      - "feat/unify-django-shell-with-shared-frontend-20261117"
     paths:
       - "shared/src/**"
       - "shared/public/assets/**"
@@ -67,7 +68,7 @@ jobs:
           for (const item of required) {
             if (!html.includes(item)) throw new Error("Missing Preview content: " + item);
           }
-          const authRouteMarkers = ["/auth/login/", "location.replace(target)", "'www.tatamiplus.ir'", "next_url", "localStorage.removeItem(\'tp:users\')", "function authTargetFromHash", "document.addEventListener('submit'", "event.stopImmediatePropagation()"];
+          const authRouteMarkers = ["/auth/login/", "serverHashForUrl", "'www.tatamiplus.ir'", "next_url", "localStorage.removeItem(\'tp:users\')", "loadDjangoPath", "document.addEventListener('submit'", "activeDjangoView = true"];
           for (const marker of authRouteMarkers) {
             if (!html.includes(marker)) throw new Error("Missing live Django route bridge marker: " + marker);
           }
@@ -146,8 +147,19 @@ jobs:
                       "sha256": hashlib.sha256(data).hexdigest(),
                   })
 
-          if len(selected) != 40:
-              raise SystemExit(f"Expected 40 manifest-approved files, found {len(selected)}")
+          required_paths = {
+              "templates/base.html",
+              "templates/store/product_list.html",
+              "static/data/reference-store-catalog.json",
+              "static/js/reference-store.js",
+              "static/css/reference-store.css",
+          }
+          selected_paths = {item["path"] for item in selected}
+          missing = required_paths - selected_paths
+          if missing:
+              raise SystemExit(f"Missing required frontend files: {sorted(missing)}")
+          if len(selected) < 40:
+              raise SystemExit(f"Manifest-selected file count is unexpectedly low: {len(selected)}")
 
           selected.sort(key=lambda item: item["path"])
           metadata = {

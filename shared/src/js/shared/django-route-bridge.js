@@ -406,23 +406,34 @@
       throw new Error('The server response did not contain a Django content area.');
     }
 
-    const fragment = document.createDocumentFragment();
+    const clonedApp = remoteApp.cloneNode(true);
     const messages = documentFromServer.querySelector('.tp-msgs');
-    if (messages) fragment.append(messages.cloneNode(true));
-    Array.from(remoteApp.childNodes).forEach((node) => fragment.append(node.cloneNode(true)));
-    localApp.replaceChildren(fragment);
+    if (messages) clonedApp.insertBefore(messages.cloneNode(true), clonedApp.firstChild);
+    localApp.replaceWith(clonedApp);
 
     currentServerUrl = finalUrl instanceof URL ? finalUrl : new URL(finalUrl, location.origin);
     activeDjangoView = true;
-    localApp.dataset.djangoView = currentServerUrl.pathname;
+    clonedApp.dataset.djangoView = currentServerUrl.pathname;
     document.title = documentFromServer.title || 'تاتامی پلاس';
     const description = documentFromServer.querySelector('meta[name="description"]');
     const localDescription = document.querySelector('meta[name="description"]');
     if (description && localDescription) localDescription.content = description.content;
 
     ensureDjangoStyles();
-    enhanceDjangoPage(localApp);
-    localApp.setAttribute('aria-busy', 'false');
+    enhanceDjangoPage(clonedApp);
+    if (clonedApp.querySelector('[data-reference-store]')) {
+      const script = document.createElement('script');
+      script.src = '/static/js/reference-store.js';
+      script.async = false;
+      document.head.append(script);
+    }
+    if (clonedApp.querySelector('[data-home-feed]')) {
+      const script = document.createElement('script');
+      script.src = '/static/js/home-restored.js';
+      script.async = false;
+      document.head.append(script);
+    }
+    clonedApp.setAttribute('aria-busy', 'false');
   }
 
   async function loadDjangoPath(path, version, expectedHash) {
