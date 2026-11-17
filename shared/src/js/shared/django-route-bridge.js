@@ -536,7 +536,14 @@
     let target;
     try { target = new URL(rawHref, currentServerUrl); } catch { return; }
     if (target.pathname === currentServerUrl.pathname && target.search === currentServerUrl.search &&
-        target.hash) return;
+        target.hash) {
+      event.preventDefault();
+      const anchorId = decodeURIComponent(target.hash.slice(1));
+      const anchor = anchorId ? document.getElementById(anchorId) : null;
+      if (anchor) anchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      else if (!anchorId) window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
     if (!isAllowedDjangoUrl(target)) return;
 
     event.preventDefault();

@@ -14,7 +14,7 @@
   {% url 'coaches:directory' as home_coaches_url %}
   {% include "pages/home/partials/live_feed.html" with eyebrow="MEET YOUR COACH" heading_id="home-coaches-title" heading="مربیان تاتامی پلاس" copy="پروفایل مربیانی را ببینید که تأیید شده‌اند و برای عموم انتشار یافته‌اند." source_url=home_coaches_url selector=".tp-coaches > li" layout="coaches" empty_title="هنوز پروفایل عمومی منتشرشده‌ای وجود ندارد" empty_copy="پس از تأیید مربیان و انتشار پروفایل آن‌ها، فهرست در این بخش نمایش داده می‌شود." action_label="مشاهده فهرست مربیان" %}
   {% url 'store:product_list' as home_store_url %}
-  {% include "pages/home/partials/live_feed.html" with eyebrow="EQUIPMENT STORE" heading_id="home-store-title" heading="فروشگاه تجهیزات جودو" copy="محصولات فعال فروشگاه، تصویر، قیمت و دسته‌بندی آن‌ها را بررسی کنید." source_url=home_store_url selector=".tp-product-grid > .tp-product-card" layout="products" empty_title="محصولی برای نمایش وجود ندارد" empty_copy="پس از ثبت محصولات فعال و تنوع دارای موجودی، کالاهای فروشگاه در این بخش نمایش داده می‌شوند." action_label="ورود به فروشگاه" %}
+  {% include "pages/home/partials/live_feed.html" with eyebrow="EQUIPMENT STORE" heading_id="home-store-title" heading="فروشگاه تجهیزات جودو" copy="اگر فهرست فروش فعال خالی باشد، کاتالوگ مرجع بازار با برچسب غیرقابل خرید نمایش داده می‌شود؛ قیمت و موجودی فروش باید در سامانه ثبت و تأیید شوند." source_url=home_store_url selector=".tp-product-grid > .tp-product-card" layout="products" empty_title="محصولی برای نمایش وجود ندارد" empty_copy="پس از ثبت محصولات فعال و تنوع دارای موجودی، کالاهای فروشگاه در این بخش نمایش داده می‌شوند." action_label="ورود به فروشگاه" %}
   {% include "pages/home/partials/cta.html" %}
 </main>
 {% endblock %}

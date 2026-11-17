@@ -72,6 +72,9 @@ jobs:
           for (const marker of authRouteMarkers) {
             if (!html.includes(marker)) throw new Error("Missing live Django route bridge marker: " + marker);
           }
+          if (html.includes("location.replace(target)")) {
+            throw new Error("Django bridge must render inside the Preview shell instead of leaving /preview/");
+          }
           const scripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)];
           if (!scripts.length) throw new Error("No inline application script was generated");
           fs.writeFileSync("/tmp/tatami-preview-inline.js", scripts.map(x => x[1]).join("\n"));
