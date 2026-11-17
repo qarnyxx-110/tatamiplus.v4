@@ -300,3 +300,95 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+      - name: Build backend product-catalog handoff package
+        run: |
+          python - <<'PY'
+          import hashlib
+          import json
+          import zipfile
+          from pathlib import Path
+
+          catalog_path = Path("deploy/store-catalog-import.json")
+          contract_path = Path("docs/STORE_CATALOG_IMPORT_CONTRACT.md")
+          catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+          products = catalog.get("products", [])
+          if catalog.get("records_count") != 59 or len(products) != 59:
+              raise SystemExit("Expected exactly 59 source catalogue records")
+
+          image_paths = [Path(product["image_asset_path"]) for product in products]
+          if len(set(image_paths)) != 59:
+              raise SystemExit("Duplicate product image paths in import manifest")
+          missing = [path.as_posix() for path in image_paths if not path.is_file()]
+          if missing:
+              raise SystemExit(f"Missing product image assets: {missing}")
+
+          readme = """# بسته تحویل کاتالوگ محصولات تاتامی پلاس
+
+          این بسته برای بررسی و آماده‌سازی Import توسط مسئول بک‌اند تهیه شده است؛
+          فایل را مستقیماً در cPanel یا پوشه public/static استخراج نکنید.
+
+          محتویات:
+          - deploy/store-catalog-import.json: 59 رکورد مرجع و mapping پیشنهادی
+          - docs/STORE_CATALOG_IMPORT_CONTRACT.md: قرارداد داده و مراحل import
+          - preview/assets/images/products/: 59 فایل تصویری متناظر با رکوردها
+
+          هشدارهای الزامی:
+          1. قیمت‌ها از ترب/دیجی‌کالا و صرفاً قیمت مرجع بازار هستند؛ قیمت فروش تاتامی پلاس نیستند.
+          2. هیچ موجودی واقعی در داده منبع وجود ندارد؛ stock_quantity باید فقط با شمارش انبار ثبت شود.
+          3. candidate_sizes و candidate_colors فقط گزینه‌های پیشنهادی‌اند و به‌تنهایی ProductVariant قابل فروش ایجاد نمی‌کنند.
+          4. مجوز انتشار تصاویر تأیید نشده است؛ تا تأیید حقوق استفاده، تصاویر را عمومی یا در Media production منتشر نکنید.
+          5. اجرای Import باید idempotent و ابتدا در حالت dry-run باشد.
+          6. محصول بدون variant/موجودی معتبر باید «موجودی ثبت نشده» تلقی شود، نه «ناموجود».
+          7. هیچ محصولی تا تکمیل قیمت فروش، تنوع، موجودی و مجوز تصویر قابل خرید/انتشار نشود.
+          """
+          readme_path = Path("STORE-CATALOG-HANDOFF-README.md")
+          readme_path.write_text(readme, encoding="utf-8")
+
+          archive = Path("store-catalog-backend-handoff.zip")
+          checksums = []
+          with zipfile.ZipFile(archive, "w", compression=zipfile.ZIP_DEFLATED) as bundle:
+              files = [
+                  (catalog_path, catalog_path.as_posix()),
+                  (contract_path, contract_path.as_posix()),
+                  (readme_path, readme_path.as_posix()),
+              ]
+              files.extend((image, image.as_posix()) for image in image_paths)
+              for source, archive_name in files:
+                  data = source.read_bytes()
+                  bundle.writestr(archive_name, data)
+                  checksums.append(f"{hashlib.sha256(data).hexdigest()}  {archive_name}")
+
+              bundle.writestr("SHA256SUMS.txt", "\n".join(checksums) + "\n")
+
+          with zipfile.ZipFile(archive) as bundle:
+              bad = bundle.testzip()
+              if bad:
+                  raise SystemExit(f"Backend handoff ZIP integrity failure: {bad}")
+              names = bundle.namelist()
+              archived_images = [n for n in names if n.startswith("preview/assets/images/products/")]
+              if len(archived_images) != 59:
+                  raise SystemExit(f"Expected 59 product images, found {len(archived_images)}")
+              for required in (
+                  "deploy/store-catalog-import.json",
+                  "docs/STORE_CATALOG_IMPORT_CONTRACT.md",
+                  "STORE-CATALOG-HANDOFF-README.md",
+                  "SHA256SUMS.txt",
+              ):
+                  if required not in names:
+                      raise SystemExit(f"Missing handoff file: {required}")
+
+          print(
+              f"STORE_CATALOG_BACKEND_HANDOFF_OK | products=59 | images=59 | "
+              f"files={len(names)} | bytes={archive.stat().st_size}"
+          )
+          PY
+
+      - name: Upload backend product-catalog handoff
+        uses: actions/upload-artifact@v4
+        with:
+          name: tatami-store-catalog-backend-handoff
+          path: store-catalog-backend-handoff.zip
+          if-no-files-found: error
+          retention-days: 14
+
+
