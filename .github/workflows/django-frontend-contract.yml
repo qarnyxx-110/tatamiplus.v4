@@ -6,8 +6,7 @@ on:
     paths:
       - "django/templates/**"
       - "django/static/**"
-      - "preview/index.html"
-      - "preview/assets/django-route-bridge.js"
+      - "shared/src/js/shared/django-route-bridge.js"
       - "shared/src/css/**"
       - "shared/src/design/tokens.json"
       - "shared/public/fonts/**"
@@ -19,8 +18,7 @@ on:
     paths:
       - "django/templates/**"
       - "django/static/**"
-      - "preview/index.html"
-      - "preview/assets/django-route-bridge.js"
+      - "shared/src/js/shared/django-route-bridge.js"
       - "shared/src/css/**"
       - "shared/src/design/tokens.json"
       - "shared/public/fonts/**"
@@ -120,12 +118,10 @@ jobs:
       - name: Package the complete Django frontend handoff
         run: |
           set -euo pipefail
-          mkdir -p handoff/templates handoff/static handoff/preview/assets
+          mkdir -p handoff/templates handoff/static
           cp -a django/templates/. handoff/templates/
           cp -a django/static/. handoff/static/
-          cp preview/index.html handoff/preview/index.html
-          cp preview/assets/django-route-bridge.js handoff/preview/assets/django-route-bridge.js
-          (cd handoff && zip -qr "$GITHUB_WORKSPACE/tatami-django-frontend-handoff.zip" templates static preview)
+          (cd handoff && zip -qr "$GITHUB_WORKSPACE/tatami-django-frontend-handoff.zip" templates static)
 
       - name: Upload backend handoff package
         uses: actions/upload-artifact@v4
