@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - "feat/preview-course-catalog"
+      - "feat/tatami-frontend-fixes-20261117"
     paths:
       - "shared/src/**"
       - "shared/public/assets/**"
@@ -62,6 +63,15 @@ jobs:
             "نزدیک من",
             "نقشهٔ نشان",
             "اطلاعات فعلی: نمونه"
+          ];
+          for (const item of required) {
+            if (!html.includes(item)) throw new Error("Missing Preview content: " + item);
+          }
+          const authRouteMarkers = ["/auth/login/", "location.replace(target)", "'www.tatamiplus.ir'"];
+          for (const marker of authRouteMarkers) {
+            if (!html.includes(marker)) throw new Error("Missing live Django route bridge marker: " + marker);
+          }
+          const scripts = [...html.matchAll(/<script>([\\s\\S]*?)<\\/script>/g)];
           ];
           for (const item of required) {
             if (!html.includes(item)) throw new Error("Missing Preview content: " + item);

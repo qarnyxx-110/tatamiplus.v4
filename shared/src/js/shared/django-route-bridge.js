@@ -5,7 +5,8 @@
 (() => {
   'use strict';
 
-  const livePreviewHost = location.hostname === 'tatamiplus.ir';
+  const livePreviewHosts = new Set(['tatamiplus.ir', 'www.tatamiplus.ir']);
+  const livePreviewHost = livePreviewHosts.has(location.hostname.toLowerCase());
   if (!livePreviewHost || (location.pathname !== '/preview/' && location.pathname !== '/preview')) return;
 
   let requestVersion = 0;
