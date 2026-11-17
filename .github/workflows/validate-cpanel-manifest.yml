@@ -7,6 +7,8 @@ on:
       - "deploy/frontend-manifest.json"
       - "django/templates/**"
       - "django/static/**"
+      - "preview/index.html"
+      - "preview/assets/django-route-bridge.js"
       - ".github/workflows/validate-cpanel-manifest.yml"
   push:
     branches: [main]
@@ -26,6 +28,24 @@ jobs:
     steps:
       - name: Check out frontend repository
         uses: actions/checkout@v4
+
+      - name: Set up Node.js for Preview route validation
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Check Preview route bridge syntax and loading
+        run: |
+          node --check preview/assets/django-route-bridge.js
+          python - <<'PY'
+          from pathlib import Path
+
+          html = Path("preview/index.html").read_text(encoding="utf-8")
+          bridge = Path("preview/assets/django-route-bridge.js")
+          assert bridge.is_file(), "Missing Preview route bridge"
+          assert "assets/django-route-bridge.js?v=" in html, "Preview index does not load the route bridge"
+          print("PREVIEW_DJANGO_ROUTE_BRIDGE_OK")
+          PY
 
       - name: Validate manifest and selected files
         run: |
