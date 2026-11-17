@@ -7,8 +7,8 @@ on:
       - "deploy/frontend-manifest.json"
       - "django/templates/**"
       - "django/static/**"
-      - "preview/index.html"
-      - "preview/assets/django-route-bridge.js"
+      - "shared/build.js"
+      - "shared/src/js/shared/django-route-bridge.js"
       - ".github/workflows/validate-cpanel-manifest.yml"
   push:
     branches: [main]
@@ -16,8 +16,8 @@ on:
       - "deploy/frontend-manifest.json"
       - "django/templates/**"
       - "django/static/**"
-      - "preview/index.html"
-      - "preview/assets/django-route-bridge.js"
+      - "shared/build.js"
+      - "shared/src/js/shared/django-route-bridge.js"
       - ".github/workflows/validate-cpanel-manifest.yml"
 
 permissions:
@@ -36,17 +36,17 @@ jobs:
         with:
           node-version: 22
 
-      - name: Check Preview route bridge syntax and loading
+      - name: Check canonical Preview route bridge source
         run: |
-          node --check preview/assets/django-route-bridge.js
+          node --check shared/src/js/shared/django-route-bridge.js
           python - <<'PY'
           from pathlib import Path
 
-          html = Path("preview/index.html").read_text(encoding="utf-8")
-          bridge = Path("preview/assets/django-route-bridge.js")
-          assert bridge.is_file(), "Missing Preview route bridge"
-          assert "assets/django-route-bridge.js?v=" in html, "Preview index does not load the route bridge"
-          print("PREVIEW_DJANGO_ROUTE_BRIDGE_OK")
+          build = Path("shared/build.js").read_text(encoding="utf-8")
+          source = Path("shared/src/js/shared/django-route-bridge.js")
+          assert source.is_file(), "Missing canonical Preview route bridge source"
+          assert "shared/django-route-bridge" in build, "Preview build does not bundle the route bridge"
+          print("PREVIEW_DJANGO_ROUTE_BRIDGE_SOURCE_OK")
           PY
 
       - name: Validate manifest and selected files
