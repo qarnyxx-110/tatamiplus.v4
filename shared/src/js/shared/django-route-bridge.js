@@ -5,7 +5,8 @@
 (() => {
   'use strict';
 
-  if (location.pathname !== '/preview/' && location.pathname !== '/preview') return;
+  const livePreviewHost = location.hostname === 'tatamiplus.ir';
+  if (!livePreviewHost || (location.pathname !== '/preview/' && location.pathname !== '/preview')) return;
 
   let requestVersion = 0;
 
@@ -135,7 +136,7 @@
     if (route === 'checkout') return '/checkout/address/';
     if (route === 'store') return resolveStoreFilters(params);
 
-    if (route === 'product') return resolveRealProduct(parts[1] || '');
+    if (route === 'product') return resolveRealProduct(parts[1] || params.get('id') || '');
 
     if (route === 'login' || route === 'register' || route === 'role') {
       const query = new URLSearchParams();
