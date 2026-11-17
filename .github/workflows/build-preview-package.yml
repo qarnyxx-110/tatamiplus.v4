@@ -89,3 +89,93 @@ jobs:
           path: tatami-preview-cpanel.zip
           if-no-files-found: error
           retention-days: 7
+
+      - name: Package manifest-approved Django frontend files
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib
+          import json
+          import os
+          import shutil
+          import zipfile
+          from pathlib import Path
+
+          manifest_path = Path("deploy/frontend-manifest.json")
+          manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+          handoff = Path("django-handoff")
+          if handoff.exists():
+              shutil.rmtree(handoff)
+          handoff.mkdir()
+
+          selected = []
+          for mapping in manifest["mappings"]:
+              source_root = Path(mapping["source"])
+              destination_root = Path(mapping["destination"])
+              extensions = {suffix.lower() for suffix in mapping["extensions"]}
+              excludes = mapping.get("exclude", [])
+
+              for source in sorted(source_root.rglob("*")):
+                  if not source.is_file():
+                      continue
+                  if source.is_symlink():
+                      raise SystemExit(f"Refusing symlink: {source}")
+                  relative = source.relative_to(source_root).as_posix()
+                  if any(
+                      relative == item or relative.startswith(item.rstrip("/") + "/")
+                      for item in excludes
+                  ):
+                      continue
+                  if source.suffix.lower() not in extensions:
+                      continue
+
+                  destination = destination_root / relative
+                  target = handoff / destination
+                  target.parent.mkdir(parents=True, exist_ok=True)
+                  shutil.copy2(source, target)
+                  data = target.read_bytes()
+                  selected.append({
+                      "path": destination.as_posix(),
+                      "size": len(data),
+                      "sha256": hashlib.sha256(data).hexdigest(),
+                  })
+
+          if len(selected) != 41:
+              raise SystemExit(f"Expected 41 manifest-approved files, found {len(selected)}")
+
+          selected.sort(key=lambda item: item["path"])
+          metadata = {
+              "schema_version": 1,
+              "repository": os.environ["GITHUB_REPOSITORY"],
+              "source_commit": os.environ["GITHUB_SHA"],
+              "file_count": len(selected),
+              "files": selected,
+          }
+          (handoff / "DEPLOYMENT.json").write_text(
+              json.dumps(metadata, ensure_ascii=False, indent=2) + chr(10),
+              encoding="utf-8",
+          )
+          (handoff / "deploy").mkdir()
+          shutil.copy2(manifest_path, handoff / "deploy/frontend-manifest.json")
+
+          archive = Path("tatami-django-frontend-handoff.zip")
+          with zipfile.ZipFile(archive, "w", compression=zipfile.ZIP_DEFLATED) as bundle:
+              for item in sorted(handoff.rglob("*")):
+                  if item.is_file():
+                      bundle.write(item, item.relative_to(handoff).as_posix())
+
+          with zipfile.ZipFile(archive) as bundle:
+              bad = bundle.testzip()
+              if bad:
+                  raise SystemExit(f"ZIP integrity failure: {bad}")
+          print(f"DJANGO_FRONTEND_PACKAGE_OK | files={len(selected)} | commit={os.environ['GITHUB_SHA']}")
+          PY
+
+      - name: Upload Django frontend handoff package
+        uses: actions/upload-artifact@v4
+        with:
+          name: tatami-django-frontend-handoff
+          path: tatami-django-frontend-handoff.zip
+          if-no-files-found: error
+          retention-days: 14
