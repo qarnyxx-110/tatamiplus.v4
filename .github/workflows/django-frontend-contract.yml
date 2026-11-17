@@ -89,6 +89,11 @@ jobs:
           store_detail_template = Path("django/templates/store/product_detail.html").read_text(encoding="utf-8")
           store_card_template = Path("django/templates/components/store_product_card.html").read_text(encoding="utf-8")
           store_card = Path("django/templates/components/store_product_card.html").read_text(encoding="utf-8")
+          coach_join = Path("django/templates/coaches/join.html").read_text(encoding="utf-8")
+          coach_join_entry = Path("django/templates/coaches/join_enter.html").read_text(encoding="utf-8")
+          coach_students = Path("django/templates/coaches/coach_students.html").read_text(encoding="utf-8")
+          bridge = Path("shared/src/js/shared/django-route-bridge.js").read_text(encoding="utf-8")
+          module_pages = Path("django/static/js/module-pages.js").read_text(encoding="utf-8")
           reference_catalog = json.loads(Path("django/static/data/reference-store-catalog.json").read_text(encoding="utf-8"))
           import_catalog = json.loads(Path("deploy/store-catalog-import.json").read_text(encoding="utf-8"))
           episode = Path("django/templates/club/coach/episode_form.html").read_text(encoding="utf-8")
@@ -141,6 +146,12 @@ jobs:
           assert all(state in store_detail_template for state in ("in_stock", "out_of_stock", "inventory_unregistered"))
           assert 'data-availability="{% if availability_status %}' in store_detail_template
           assert "در حال حاضر ناموجود" not in store_detail_template
+          assert "invite.remaining_uses|persian_digits" in coach_join
+          assert "جای خالی از" in coach_join
+          assert "کد دعوت را وارد کن" in coach_join_entry
+          assert "data-copy-target" in coach_students and "کپی لینک" in coach_students
+          assert "data-copy-target" in bridge and "navigator.clipboard.writeText" in bridge
+          assert "data-copy-target" in module_pages and "navigator.clipboard.writeText" in module_pages
           assert "موجودی ثبت نشده" in store_detail_template
           assert "if starting_price or starting_price == 0" in store_card_template
           assert all(token in store_card for token in ("in_stock", "out_of_stock", "inventory_unregistered"))
@@ -238,7 +249,7 @@ jobs:
       - name: Compile templates and resolve required static assets
         working-directory: backend
         run: |
-          python manage.py shell -c "from django.template.loader import get_template; from django.contrib.staticfiles.finders import find; names=('base.html','layouts/auth.html','components/auth_aside.html','components/store_product_card.html','admin/base_site.html','pages/home.html','pages/account.html','store/product_list.html','store/product_detail.html','store/cart_detail.html','coaches/directory.html','coaches/profile_detail.html','club/course_list.html','club/course_detail.html','club/coach/episode_form.html','gems/history.html','accounts/login.html','accounts/otp_verify.html','accounts/complete_profile.html','accounts/password_reset.html','accounts/password_reset_confirm.html','accounts/set_password.html','coaches/join_enter.html','orders/mock_gateway.html','orders/address.html','orders/review.html','orders/payment_result.html','orders/order_list.html','orders/order_detail.html','includes/form_fields.html'); [get_template(name) for name in names]; assets=('css/tatami.css','css/tatami-admin.css','css/backend-templates.css','css/module-pages.css','css/home-restored.css','css/reference-store.css','js/tatami.js','js/module-pages.js','js/home-restored.js','js/reference-store.js','data/reference-store-catalog.json'); assert all(find(name) for name in assets); print('DJANGO_TEMPLATE_AND_STATIC_CHECK_OK')"
+          python manage.py shell -c "from django.template.loader import get_template; from django.contrib.staticfiles.finders import find; names=('base.html','layouts/auth.html','components/auth_aside.html','components/store_product_card.html','admin/base_site.html','pages/home.html','pages/account.html','store/product_list.html','store/product_detail.html','store/cart_detail.html','coaches/directory.html','coaches/profile_detail.html','coaches/join.html','coaches/join_enter.html','coaches/coach_students.html','club/course_list.html','club/course_detail.html','club/coach/episode_form.html','gems/history.html','accounts/login.html','accounts/otp_verify.html','accounts/complete_profile.html','accounts/password_reset.html','accounts/password_reset_confirm.html','accounts/set_password.html','coaches/join_enter.html','orders/mock_gateway.html','orders/address.html','orders/review.html','orders/payment_result.html','orders/order_list.html','orders/order_detail.html','includes/form_fields.html'); [get_template(name) for name in names]; assets=('css/tatami.css','css/tatami-admin.css','css/backend-templates.css','css/module-pages.css','css/home-restored.css','css/reference-store.css','js/tatami.js','js/module-pages.js','js/home-restored.js','js/reference-store.js','data/reference-store-catalog.json'); assert all(find(name) for name in assets); print('DJANGO_TEMPLATE_AND_STATIC_CHECK_OK')"
 
       - name: Run backend tests with proposed frontend
         working-directory: backend

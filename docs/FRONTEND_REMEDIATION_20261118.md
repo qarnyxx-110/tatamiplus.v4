@@ -11,6 +11,11 @@ Scope: frontend repository only. No backend implementation, database, migrations
 - Product-detail `data-availability` now follows the same fallback as its visible status.
 - CI checks the exact precondition that makes the existing product-list `in_stock` fallback safe.
 
+## Coach invitation overlay compatibility
+- An integrated run exposed three failures in `coaches.tests.CoachInviteTests`: remaining invitation capacity was not rendered, the manual-code entry heading did not match the expected contract wording, and the coach panel omitted the copy-link control.
+- These were mismatches in the frontend template overlays (not defects in the backend models or views). The templates now use `invite.remaining_uses` from the backend, the expected route/form wording, and a copy action in both normal Django pages and the injected Preview shell.
+- The Preview bridge browser suite now exercises the copy action. No backend source was changed.
+
 ## Verified contract facts and remaining backend-owned work
 1. The backend source revision used by CI is `25fde937def556edc7b81291e5900a9ac84fccb2`. The previous CI pin `e2ffeba0a42ecc3ec172b89d66794f9cd628d977` was one commit behind and did not include password login/reset, SMS login as a separate URL, and coach invite-code entry.
 2. The current store list query only returns active products with an active variant whose `stock_quantity > 0`; it also excludes products whose computed starting price is null. Therefore the list-card fallback to `in_stock` is valid for that exact query. CI now checks this precondition. If the backend expands the list to show zero-stock or inventory-unregistered products, it must always provide `availability_status` for every product.

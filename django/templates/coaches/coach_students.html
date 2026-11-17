@@ -39,7 +39,17 @@
             {% if invite.label %}<p class="mu sm">{{ invite.label }}</p>{% endif %}
             <p class="mu sm">{{ invite.uses|persian_digits }} استفاده{% if invite.max_uses %} از {{ invite.max_uses|persian_digits }}{% endif %}</p>
             <label class="tp-invite-link-label" for="invite-link-{{ invite.pk }}">پیوند دعوت</label>
-            <input id="invite-link-{{ invite.pk }}" class="tp-invite-link" type="text" readonly value="{{ request.scheme }}://{{ request.get_host }}{% url 'coaches:join_coach' invite.code %}">
+            <div class="tp-cluster">
+              <input id="invite-link-{{ invite.pk }}" class="tp-invite-link" type="text" readonly
+                     value="{{ request.scheme }}://{{ request.get_host }}{% url 'coaches:join_coach' invite.code %}"
+                     aria-label="پیوند دعوت {{ invite.code }}">
+              <button class="btn o s" type="button"
+                      data-copy-target="invite-link-{{ invite.pk }}"
+                      data-copy-success="کپی شد"
+                      data-copy-feedback="invite-copy-feedback-{{ invite.pk }}"
+                      aria-controls="invite-copy-feedback-{{ invite.pk }}">کپی لینک</button>
+            </div>
+            <p class="tp-hint" id="invite-copy-feedback-{{ invite.pk }}" role="status" aria-live="polite"></p>
             <form method="post" action="{% url 'coach_students:toggle_invite' invite.pk %}">
               {% csrf_token %}
               <button class="btn o s" type="submit">{% if invite.is_active %}غیرفعال کردن{% else %}فعال کردن{% endif %}</button>

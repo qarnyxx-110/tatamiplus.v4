@@ -30,7 +30,12 @@ const storeForm = (result = '') => `
     <input type="hidden" name="csrfmiddlewaretoken" value="test-csrf">
     <label for="video-file">ویدئو</label><input id="video-file" type="file" name="video_file">
     <button id="video-submit" type="submit">بارگذاری ویدئو</button>
-  </form>`;
+  </form>
+  <label for="invite-copy-value">پیوند دعوت</label>
+  <input id="invite-copy-value" readonly value="https://tatami.example/coaches/join/ABCD2345/">
+  <button id="invite-copy-button" type="button" data-copy-target="invite-copy-value"
+          data-copy-feedback="invite-copy-status" data-copy-success="کپی شد">کپی لینک</button>
+  <p id="invite-copy-status" role="status" aria-live="polite"></p>`;
 
 try {
   browser = await chromium.launch({
@@ -86,6 +91,17 @@ try {
   await page.locator('#bridge-form').waitFor({ state: 'visible', timeout: 15000 });
   assert.equal(await page.locator('#app').getAttribute('data-django-view'), '/store/');
 
+  await page.evaluate(() => {
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText: async (value) => { window.__copiedInviteLink = value; } }
+    });
+  });
+  await page.locator('#invite-copy-button').click();
+  await page.waitForFunction(() => window.__copiedInviteLink === 'https://tatami.example/coaches/join/ABCD2345/');
+  assert.equal((await page.locator('#invite-copy-button').textContent()).trim(), 'کپی شد');
+  assert.equal((await page.locator('#invite-copy-status').textContent()).trim(), 'پیوند دعوت کپی شد.');
+
   await page.locator('#bridge-submit').click();
   await page.locator('#post-result').waitFor({ state: 'visible' });
   assert.equal((await page.locator('#post-result').textContent()).trim(), 'فرم با موفقیت به سرور رسید.');
@@ -127,4 +143,4 @@ try {
 }
 
 if (failures.length) throw new Error(failures.join('\n\n'));
-console.log('Django Preview bridge browser checks: 4/4 passed');
+console.log('Django Preview bridge browser checks: 5/5 passed');
