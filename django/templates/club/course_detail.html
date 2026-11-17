@@ -66,7 +66,7 @@
           <span class="tp-episode-number">{{ episode.order|price_fa }}</span>
           <div class="tp-episode-copy">
             <b>{{ episode.title }}</b>
-            <span class="mu sm">{{ episode.duration|duration_mmss|persian_digits }} دقیقه{% if episode.is_free %} · نمونه رایگان{% endif %}{% if episode.completed %} · <span class="lesson-done">تمام‌شده</span>{% endif %}</span>
+            <span class="mu sm">{{ episode.duration|duration_mmss|persian_digits }} دقیقه{% if episode.is_free %} · نمونه رایگان{% endif %}{% if episode.completed %} · <span class="tp-note">تمام‌شده</span>{% endif %}</span>
           </div>
           {% if episode.can_watch %}
             <a class="btn s" href="{% url 'club:episode_play' episode.pk %}">تماشا</a>
