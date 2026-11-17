@@ -79,6 +79,49 @@
     return '/store/' + (suffix ? '?' + suffix : '');
   }
 
+  async function resolveRealCourse(rawSlug) {
+    let courseTitle = '';
+    try {
+      if (typeof TP_DEMO_COURSES !== 'undefined' && Array.isArray(TP_DEMO_COURSES)) {
+        const course = TP_DEMO_COURSES.find((item) => item.slug === rawSlug);
+        if (course && course.title) courseTitle = String(course.title);
+      }
+    } catch {
+      courseTitle = '';
+    }
+
+    if (!courseTitle) return '/club/';
+
+    try {
+      const directory = await fetchDjangoPage('/club/');
+      const matches = [];
+
+      directory.querySelectorAll('.tp-course-grid > .tp-course-card').forEach((card) => {
+        const title = card.querySelector('h1, h2, h3')?.textContent || '';
+        if (normalize(title) !== normalize(courseTitle)) return;
+
+        const link = card.querySelector('a[href*="/club/course/"]');
+        if (!link) return;
+
+        try {
+          const url = new URL(link.getAttribute('href') || link.href, location.origin);
+          if (url.origin === location.origin && /^\/club\/course\/[^/]+\/?$/.test(url.pathname)) {
+            matches.push(url.pathname);
+          }
+        } catch {
+          // Ignore malformed links; never invent a course slug.
+        }
+      });
+
+      const uniqueMatches = Array.from(new Set(matches));
+      if (uniqueMatches.length === 1) return uniqueMatches[0];
+    } catch {
+      // Keep the user on the real published course list if lookup is unavailable.
+    }
+
+    return '/club/?q=' + encodeURIComponent(courseTitle);
+  }
+
   async function resolveRealCoach(rawId) {
     let coachName = '';
     try {
@@ -208,7 +251,14 @@
     }
     if (route === 'coach-apply') return '/coaches/apply/';
     if (route === 'coach-application') return '/coaches/application/';
-    if (route === 'courses' || route === 'club' || route === 'episode') return '/club/';
+    if (route === 'courses') {
+      return parts[1] ? resolveRealCourse(parts[1]) : '/club/';
+    }
+    if (route === 'episode') {
+      const lesson = /^([a-z0-9-]+)-lesson-\d+$/.exec(parts[1] || '');
+      return lesson ? resolveRealCourse(lesson[1]) : '/club/';
+    }
+    if (route === 'club') return '/club/';
     if (route === 'gems') return '/account/gems/';
     if (route === 'profile' || route === 'my-profile') return '/account/';
     if (route === 'orders') return '/orders/';
