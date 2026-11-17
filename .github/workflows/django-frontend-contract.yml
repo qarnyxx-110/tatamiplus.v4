@@ -2,7 +2,7 @@ name: Validate Django frontend against backend
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, "feat/**"]
     paths:
       - "django/templates/**"
       - "django/static/**"
@@ -14,7 +14,7 @@ on:
       - "shared/package.json"
       - ".github/workflows/django-frontend-contract.yml"
   push:
-    branches: [main]
+    branches: [main, "feat/**"]
     paths:
       - "django/templates/**"
       - "django/static/**"
@@ -89,7 +89,7 @@ jobs:
       - name: Verify real Django templates, route names and static assets
         working-directory: backend
         run: |
-          python manage.py shell -c "from django.template.loader import get_template; from django.urls import reverse; from django.contrib.staticfiles.finders import find; templates=('base.html','pages/home.html','pages/account.html','store/product_list.html','store/product_detail.html','store/cart_detail.html','coaches/directory.html','coaches/profile_detail.html','club/course_list.html','club/course_detail.html','gems/history.html','accounts/login.html','includes/form_fields.html','admin/base_site.html'); [get_template(name) for name in templates]; routes=('home','store:product_list','store:product_detail','store:cart','coaches:directory','coaches:profile_detail','club:course_list','club:course_detail','gems:history','phone_auth:login','orders:address','orders:review','orders:list','account'); [reverse(name, kwargs={'slug':'contract-probe'} if name in ('store:product_detail','club:course_detail') else {'profile_id':1} if name == 'coaches:profile_detail' else None) for name in routes]; assert find('css/tatami-admin.css'); assert find('css/backend-templates.css'); assert find('css/module-pages.css'); assert find('js/tatami.js'); print('DJANGO_FRONTEND_CONTRACT_OK')"
+          python manage.py shell -c "from django.template.loader import get_template; from django.urls import reverse; from django.contrib.staticfiles.finders import find; templates=('base.html','pages/home.html','pages/account.html','store/product_list.html','store/product_detail.html','store/cart_detail.html','coaches/directory.html','coaches/profile_detail.html','club/course_list.html','club/course_detail.html','club/coach/episode_form.html','gems/history.html','accounts/login.html','includes/form_fields.html','admin/base_site.html'); [get_template(name) for name in templates]; routes=('home','store:product_list','store:product_detail','store:cart','coaches:directory','coaches:profile_detail','club:course_list','club:course_detail','gems:history','phone_auth:login','orders:address','orders:review','orders:list','account'); [reverse(name, kwargs={'slug':'contract-probe'} if name in ('store:product_detail','club:course_detail') else {'profile_id':1} if name == 'coaches:profile_detail' else None) for name in routes]; assert find('css/tatami-admin.css'); assert find('css/backend-templates.css'); assert find('css/module-pages.css'); assert find('js/tatami.js'); print('DJANGO_FRONTEND_CONTRACT_OK')"
 
       - name: Run backend tests with the proposed frontend templates
         working-directory: backend

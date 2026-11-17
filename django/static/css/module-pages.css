@@ -409,3 +409,36 @@
   .tp-store-page .tp-product-gallery-main { min-height: 210px; }
   .tp-store-page .tp-product-gallery-thumbs { grid-template-columns: repeat(auto-fill, minmax(56px, 72px)); }
 }
+
+/* Coach episode video upload progress; progressive enhancement only. */
+.tp-video-upload-progress {
+  display: grid;
+  gap: var(--tp-space-xs);
+  margin-block: var(--tp-space-md);
+  padding: var(--tp-space-md);
+  border: 1px solid var(--tp-color-border);
+  border-radius: var(--tp-radius-card);
+  background: var(--tp-color-surface);
+}
+.tp-video-upload-progress[hidden] { display: none !important; }
+.tp-video-upload-progress-message {
+  margin: 0;
+  color: var(--tp-color-text-primary);
+  font-size: var(--tp-font-size-sm);
+  line-height: 1.8;
+}
+.tp-video-upload-progress progress {
+  display: block;
+  width: 100%;
+  height: 12px;
+  overflow: hidden;
+  border: 0;
+  border-radius: 999px;
+  accent-color: var(--tp-color-brand);
+}
+.tp-video-upload-progress-meta {
+  color: var(--tp-color-text-secondary);
+  font-size: var(--tp-font-size-xs);
+  font-variant-numeric: tabular-nums;
+}
+.tp-video-upload-progress .tp-video-upload-cancel { justify-self: start; }

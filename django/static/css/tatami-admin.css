@@ -264,3 +264,23 @@ ul.messagelist li {
     transition-duration: 0.01ms !important;
   }
 }
+
+
+/* Coach signup notification: count comes from the existing permission-aware context processor. */
+#header .tp-admin-lead-notice {
+  display: inline-flex; align-items: center; gap: 9px; margin-inline-start: 14px;
+  padding: 6px 10px; border: 1px solid rgb(141 176 255 / 42%); border-radius: 999px;
+  background: rgb(47 98 214 / 17%); color: #fff !important; font-size: 12px;
+  font-weight: 700; line-height: 1.5; text-decoration: none; vertical-align: middle;
+}
+#header .tp-admin-lead-notice:hover,
+#header .tp-admin-lead-notice:focus-visible {
+  background: rgb(47 98 214 / 30%); color: #fff !important; text-decoration: none;
+}
+#header .tp-admin-lead-notice:focus-visible { outline: 2px solid #8db0ff; outline-offset: 3px; }
+.tp-admin-lead-count {
+  display: inline-grid; min-width: 22px; height: 22px; place-items: center; padding-inline: 5px;
+  border-radius: 999px; background: var(--tp-admin-brand); color: #fff; font-size: 12px;
+  font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1;
+}
+@media (max-width: 767px) { #header .tp-admin-lead-notice { margin: 8px 0 0; max-width: 100%; } }

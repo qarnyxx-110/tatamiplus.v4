@@ -2,7 +2,7 @@ name: Validate cPanel frontend manifest
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, "feat/**"]
     paths:
       - "deploy/frontend-manifest.json"
       - "django/templates/**"
@@ -11,7 +11,7 @@ on:
       - "shared/src/js/shared/django-route-bridge.js"
       - ".github/workflows/validate-cpanel-manifest.yml"
   push:
-    branches: [main]
+    branches: [main, "feat/**"]
     paths:
       - "deploy/frontend-manifest.json"
       - "django/templates/**"
@@ -111,6 +111,7 @@ jobs:
 
           assert destinations, "Manifest selected zero files"
           assert "static/css/styles.css" not in destinations, "Backend-owned styles.css must be excluded"
+          assert "static/css/tatami.css" not in destinations, "Do not overwrite the installed server-specific Tatami CSS bundle"
           assert not any(item.startswith("templates/clubs/") for item in destinations)
           assert "static/css/clubs-map.css" not in destinations
           assert "static/js/clubs-map.js" not in destinations
