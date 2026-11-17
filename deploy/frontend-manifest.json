@@ -39,8 +39,7 @@
       "exclude": [
         "css/styles.css",
         "css/clubs-map.css",
-        "js/clubs-map.js",
-        "css/tatami.css"
+        "js/clubs-map.js"
       ]
     }
   ]
