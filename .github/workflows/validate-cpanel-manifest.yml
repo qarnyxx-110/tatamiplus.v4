@@ -45,8 +45,10 @@ jobs:
           build = Path("shared/build.js").read_text(encoding="utf-8")
           source = Path("shared/src/js/shared/django-route-bridge.js")
           assert source.is_file(), "Missing canonical Preview route bridge source"
-          assert "shared/django-route-bridge" in build, "Preview build does not bundle the route bridge"
-          print("PREVIEW_DJANGO_ROUTE_BRIDGE_SOURCE_OK")
+          public_js = build.split("const PUBLIC_JS=", 1)[1].split("const MKT_JS=", 1)[0]
+          assert "shared/django-route-bridge" not in public_js, "Django bridge must not be bundled into Student/Coach/Club PWAs"
+          assert "name==='preview'?" in build and "R('js/shared/django-route-bridge.js')" in build, "Preview build does not bundle the route bridge exclusively"
+          print("PREVIEW_ONLY_DJANGO_ROUTE_BRIDGE_SOURCE_OK")
           PY
 
       - name: Validate manifest and selected files
