@@ -5,16 +5,36 @@
     {
       "source": "django/templates",
       "destination": "templates",
-      "extensions": [".html"],
-      "exclude": ["clubs"]
+      "extensions": [
+        ".html"
+      ],
+      "exclude": [
+        "clubs",
+        "accounts/login.html",
+        "accounts/register.html"
+      ]
     },
     {
       "source": "django/static",
       "destination": "static",
       "extensions": [
-        ".css", ".js", ".mjs", ".svg", ".png", ".jpg", ".jpeg",
-        ".webp", ".avif", ".gif", ".ico", ".woff", ".woff2",
-        ".ttf", ".otf", ".json", ".webmanifest"
+        ".css",
+        ".js",
+        ".mjs",
+        ".svg",
+        ".png",
+        ".jpg",
+        ".jpeg",
+        ".webp",
+        ".avif",
+        ".gif",
+        ".ico",
+        ".woff",
+        ".woff2",
+        ".ttf",
+        ".otf",
+        ".json",
+        ".webmanifest"
       ],
       "exclude": [
         "css/styles.css",
