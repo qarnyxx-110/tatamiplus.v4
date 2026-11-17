@@ -1,21 +1,28 @@
 {% extends 'base.html' %}
+{% load persian %}
 
 {% block title %}حساب کاربری | تاتامی پلاس{% endblock %}
 {% block content %}
-<div class="w tp-acct-w">
+<main class="w tp-acct-w">
   <h1>حساب کاربری</h1>
   {% if user.is_authenticated %}
     <div class="d-c tp-acct">
       <span class="d-av" aria-hidden="true">{{ user.username|first|upper }}</span>
       <div>
-        <b>خوش آمدید، {{ user.username }}</b>
+        <b>خوش آمدید، {{ user.get_full_name|default:user.phone|default:user.username|persian_digits }}</b>
         <div class="mu sm">نوع حساب: {{ user.get_role_display }}{% if user.email %} · <span dir="ltr">{{ user.email }}</span>{% endif %}</div>
       </div>
       <form class="tp-inline" method="post" action="{% url 'accounts:logout' %}">{% csrf_token %}<button class="btn o s" type="submit">خروج از حساب</button></form>
     </div>
 
+    <nav class="tp-cluster" aria-label="دسترسی‌های حساب کاربری">
+      <a class="btn o s" href="{% url 'orders:list' %}">سفارش‌های من</a>
+      <a class="btn o s" href="{% url 'gems:history' %}">تاریخچه جم</a>
+      <a class="btn o s" href="{% url 'club:course_list' %}">باشگاه مجازی</a>
+    </nav>
+
     {% if user.role == 'coach' %}
-      {% with application=user.coach_application %}
+      {% with application=coach_application %}
       <div class="d-c tp-coach-next">
         <ol class="tp-steps" aria-label="مراحل مربی شدن">
           <li class="done"><span>✓</span>ساخت حساب مربی</li>
@@ -31,6 +38,9 @@
         </ol>
         {% if application %}
           <p>وضعیت درخواست مربیگری: <span class="tag {% if application.status == 'approved' %}ok{% elif application.status == 'rejected' %}danger{% else %}g{% endif %}">{{ application.get_status_display }}</span></p>
+          {% if coach_profile %}
+            <a class="btn o" href="{% url 'coaches:profile_detail' coach_profile.pk %}">مشاهده پروفایل مربی</a>
+          {% endif %}
           <a class="btn o" href="{% url 'coaches:application_status' %}">مشاهدهٔ وضعیت درخواست</a>
         {% else %}
           <p>برای نمایش در فهرست مربیان، درخواست مربیگری و مدرک خود را ثبت کنید.</p>
@@ -41,6 +51,7 @@
     {% endif %}
   {% else %}
     <div class="d-c tp-acct-out">
+      <h2>مسیرت را انتخاب کن</h2>
       <p class="mu">برای ادامه، حساب هنرجو یا مربی بسازید یا وارد حساب خود شوید.</p>
       <ul class="tp-roles-l" aria-label="نوع حساب کاربری">
         <li><span class="tp-role-n" aria-hidden="true">۰۱</span><div><b>هنرجو</b><div class="mu sm">مربیان را ببینید و سبد خریدتان را در حساب خود نگه دارید.</div></div><a class="btn s" href="{% url 'accounts:register' %}?role=student">ثبت‌نام هنرجو</a></li>
@@ -50,5 +61,5 @@
       <p class="tp-auth-alt">قبلاً ثبت‌نام کرده‌اید؟ <a href="{% url 'accounts:login' %}">وارد شوید</a></p>
     </div>
   {% endif %}
-</div>
+</main>
 {% endblock %}
