@@ -302,6 +302,62 @@
     location.replace(target);
   }
 
+  // Route Preview authentication links and form submissions before the legacy
+  // localStorage handlers can render or create a demo account.
+  function authTargetFromHash(hash) {
+    const raw = String(hash || '');
+    if (!raw.startsWith('#/')) return '';
+
+    const routeText = raw.slice(2);
+    const separator = routeText.indexOf('?');
+    const routePath = separator < 0 ? routeText : routeText.slice(0, separator);
+    const queryText = separator < 0 ? '' : routeText.slice(separator + 1);
+    const parts = routePath.split('/').filter(Boolean).map((part) => {
+      try { return decodeURIComponent(part); } catch { return part; }
+    });
+    const route = parts[0] || '';
+    if (!['login', 'register', 'role'].includes(route)) return '';
+
+    return resolveKnownRoute(route, parts, new URLSearchParams(queryText));
+  }
+
+  document.addEventListener('click', (event) => {
+    const source = event.target;
+    const element = source && source.nodeType === 1 ? source : source && source.parentElement;
+    const link = element && typeof element.closest === 'function'
+      ? element.closest('a[href]')
+      : null;
+    if (!link) return;
+
+    let linkUrl;
+    try {
+      linkUrl = new URL(link.href, location.href);
+    } catch {
+      return;
+    }
+    if (linkUrl.origin !== location.origin || linkUrl.pathname !== location.pathname) return;
+
+    const target = authTargetFromHash(linkUrl.hash);
+    if (typeof target !== 'string' || !target) return;
+
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    location.replace(target);
+  }, true);
+
+  document.addEventListener('submit', (event) => {
+    const form = event.target;
+    if (!form || (form.id !== 'rg-f' && form.id !== 'lg-f')) return;
+
+    const fallbackRoute = form.id === 'rg-f' ? 'register' : 'login';
+    const hash = location.hash.startsWith('#/') ? location.hash : '#/' + fallbackRoute;
+    const target = authTargetFromHash(hash) || '/auth/login/';
+
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    location.replace(target);
+  }, true);
+
   window.addEventListener('hashchange', handlePreviewRoute);
   handlePreviewRoute();
 })();
