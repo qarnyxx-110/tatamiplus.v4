@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% load store_format %}
+{% load persian %}
+{% load jformat %}
+
+{% block title %}سفارش‌های من | تاتامی پلاس{% endblock %}
+{% block content %}
+<main class="w tp-store-page">
+  <header class="sh">
+    <div><span class="eyebrow">ACCOUNT</span><h1>سفارش‌های من</h1><p class="mu">وضعیت و جزئیات سفارش‌های ثبت‌شده را مشاهده کنید.</p></div>
+    <a class="btn o" href="{% url 'store:product_list' %}">رفتن به فروشگاه</a>
+  </header>
+
+  {% if page.object_list %}
+    <section class="tp-stack" aria-label="سفارش‌ها">
+      {% for order in page.object_list %}
+        <a class="card" href="{% url 'orders:detail' order.number %}">
+          <div class="b">
+            <div class="tp-cluster">
+              <h2>{{ order.number }}</h2>
+              <span class="tag m">{{ order.get_status_display }}</span>
+            </div>
+            <p class="mu sm">{{ order.created_at|jformat:'%Y/%m/%d'|persian_digits }}</p>
+            <div class="tp-cluster">
+              <span class="mu sm">{{ order.items.count|persian_digits }} قلم کالا</span>
+              <strong class="tp-price">{{ order.total|price_fa }} تومان</strong>
+            </div>
+          </div>
+        </a>
+      {% endfor %}
+    </section>
+
+    {% if page.has_other_pages %}
+      <nav class="tp-pager" aria-label="صفحه‌بندی سفارش‌ها">
+        {% if page.has_previous %}<a href="?page={{ page.previous_page_number }}">قبلی</a>{% endif %}
+        <span aria-current="page">صفحهٔ {{ page.number|persian_digits }} از {{ page.paginator.num_pages|persian_digits }}</span>
+        {% if page.has_next %}<a href="?page={{ page.next_page_number }}">بعدی</a>{% endif %}
+      </nav>
+    {% endif %}
+  {% else %}
+    <section class="tp-state" aria-labelledby="orders-empty-title">
+      <h2 id="orders-empty-title">هنوز سفارشی ثبت نکرده‌اید</h2>
+      <p>پس از ثبت سفارش، جزئیات آن در این بخش نمایش داده می‌شود.</p>
+      <a class="btn" href="{% url 'store:product_list' %}">رفتن به فروشگاه</a>
+    </section>
+  {% endif %}
+</main>
+{% endblock %}
