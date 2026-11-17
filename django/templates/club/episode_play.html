@@ -22,7 +22,7 @@
   <section class="d-c tp-episode-completion">
     {% if user.is_authenticated %}
       {% if completed %}
-        <p class="lesson-done">این قسمت در پیشرفت شما ثبت شده است.</p>
+        <p class="tp-note">این قسمت در پیشرفت شما ثبت شده است.</p>
       {% else %}
         <p class="mu">پس از تماشای قسمت، می‌توانید اتمام آن را در حساب خود ثبت کنید.</p>
         <form method="post" action="{% url 'club:episode_complete' episode.pk %}">
