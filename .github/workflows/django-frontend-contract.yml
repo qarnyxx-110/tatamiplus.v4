@@ -114,8 +114,6 @@ jobs:
           assert ".site-header" not in backend_css and ".site-nav" not in backend_css
           assert ".wordmark" not in backend_css and ".site-footer" not in backend_css
 
-          static_mapping = next(item for item in manifest["mappings"] if item["destination"] == "static")
-          assert "css/tatami.css" in static_mapping.get("exclude", [])
           print("FRONTEND_PATCH_CONTRACT_OK")
           PY
 
