@@ -138,7 +138,10 @@
 | #/coaches | /coaches/ |
 | #/coach-apply | /coaches/apply/ |
 | #/coach-application | /coaches/application/ |
-| #/courses، #/club و #/episode | /club/؛ شناسه‌های آزمایشی Preview به شناسه قسمت‌های دیتابیس تعبیر نمی‌شوند |
+| #/courses | /club/؛ فهرست دوره‌های منتشرشده |
+| #/courses/<slug> | عنوان نمونه فقط برای یافتن دوره هم‌نام و یکتای منتشرشده در HTML واقعی استفاده می‌شود؛ در غیر این صورت جست‌وجوی سرور با عنوان دوره باز می‌شود |
+| #/episode/<slug>-lesson-<n> | به صفحه جزئیات دوره واقعی هم‌نام هدایت می‌شود؛ شماره قسمت نمونه هرگز به شناسه دیتابیس تعبیر نمی‌شود |
+| #/club | /club/؛ فهرست دوره‌های واقعی |
 | #/gems | /account/gems/ |
 | #/profile و #/my-profile | /account/ |
 | #/orders | /orders/ |
