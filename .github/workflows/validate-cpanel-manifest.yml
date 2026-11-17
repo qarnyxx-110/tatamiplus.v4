@@ -62,8 +62,10 @@ jobs:
               Path(f"shared/dist/{name}/index.html").read_text(encoding="utf-8")
               for name in ("student", "coach", "club")
           ]
-          assert "tatamiplus.ir" in preview, "Generated Preview is missing the Django bridge"
-          assert all("tatamiplus.ir" not in html for html in pwa_pages), "Django bridge leaked into a role-based PWA"
+          assert "tatamiplus.ir" in preview, "Generated Preview is missing its live-host route guard"
+          bridge_markers = ("serverHashForUrl", "loadDjangoPath", "localStorage.removeItem('tp:users')")
+          assert all(marker in preview for marker in bridge_markers), "Generated Preview is missing the Django route bridge"
+          assert all(marker not in html for html in pwa_pages for marker in bridge_markers), "Django route bridge leaked into a role-based PWA"
           print("PREVIEW_BRIDGE_SCOPE_OK")
           PY
 
