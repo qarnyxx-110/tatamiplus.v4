@@ -238,7 +238,7 @@
       if (role) query.set('role', role);
 
       const next = nextPathFromHash(params.get('next') || params.get('next_url'));
-      if (next) query.set('next', next);
+      if (next) query.set('next_url', next);
 
       const suffix = query.toString();
       return '/auth/login/' + (suffix ? '?' + suffix : '');
