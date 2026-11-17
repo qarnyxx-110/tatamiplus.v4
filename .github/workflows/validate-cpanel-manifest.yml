@@ -51,6 +51,22 @@ jobs:
           print("PREVIEW_ONLY_DJANGO_ROUTE_BRIDGE_SOURCE_OK")
           PY
 
+      - name: Verify generated bridge is included in Preview only
+        run: |
+          node shared/build.js
+          python - <<'PY'
+          from pathlib import Path
+
+          preview = Path("shared/dist/preview/index.html").read_text(encoding="utf-8")
+          pwa_pages = [
+              Path(f"shared/dist/{name}/index.html").read_text(encoding="utf-8")
+              for name in ("student", "coach", "club")
+          ]
+          assert "tatamiplus.ir" in preview, "Generated Preview is missing the Django bridge"
+          assert all("tatamiplus.ir" not in html for html in pwa_pages), "Django bridge leaked into a role-based PWA"
+          print("PREVIEW_BRIDGE_SCOPE_OK")
+          PY
+
       - name: Validate manifest and selected files
         run: |
           python - <<'PY'
