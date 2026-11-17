@@ -55,10 +55,21 @@ jobs:
           js = Path("django/static/js/tatami.js").read_text(encoding="utf-8")
           admin_css = Path("django/static/css/tatami-admin.css").read_text(encoding="utf-8")
           module_css = Path("django/static/css/module-pages.css").read_text(encoding="utf-8")
+          backend_css = Path("django/static/css/backend-templates.css").read_text(encoding="utf-8")
           manifest = json.loads(Path("deploy/frontend-manifest.json").read_text(encoding="utf-8"))
 
-          assert 'class="site-nav" id="nv"' in base
-          assert 'class="ib tp-gem-header gem-chip" id="hgem"' in base
+          assert '<header>' in base
+          assert '<a class="logo"' in base
+          assert '<nav id="nv"' in base
+          assert 'id="hcart"' in base
+          assert 'id="hgem"' in base
+          assert 'id="mnb"' in base and 'id="mnd"' in base and 'id="mnx"' in base
+          assert 'css/styles.css' not in base, "Legacy backend theme must not be loaded by the Django shell"
+          assert 'class="site-header"' not in base and 'class="site-nav"' not in base and 'class="wordmark"' not in base
+          assert 'class="site-footer"' not in base
+          assert 'class="ib tp-gem-header" id="hgem"' in base
+          assert 'class="tp-drawer-n"' in base
+          assert 'css/tatami.css' in base, "Shared Tatami Plus design system must be loaded"
           assert "new_coach_leads_count" in admin
           assert "admin:accounts_signuplead_changelist" in admin
           assert "data-video-upload-form" in episode
@@ -68,6 +79,8 @@ jobs:
           assert "X-CSRFToken" in js
           assert ".tp-video-upload-progress" in module_css
           assert ".tp-admin-lead-notice" in admin_css
+          assert ".site-header" not in backend_css and ".site-nav" not in backend_css
+          assert ".wordmark" not in backend_css and ".site-footer" not in backend_css
 
           static_mapping = next(item for item in manifest["mappings"] if item["destination"] == "static")
           assert "css/tatami.css" in static_mapping.get("exclude", [])
