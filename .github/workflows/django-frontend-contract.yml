@@ -58,7 +58,7 @@ jobs:
           manifest = json.loads(Path("deploy/frontend-manifest.json").read_text(encoding="utf-8"))
 
           assert 'class="site-nav" id="nv"' in base
-          assert 'class="ib tp-gem-header" id="hgem"' in base
+          assert 'class="ib tp-gem-header gem-chip" id="hgem"' in base
           assert "new_coach_leads_count" in admin
           assert "admin:accounts_signuplead_changelist" in admin
           assert "data-video-upload-form" in episode
