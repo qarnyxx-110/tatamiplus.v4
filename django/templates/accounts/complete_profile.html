@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block title %}تکمیل پروفایل | تاتامی پلاس{% endblock %}
+{% block content %}
+<main class="w tp-auth">
+  <section class="tp-auth-card" aria-labelledby="profile-title">
+    <p class="tp-auth-kicker">TATAMI PLUS · حساب کاربری</p>
+    <h1 id="profile-title">پروفایلت را تکمیل کن</h1>
+    <p class="mu">برای فعال‌شدن حساب، اطلاعات خواسته‌شده را تکمیل کنید.</p>
+    <form id="tp-complete-profile-form" method="post" novalidate>
+      {% csrf_token %}
+      {% include 'includes/form_fields.html' %}
+      <button class="btn tp-auth-btn" type="submit">ذخیره و ادامه</button>
+    </form>
+  </section>
+</main>
+{% endblock %}
