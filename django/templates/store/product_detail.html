@@ -33,21 +33,36 @@
       {% endif %}
     </section>
 
-    <section class="tp-product-purchase" aria-labelledby="pd-title">
+    <section class="tp-product-purchase" aria-labelledby="pd-title" data-availability="{{ availability_status|default:'inventory_unregistered' }}">
       <a class="mu sm" href="{% url 'store:product_list' %}?category={{ product.category.pk }}">{{ product.category.name }}</a>
       <h1 id="pd-title">{{ product.name }}</h1>
       {% if product.training_level %}<p class="mu sm">سطح تمرین: {{ product.training_level }}</p>{% endif %}
+      {% if availability_status == 'in_stock' %}
+        <p><span class="tp-product-stock tp-product-stock--available">موجود</span></p>
+      {% elif availability_status == 'out_of_stock' %}
+        <p><span class="tp-product-stock tp-product-stock--unavailable">ناموجود</span></p>
+      {% elif availability_status == 'inventory_unregistered' %}
+        <p><span class="tp-product-stock tp-product-stock--unregistered">موجودی ثبت نشده</span></p>
+      {% elif starting_price or starting_price == 0 %}
+        <p><span class="tp-product-stock tp-product-stock--available">موجود</span></p>
+      {% else %}
+        <p><span class="tp-product-stock tp-product-stock--unregistered">موجودی ثبت نشده</span></p>
+      {% endif %}
       {% if starting_price or starting_price == 0 %}
         <p class="sv">از {{ starting_price|price_fa }}</p>
       {% else %}
-        <p><span class="tag m">در حال حاضر ناموجود</span></p>
+        <p class="tp-product-no-price">قیمت فروش ثبت نشده</p>
       {% endif %}
       {% if product.description %}<div class="tp-product-description">{{ product.description|linebreaks }}</div>{% endif %}
 
       <form method="post" class="tp-product-form" novalidate>
         {% csrf_token %}
         {% include 'includes/form_fields.html' %}
-        <button class="btn" type="submit"{% if not starting_price and starting_price != 0 %} disabled{% endif %}>افزودن به سبد خرید</button>
+        {% if availability_status %}
+          <button class="btn" type="submit"{% if availability_status != 'in_stock' or not starting_price and starting_price != 0 %} disabled{% endif %}>افزودن به سبد خرید</button>
+        {% else %}
+          <button class="btn" type="submit"{% if not starting_price and starting_price != 0 %} disabled{% endif %}>افزودن به سبد خرید</button>
+        {% endif %}
       </form>
       <p class="mu sm">قیمت و موجودی نهایی هنگام ثبت درخواست از سمت سرور بررسی می‌شود.</p>
       <a class="btn o" href="{% url 'store:cart' %}">مشاهده سبد خرید</a>

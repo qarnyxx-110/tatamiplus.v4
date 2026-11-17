@@ -23,7 +23,7 @@
       <span class="tp-product-stock tp-product-stock--unregistered">موجودی ثبت نشده</span>
     {% endif %}
 
-    {% if starting_price is not None %}
+    {% if starting_price or starting_price == 0 %}
       <div class="tp-price">از {{ starting_price|price_fa }}</div>
     {% else %}
       <div class="tp-product-no-price">قیمت فروش ثبت نشده</div>
