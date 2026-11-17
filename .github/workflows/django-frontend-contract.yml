@@ -8,6 +8,9 @@ name: Django frontend checks and cPanel handoff
     paths:
       - "django/templates/**"
       - "django/static/**"
+      - "shared/build.js"
+      - "shared/src/css/**"
+      - "shared/src/design/tokens.json"
       - "deploy/frontend-manifest.json"
       - ".github/workflows/django-frontend-contract.yml"
   pull_request:
@@ -16,6 +19,9 @@ name: Django frontend checks and cPanel handoff
     paths:
       - "django/templates/**"
       - "django/static/**"
+      - "shared/build.js"
+      - "shared/src/css/**"
+      - "shared/src/design/tokens.json"
       - "deploy/frontend-manifest.json"
       - ".github/workflows/django-frontend-contract.yml"
   workflow_dispatch:
@@ -113,6 +119,17 @@ jobs:
           assert ".tp-admin-lead-notice" in admin_css
           assert ".site-header" not in backend_css and ".site-nav" not in backend_css
           assert ".wordmark" not in backend_css and ".site-footer" not in backend_css
+          assert ".page-main" not in backend_css and ".button-dark" not in backend_css
+          assert ".product-grid" not in backend_css and ".cart-row" not in backend_css
+          assert len(backend_css) < 1000
+          assert "#app" in backend_css and ".tp-msgs" in backend_css
+          account = Path("django/templates/pages/account.html").read_text(encoding="utf-8")
+          assert "{% url 'orders:list' %}" in account
+          assert "{% url 'gems:history' %}" in account
+          assert "{% url 'club:course_list' %}" in account
+          for episode_template in ("django/templates/club/course_detail.html", "django/templates/club/episode_play.html"):
+              episode_source = Path(episode_template).read_text(encoding="utf-8")
+              assert 'class="lesson-done"' not in episode_source
 
           print("FRONTEND_PATCH_CONTRACT_OK")
           PY
@@ -147,33 +164,35 @@ jobs:
       - name: Compile templates and resolve required static assets
         working-directory: backend
         run: |
-          python manage.py shell -c "from django.template.loader import get_template; from django.contrib.staticfiles.finders import find; names=('base.html','admin/base_site.html','pages/home.html','pages/account.html','store/product_list.html','store/product_detail.html','store/cart_detail.html','coaches/directory.html','coaches/profile_detail.html','club/course_list.html','club/course_detail.html','club/coach/episode_form.html','gems/history.html','accounts/login.html','accounts/otp_verify.html','accounts/complete_profile.html','orders/address.html','orders/review.html','orders/payment_result.html','orders/order_list.html','orders/order_detail.html','includes/form_fields.html'); [get_template(name) for name in names]; assets=('css/tatami-admin.css','css/backend-templates.css','css/module-pages.css','js/tatami.js'); assert all(find(name) for name in assets); print('DJANGO_TEMPLATE_AND_STATIC_CHECK_OK')"
+          python manage.py shell -c "from django.template.loader import get_template; from django.contrib.staticfiles.finders import find; names=('base.html','admin/base_site.html','pages/home.html','pages/account.html','store/product_list.html','store/product_detail.html','store/cart_detail.html','coaches/directory.html','coaches/profile_detail.html','club/course_list.html','club/course_detail.html','club/coach/episode_form.html','gems/history.html','accounts/login.html','accounts/otp_verify.html','accounts/complete_profile.html','orders/address.html','orders/review.html','orders/payment_result.html','orders/order_list.html','orders/order_detail.html','includes/form_fields.html'); [get_template(name) for name in names]; assets=('css/tatami.css','css/tatami-admin.css','css/backend-templates.css','css/module-pages.css','css/home-restored.css','js/tatami.js','js/module-pages.js','js/home-restored.js'); assert all(find(name) for name in assets); print('DJANGO_TEMPLATE_AND_STATIC_CHECK_OK')"
 
       - name: Run backend tests with proposed frontend
         working-directory: backend
         run: python manage.py test accounts.tests.AuthenticationFlowTests accounts.tests.CoachSignupLeadTests accounts.tests.AccountPageTests gems.tests.GemPageTests orders.tests.CheckoutFlowTests --verbosity 1
 
-      - name: Build manifest-approved Django frontend package
+      - name: Build separate templates and static cPanel packages
         run: |
           python - <<'PY'
           import hashlib
           import json
-          import os
-          import shutil
           import zipfile
           from pathlib import Path
 
-          manifest_path = Path("deploy/frontend-manifest.json")
-          manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-          handoff = Path("handoff")
-          if handoff.exists():
-              shutil.rmtree(handoff)
-          handoff.mkdir(parents=True)
+          manifest = json.loads(Path("deploy/frontend-manifest.json").read_text(encoding="utf-8"))
+          packages = {"templates": [], "static": []}
+          roots = {"templates": Path("package-templates"), "static": Path("package-static")}
 
-          selected = []
+          for root in roots.values():
+              if root.exists():
+                  import shutil
+                  shutil.rmtree(root)
+              root.mkdir(parents=True)
+
           for mapping in manifest["mappings"]:
+              kind = Path(mapping["destination"]).name
+              if kind not in packages:
+                  raise SystemExit(f"Unsupported deployment destination: {mapping['destination']}")
               source_root = Path(mapping["source"])
-              destination_root = Path(mapping["destination"])
               extensions = {suffix.lower() for suffix in mapping["extensions"]}
               excludes = mapping.get("exclude", [])
 
@@ -188,50 +207,52 @@ jobs:
                   if source.suffix.lower() not in extensions:
                       continue
 
-                  destination = destination_root / relative
-                  target = handoff / destination
+                  target = roots[kind] / relative
                   target.parent.mkdir(parents=True, exist_ok=True)
-                  shutil.copy2(source, target)
+                  target.write_bytes(source.read_bytes())
                   data = target.read_bytes()
-                  selected.append({
-                      "path": destination.as_posix(),
+                  packages[kind].append({
+                      "path": relative,
                       "size": len(data),
                       "sha256": hashlib.sha256(data).hexdigest(),
                   })
 
-          if not selected:
-              raise SystemExit("Manifest selected zero files")
-          selected.sort(key=lambda item: item["path"])
-          metadata = {
-              "schema_version": 1,
-              "repository": os.environ.get("GITHUB_REPOSITORY"),
-              "source_commit": os.environ.get("GITHUB_SHA"),
-              "file_count": len(selected),
-              "files": selected,
-          }
-          (handoff / "DEPLOYMENT.json").write_text(
-              json.dumps(metadata, ensure_ascii=False, indent=2) + chr(10),
-              encoding="utf-8",
-          )
-          (handoff / "deploy").mkdir()
-          shutil.copy2(manifest_path, handoff / "deploy/frontend-manifest.json")
-
-          archive = Path("tatami-django-frontend-handoff.zip")
-          with zipfile.ZipFile(archive, "w", compression=zipfile.ZIP_DEFLATED) as bundle:
-              for item in sorted(handoff.rglob("*")):
-                  if item.is_file():
-                      bundle.write(item, item.relative_to(handoff).as_posix())
-          with zipfile.ZipFile(archive) as bundle:
-              bad = bundle.testzip()
-              if bad:
-                  raise SystemExit(f"ZIP integrity failure: {bad}")
-          print(f"DJANGO_FRONTEND_PACKAGE_OK | files={len(selected)} | commit={os.environ.get('GITHUB_SHA')}")
+          for kind, entries in packages.items():
+              if not entries:
+                  raise SystemExit(f"Manifest selected zero {kind} files")
+              entries.sort(key=lambda item: item["path"])
+              archive = Path(f"{kind}.zip")
+              with zipfile.ZipFile(archive, "w", compression=zipfile.ZIP_DEFLATED) as bundle:
+                  for source in sorted(roots[kind].rglob("*")):
+                      if source.is_file():
+                          bundle.write(source, source.relative_to(roots[kind]).as_posix())
+              with zipfile.ZipFile(archive) as bundle:
+                  bad = bundle.testzip()
+                  if bad:
+                      raise SystemExit(f"{kind}.zip integrity failure: {bad}")
+                  archived = set(bundle.namelist())
+              expected = {item["path"] for item in entries}
+              if archived != expected:
+                  raise SystemExit(f"{kind}.zip file list mismatch")
+              print(
+                  f"{kind.upper()}_PACKAGE_OK | files={len(entries)} | "
+                  f"bytes={archive.stat().st_size} | source_commit={__import__('os').environ.get('GITHUB_SHA')}"
+              )
           PY
 
-      - name: Upload verified Django frontend handoff
+      - name: Upload templates package
         uses: actions/upload-artifact@v4
         with:
-          name: tatami-django-frontend-handoff
-          path: tatami-django-frontend-handoff.zip
+          name: tatami-templates
+          path: templates.zip
           if-no-files-found: error
           retention-days: 14
+
+      - name: Upload static package
+        uses: actions/upload-artifact@v4
+        with:
+          name: tatami-static
+          path: static.zip
+          if-no-files-found: error
+          retention-days: 14
+
