@@ -4,8 +4,16 @@ import {pw,serve,build,wait} from './helpers.mjs';import {runPublic,runPwa,runCl
 import {runCheckout} from './checkout-flow.test.mjs';
 const tmp=fs.mkdtempSync(path.join(os.tmpdir(),'tp-test-')),MOCK=+process.env.MOCK_PORT||8601,A=path.join(tmp,'a'),B=path.join(tmp,'b'),API=path.join(tmp,'api'),PUB=path.join(tmp,'pub'),SITE=path.join(tmp,'site');
 console.log('Build…');build(A);build(B,{TP_API_BASE:'/__build_b__'});build(API,{TP_API_BASE:'/api/v1'});build(PUB,{TP_API_BASE:`http://127.0.0.1:${MOCK}/api/v1`});build(SITE,{SITE_URL:'https://example.test'});
-// نسخه B: شبیه‌سازی انتشار نسخه جدید (برای تست به‌روزرسانی Service Worker)
-for(const app of['student','coach','club']){const f=path.join(B,app,'index.html');fs.writeFileSync(f,fs.readFileSync(f,'utf8').replace('</body>','<!--UPDATE_MARKER--></body>'))}
+// نسخه B: شبیه‌سازی انتشار نسخه جدید. هم سند و هم نسخه Cache در Service Worker تغییر می‌کند.
+for(const app of['student','coach','club']){
+ const htmlFile=path.join(B,app,'index.html');
+ fs.writeFileSync(htmlFile,fs.readFileSync(htmlFile,'utf8').replace('</body>','<!--UPDATE_MARKER--></body>'));
+ const swFile=path.join(B,app,'sw.js');
+ const swSource=fs.readFileSync(swFile,'utf8');
+ const version=swSource.match(/const V='([^']+)'/);
+ if(!version)throw new Error('Unable to find generated Service Worker cache version for '+app);
+ fs.writeFileSync(swFile,swSource.replace(version[0],`const V='${version[1]}-update'`));
+}
 const mock=spawn('node',['tools/mock-api-server.mjs','--port',String(MOCK),'--static',API],{stdio:'inherit'});await wait(800);
 const browser=await pw.chromium.launch();const out=[];const apps=['student','coach','club'];let root=A;const ctl={use:()=>{root=B},reset:()=>{root=A}};
 try{
