@@ -1,9 +1,11 @@
 {% extends 'base.html' %}
 {% load store_format %}
 {% load persian %}
+{% load static %}
 
 {% block title %}فروشگاه تاتامی پلاس | تجهیزات جودو{% endblock %}
 {% block description %}جست‌وجو و بررسی لباس جودو، کمربند و تجهیزات تمرینی موجود در فروشگاه تاتامی پلاس.{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'css/reference-store.css' %}"><script src="{% static 'js/reference-store.js' %}" defer></script>{% endblock %}
 {% block content %}
 <main class="w tp-store-page">
   <header class="sh tp-store-heading">
@@ -100,12 +102,44 @@
             </nav>
           {% endif %}
         {% else %}
-          <div class="tp-state" aria-live="polite">
-            <span class="eyebrow">STORE</span>
-            <b>{% if request.GET %}محصولی با این مشخصات پیدا نشد{% else %}هنوز محصولی در فروشگاه ثبت نشده است{% endif %}</b>
-            <p>{% if request.GET %}فیلترها را تغییر دهید یا عبارت دیگری جست‌وجو کنید.{% else %}پس از ثبت محصولات فعال و تنوع دارای موجودی، کالاها در همین فهرست نمایش داده می‌شوند.{% endif %}</p>
-            {% if request.GET %}<a class="btn o s" href="{% url 'store:product_list' %}">نمایش همه محصولات</a>{% endif %}
+          <div class="tp-state" aria-live="polite" data-live-store-empty>
+            <span class="eyebrow">LIVE STORE</span>
+            <b>{% if request.GET %}محصول فعالی با این مشخصات و موجودی قابل فروش پیدا نشد{% else %}هنوز محصول فعال و دارای موجودی در فروشگاه ثبت نشده است{% endif %}</b>
+            <p>{% if request.GET %}فهرست محصولات فروش فعال با داده‌های فعلی پایگاه داده خالی است.{% else %}پس از ثبت محصول، قیمت فروش، تنوع و موجودی واقعی در سامانه، محصولات قابل خرید در همین صفحه نمایش داده می‌شوند.{% endif %}</p>
+            {% if request.GET %}<a class="btn o s" href="{% url 'store:product_list' %}">پاک کردن فیلترها</a>{% endif %}
           </div>
+          <section class="tp-reference-store" data-reference-store
+            data-catalog-url="{% static 'data/reference-store-catalog.json' %}"
+            data-initial-query="{{ request.GET.query|default:''|escape }}"
+            hidden aria-labelledby="tp-reference-store-title">
+            <div class="tp-reference-notice" role="note">
+              <b>کاتالوگ مرجع بازار — صرفاً جهت مشاهده، بدون امکان خرید</b>
+              <p>قیمت‌های زیر قیمت مرجع ثبت‌شده در تاریخ ۱۴۰۵/۰۷/۲۸ هستند، نه قیمت فروش تاتامی پلاس. موجودی، قیمت نهایی، تصاویر و امکان سفارش باید جداگانه در سامانه تأیید شوند.</p>
+            </div>
+            <header class="tp-reference-heading">
+              <div><span class="eyebrow">MARKET REFERENCE</span><h2 id="tp-reference-store-title">محصولات و تجهیزات جودو</h2></div>
+              <span class="tag m">۵۹ مورد مرجع</span>
+            </header>
+            <div class="tp-reference-tools">
+              <label class="fl">جست‌وجوی محصول
+                <input type="search" data-reference-search placeholder="نام محصول یا دسته‌بندی..." autocomplete="off">
+              </label>
+              <label class="fl">دسته‌بندی
+                <select data-reference-category><option value="">همه دسته‌ها</option></select>
+              </label>
+            </div>
+            <div class="tp-reference-meta">
+              <b data-reference-count aria-live="polite">در حال دریافت فهرست مرجع...</b>
+              <span class="mu sm">قیمت مرجع به تومان · تاریخ ثبت: ۱۴۰۵/۰۷/۲۸</span>
+            </div>
+            <div class="pg tp-product-grid tp-reference-grid" data-reference-grid></div>
+            <nav class="tp-reference-pagination" data-reference-pagination aria-label="صفحه‌بندی کاتالوگ مرجع" hidden>
+              <button class="btn o s" type="button" data-reference-page="-1">صفحه قبل</button>
+              <span data-reference-page-label></span>
+              <button class="btn o s" type="button" data-reference-page="1">صفحه بعد</button>
+            </nav>
+            <p class="tp-reference-footnote">هیچ‌یک از موارد این کاتالوگ به سبد خرید متصل نیست. برای فعال شدن فروش، محصول باید توسط مدیر فروشگاه با قیمت و موجودی معتبر ثبت شود.</p>
+          </section>
         {% endif %}
       </section>
     </div>

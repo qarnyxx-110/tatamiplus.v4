@@ -10,6 +10,8 @@ name: Django frontend checks and cPanel handoff
       - "django/static/**"
       - "shared/build.js"
       - "shared/src/css/**"
+      - "shared/src/js/shared/django-route-bridge.js"
+      - "shared/src/data/store-products.json"
       - "shared/src/design/tokens.json"
       - "deploy/frontend-manifest.json"
       - ".github/workflows/django-frontend-contract.yml"
@@ -21,6 +23,8 @@ name: Django frontend checks and cPanel handoff
       - "django/static/**"
       - "shared/build.js"
       - "shared/src/css/**"
+      - "shared/src/js/shared/django-route-bridge.js"
+      - "shared/src/data/store-products.json"
       - "shared/src/design/tokens.json"
       - "deploy/frontend-manifest.json"
       - ".github/workflows/django-frontend-contract.yml"
@@ -48,6 +52,8 @@ jobs:
           node --check django/static/js/tatami.js
           node --check django/static/js/module-pages.js
           node --check django/static/js/home-restored.js
+          node --check django/static/js/reference-store.js
+          node --check shared/src/js/shared/django-route-bridge.js
 
       - name: Verify shared design system output
         run: |
@@ -75,6 +81,8 @@ jobs:
           shared_css = Path("django/static/css/tatami.css").read_text(encoding="utf-8")
           frontend_manifest = json.loads(Path("deploy/frontend-manifest.json").read_text(encoding="utf-8"))
           admin = Path("django/templates/admin/base_site.html").read_text(encoding="utf-8")
+          store_template = Path("django/templates/store/product_list.html").read_text(encoding="utf-8")
+          reference_catalog = json.loads(Path("django/static/data/reference-store-catalog.json").read_text(encoding="utf-8"))
           episode = Path("django/templates/club/coach/episode_form.html").read_text(encoding="utf-8")
           js = Path("django/static/js/tatami.js").read_text(encoding="utf-8")
           admin_css = Path("django/static/css/tatami-admin.css").read_text(encoding="utf-8")
@@ -94,6 +102,9 @@ jobs:
           assert ".tp-auth-layout{" in shared_css and ".tp-auth-aside{" in shared_css
           assert ".tp-gem-table{" in shared_css
           assert "accounts/login.html" not in next(item for item in frontend_manifest["mappings"] if item["destination"] == "templates").get("exclude", [])
+          assert "data-reference-store" in store_template and "صرفاً جهت مشاهده، بدون امکان خرید" in store_template
+          assert len(reference_catalog["products"]) == 59
+          assert all("sourceUrl" not in product and "shop" not in product for product in reference_catalog["products"])
           static_mapping = next(item for item in frontend_manifest["mappings"] if item["destination"] == "static")
           assert "css/tatami.css" not in static_mapping.get("exclude", [])
           assert '<header>' in base

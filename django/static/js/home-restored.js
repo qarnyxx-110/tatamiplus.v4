@@ -17,6 +17,59 @@
     feed.replaceChildren(box);
   }
 
+
+  async function renderReferenceProducts(feed, limit) {
+    const catalogUrl = feed.dataset.referenceCatalogUrl;
+    if (!catalogUrl) return false;
+    const response = await fetch(catalogUrl, {
+      method: 'GET',
+      credentials: 'same-origin',
+      headers: { Accept: 'application/json' }
+    });
+    if (!response.ok) throw new Error('Reference catalogue unavailable');
+    const payload = await response.json();
+    const products = Array.isArray(payload.products) ? payload.products.slice(0, limit) : [];
+    if (!products.length) return false;
+
+    const list = document.createElement('div');
+    list.className = 'pg tp-product-grid tp-reference-grid';
+    list.setAttribute('aria-label', 'کاتالوگ مرجع بازار');
+
+    products.forEach((product) => {
+      const card = document.createElement('article');
+      card.className = 'card pcd tp-product-card tp-reference-product-card';
+      const media = document.createElement('div');
+      media.className = 'ph r43 tp-reference-media-placeholder';
+      const placeholder = document.createElement('span');
+      placeholder.textContent = 'تصویر پس از تأیید مجوز منتشر می‌شود';
+      media.append(placeholder);
+
+      const body = document.createElement('div');
+      body.className = 'b';
+      const category = document.createElement('div');
+      category.className = 'mu sm';
+      category.textContent = product.category || 'تجهیزات جودو';
+      const title = document.createElement('h3');
+      title.textContent = product.name || 'محصول بدون نام';
+      const status = document.createElement('span');
+      status.className = 'tag m';
+      status.textContent = 'قیمت مرجع · غیرقابل خرید';
+      const price = document.createElement('div');
+      price.className = 'tp-price';
+      price.textContent = Number(product.reference_price || 0).toLocaleString('fa-IR') + ' تومان';
+      const group = document.createElement('p');
+      group.className = 'mu sm';
+      group.textContent = product.group || '';
+      body.append(category, title, status, price, group);
+      card.append(media, body);
+      list.append(card);
+    });
+
+    feed.replaceChildren(list);
+    feed.dataset.state = 'reference';
+    return true;
+  }
+
   async function loadFeed(feed) {
     const source = feed.dataset.source;
     const selector = feed.dataset.selector;
@@ -62,6 +115,8 @@
 
         feed.replaceChildren(list);
         feed.dataset.state = 'ready';
+      } else if (layout === 'products' && await renderReferenceProducts(feed, limit)) {
+        // The reference-only catalogue is a non-purchasable fallback when the live store has no stock.
       } else {
         const emptySelector = feed.dataset.emptySelector || '.tp-state';
         const sourceEmpty = parsed.querySelector(emptySelector);
@@ -76,6 +131,15 @@
         feed.dataset.state = 'empty';
       }
     } catch (error) {
+      if (layout === 'products') {
+        try {
+          if (await renderReferenceProducts(feed, limit)) {
+            feed.dataset.state = 'reference';
+            feed.setAttribute('aria-busy', 'false');
+            return;
+          }
+        } catch {}
+      }
       renderMessage(
         feed,
         feed.dataset.errorTitle || 'محتوا فعلاً در دسترس نیست',
