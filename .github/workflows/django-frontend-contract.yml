@@ -67,7 +67,7 @@ jobs:
           assert 'css/styles.css' not in base, "Legacy backend theme must not be loaded by the Django shell"
           assert 'class="site-header"' not in base and 'class="site-nav"' not in base and 'class="wordmark"' not in base
           assert 'class="site-footer"' not in base
-          assert 'class="ib tp-gem-header" id="hgem"' in base
+          assert 'class="ib tp-gem-header gem-chip" id="hgem"' in base
           assert 'class="tp-drawer-n"' in base
           assert 'css/tatami.css' in base, "Shared Tatami Plus design system must be loaded"
           assert "new_coach_leads_count" in admin
