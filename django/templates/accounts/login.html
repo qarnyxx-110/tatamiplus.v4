@@ -1,29 +1,33 @@
 {% extends 'base.html' %}
 
-{% block title %}ورود | تاتامی پلاس{% endblock %}
+{% block title %}ورود یا ثبت‌نام | تاتامی پلاس{% endblock %}
 {% block content %}
-<div class="w tp-auth tp-auth-layout">
+<main class="w tp-auth tp-auth-layout">
   <section class="tp-auth-main">
     <div class="tp-auth-card">
       <p class="tp-auth-kicker">TATAMI PLUS · حساب کاربری</p>
-      <h1>ورود به حساب</h1>
-      <p class="mu">نام کاربری و گذرواژهٔ خود را وارد کنید.</p>
+      <h1>با شمارهٔ همراه وارد شو</h1>
+      <p class="mu">برای ورود یا ساخت حساب، شمارهٔ همراه و نوع حساب را وارد کنید. کد یک‌بارمصرف برای تأیید شماره ارسال می‌شود.</p>
       <form id="tp-login-form" method="post" novalidate data-auth-form="login">
         {% csrf_token %}
         {% include 'includes/form_fields.html' %}
-        {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
-        <button class="btn tp-auth-btn" type="submit">ورود به حساب کاربری</button>
+        <button class="btn tp-auth-btn" type="submit">دریافت کد یک‌بارمصرف</button>
       </form>
     </div>
-    <p class="tp-auth-alt">حساب ندارید؟ <a href="{% url 'accounts:register' %}">ثبت‌نام کنید</a></p>
+    <p class="tp-auth-alt">اگر شمارهٔ شما قبلاً ثبت نشده باشد، پس از تأیید کد حساب جدید ساخته می‌شود.</p>
   </section>
+
   <aside class="tp-auth-aside">
     <div class="tp-auth-aside-mark" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
     <p class="tp-auth-kicker">فراتر از تمرین</p>
     <h2>مسیر پیشرفتت را در تاتامی پلاس ادامه بده.</h2>
-    <p class="mu">به تجربه‌ای منسجم برای یادگیری، مربیان، باشگاه‌ها و مسیر ورزشی خود دسترسی داشته باش.</p>
-    <ul class="tp-auth-benefits"><li>دسترسی به مسیر یادگیری</li><li>آشنایی با مربیان و باشگاه‌ها</li><li>مدیریت حساب ورزشی</li></ul>
+    <p class="mu">به تجربه‌ای یکپارچه برای یادگیری، مربیان و تجهیزات تمرین دسترسی داشته باش.</p>
+    <ul class="tp-auth-benefits">
+      <li>ورود امن با کد یک‌بارمصرف</li>
+      <li>انتخاب نقش هنرجو یا مربی</li>
+      <li>مدیریت حساب و مسیر ورزشی</li>
+    </ul>
     <span class="tp-auth-aside-foot">TATAMI PLUS</span>
   </aside>
-</div>
+</main>
 {% endblock %}
