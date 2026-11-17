@@ -16,6 +16,8 @@ on:
       - "deploy/frontend-manifest.json"
       - "django/templates/**"
       - "django/static/**"
+      - "preview/index.html"
+      - "preview/assets/django-route-bridge.js"
       - ".github/workflows/validate-cpanel-manifest.yml"
 
 permissions:
