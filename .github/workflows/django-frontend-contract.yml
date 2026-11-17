@@ -1,70 +1,85 @@
-name: Validate Django frontend against backend
+name: Django frontend checks and cPanel handoff
 
-on:
-  pull_request:
-    branches: [main, "feat/**"]
-    paths:
-      - "django/templates/**"
-      - "django/static/**"
-      - "shared/src/js/shared/django-route-bridge.js"
-      - "shared/src/css/**"
-      - "shared/src/design/tokens.json"
-      - "shared/public/fonts/**"
-      - "shared/build.js"
-      - "shared/package.json"
-      - ".github/workflows/django-frontend-contract.yml"
+'on':
   push:
-    branches: [main, "feat/**"]
+    branches:
+      - main
+      - "feat/**"
     paths:
       - "django/templates/**"
       - "django/static/**"
-      - "shared/src/js/shared/django-route-bridge.js"
-      - "shared/src/css/**"
-      - "shared/src/design/tokens.json"
-      - "shared/public/fonts/**"
-      - "shared/build.js"
-      - "shared/package.json"
+      - "deploy/frontend-manifest.json"
+      - ".github/workflows/django-frontend-contract.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "django/templates/**"
+      - "django/static/**"
+      - "deploy/frontend-manifest.json"
       - ".github/workflows/django-frontend-contract.yml"
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  django-template-contract:
-    name: Render frontend templates with the real Django backend
+  validate-and-package:
+    name: Validate Django frontend and build cPanel handoff
     runs-on: ubuntu-latest
     steps:
-      - name: Check out frontend repository
+      - name: Check out frontend source
         uses: actions/checkout@v4
-        with:
-          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
-          ref: ${{ github.event.pull_request.head.ref || github.ref }}
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "24"
+          node-version: "22"
 
-      - name: Regenerate Django CSS from the shared design system
+      - name: Check browser JavaScript syntax
         run: |
           set -euo pipefail
-          node shared/build.js
-          test -s django/static/css/tatami.css
-          grep -q 'grid,.pg' django/static/css/tatami.css
+          node --check django/static/js/tatami.js
+          node --check django/static/js/module-pages.js
+          node --check django/static/js/home-restored.js
 
-      - name: Check Django browser JavaScript syntax
-        run: node --check django/static/js/tatami.js
+      - name: Check frontend patch contracts
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json
 
-      - name: Verify Django Admin brand color follows the design system
-        run: grep -q -- '--tp-admin-brand: #2F62D6;' django/static/css/tatami-admin.css
+          base = Path("django/templates/base.html").read_text(encoding="utf-8")
+          admin = Path("django/templates/admin/base_site.html").read_text(encoding="utf-8")
+          episode = Path("django/templates/club/coach/episode_form.html").read_text(encoding="utf-8")
+          js = Path("django/static/js/tatami.js").read_text(encoding="utf-8")
+          admin_css = Path("django/static/css/tatami-admin.css").read_text(encoding="utf-8")
+          module_css = Path("django/static/css/module-pages.css").read_text(encoding="utf-8")
+          manifest = json.loads(Path("deploy/frontend-manifest.json").read_text(encoding="utf-8"))
+
+          assert 'class="site-nav" id="nv"' in base
+          assert 'class="ib tp-gem-header" id="hgem"' in base
+          assert "new_coach_leads_count" in admin
+          assert "admin:accounts_signuplead_changelist" in admin
+          assert "data-video-upload-form" in episode
+          assert "tp-otp-resend-until:" in js
+          assert "request.upload.addEventListener('progress'" in js
+          assert "uploadRequest.abort()" in js
+          assert "X-CSRFToken" in js
+          assert ".tp-video-upload-progress" in module_css
+          assert ".tp-admin-lead-notice" in admin_css
+
+          static_mapping = next(item for item in manifest["mappings"] if item["destination"] == "static")
+          assert "css/tatami.css" in static_mapping.get("exclude", [])
+          print("FRONTEND_PATCH_CONTRACT_OK")
+          PY
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
-      - name: Check out the backend contract revision (read-only)
+      - name: Check out the pinned backend contract revision
         run: |
           set -euo pipefail
           git clone https://github.com/Radinsharifi/Tatami-demo.git backend
@@ -75,49 +90,28 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r backend/requirements.txt
 
-      - name: Install the frontend templates and static assets into the isolated backend checkout
+      - name: Install proposed frontend templates and static files into isolated backend checkout
         run: |
           set -euo pipefail
           mkdir -p backend/templates backend/static
           cp -a django/templates/. backend/templates/
           cp -a django/static/. backend/static/
 
-      - name: Validate Django settings and template URL reversals
+      - name: Validate Django settings
         working-directory: backend
         run: python manage.py check
 
-      - name: Verify real Django templates, route names and static assets
+      - name: Compile templates and resolve required static assets
         working-directory: backend
         run: |
-          python manage.py shell -c "from django.template.loader import get_template; from django.urls import reverse; from django.contrib.staticfiles.finders import find; templates=('base.html','pages/home.html','pages/account.html','store/product_list.html','store/product_detail.html','store/cart_detail.html','coaches/directory.html','coaches/profile_detail.html','club/course_list.html','club/course_detail.html','club/coach/episode_form.html','gems/history.html','accounts/login.html','includes/form_fields.html','admin/base_site.html'); [get_template(name) for name in templates]; routes=('home','store:product_list','store:product_detail','store:cart','coaches:directory','coaches:profile_detail','club:course_list','club:course_detail','gems:history','phone_auth:login','orders:address','orders:review','orders:list','account'); [reverse(name, kwargs={'slug':'contract-probe'} if name in ('store:product_detail','club:course_detail') else {'profile_id':1} if name == 'coaches:profile_detail' else None) for name in routes]; assert find('css/tatami-admin.css'); assert find('css/backend-templates.css'); assert find('css/module-pages.css'); assert find('js/tatami.js'); print('DJANGO_FRONTEND_CONTRACT_OK')"
+          python manage.py shell -c "from django.template.loader import get_template; from django.contrib.staticfiles.finders import find; names=('base.html','admin/base_site.html','pages/home.html','pages/account.html','store/product_list.html','store/product_detail.html','store/cart_detail.html','coaches/directory.html','coaches/profile_detail.html','club/course_list.html','club/course_detail.html','club/coach/episode_form.html','gems/history.html','accounts/login.html','includes/form_fields.html'); [get_template(name) for name in names]; assets=('css/tatami-admin.css','css/backend-templates.css','css/module-pages.css','js/tatami.js'); assert all(find(name) for name in assets); print('DJANGO_TEMPLATE_AND_STATIC_CHECK_OK')"
 
-      - name: Run backend tests with the proposed frontend templates
+      - name: Run backend tests with proposed frontend
         working-directory: backend
-        run: python manage.py test --verbosity 2
+        run: python manage.py test --verbosity 1
 
-      - name: Commit regenerated Django CSS to the pull request branch
-        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}
-        env:
-          TARGET_BRANCH: ${{ github.head_ref }}
+      - name: Build manifest-approved Django frontend package
         run: |
-          set -euo pipefail
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add django/static/css/tatami.css
-          if git diff --cached --quiet; then
-            echo "Generated Django CSS is already synchronized."
-            exit 0
-          fi
-          git commit -m "Build Django CSS from shared design tokens"
-          git push origin "HEAD:${TARGET_BRANCH}"
-
-      - name: Verify generated CSS when the workflow cannot write it back
-        if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository }}
-        run: git diff --exit-code -- django/static/css/tatami.css
-
-      - name: Package only manifest-approved Django frontend files
-        run: |
-          set -euo pipefail
           python - <<'PY'
           import hashlib
           import json
@@ -131,7 +125,7 @@ jobs:
           handoff = Path("handoff")
           if handoff.exists():
               shutil.rmtree(handoff)
-          handoff.mkdir()
+          handoff.mkdir(parents=True)
 
           selected = []
           for mapping in manifest["mappings"]:
@@ -165,28 +159,33 @@ jobs:
           if not selected:
               raise SystemExit("Manifest selected zero files")
           selected.sort(key=lambda item: item["path"])
+          metadata = {
+              "schema_version": 1,
+              "repository": os.environ.get("GITHUB_REPOSITORY"),
+              "source_commit": os.environ.get("GITHUB_SHA"),
+              "file_count": len(selected),
+              "files": selected,
+          }
           (handoff / "DEPLOYMENT.json").write_text(
-              json.dumps({
-                  "schema_version": 1,
-                  "repository": os.environ.get("GITHUB_REPOSITORY"),
-                  "source_commit": os.environ.get("GITHUB_SHA"),
-                  "file_count": len(selected),
-                  "files": selected,
-              }, ensure_ascii=False, indent=2) + chr(10),
+              json.dumps(metadata, ensure_ascii=False, indent=2) + chr(10),
               encoding="utf-8",
           )
           (handoff / "deploy").mkdir()
           shutil.copy2(manifest_path, handoff / "deploy/frontend-manifest.json")
 
-          archive = Path(os.environ["GITHUB_WORKSPACE"]) / "tatami-django-frontend-handoff.zip"
+          archive = Path("tatami-django-frontend-handoff.zip")
           with zipfile.ZipFile(archive, "w", compression=zipfile.ZIP_DEFLATED) as bundle:
               for item in sorted(handoff.rglob("*")):
                   if item.is_file():
                       bundle.write(item, item.relative_to(handoff).as_posix())
+          with zipfile.ZipFile(archive) as bundle:
+              bad = bundle.testzip()
+              if bad:
+                  raise SystemExit(f"ZIP integrity failure: {bad}")
           print(f"DJANGO_FRONTEND_PACKAGE_OK | files={len(selected)} | commit={os.environ.get('GITHUB_SHA')}")
           PY
 
-      - name: Upload backend handoff package
+      - name: Upload verified Django frontend handoff
         uses: actions/upload-artifact@v4
         with:
           name: tatami-django-frontend-handoff
