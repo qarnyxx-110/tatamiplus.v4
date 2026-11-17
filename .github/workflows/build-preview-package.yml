@@ -67,7 +67,7 @@ jobs:
           for (const item of required) {
             if (!html.includes(item)) throw new Error("Missing Preview content: " + item);
           }
-          const authRouteMarkers = ["/auth/login/", "location.replace(target)", "'www.tatamiplus.ir'", "next_url", "localStorage.removeItem(\'tp:users\')"];
+          const authRouteMarkers = ["/auth/login/", "location.replace(target)", "'www.tatamiplus.ir'", "next_url", "localStorage.removeItem(\'tp:users\')", "function authTargetFromHash", "document.addEventListener('submit'", "event.stopImmediatePropagation()"];
           for (const marker of authRouteMarkers) {
             if (!html.includes(marker)) throw new Error("Missing live Django route bridge marker: " + marker);
           }
@@ -146,8 +146,8 @@ jobs:
                       "sha256": hashlib.sha256(data).hexdigest(),
                   })
 
-          if len(selected) != 41:
-              raise SystemExit(f"Expected 41 manifest-approved files, found {len(selected)}")
+          if len(selected) != 40:
+              raise SystemExit(f"Expected 40 manifest-approved files, found {len(selected)}")
 
           selected.sort(key=lambda item: item["path"])
           metadata = {
