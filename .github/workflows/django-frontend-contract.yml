@@ -71,6 +71,10 @@ jobs:
           login = Path("django/templates/accounts/login.html").read_text(encoding="utf-8")
           otp = Path("django/templates/accounts/otp_verify.html").read_text(encoding="utf-8")
           profile = Path("django/templates/accounts/complete_profile.html").read_text(encoding="utf-8")
+          auth_layout = Path("django/templates/layouts/auth.html").read_text(encoding="utf-8")
+          auth_aside = Path("django/templates/components/auth_aside.html").read_text(encoding="utf-8")
+          auth_pages = [login, otp, profile]
+          auth_ui_css = Path("shared/src/css/ui.css").read_text(encoding="utf-8")
           gem_history = Path("django/templates/gems/history.html").read_text(encoding="utf-8")
           gem_badge = Path("django/templates/components/gem_badge.html").read_text(encoding="utf-8")
           order_templates = [
@@ -91,6 +95,15 @@ jobs:
           manifest = json.loads(Path("deploy/frontend-manifest.json").read_text(encoding="utf-8"))
 
           assert 'data-auth-form="login"' in login
+          assert all('{% extends "layouts/auth.html" %}' in source for source in auth_pages)
+          assert '{% include "components/auth_aside.html" %}' in auth_layout
+          assert 'class="w tp-auth-layout" data-page-layout="auth"' in auth_layout
+          assert 'aria-labelledby="auth-page-title"' in auth_layout
+          assert 'class="tp-auth-aside"' in auth_aside
+          assert all('class="tp-auth tp-auth-layout"' not in source for source in auth_pages)
+          assert '.tp-auth-layout{display:grid;width:100%;max-width:64rem;margin-inline:auto;' in auth_ui_css
+          assert '.tp-auth-main>.tp-auth-card{width:100%;max-width:none}' in auth_ui_css
+          assert 'grid-template-columns:minmax(0,1fr)' in auth_ui_css
           assert "{% include 'includes/form_fields.html' %}" in login
           assert "{% url 'phone_auth:verify_otp' %}" in otp
           assert "{% url 'phone_auth:send_otp' %}" in otp
@@ -175,7 +188,7 @@ jobs:
       - name: Compile templates and resolve required static assets
         working-directory: backend
         run: |
-          python manage.py shell -c "from django.template.loader import get_template; from django.contrib.staticfiles.finders import find; names=('base.html','admin/base_site.html','pages/home.html','pages/account.html','store/product_list.html','store/product_detail.html','store/cart_detail.html','coaches/directory.html','coaches/profile_detail.html','club/course_list.html','club/course_detail.html','club/coach/episode_form.html','gems/history.html','accounts/login.html','accounts/otp_verify.html','accounts/complete_profile.html','orders/address.html','orders/review.html','orders/payment_result.html','orders/order_list.html','orders/order_detail.html','includes/form_fields.html'); [get_template(name) for name in names]; assets=('css/tatami.css','css/tatami-admin.css','css/backend-templates.css','css/module-pages.css','css/home-restored.css','css/reference-store.css','js/tatami.js','js/module-pages.js','js/home-restored.js','js/reference-store.js','data/reference-store-catalog.json'); assert all(find(name) for name in assets); print('DJANGO_TEMPLATE_AND_STATIC_CHECK_OK')"
+          python manage.py shell -c "from django.template.loader import get_template; from django.contrib.staticfiles.finders import find; names=('base.html','layouts/auth.html','components/auth_aside.html','admin/base_site.html','pages/home.html','pages/account.html','store/product_list.html','store/product_detail.html','store/cart_detail.html','coaches/directory.html','coaches/profile_detail.html','club/course_list.html','club/course_detail.html','club/coach/episode_form.html','gems/history.html','accounts/login.html','accounts/otp_verify.html','accounts/complete_profile.html','orders/address.html','orders/review.html','orders/payment_result.html','orders/order_list.html','orders/order_detail.html','includes/form_fields.html'); [get_template(name) for name in names]; assets=('css/tatami.css','css/tatami-admin.css','css/backend-templates.css','css/module-pages.css','css/home-restored.css','css/reference-store.css','js/tatami.js','js/module-pages.js','js/home-restored.js','js/reference-store.js','data/reference-store-catalog.json'); assert all(find(name) for name in assets); print('DJANGO_TEMPLATE_AND_STATIC_CHECK_OK')"
 
       - name: Run backend tests with proposed frontend
         working-directory: backend
