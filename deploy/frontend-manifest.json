@@ -10,7 +10,6 @@
       ],
       "exclude": [
         "clubs",
-        "accounts/login.html",
         "accounts/register.html"
       ]
     },
