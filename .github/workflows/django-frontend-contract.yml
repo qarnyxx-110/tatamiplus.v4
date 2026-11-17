@@ -172,7 +172,7 @@ jobs:
                   "source_commit": os.environ.get("GITHUB_SHA"),
                   "file_count": len(selected),
                   "files": selected,
-              }, ensure_ascii=False, indent=2) + "\\n",
+              }, ensure_ascii=False, indent=2) + chr(10),
               encoding="utf-8",
           )
           (handoff / "deploy").mkdir()
