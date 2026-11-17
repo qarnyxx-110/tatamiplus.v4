@@ -43,6 +43,12 @@ jobs:
           node --check django/static/js/module-pages.js
           node --check django/static/js/home-restored.js
 
+      - name: Verify shared design system output
+        run: |
+          set -euo pipefail
+          node shared/build.js
+          git diff --exit-code -- django/static/css/tatami.css
+
       - name: Check frontend patch contracts
         run: |
           python - <<'PY'
@@ -50,6 +56,18 @@ jobs:
           import json
 
           base = Path("django/templates/base.html").read_text(encoding="utf-8")
+          login = Path("django/templates/accounts/login.html").read_text(encoding="utf-8")
+          otp = Path("django/templates/accounts/otp_verify.html").read_text(encoding="utf-8")
+          profile = Path("django/templates/accounts/complete_profile.html").read_text(encoding="utf-8")
+          gem_history = Path("django/templates/gems/history.html").read_text(encoding="utf-8")
+          gem_badge = Path("django/templates/components/gem_badge.html").read_text(encoding="utf-8")
+          order_templates = [
+              Path("django/templates/orders") / name
+              for name in ("address.html", "review.html", "payment_result.html", "order_list.html", "order_detail.html")
+          ]
+          order_sources = [path.read_text(encoding="utf-8") for path in order_templates]
+          shared_css = Path("django/static/css/tatami.css").read_text(encoding="utf-8")
+          frontend_manifest = json.loads(Path("deploy/frontend-manifest.json").read_text(encoding="utf-8"))
           admin = Path("django/templates/admin/base_site.html").read_text(encoding="utf-8")
           episode = Path("django/templates/club/coach/episode_form.html").read_text(encoding="utf-8")
           js = Path("django/static/js/tatami.js").read_text(encoding="utf-8")
@@ -58,6 +76,20 @@ jobs:
           backend_css = Path("django/static/css/backend-templates.css").read_text(encoding="utf-8")
           manifest = json.loads(Path("deploy/frontend-manifest.json").read_text(encoding="utf-8"))
 
+          assert 'data-auth-form="login"' in login
+          assert "{% include 'includes/form_fields.html' %}" in login
+          assert "{% url 'phone_auth:verify_otp' %}" in otp
+          assert "{% url 'phone_auth:send_otp' %}" in otp
+          assert "{% include 'includes/form_fields.html' %}" in profile
+          assert "{% url 'gems:history' %}" in gem_badge
+          assert "tp-gem-table" in gem_history and "tp-gem-positive" in gem_history
+          assert all("page-main" not in source and "button-dark" not in source for source in order_sources)
+          assert all("{% csrf_token %}" in source for source in order_sources if "method=\"post\"" in source)
+          assert ".tp-auth-layout{" in shared_css and ".tp-auth-aside{" in shared_css
+          assert ".tp-gem-table{" in shared_css
+          assert "accounts/login.html" not in next(item for item in frontend_manifest["mappings"] if item["destination"] == "templates").get("exclude", [])
+          static_mapping = next(item for item in frontend_manifest["mappings"] if item["destination"] == "static")
+          assert "css/tatami.css" not in static_mapping.get("exclude", [])
           assert '<header>' in base
           assert '<a class="logo"' in base
           assert '<nav id="nv"' in base
@@ -117,11 +149,11 @@ jobs:
       - name: Compile templates and resolve required static assets
         working-directory: backend
         run: |
-          python manage.py shell -c "from django.template.loader import get_template; from django.contrib.staticfiles.finders import find; names=('base.html','admin/base_site.html','pages/home.html','pages/account.html','store/product_list.html','store/product_detail.html','store/cart_detail.html','coaches/directory.html','coaches/profile_detail.html','club/course_list.html','club/course_detail.html','club/coach/episode_form.html','gems/history.html','accounts/login.html','includes/form_fields.html'); [get_template(name) for name in names]; assets=('css/tatami-admin.css','css/backend-templates.css','css/module-pages.css','js/tatami.js'); assert all(find(name) for name in assets); print('DJANGO_TEMPLATE_AND_STATIC_CHECK_OK')"
+          python manage.py shell -c "from django.template.loader import get_template; from django.contrib.staticfiles.finders import find; names=('base.html','admin/base_site.html','pages/home.html','pages/account.html','store/product_list.html','store/product_detail.html','store/cart_detail.html','coaches/directory.html','coaches/profile_detail.html','club/course_list.html','club/course_detail.html','club/coach/episode_form.html','gems/history.html','accounts/login.html','accounts/otp_verify.html','accounts/complete_profile.html','orders/address.html','orders/review.html','orders/payment_result.html','orders/order_list.html','orders/order_detail.html','includes/form_fields.html'); [get_template(name) for name in names]; assets=('css/tatami-admin.css','css/backend-templates.css','css/module-pages.css','js/tatami.js'); assert all(find(name) for name in assets); print('DJANGO_TEMPLATE_AND_STATIC_CHECK_OK')"
 
       - name: Run backend tests with proposed frontend
         working-directory: backend
-        run: python manage.py test accounts.tests.CoachSignupLeadTests gems.tests.GemPageTests --verbosity 1
+        run: python manage.py test accounts.tests.AuthenticationFlowTests accounts.tests.CoachSignupLeadTests accounts.tests.AccountPageTests gems.tests.GemPageTests orders.tests.CheckoutFlowTests --verbosity 1
 
       - name: Build manifest-approved Django frontend package
         run: |
