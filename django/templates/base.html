@@ -31,7 +31,7 @@
   </nav>
   <div class="hb">
     {% if user.is_authenticated %}
-      <a class="ib tp-gem-header" id="hgem" href="{% url 'gems:history' %}" aria-label="موجودی {{ gem_balance|default:0|persian_digits }} جم؛ مشاهده تاریخچه">
+      <a class="ib tp-gem-header gem-chip" id="hgem" href="{% url 'gems:history' %}" aria-label="موجودی {{ gem_balance|default:0|persian_digits }} جم؛ مشاهده تاریخچه">
         <svg class="tp-ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 3h10l5 6-10 12L2 9l5-6Z"/><path d="m7 3 5 18 5-18M2 9h20"/></svg>
         <span class="hb-t">جم</span>
         <b class="tp-gem-header-value">{{ gem_balance|default:0|persian_digits }}</b>
