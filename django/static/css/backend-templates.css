@@ -1,64 +1,9 @@
-/* Django template compatibility layer for Tatami Plus.
-   Load after the existing backend styles.css and shared tatami.css.
-   This file styles the real templates in Radinsharifi/Tatami-demo without
-   changing Django field names, validation, URL routing, or server behavior. */
-:root { color-scheme: dark; }
+/* Django page-structure compatibility only. The visual shell, design tokens, typography, header, navigation and footer are supplied by the shared Tatami Plus frontend in tatami.css. */
 body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background-image: none;
-  background: var(--tp-color-bg, #121418);
-  color: var(--tp-color-text-primary, #f4f5f7);
-  font-family: var(--tp-font-family, Vazirmatn, Tahoma, Arial, sans-serif);
 }
-.site-header {
-  position: sticky;
-  top: env(safe-area-inset-top, 0);
-  z-index: var(--tp-z-header, 20);
-  min-height: 68px;
-  padding: 10px clamp(12px, 4vw, 48px);
-  border-bottom: 1px solid var(--tp-color-border, #303640);
-  background: var(--tp-color-header-bg, #171a20);
-  color: var(--tp-color-text-primary, #f4f5f7);
-}
-.wordmark { color: var(--tp-color-text-primary, #f4f5f7); font-weight: 900; }
-.wordmark span { color: var(--tp-color-brand, #2f62d6); }
-.site-nav { gap: 4px; }
-.site-nav a {
-  display: inline-flex;
-  align-items: center;
-  min-height: 40px;
-  color: var(--tp-color-text-secondary, #aab3c0);
-  border-radius: var(--tp-radius-control, 8px);
-}
-.site-nav a:hover, .site-nav a.on {
-  color: var(--tp-color-text-primary, #f4f5f7);
-  background: var(--tp-color-surface, #20252d);
-}
-.hb { gap: 6px; }
-.hb .ib {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  min-height: 40px;
-  border: 1px solid var(--tp-color-border, #303640);
-  border-radius: var(--tp-radius-control, 8px);
-  background: var(--tp-color-surface, #20252d);
-  color: var(--tp-color-text-primary, #f4f5f7);
-}
-.tp-skip {
-  position: absolute;
-  inset-inline-start: 12px;
-  top: -60px;
-  z-index: 1000;
-  padding: 10px 14px;
-  border-radius: 8px;
-  background: var(--tp-color-brand, #2f62d6);
-  color: #fff;
-}
-.tp-skip:focus { top: 12px; }
 #app { flex: 1 0 auto; }
 .page-main {
   width: min(100% - 32px, 1120px);
@@ -246,25 +191,15 @@ a:hover { color: var(--tp-color-brand-text, #a8c2ff); }
 .currency-note { margin-top: 16px; font-size: 12px; }
 .empty-state { margin: 18px 0; }
 .empty-state h2 { font-size: 22px; }
-.site-footer { flex: 0 0 auto; margin-top: 42px; }
-.site-footer .ftg { gap: 28px; }
 input[dir=ltr], #id_phone, #id_code { text-align: left; direction: ltr; }
 #id_code { letter-spacing: .28em; font-size: 1.2em; }
 .tp-msgs { width: min(100% - 32px, 1120px); margin: 0 auto; }
 .tp-msg { margin: 6px 0; }
 @media (max-width: 900px) {
-  .site-header { flex-wrap: wrap; }
-  .site-nav { order: 3; flex: 1 1 100%; }
   .filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .product-detail-grid { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 600px) {
-  .site-header { padding: 8px 10px; gap: 8px; }
-  .site-nav { gap: 2px; padding-bottom: 4px; }
-  .site-nav a { min-height: 38px; padding: 6px 8px; font-size: 12px; }
-  .hb { gap: 4px; }
-  .hb .ib { min-height: 38px; padding: 6px 8px; }
-  .hb .hb-t { display: none; }
   .filter-search { grid-template-columns: minmax(0, 1fr); }
   .filter-grid { grid-template-columns: minmax(0, 1fr); }
   .product-gallery { grid-template-columns: minmax(0, 1fr); }
