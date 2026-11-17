@@ -67,7 +67,7 @@ jobs:
           for (const item of required) {
             if (!html.includes(item)) throw new Error("Missing Preview content: " + item);
           }
-          const authRouteMarkers = ["/auth/login/", "location.replace(target)", "'www.tatamiplus.ir'", "next_url"];
+          const authRouteMarkers = ["/auth/login/", "location.replace(target)", "'www.tatamiplus.ir'", "next_url", "localStorage.removeItem(\'tp:users\')"];
           for (const marker of authRouteMarkers) {
             if (!html.includes(marker)) throw new Error("Missing live Django route bridge marker: " + marker);
           }

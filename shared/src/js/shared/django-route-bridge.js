@@ -9,6 +9,18 @@
   const livePreviewHost = livePreviewHosts.has(location.hostname.toLowerCase());
   if (!livePreviewHost || (location.pathname !== '/preview/' && location.pathname !== '/preview')) return;
 
+  // Remove legacy Preview-only identities; production authentication is Django Session only.
+  try {
+    localStorage.removeItem('tp:users');
+    localStorage.removeItem('tp:me');
+    localStorage.removeItem('tp:coachapps');
+    if (typeof ME !== 'undefined') ME = null;
+    if (typeof authUI === 'function') authUI();
+  } catch {
+    // Storage may be unavailable; route navigation must still work.
+  }
+
+
   let requestVersion = 0;
 
   const normalize = (value) => String(value || '')
