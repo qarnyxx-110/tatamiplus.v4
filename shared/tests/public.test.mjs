@@ -342,17 +342,48 @@ export async function runPwa(app,base,browser,altRoot){
  if(altRoot){
   const before=keys[0];
   altRoot.use();
+
+  // Force the browser to check the changed Service Worker script rather than
+  // relying on its automatic update-check schedule.
+  const updateState=await pg.evaluate(async()=>{
+   const registration=await navigator.serviceWorker.getRegistration();
+   if(!registration)return{registration:false,controllerChanged:false,error:'no registration'};
+   let timer=0;
+   const controllerChanged=new Promise(resolve=>{
+    const onChange=()=>{if(timer)clearTimeout(timer);resolve(true)};
+    navigator.serviceWorker.addEventListener('controllerchange',onChange,{once:true});
+    timer=setTimeout(()=>{navigator.serviceWorker.removeEventListener('controllerchange',onChange);resolve(false)},12000);
+   });
+   try{await registration.update()}catch(error){
+    if(timer)clearTimeout(timer);
+    return{registration:true,controllerChanged:false,error:String(error)};
+   }
+   const changed=await controllerChanged;
+   const latest=await navigator.serviceWorker.getRegistration();
+   return{
+    registration:true,
+    controllerChanged:changed,
+    active:latest?.active?.state||null,
+    installing:latest?.installing?.state||null,
+    waiting:latest?.waiting?.state||null,
+    controlled:!!navigator.serviceWorker.controller
+   };
+  });
+
   await pg.goto(base+'/index.html');
-  await wait(1200);
-  await pg.reload();
   let after=[];
-  for(let i=0;i<20;i++){
+  for(let i=0;i<30;i++){
    await wait(400);
    after=await pg.evaluate(()=>caches.keys());
    if(after.length===1&&after[0]!==before)break;
   }
-  S.ok('به‌روزرسانی: Cache نسخه جدید جایگزین قدیمی شد',after.length===1&&after[0]!==before,before+' → '+after.join());
-  S.ok('به‌روزرسانی: محتوای نسخه جدید نمایش داده می‌شود',await pg.evaluate(()=>document.documentElement.outerHTML.includes('UPDATE_MARKER')));
+  const cacheReplaced=after.length===1&&after[0]!==before;
+  S.ok('به‌روزرسانی: ثبت نسخه جدید Service Worker و controllerchange',
+   updateState.registration&&updateState.controllerChanged,JSON.stringify(updateState));
+  S.ok('به‌روزرسانی: Cache نسخه جدید جایگزین قدیمی شد',
+   cacheReplaced,before+' → '+after.join());
+  S.ok('به‌روزرسانی: محتوای نسخه جدید نمایش داده می‌شود',
+   await pg.evaluate(()=>document.documentElement.outerHTML.includes('UPDATE_MARKER')));
   altRoot.reset();
  }
  const get=async p=>{const r=await pg.request.get(base+p,{maxRedirects:0});return{s:r.status(),t:await r.text()}};
