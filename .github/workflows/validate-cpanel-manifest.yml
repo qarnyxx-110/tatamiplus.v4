@@ -111,7 +111,11 @@ jobs:
 
           assert destinations, "Manifest selected zero files"
           assert "static/css/styles.css" not in destinations, "Backend-owned styles.css must be excluded"
-          assert "static/css/tatami.css" not in destinations, "Do not overwrite the installed server-specific Tatami CSS bundle"
+          assert "static/css/tatami.css" in destinations, "Shared Tatami Plus design bundle is required by the new Django shell"
+          assert "static/css/reference-store.css" in destinations
+          assert "static/js/reference-store.js" in destinations
+          assert "static/data/reference-store-catalog.json" in destinations
+          assert "templates/store/product_list.html" in destinations
           assert not any(item.startswith("templates/clubs/") for item in destinations)
           assert "static/css/clubs-map.css" not in destinations
           assert "static/js/clubs-map.js" not in destinations
