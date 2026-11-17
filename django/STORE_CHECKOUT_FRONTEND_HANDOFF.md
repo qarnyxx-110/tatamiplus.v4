@@ -126,32 +126,34 @@
 
 ## پل مسیرهای Preview به صفحات واقعی Django
 
-فایل استاتیک preview/index.html اسکریپت preview/assets/django-route-bridge.js را بارگذاری می‌کند. این اسکریپت فقط مسیرهای دارای قرارداد واقعی را به صفحات Django هدایت می‌کند؛ API جدید، CORS، احراز هویت توکنی یا منطق مالی در مرورگر ایجاد نمی‌کند.
+کد اتصال در فایل منبع shared/src/js/shared/django-route-bridge.js نگهداری می‌شود و shared/build.js آن را در انتهای کد JavaScript خروجی Preview قرار می‌دهد. فایل‌های preview/index.html و shared/dist/preview/index.html خروجی Build هستند؛ نباید آن‌ها را دستی ویرایش کرد، چون اجرای Build تغییرات مستقیم را بازنویسی می‌کند.
 
 | مسیر hash در Preview | مقصد واقعی Django |
 | --- | --- |
 | #/store | /store/؛ فیلترهای پشتیبانی‌شده به query string سرور منتقل می‌شوند |
-| #/product/<id> | نام محصول محلی فقط برای یافتن همان محصول در HTML فروشگاه استفاده می‌شود؛ مقصد نهایی slug واقعی Django است. در نبود تطبیق، جست‌وجوی واقعی نام محصول اجرا می‌شود |
+| #/product/<id> | نام محصول صرفاً برای یافتن کارت همان محصول در HTML واقعی Django به کار می‌رود؛ اگر تطبیق یکتا پیدا نشود، جست‌وجوی سرور با نام محصول باز می‌شود. صفحه جزئیات و قیمت محلی به‌عنوان داده واقعی استفاده نمی‌شوند |
 | #/cart | /store/cart/ |
 | #/checkout | /checkout/address/ |
-| #/login، #/register و #/role | /auth/login/ |
+| #/login، #/register و #/role | /auth/login/؛ نقش معتبر student یا coach حفظ می‌شود |
 | #/coaches | /coaches/ |
-| #/coach-apply و #/coach-application | /coaches/apply/ |
-| #/courses | /club/ |
-| #/episode/<id> با شناسه عددی | /club/episode/<id>/ |
+| #/coach-apply | /coaches/apply/ |
+| #/coach-application | /coaches/application/ |
+| #/courses، #/club و #/episode | /club/؛ شناسه‌های آزمایشی Preview به شناسه قسمت‌های دیتابیس تعبیر نمی‌شوند |
 | #/gems | /account/gems/ |
 | #/profile و #/my-profile | /account/ |
 | #/orders | /orders/ |
 
-این پل از navigation هم‌مبدأ استفاده می‌کند؛ بنابراین کوکی Session مرورگر به Django می‌رسد و POSTها همچنان از فرم‌های رندرشدهٔ Django، توکن CSRF و اعتبارسنجی سرور استفاده می‌کنند. اسکریپت هیچ قیمت، موجودی، سبد یا تراکنشی را در مرورگر معتبر نمی‌داند.
+این پل از درخواست و navigation هم‌مبدأ استفاده می‌کند؛ کوکی Session مرورگر به Django می‌رسد و POSTها همچنان با فرم‌های واقعی Django، توکن CSRF و اعتبارسنجی سمت سرور انجام می‌شوند. هیچ endpoint JSON، CORS، قیمت، موجودی یا منطق مالی در مرورگر اضافه نمی‌شود.
 
-ماژول‌هایی که در قرارداد بک‌اند وجود ندارند (از جمله نقشه جغرافیایی باشگاه‌ها، داشبوردهای برنامه‌ریزی‌نشده، مربی آنلاین و خرج جم در Checkout) عمداً به مسیر Django هدایت نمی‌شوند و نباید به‌عنوان قابلیت عملیاتی بک‌اند معرفی شوند.
+نقشه باشگاه‌ها، داشبوردهای برنامه‌ریزی‌نشده، مربی آنلاین، آنالیز هوش مصنوعی و سایر ماژول‌های بدون قرارداد واقعی عمداً به مسیر Django هدایت نمی‌شوند و در Preview باقی می‌مانند.
 
 ### ترتیب انتشار پل
 
-1. ابتدا فایل‌های django/templates و django/static مجاز در deploy/frontend-manifest.json به اپ Django منتقل شوند؛ فایل‌های backend-owned حفظ شوند.
-2. سپس collectstatic اجرا و /store/، /store/cart/، /auth/login/ و /club/ روی دامنه آزمایش شوند.
-3. بعد فقط دو فایل preview/index.html و preview/assets/django-route-bridge.js در مسیر عمومی preview/ جایگزین/اضافه شوند.
-4. در پایان، مسیرهای hash جدول بالا در مرورگر آزمایش شوند. /preview/ بدون hash باید همچنان همان صفحهٔ اصلی قبلی را نمایش دهد.
+1. فایل‌های Django مجاز در deploy/frontend-manifest.json به اپ Django منتقل شوند؛ فایل‌های متعلق به بک‌اند حفظ شوند.
+2. collectstatic اجرا و مسیرهای /store/، /store/cart/، /auth/login/ و /club/ روی دامنه آزمایش شوند.
+3. در مخزن فرانت‌اند، تغییرات shared/src/js/shared/django-route-bridge.js و shared/build.js در شاخه ادغام شوند.
+4. workflow ساخت Preview اجرا شود و artifact تولیدشده شامل کد اتصال inline در index.html باشد.
+5. فقط خروجی Build تأییدشده در مسیر عمومی preview/ منتشر شود. فایل‌های preview را دستی ویرایش نکنید.
+6. مسیرهای hash جدول بالا آزمایش شوند و /preview/ بدون hash همچنان صفحه اصلی موجود را نشان دهد.
 
 اگر کاتالوگ محصول در دیتابیس خالی باشد، فروشگاه باید empty state واقعی Django را نشان دهد؛ هیچ‌گاه برای پرکردن صفحه به کاتالوگ محلی نمایشی برنگردد.
