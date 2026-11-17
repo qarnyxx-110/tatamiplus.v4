@@ -32,7 +32,7 @@
   </nav>
   <div class="hb">
     {% if user.is_authenticated %}
-      <a class="ib tp-gem-header" id="hgem" href="{% url 'gems:history' %}" aria-label="موجودی جم؛ مشاهده تاریخچه">
+      <a class="ib tp-gem-header gem-chip" id="hgem" href="{% url 'gems:history' %}" aria-label="موجودی جم؛ مشاهده تاریخچه">
         <span class="hb-t">جم</span>
         <b class="tp-gem-header-value">{{ gem_balance|default:0|persian_digits }}</b>
       </a>

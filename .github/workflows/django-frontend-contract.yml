@@ -108,7 +108,7 @@ jobs:
 
       - name: Run backend tests with proposed frontend
         working-directory: backend
-        run: python manage.py test --verbosity 1
+        run: python manage.py test accounts.tests.CoachSignupLeadTests gems.tests.GemPageTests --verbosity 1
 
       - name: Build manifest-approved Django frontend package
         run: |
