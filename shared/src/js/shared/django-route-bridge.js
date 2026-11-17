@@ -22,6 +22,13 @@
 
 
   let requestVersion = 0;
+  let activePostRequest = null;
+
+  function abortActivePostRequest() {
+    if (activePostRequest && activePostRequest.readyState !== XMLHttpRequest.DONE) {
+      try { activePostRequest.abort(); } catch { /* Request may have completed between the check and abort. */ }
+    }
+  }
 
   const normalize = (value) => String(value || '')
     .normalize('NFKC')
@@ -250,11 +257,16 @@
       if (role) query.set('role', role);
 
       const next = nextPathFromHash(params.get('next') || params.get('next_url'));
-      if (next) query.set('next_url', next);
+      if (next) query.set('next', next);
 
       const suffix = query.toString();
-      return '/auth/login/' + (suffix ? '?' + suffix : '');
+      const smsFlow = route === 'register' || route === 'role';
+      return (smsFlow ? '/auth/login/sms/' : '/auth/login/') + (suffix ? '?' + suffix : '');
     }
+
+    if (route === 'password-reset') return '/auth/password/reset/';
+    if (route === 'set-password') return '/auth/password/set/';
+    if (route === 'coach-invite') return '/coaches/join/';
 
     if (route === 'coaches') {
       return parts[1] ? resolveRealCoach(parts[1]) : '/coaches/';
@@ -315,13 +327,21 @@
   function showBridgeMessage(title, detail) {
     const root = document.querySelector('#app');
     if (!root) return;
+    root.setAttribute('aria-busy', 'false');
+    delete root.dataset.loading;
     const box = document.createElement('section');
     box.className = 'w tp-state';
+    box.setAttribute('role', 'alert');
     const heading = document.createElement('b');
     heading.textContent = title;
     const paragraph = document.createElement('p');
     paragraph.textContent = detail;
-    box.append(heading, paragraph);
+    const retry = document.createElement('button');
+    retry.type = 'button';
+    retry.className = 'btn o';
+    retry.textContent = 'تلاش دوباره';
+    retry.addEventListener('click', () => handlePreviewRoute());
+    box.append(heading, paragraph, retry);
     root.replaceChildren(box);
   }
 
@@ -441,6 +461,8 @@
     try { target = new URL(path, location.origin); } catch { return; }
     if (!isAllowedDjangoUrl(target)) return;
 
+    abortActivePostRequest();
+
     const app = document.querySelector('#app');
     if (app) {
       app.setAttribute('aria-busy', 'true');
@@ -458,18 +480,24 @@
       if (finalUrl.origin !== location.origin || !isAllowedDjangoUrl(finalUrl)) {
         throw new Error('The server redirected to an unsupported address.');
       }
+      if (!response.ok) {
+        throw new Error('Django returned HTTP ' + response.status);
+      }
       const markup = await response.text();
       if (version !== requestVersion || expectedHash !== location.hash) return;
       renderDjangoDocument(markup, finalUrl, expectedHash);
       if (app) delete app.dataset.loading;
-    } catch {
+    } catch (error) {
       if (version !== requestVersion || expectedHash !== location.hash) return;
       activeDjangoView = true;
-      if (app) delete app.dataset.loading;
-      showBridgeMessage(
-        'این بخش فعلاً از سرور دریافت نشد',
-        'ارتباط با صفحهٔ واقعی Django برقرار نشد. اتصال را بررسی کنید و دوباره همین بخش را باز کنید.'
-      );
+      if (app) {
+        delete app.dataset.loading;
+        app.setAttribute('aria-busy', 'false');
+      }
+      const detail = error && error.message && error.message.startsWith('Django returned HTTP ')
+        ? 'سرور پاسخ ناموفق داد. کد پاسخ: ' + error.message.replace('Django returned HTTP ', '')
+        : 'ارتباط با صفحهٔ واقعی Django برقرار نشد. اتصال را بررسی کنید و دوباره تلاش کنید.';
+      showBridgeMessage('این بخش فعلاً از سرور دریافت نشد', detail);
     }
   }
 
@@ -490,11 +518,14 @@
   async function handlePreviewRoute() {
     const hash = location.hash;
     if (!hash.startsWith('#/')) {
+      ++requestVersion;
+      abortActivePostRequest();
       activeDjangoView = false;
       return;
     }
 
     const version = ++requestVersion;
+    abortActivePostRequest();
     const routeText = hash.slice(2);
     const separator = routeText.indexOf('?');
     const routePath = separator < 0 ? routeText : routeText.slice(0, separator);
@@ -590,50 +621,125 @@
     try { formData = event.submitter ? new FormData(form, event.submitter) : new FormData(form); }
     catch { formData = new FormData(form); }
 
-    const submitButtons = Array.from(form.querySelectorAll('button[type="submit"],input[type="submit"]'));
-    submitButtons.forEach((button) => { button.disabled = true; button.classList.add('is-loading'); });
+    form.querySelectorAll('.tp-bridge-submit-status').forEach((item) => item.remove());
+    const submitControls = Array.from(form.querySelectorAll('button[type="submit"],input[type="submit"]'))
+      .map((node) => ({ node, wasDisabled: node.disabled }));
+    submitControls.forEach(({ node }) => { node.disabled = true; node.classList.add('is-loading'); });
+    form.setAttribute('aria-busy', 'true');
+
+    const statusArea = document.createElement('div');
+    statusArea.className = 'tp-bridge-submit-status';
     const status = document.createElement('p');
     status.className = 'tp-hint';
     status.setAttribute('role', 'status');
+    status.setAttribute('aria-live', 'polite');
     status.textContent = 'در حال ارسال اطلاعات به سامانه...';
-    form.append(status);
+    statusArea.append(status);
 
+    const isVideoUpload = form.hasAttribute('data-video-upload-form') || !!form.querySelector('[data-video-upload-form]');
     const request = new XMLHttpRequest();
+    const submittedVersion = requestVersion;
+    const submittedHash = location.hash;
+    const isCurrentRequest = () =>
+      submittedVersion === requestVersion && submittedHash === location.hash;
+    const releaseControls = (removeStatus) => {
+      submitControls.forEach(({ node, wasDisabled }) => {
+        if (!node.isConnected) return;
+        node.disabled = wasDisabled;
+        node.classList.remove('is-loading');
+      });
+      if (form.isConnected) form.removeAttribute('aria-busy');
+      if (removeStatus && statusArea.isConnected) statusArea.remove();
+      if (activePostRequest === request) activePostRequest = null;
+    };
+    let cancelUpload = null;
+    const showInlineFailure = (message) => {
+      releaseControls(false);
+      status.className = 'tp-error-text tp-bridge-submit-error';
+      status.setAttribute('role', 'alert');
+      status.setAttribute('aria-live', 'assertive');
+      status.textContent = message;
+      if (cancelUpload) cancelUpload.remove();
+    };
+
+    if (isVideoUpload) {
+      cancelUpload = document.createElement('button');
+      cancelUpload.type = 'button';
+      cancelUpload.className = 'btn o s tp-bridge-upload-cancel';
+      cancelUpload.textContent = 'لغو بارگذاری';
+      cancelUpload.addEventListener('click', () => {
+        if (request.readyState === XMLHttpRequest.DONE) return;
+        cancelUpload.disabled = true;
+        status.textContent = 'در حال لغو بارگذاری...';
+        request.abort();
+      });
+      statusArea.append(cancelUpload);
+    }
+    form.append(statusArea);
+
     request.open('POST', action.href, true);
     request.withCredentials = true;
     request.setRequestHeader('Accept', 'text/html');
     const csrf = form.querySelector('input[name="csrfmiddlewaretoken"]');
     if (csrf && csrf.value) request.setRequestHeader('X-CSRFToken', csrf.value);
-    const uploadProgress = form.querySelector('[data-video-upload-form]') ? null : status;
+
     request.upload.addEventListener('progress', (progress) => {
-      if (uploadProgress && progress.lengthComputable && progress.total > 0) {
-        const percent = Math.round((progress.loaded / progress.total) * 100);
-        uploadProgress.textContent = 'بارگذاری فایل: ' + percent.toLocaleString('fa-IR') + '٪';
-      }
+      if (!isCurrentRequest() || !progress.lengthComputable || progress.total <= 0) return;
+      const percent = Math.round((progress.loaded / progress.total) * 100);
+      status.textContent = (isVideoUpload ? 'بارگذاری ویدئو: ' : 'ارسال اطلاعات: ') +
+        percent.toLocaleString('fa-IR') + '٪';
     });
+
     request.addEventListener('load', () => {
+      if (!isCurrentRequest()) {
+        releaseControls(true);
+        return;
+      }
       const finalUrl = new URL(request.responseURL || action.href, action.href);
       if (finalUrl.origin !== location.origin || !isAllowedDjangoUrl(finalUrl)) {
-        showBridgeMessage('پاسخ سرور قابل نمایش نیست', 'سرور درخواست را به نشانی پشتیبانی‌نشده هدایت کرد.');
+        showInlineFailure('سرور درخواست را به نشانی پشتیبانی‌نشده هدایت کرد. صفحه را تازه کنید.');
+        return;
+      }
+      if (request.status < 200 || request.status >= 400) {
+        showInlineFailure('سامانه درخواست را نپذیرفت (HTTP ' + request.status + '). ورودی‌ها را بررسی و دوباره تلاش کنید.');
         return;
       }
 
       const finalHash = serverHashForUrl(finalUrl);
       const samePath = finalUrl.pathname === action.pathname && finalUrl.search === action.search;
       if (!samePath && location.hash !== finalHash) {
+        releaseControls(true);
         location.hash = finalHash;
         return;
       }
 
       try {
         renderDjangoDocument(request.responseText || '', finalUrl, location.hash);
+        releaseControls(true);
       } catch {
-        showBridgeMessage('پاسخ سرور قابل نمایش نیست', 'پاسخ دریافت شد، اما قالب HTML قابل شناسایی نبود.');
+        showInlineFailure('پاسخ دریافت شد، اما قالب HTML قابل شناسایی نبود. صفحه را تازه کنید.');
       }
     });
+
     request.addEventListener('error', () => {
-      showBridgeMessage('ارسال اطلاعات ناموفق بود', 'ارتباط با سرور قطع شد. صفحه را تازه کنید و دوباره تلاش کنید.');
+      if (!isCurrentRequest()) {
+        releaseControls(true);
+        return;
+      }
+      showInlineFailure('ارتباط با سرور قطع شد. اتصال را بررسی کنید و دوباره ارسال کنید.');
     });
+
+    request.addEventListener('abort', () => {
+      if (!isCurrentRequest()) {
+        releaseControls(true);
+        return;
+      }
+      showInlineFailure(isVideoUpload
+        ? 'بارگذاری ویدئو لغو شد. فایل را بررسی کنید و در صورت نیاز دوباره ارسال کنید.'
+        : 'ارسال اطلاعات لغو شد. می‌توانید دوباره تلاش کنید.');
+    });
+
+    activePostRequest = request;
     request.send(formData);
   }, true);
 

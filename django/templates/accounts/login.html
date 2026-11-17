@@ -1,19 +1,43 @@
 {% extends "layouts/auth.html" %}
 
-{% block title %}ورود یا ثبت‌نام | تاتامی پلاس{% endblock %}
+{% block title %}{% if mode == 'sms' %}ورود و ثبت‌نام پیامکی{% else %}ورود با رمز عبور{% endif %} | تاتامی پلاس{% endblock %}
 
 {% block auth_content %}
   <p class="tp-auth-kicker">TATAMI PLUS · حساب کاربری</p>
-  <h1 id="auth-page-title">با شمارهٔ همراه وارد شو</h1>
-  <p class="mu">برای ورود یا ساخت حساب، شمارهٔ همراه و نوع حساب را وارد کنید. کد یک‌بارمصرف برای تأیید شماره ارسال می‌شود.</p>
+  {% if mode == 'sms' %}
+    <h1 id="auth-page-title">ورود یا ثبت‌نام با پیامک</h1>
+    <p class="mu">شمارهٔ همراه و نوع حساب را وارد کنید. برای تأیید شماره، کد یک‌بارمصرف ارسال می‌شود.</p>
+  {% else %}
+    <h1 id="auth-page-title">با شمارهٔ همراه و رمز وارد شوید</h1>
+    <p class="mu">برای حسابی که قبلاً ساخته‌اید، شمارهٔ همراه و رمز عبور خود را وارد کنید.</p>
+  {% endif %}
+
+  <nav class="tp-cluster" aria-label="روش ورود">
+    {% if mode == 'sms' %}
+      <span class="chip on" aria-current="page">ورود / ثبت‌نام پیامکی</span>
+      <a class="chip" href="{% url 'phone_auth:login' %}{% if form.next_url.value %}?next={{ form.next_url.value|urlencode }}{% endif %}">ورود با رمز</a>
+    {% else %}
+      <span class="chip on" aria-current="page">ورود با رمز</span>
+      {% with next_value=form.next_url.value|default:'' %}
+        <a class="chip" href="{% url 'phone_auth:sms_login' %}{% if next_value %}?next={{ next_value|urlencode }}{% endif %}">ورود / ثبت‌نام پیامکی</a>
+      {% endwith %}
+    {% endif %}
+  </nav>
 
   <form id="tp-login-form" method="post" novalidate data-auth-form="login" aria-labelledby="auth-page-title">
     {% csrf_token %}
     {% include 'includes/form_fields.html' %}
-    <button class="btn tp-auth-btn" type="submit">دریافت کد یک‌بارمصرف</button>
+    <button class="btn tp-auth-btn" type="submit">
+      {% if mode == 'sms' %}دریافت کد یک‌بارمصرف{% else %}ورود به حساب{% endif %}
+    </button>
   </form>
 {% endblock %}
 
 {% block auth_after_card %}
-  <p class="tp-auth-alt">اگر شمارهٔ شما قبلاً ثبت نشده باشد، پس از تأیید کد حساب جدید ساخته می‌شود.</p>
+  {% if mode == 'sms' %}
+    <p class="tp-auth-alt">پس از تأیید شماره، در صورت نیاز اطلاعات پروفایل و رمز عبور تکمیل می‌شود.</p>
+  {% else %}
+    <p class="tp-auth-alt"><a href="{% url 'phone_auth:password_reset' %}">رمز عبورم را فراموش کرده‌ام</a></p>
+    <p class="tp-auth-alt">حساب ندارید؟ <a href="{% url 'phone_auth:sms_login' %}">با پیامک ثبت‌نام کنید</a>.</p>
+  {% endif %}
 {% endblock %}

@@ -99,6 +99,8 @@ jobs:
           manifest = json.loads(Path("deploy/frontend-manifest.json").read_text(encoding="utf-8"))
 
           assert 'data-auth-form="login"' in login
+          assert "mode == 'sms'" in login and "mode == 'password'" in login
+          assert "phone_auth:sms_login" in login and "phone_auth:password_reset" in login
           assert all('{% extends "layouts/auth.html" %}' in source for source in auth_pages)
           assert '{% include "components/auth_aside.html" %}' in auth_layout
           assert 'class="w tp-auth-layout" data-page-layout="auth"' in auth_layout
@@ -137,7 +139,7 @@ jobs:
           assert "{% include 'components/store_product_card.html'" in store_template
           assert "availability_status=product.availability_status|default:'in_stock'" in store_template
           assert all(state in store_detail_template for state in ("in_stock", "out_of_stock", "inventory_unregistered"))
-          assert 'data-availability="{{ availability_status|default:' in store_detail_template
+          assert 'data-availability="{% if availability_status %}' in store_detail_template
           assert "در حال حاضر ناموجود" not in store_detail_template
           assert "موجودی ثبت نشده" in store_detail_template
           assert "if starting_price or starting_price == 0" in store_card_template
@@ -183,6 +185,15 @@ jobs:
               episode_source = Path(episode_template).read_text(encoding="utf-8")
               assert 'class="lesson-done"' not in episode_source
 
+          for template in (
+              "accounts/password_reset.html",
+              "accounts/password_reset_confirm.html",
+              "accounts/set_password.html",
+              "coaches/join_enter.html",
+              "orders/mock_gateway.html",
+          ):
+              assert Path("django/templates", template).is_file(), template
+
           print("FRONTEND_PATCH_CONTRACT_OK")
           PY
 
@@ -195,7 +206,7 @@ jobs:
         run: |
           set -euo pipefail
           git clone https://github.com/Radinsharifi/Tatami-demo.git backend
-          git -C backend checkout --detach e2ffeba0a42ecc3ec172b89d66794f9cd628d977
+          git -C backend checkout --detach 25fde937def556edc7b81291e5900a9ac84fccb2
 
       - name: Install backend dependencies
         run: |
@@ -213,14 +224,25 @@ jobs:
         working-directory: backend
         run: python manage.py check
 
+      - name: Verify the store-card stock fallback precondition
+        working-directory: backend
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          source = Path("store/views.py").read_text(encoding="utf-8")
+          assert "variants__stock_quantity__gt=0" in source
+          assert "filter(starting_price__isnull=False)" in source
+          print("STORE_CARD_IN_STOCK_FALLBACK_PRECONDITION_OK")
+          PY
+
       - name: Compile templates and resolve required static assets
         working-directory: backend
         run: |
-          python manage.py shell -c "from django.template.loader import get_template; from django.contrib.staticfiles.finders import find; names=('base.html','layouts/auth.html','components/auth_aside.html','components/store_product_card.html','admin/base_site.html','pages/home.html','pages/account.html','store/product_list.html','store/product_detail.html','store/cart_detail.html','coaches/directory.html','coaches/profile_detail.html','club/course_list.html','club/course_detail.html','club/coach/episode_form.html','gems/history.html','accounts/login.html','accounts/otp_verify.html','accounts/complete_profile.html','orders/address.html','orders/review.html','orders/payment_result.html','orders/order_list.html','orders/order_detail.html','includes/form_fields.html'); [get_template(name) for name in names]; assets=('css/tatami.css','css/tatami-admin.css','css/backend-templates.css','css/module-pages.css','css/home-restored.css','css/reference-store.css','js/tatami.js','js/module-pages.js','js/home-restored.js','js/reference-store.js','data/reference-store-catalog.json'); assert all(find(name) for name in assets); print('DJANGO_TEMPLATE_AND_STATIC_CHECK_OK')"
+          python manage.py shell -c "from django.template.loader import get_template; from django.contrib.staticfiles.finders import find; names=('base.html','layouts/auth.html','components/auth_aside.html','components/store_product_card.html','admin/base_site.html','pages/home.html','pages/account.html','store/product_list.html','store/product_detail.html','store/cart_detail.html','coaches/directory.html','coaches/profile_detail.html','club/course_list.html','club/course_detail.html','club/coach/episode_form.html','gems/history.html','accounts/login.html','accounts/otp_verify.html','accounts/complete_profile.html','accounts/password_reset.html','accounts/password_reset_confirm.html','accounts/set_password.html','coaches/join_enter.html','orders/mock_gateway.html','orders/address.html','orders/review.html','orders/payment_result.html','orders/order_list.html','orders/order_detail.html','includes/form_fields.html'); [get_template(name) for name in names]; assets=('css/tatami.css','css/tatami-admin.css','css/backend-templates.css','css/module-pages.css','css/home-restored.css','css/reference-store.css','js/tatami.js','js/module-pages.js','js/home-restored.js','js/reference-store.js','data/reference-store-catalog.json'); assert all(find(name) for name in assets); print('DJANGO_TEMPLATE_AND_STATIC_CHECK_OK')"
 
       - name: Run backend tests with proposed frontend
         working-directory: backend
-        run: python manage.py test accounts.tests.AuthenticationFlowTests accounts.tests.CoachSignupLeadTests accounts.tests.AccountPageTests gems.tests.GemPageTests orders.tests.CheckoutFlowTests --verbosity 1
+        run: python manage.py test accounts.tests.AuthenticationFlowTests accounts.tests.CoachSignupLeadTests accounts.tests.AccountPageTests coaches.tests.CoachInviteTests gems.tests.GemPageTests orders.tests.CheckoutFlowTests --verbosity 1
 
       - name: Build separate templates and static cPanel packages
         run: |

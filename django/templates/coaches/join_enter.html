@@ -1,0 +1,18 @@
+{% extends "layouts/auth.html" %}
+
+{% block title %}کد دعوت مربی | تاتامی پلاس{% endblock %}
+
+{% block auth_content %}
+  <p class="tp-auth-kicker">TATAMI PLUS · ارتباط با مربی</p>
+  <h1 id="auth-page-title">کد دعوت مربی را وارد کنید</h1>
+  <p class="mu">کدی را که از مربی خود دریافت کرده‌اید وارد کنید تا صفحهٔ تأیید عضویت را ببینید.</p>
+  <form method="post" novalidate aria-labelledby="auth-page-title">
+    {% csrf_token %}
+    {% include 'includes/form_fields.html' %}
+    <button class="btn tp-auth-btn" type="submit">بررسی کد دعوت</button>
+  </form>
+{% endblock %}
+
+{% block auth_after_card %}
+  <p class="tp-auth-alt"><a href="{% url 'coaches:directory' %}">مشاهده فهرست مربیان</a></p>
+{% endblock %}

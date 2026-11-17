@@ -19,6 +19,7 @@
       <a class="btn o s" href="{% url 'orders:list' %}">سفارش‌های من</a>
       <a class="btn o s" href="{% url 'gems:history' %}">تاریخچه جم</a>
       <a class="btn o s" href="{% url 'club:course_list' %}">باشگاه مجازی</a>
+      {% if user.role == 'student' %}<a class="btn o s" href="{% url 'coaches:enter_code' %}">عضویت با کد دعوت مربی</a>{% endif %}
     </nav>
 
     {% if user.role == 'coach' %}

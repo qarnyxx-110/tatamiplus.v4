@@ -33,7 +33,7 @@
       {% endif %}
     </section>
 
-    <section class="tp-product-purchase" aria-labelledby="pd-title" data-availability="{{ availability_status|default:'inventory_unregistered' }}">
+    <section class="tp-product-purchase" aria-labelledby="pd-title" data-availability="{% if availability_status %}{{ availability_status }}{% elif starting_price or starting_price == 0 %}in_stock{% else %}inventory_unregistered{% endif %}">
       <a class="mu sm" href="{% url 'store:product_list' %}?category={{ product.category.pk }}">{{ product.category.name }}</a>
       <h1 id="pd-title">{{ product.name }}</h1>
       {% if product.training_level %}<p class="mu sm">سطح تمرین: {{ product.training_level }}</p>{% endif %}
