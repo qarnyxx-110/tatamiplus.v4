@@ -99,7 +99,7 @@ jobs:
           manifest = json.loads(Path("deploy/frontend-manifest.json").read_text(encoding="utf-8"))
 
           assert 'data-auth-form="login"' in login
-          assert "mode == 'sms'" in login and "mode == 'password'" in login
+          assert "{% if mode == 'sms' %}" in login and "با شمارهٔ همراه و رمز وارد شوید" in login
           assert "phone_auth:sms_login" in login and "phone_auth:password_reset" in login
           assert all('{% extends "layouts/auth.html" %}' in source for source in auth_pages)
           assert '{% include "components/auth_aside.html" %}' in auth_layout
