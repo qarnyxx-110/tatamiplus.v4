@@ -173,7 +173,7 @@ jobs:
           assert 'id="hcart"' in base
           assert 'id="hgem"' in base
           assert 'id="mnb"' in base and 'id="mnd"' in base and 'id="mnx"' in base
-          assert '<main id="app" data-enter>' in base
+          assert '<div id="app" data-enter>' in base
           assert 'href="/store/cart/"' in base and 'href="/account/"' in base
           assert '@media(min-width:1024px){body>header .mnb{display:none!important}}' not in shared_css
           assert 'function syncPreviewShell' in bridge and 'django-bridge.css' in bridge
