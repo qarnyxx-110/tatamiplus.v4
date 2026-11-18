@@ -260,12 +260,10 @@
       if (next) query.set('next', next);
 
       const suffix = query.toString();
-      const smsFlow = route === 'register' || route === 'role';
-      return (smsFlow ? '/auth/login/sms/' : '/auth/login/') + (suffix ? '?' + suffix : '');
+      return '/auth/login/' + (suffix ? '?' + suffix : '');
     }
 
-    if (route === 'password-reset') return '/auth/password/reset/';
-    if (route === 'set-password') return '/auth/password/set/';
+    if (route === 'password-reset' || route === 'set-password') return '/auth/login/';
     if (route === 'coach-invite') return '/coaches/join/';
 
     if (route === 'coaches') {
