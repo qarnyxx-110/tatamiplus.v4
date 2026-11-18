@@ -425,6 +425,7 @@
     const localGems = document.getElementById('hgem');
     if (localGems) {
       localGems.hidden = !remoteGems;
+      localGems.style.display = remoteGems ? '' : 'none';
       if (remoteGems) {
         syncIcon(localGems, remoteGems);
         syncLabel(localGems, remoteGems);
