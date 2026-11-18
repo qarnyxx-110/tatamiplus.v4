@@ -85,6 +85,42 @@ try {
     args: ['--host-resolver-rules=MAP tatamiplus.ir 127.0.0.1']
   });
   const page = await browser.newPage();
+  await page.addInitScript(() => {
+    const originalOpen = XMLHttpRequest.prototype.open;
+    const originalSend = XMLHttpRequest.prototype.send;
+    XMLHttpRequest.prototype.open = function(method, url, ...rest) {
+      this.__tpMethod = method;
+      this.__tpUrl = String(url);
+      return originalOpen.call(this, method, url, ...rest);
+    };
+    XMLHttpRequest.prototype.send = function(...args) {
+      this.addEventListener('loadend', () => {
+        window.__tpXHRHistory = window.__tpXHRHistory || [];
+        window.__tpXHRHistory.push({
+          method: this.__tpMethod,
+          url: this.__tpUrl,
+          status: this.status,
+          responseURL: this.responseURL,
+          responseText: String(this.responseText || '').slice(0, 180),
+          headers: this.getAllResponseHeaders()
+        });
+      });
+      return originalSend.apply(this, args);
+    };
+  });
+  const routeTrace = [];
+  page.on('request', request => {
+    const url = new URL(request.url());
+    if (url.pathname === '/' || url.pathname.includes('logout')) {
+      routeTrace.push({ event: 'request', method: request.method(), url: request.url(), resourceType: request.resourceType() });
+    }
+  });
+  page.on('response', response => {
+    const url = new URL(response.url());
+    if (url.pathname === '/' || url.pathname.includes('logout')) {
+      routeTrace.push({ event: 'response', status: response.status(), url: response.url() });
+    }
+  });
   page.on('pageerror', error => failures.push('browser error: ' + error.message));
 
   const backendCss = fs.readFileSync(new URL('../../django/static/css/backend-templates.css', import.meta.url), 'utf8');
@@ -327,8 +363,10 @@ try {
       accountText: document.getElementById('hbu')?.innerText,
       bridgeError: document.querySelector('#mndf .tp-bridge-submit-error')?.textContent ||
         document.querySelector('#mndf .tp-error-text')?.textContent || '',
-      formState: document.querySelector('#mndf form')?.innerText || ''
+      formState: document.querySelector('#mndf form')?.innerText || '',
+      xhr: window.__tpXHRHistory || []
     }));
+    console.error('DRAWER_LOGOUT_DIAGNOSTICS', JSON.stringify({ rootPageRequests, routeTrace, state }));
     throw new Error('Drawer logout did not complete | requests=' + logoutPostCount +
       ' | csrf=' + logoutCsrfSeen + ' | rootRequests=' + rootPageRequests +
       ' | state=' + JSON.stringify(state) + ' | ' + error.message);
