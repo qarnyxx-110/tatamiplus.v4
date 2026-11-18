@@ -167,7 +167,7 @@ try {
     });
   });
 
-  await page.route('**/*', async route => {
+  await page.route('**/', async route => {
     const target = new URL(route.request().url());
     if (target.hostname === 'tatamiplus.ir' && target.pathname === '/') {
       rootPageRequests += 1;
@@ -330,8 +330,8 @@ try {
       formState: document.querySelector('#mndf form')?.innerText || ''
     }));
     throw new Error('Drawer logout did not complete | requests=' + logoutPostCount +
-      ' | csrf=' + logoutCsrfSeen + ' | state=' + JSON.stringify(state) +
-      ' | ' + error.message);
+      ' | csrf=' + logoutCsrfSeen + ' | rootRequests=' + rootPageRequests +
+      ' | state=' + JSON.stringify(state) + ' | ' + error.message);
   }
   assert.equal(logoutPostCount, 1, 'drawer logout must be submitted through the Preview bridge');
   assert.ok(rootPageRequests >= 1, 'logout redirect to the Django home route must be served by the test fixture');
