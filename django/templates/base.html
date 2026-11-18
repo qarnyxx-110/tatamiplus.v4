@@ -21,33 +21,26 @@
 
 <header>
   <a class="logo" href="{% url 'home' %}" aria-label="تاتامی پلاس، صفحه اصلی">تاتامی پلاس</a>
-  <nav id="nv" aria-label="منوی اصلی">
-    <a href="{% url 'home' %}"{% if route == 'home' %} class="on" aria-current="page"{% endif %}>خانه</a>
-    <a href="{% url 'store:product_list' %}"{% if app == 'store' and route != 'cart' %} class="on" aria-current="page"{% endif %}>فروشگاه</a>
-    <a href="{% url 'club:course_list' %}"{% if app == 'club' %} class="on" aria-current="page"{% endif %}>باشگاه مجازی</a>
-    <a href="{% url 'coaches:directory' %}"{% if app == 'coaches' %} class="on" aria-current="page"{% endif %}>مربیان</a>
-    <a href="{% url 'store:cart' %}"{% if app == 'store' and route == 'cart' %} class="on" aria-current="page"{% endif %}>سبد خرید</a>
-    <a href="{% url 'account' %}"{% if route == 'account' %} class="on" aria-current="page"{% endif %}>حساب کاربری</a>
-  </nav>
+  {% include "components/platform_navigation.html" with nav_id="nv" nav_class="tp-main-nav" nav_label="منوی اصلی" %}
   <div class="hb">
     {% if user.is_authenticated %}
-      <a class="ib tp-gem-header gem-chip" id="hgem" href="{% url 'gems:history' %}" aria-label="موجودی {{ gem_balance|default:0|persian_digits }} جم؛ مشاهده تاریخچه">
+      <a class="ib tp-gem-header gem-chip" id="hgem" href="/preview/#/gems" aria-label="موجودی {{ gem_balance|default:0|persian_digits }} جم؛ مشاهده تاریخچه">
         <svg class="tp-ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 3h10l5 6-10 12L2 9l5-6Z"/><path d="m7 3 5 18 5-18M2 9h20"/></svg>
         <span class="hb-t">جم</span>
         <b class="tp-gem-header-value">{{ gem_balance|default:0|persian_digits }}</b>
       </a>
     {% endif %}
-    <a class="ib" id="hcart" href="{% url 'store:cart' %}" aria-label="سبد خرید">
+    <a class="ib" id="hcart" href="/preview/#/cart" aria-label="سبد خرید">
       <svg class="tp-ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 4h2l2.4 11.2a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.5L21 8H6.2"/><circle cx="10" cy="20" r="1.4"/><circle cx="17" cy="20" r="1.4"/></svg>
       <span class="hb-t">سبد خرید</span>
     </a>
     {% if user.is_authenticated %}
-      <a class="ib" id="hbu" href="{% url 'account' %}" aria-label="حساب کاربری">
+      <a class="ib" id="hbu" href="/preview/#/profile" aria-label="حساب کاربری">
         <svg class="tp-ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>
         <span class="hb-t">{{ user.get_full_name|default:user.phone|default:user.username }}</span>
       </a>
     {% else %}
-      <a class="ib" id="hbu" href="{% url 'phone_auth:login' %}{% if request.path != '/' %}?next={{ request.get_full_path|urlencode }}{% endif %}" aria-label="ورود یا ثبت‌نام">
+      <a class="ib" id="hbu" href="/preview/#/login" aria-label="ورود یا ثبت‌نام">
         <svg class="tp-ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>
         <span class="hb-t">ورود / ثبت‌نام</span>
       </a>
@@ -66,22 +59,7 @@
       <svg class="tp-ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6L6 18"/></svg>
     </button>
   </div>
-  <nav id="nvd" class="tp-drawer-n" aria-label="همه بخش‌ها">
-    <a href="{% url 'home' %}">خانه</a>
-    <a href="{% url 'store:product_list' %}">فروشگاه</a>
-    <a href="{% url 'store:cart' %}">سبد خرید</a>
-    <a href="{% url 'club:course_list' %}">باشگاه مجازی</a>
-    <a href="{% url 'coaches:directory' %}">مربیان</a>
-    <a href="{% url 'account' %}">حساب کاربری</a>
-    {% if user.is_authenticated %}
-      <a href="{% url 'gems:history' %}">جم‌های من</a>
-      <a href="{% url 'orders:list' %}">سفارش‌های من</a>
-      {% if user.role == 'coach' %}
-        <a href="{% url 'coach_panel:course_list' %}">دوره‌های من</a>
-        <a href="{% url 'coach_students:list' %}">هنرجوها و کدهای دعوت</a>
-      {% endif %}
-    {% endif %}
-  </nav>
+  {% include "components/platform_navigation.html" with nav_id="nvd" nav_class="tp-drawer-n" nav_label="همه بخش‌ها" %}
   <div class="tp-drawer-f">
     {% if user.is_authenticated %}
       <form method="post" action="{% url 'accounts:logout' %}">{% csrf_token %}
@@ -108,15 +86,38 @@
   <div class="ftg">
     <div>
       <b class="gold">تاتامی پلاس</b>
-      <p class="mu sm">پلتفرم فارسی جودو؛ آموزش، مربیان و تجهیزات تمرین.</p>
+      <p class="mu sm">پلتفرم فارسی جودو؛ آموزش، مسابقه، مربیان و تجهیزات تمرین.</p>
       <a referrerpolicy="origin" target="_blank" rel="noopener" aria-label="استعلام نشان اعتماد الکترونیکی تاتامی پلاس" href="https://trustseal.enamad.ir/?id=8392201&amp;Code=bcO99xBDrDWrsIjkuamgeOrAHLD7hvM5">
-        <img referrerpolicy="origin" src="https://trustseal.enamad.ir/logo.aspx?id=8392201&amp;Code=bcO99xBDrDWrsIjkuamgeOrAHLD7hvM5" alt="نشان اعتماد الکترونیکی تاتامی پلاس" loading="lazy" decoding="async" style="cursor:pointer;display:block;width:auto;max-width:100%;height:auto;max-height:80px" code="bcO99xBDrDWrsIjkuamgeOrAHLD7hvM5">
+        <img referrerpolicy="origin" src="https://trustseal.enamad.ir/logo.aspx?id=8392201&amp;Code=bcO99xBDrDWrsIjkuamgeOrAHLD7hvM5" alt="نشان اعتماد الکترونیکی تاتامی پلاس" loading="lazy" decoding="async" style="cursor:pointer;display:block;width:auto;max-width:100%;height:auto;max-height:80px">
       </a>
     </div>
-    <nav aria-label="پیوندهای پلتفرم"><b>پلتفرم</b><a href="{% url 'store:product_list' %}">فروشگاه</a><a href="{% url 'club:course_list' %}">باشگاه مجازی</a><a href="{% url 'coaches:directory' %}">مربیان</a></nav>
-    <nav aria-label="پیوندهای حساب"><b>حساب</b><a href="{% url 'account' %}">حساب کاربری</a><a href="{% url 'store:cart' %}">سبد خرید</a>{% if user.is_authenticated %}<a href="{% url 'orders:list' %}">سفارش‌ها</a><a href="{% url 'gems:history' %}">تاریخچه جم</a>{% else %}<a href="{% url 'phone_auth:login' %}">ورود / ثبت‌نام</a>{% endif %}</nav>
+    <nav aria-label="پیوندهای پلتفرم">
+      <b>پلتفرم</b>
+      <a href="/preview/#/store">فروشگاه</a>
+      <a href="/preview/#/courses">دوره‌ها</a>
+      <a href="/preview/#/tournaments">تورنمنت‌ها</a>
+      <a href="/preview/#/videos">ویدیوهای ضبط‌شده</a>
+    </nav>
+    <nav aria-label="پیوندهای جامعه">
+      <b>جامعه</b>
+      <a href="/preview/#/clubs">باشگاه‌ها</a>
+      <a href="/preview/#/academy">آکادمی اساتید</a>
+      <a href="/preview/#/coaches">مربیان تاتامی</a>
+      <a href="/preview/#/blog">بلاگ</a>
+      <a href="/preview/#/tatamipedia">تاتامی‌پدیا</a>
+      <a href="/preview/#/online-coach">مربی آنلاین</a>
+      <a href="/preview/#/sponsors">حامیان تاتامی پلاس</a>
+    </nav>
+    <nav aria-label="پیوندهای حساب">
+      <b>حساب</b>
+      <a href="/preview/#/profile">حساب کاربری</a>
+      <a href="/preview/#/cart">سبد خرید</a>
+      <a href="/preview/#/gems">تاریخچه جم</a>
+      <a href="/preview/#/search">جستجو</a>
+      {% if user.is_authenticated %}<a href="/preview/#/orders">سفارش‌های من</a>{% else %}<a href="/preview/#/login">ورود / ثبت‌نام</a>{% endif %}
+    </nav>
   </div>
-  <p class="mu sm">{% block footer_note %}تاتامی پلاس — همراه شما در مسیر یادگیری و پیشرفت جودو.{% endblock %}</p>
+  <p class="mu sm">تاتامی پلاس — همراه شما در مسیر یادگیری و پیشرفت جودو.</p>
 </footer>
 
 {% endwith %}
