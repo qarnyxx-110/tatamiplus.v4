@@ -68,6 +68,7 @@ jobs:
           import json
 
           base = Path("django/templates/base.html").read_text(encoding="utf-8")
+          navigation = Path("django/templates/components/platform_navigation.html").read_text(encoding="utf-8")
           login = Path("django/templates/accounts/login.html").read_text(encoding="utf-8")
           otp = Path("django/templates/accounts/otp_verify.html").read_text(encoding="utf-8")
           profile = Path("django/templates/accounts/complete_profile.html").read_text(encoding="utf-8")
@@ -163,7 +164,10 @@ jobs:
           assert "css/tatami.css" not in static_mapping.get("exclude", [])
           assert '<header>' in base
           assert '<a class="logo"' in base
-          assert '<nav id="nv"' in base
+          assert 'components/platform_navigation.html' in base and 'nav_id="nv"' in base
+          assert 'nav_id="nvd"' in base and 'nav_class="tp-drawer-n"' in base
+          assert 'id="{{ nav_id }}"' in navigation and 'class="{{ nav_class }}"' in navigation
+          assert navigation.count('href="/preview/#/') == 15
           assert 'id="hcart"' in base
           assert 'id="hgem"' in base
           assert 'id="mnb"' in base and 'id="mnd"' in base and 'id="mnx"' in base
@@ -171,7 +175,7 @@ jobs:
           assert 'class="site-header"' not in base and 'class="site-nav"' not in base and 'class="wordmark"' not in base
           assert 'class="site-footer"' not in base
           assert 'class="ib tp-gem-header gem-chip" id="hgem"' in base
-          assert 'class="tp-drawer-n"' in base
+          assert 'nav_class="tp-drawer-n"' in base
           assert 'css/tatami.css' in base, "Shared Tatami Plus design system must be loaded"
           assert "new_coach_leads_count" in admin
           assert "admin:accounts_signuplead_changelist" in admin
