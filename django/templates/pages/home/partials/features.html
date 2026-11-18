@@ -1,29 +1,14 @@
-<section class="w d-s tp-home-features" aria-labelledby="home-features-title">
-  {% include "pages/home/partials/section_heading.html" with eyebrow="EXPLORE TATAMI PLUS" heading_id="home-features-title" heading="امکانات پلتفرم" copy="از آموزش آنلاین و ارتباط با مربیان تا تهیه تجهیزات؛ مسیرهای فعال تاتامی پلاس را دنبال کنید." %}
-  <div class="grid tp-home-feature-grid">
-    <a class="card tp-home-feature-card" href="{% url 'club:course_list' %}">
-      <span class="tp-home-card-index">01</span><div class="b">
-        <span class="tag">آموزش آنلاین</span><h3>ویدیوها و دوره‌های آموزشی</h3>
-        <p class="mu sm">دوره‌های منتشرشده، فهرست قسمت‌ها و دسترسی امن به محتوای آموزشی.</p><span class="text-link">مشاهده دوره‌ها ←</span>
-      </div>
-    </a>
-    <a class="card tp-home-feature-card" href="{% url 'coaches:directory' %}">
-      <span class="tp-home-card-index">02</span><div class="b">
-        <span class="tag">مربیان</span><h3>آکادمی اساتید</h3>
-        <p class="mu sm">فهرست مربیان تأییدشده و پروفایل‌هایی که برای عموم منتشر شده‌اند.</p><span class="text-link">مشاهده مربیان ←</span>
-      </div>
-    </a>
-    <a class="card tp-home-feature-card" href="{% url 'store:product_list' %}">
-      <span class="tp-home-card-index">03</span><div class="b">
-        <span class="tag">تجهیزات جودو</span><h3>فروشگاه تاتامی</h3>
-        <p class="mu sm">جست‌وجو، فیلتر، بررسی تنوع کالا و افزودن محصولات به سبد خرید.</p><span class="text-link">ورود به فروشگاه ←</span>
-      </div>
-    </a>
-    <a class="card tp-home-feature-card" href="{% url 'account' %}">
-      <span class="tp-home-card-index">04</span><div class="b">
-        <span class="tag">حساب کاربری</span><h3>پنل شخصی</h3>
-        <p class="mu sm">ورود با شماره همراه و دسترسی به قابلیت‌های فعال متناسب با نوع حساب.</p><span class="text-link">ورود به حساب ←</span>
-      </div>
-    </a>
+<section class="w d-s" aria-label="امکانات پلتفرم">
+  <h2>امکانات پلتفرم</h2>
+  <div class="grid">
+    <a class="card b" href="/preview/#/store"><b class="gold">فروشگاه</b><div class="mu">تجهیزات جودو</div></a>
+    <a class="card b" href="/preview/#/online-coach"><b class="gold">مربی آنلاین</b><div class="mu">پیش‌نمایش دوربین و تمرین اوچی‌کومی</div></a>
+    <a class="card b" href="/preview/#/tournaments"><b class="gold">تورنمنت‌ها</b><div class="mu">برنامه و نتایج مسابقات</div></a>
+    <a class="card b" href="/preview/#/videos"><b class="gold">ویدیوهای ضبط‌شده</b><div class="mu">آموزش سطح‌بندی‌شده</div></a>
+    <a class="card b" href="/preview/#/ai"><b class="gold">آنالیز هوش مصنوعی</b><div class="mu">نسخه نمایشی تحلیل حرکت</div></a>
+    <a class="card b" href="/preview/#/coaches"><b class="gold">آکادمی اساتید</b><div class="mu">فهرست مربیان تأییدشده از مسیر Django</div></a>
+    <a class="card b" href="/preview/#/clubs"><b class="gold">باشگاه‌ها</b><div class="mu">پیش‌نمایش فهرست و جست‌وجوی باشگاه‌ها</div></a>
+    <a class="card b" href="/preview/#/blog"><b class="gold">بلاگ</b><div class="mu">پیش‌نمایش مقاله‌های آموزشی</div></a>
+    <a class="card b" href="/preview/#/tatamipedia"><b class="gold">تاتامی‌پدیا</b><div class="mu">پیش‌نمایش دانشنامه جودو</div></a>
   </div>
 </section>
