@@ -162,6 +162,95 @@
     if (form.dataset.authForm === 'register') enhanceDjangoRegister(form);
   });
 
+  // ۰-ب. قرارداد واقعی ورود Django با OTP (بدون تغییر نام فیلدها یا منطق سرور)
+  const phoneInput = $('#id_phone');
+  if (phoneInput) {
+    phoneInput.type = 'tel';
+    phoneInput.autocomplete = 'tel';
+    phoneInput.inputMode = 'tel';
+    phoneInput.dir = 'ltr';
+    phoneInput.maxLength = 20;
+    const phoneField = phoneInput.closest('.form-field');
+    const phoneHint = phoneField && phoneField.querySelector('.field-help');
+    if (phoneHint) {
+      if (!phoneHint.id) phoneHint.id = 'tp-phone-hint';
+      phoneInput.setAttribute('aria-describedby', [phoneInput.getAttribute('aria-describedby'), phoneHint.id].filter(Boolean).join(' '));
+    }
+  }
+  const otpInput = $('#id_code');
+  if (otpInput) {
+    otpInput.inputMode = 'numeric';
+    otpInput.autocomplete = 'one-time-code';
+    otpInput.dir = 'ltr';
+    otpInput.maxLength = 5;
+    otpInput.pattern = '[0-9۰-۹٠-٩]{5}';
+    otpInput.setAttribute('aria-label', 'کد یک‌بارمصرف پنج‌رقمی');
+  }
+  const roleInput = $('#id_role');
+  if (roleInput) roleInput.autocomplete = 'off';
+  const otpResendForm = $('form[action$="/auth/otp/send/"]');
+  if (otpResendForm) {
+    let note = $('.tp-otp-resend-note', otpResendForm.parentElement || document);
+    if (!note) {
+      note = document.createElement('p');
+      note.className = 'field-help tp-otp-resend-note';
+      otpResendForm.insertAdjacentElement('beforebegin', note);
+    }
+
+    const resendButton = otpResendForm.querySelector('button[type="submit"], input[type="submit"]');
+    if (resendButton) {
+      const storageKey = 'tp-otp-resend-until:' + window.location.pathname;
+      const cooldownMs = 60 * 1000;
+      const toFaDigits = value => String(value).replace(/[0-9]/g, digit => '۰۱۲۳۴۵۶۷۸۹'[Number(digit)]);
+      const readDeadline = () => {
+        try {
+          const value = Number(window.sessionStorage.getItem(storageKey) || 0);
+          return Number.isFinite(value) && value > 0 ? value : 0;
+        } catch {
+          return 0;
+        }
+      };
+      const saveDeadline = value => {
+        try { window.sessionStorage.setItem(storageKey, String(value)); } catch {}
+      };
+      const clearDeadline = () => {
+        try { window.sessionStorage.removeItem(storageKey); } catch {}
+      };
+
+      let deadline = readDeadline();
+      if (!deadline) {
+        deadline = Date.now() + cooldownMs;
+        saveDeadline(deadline);
+      }
+      const initiallyDisabled = resendButton.disabled;
+      let countdownTimer = 0;
+
+      const updateCountdown = () => {
+        const remaining = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
+        if (remaining > 0) {
+          resendButton.disabled = true;
+          note.textContent = 'ارسال مجدد تا ' + toFaDigits(remaining) +
+            ' ثانیه دیگر فعال می‌شود. کد پس از ۱۲۰ ثانیه منقضی می‌شود؛ محدودیت نهایی با سرور است.';
+          countdownTimer = window.setTimeout(updateCountdown, Math.min(1000, deadline - Date.now()));
+          return;
+        }
+        resendButton.disabled = initiallyDisabled;
+        note.textContent = 'اکنون می‌توانید درخواست ارسال مجدد بدهید؛ محدودیت نهایی توسط سرور اعمال می‌شود.';
+        clearDeadline();
+      };
+
+      otpResendForm.addEventListener('submit', event => {
+        if (event.defaultPrevented || resendButton.disabled) return;
+        deadline = Date.now() + cooldownMs;
+        saveDeadline(deadline);
+        if (countdownTimer) window.clearTimeout(countdownTimer);
+        updateCountdown();
+      }, true);
+
+      updateCountdown();
+    }
+  }
+
   // ۱. منوی کشویی موبایل (dialog بومی: تله فوکوس، Esc، بازگشت فوکوس)
   const d = $('#mnd'), b = $('#mnb');
   if (d && b && typeof d.showModal === 'function') {
@@ -246,8 +335,180 @@
   if (bad) { bad.focus({ preventScroll: true }); bad.scrollIntoView({ block: 'center', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); }
   else { const summary = $('.tp-form-sum[role=alert]'); if (summary) { summary.focus({ preventScroll: true }); summary.scrollIntoView({ block: 'center' }); } }
 
+  // ۴-ب. بارگذاری ویدئوی قسمت با نوار پیشرفت و لغو درخواست مرورگر.
+  // اعتبارسنجی، ذخیره خصوصی و مجوز پخش همچنان سمت Django باقی می‌ماند.
+  const episodeForm = $('form.tp-editor-form[data-video-upload-form]');
+  const episodeVideoInput = episodeForm && $('input[type="file"][name="video_file"]', episodeForm);
+  if (episodeForm && episodeVideoInput) {
+    const progressBox = document.createElement('section');
+    progressBox.className = 'tp-video-upload-progress';
+    progressBox.hidden = true;
+    progressBox.setAttribute('aria-live', 'polite');
+    progressBox.setAttribute('aria-busy', 'false');
+
+    const progressMessage = document.createElement('p');
+    progressMessage.className = 'tp-video-upload-progress-message';
+    const progressBar = document.createElement('progress');
+    progressBar.max = 100;
+    progressBar.value = 0;
+    progressBar.setAttribute('aria-label', 'پیشرفت بارگذاری ویدئو');
+
+    const progressMeta = document.createElement('span');
+    progressMeta.className = 'tp-video-upload-progress-meta';
+
+    const cancelUpload = document.createElement('button');
+    cancelUpload.type = 'button';
+    cancelUpload.className = 'btn o s tp-video-upload-cancel';
+    cancelUpload.textContent = 'لغو بارگذاری';
+    cancelUpload.hidden = true;
+
+    progressBox.append(progressMessage, progressBar, progressMeta, cancelUpload);
+    const editorActions = episodeForm.querySelector('.tp-editor-actions');
+    if (editorActions) editorActions.insertAdjacentElement('beforebegin', progressBox);
+    else episodeForm.append(progressBox);
+
+    const submitControl = episodeForm.querySelector('button[type="submit"], input[type="submit"]');
+    const submitInitiallyDisabled = submitControl ? submitControl.disabled : false;
+    let uploadRequest = null;
+    let uploadActive = false;
+
+    const toFaUploadDigits = value => String(value).replace(/[0-9]/g, digit => '۰۱۲۳۴۵۶۷۸۹'[Number(digit)]);
+    const formatUploadSize = bytes => {
+      const mb = Number(bytes) / (1024 * 1024);
+      return mb.toLocaleString('fa-IR', { maximumFractionDigits: 1 }) + ' مگابایت';
+    };
+
+    const finishVideoUpload = message => {
+      uploadActive = false;
+      episodeForm.dataset.videoUploadActive = 'false';
+      uploadRequest = null;
+      progressBox.setAttribute('aria-busy', 'false');
+      progressMessage.textContent = message;
+      cancelUpload.hidden = true;
+      cancelUpload.disabled = false;
+      if (submitControl) {
+        submitControl.disabled = submitInitiallyDisabled;
+        submitControl.classList.remove('is-loading');
+      }
+    };
+
+    cancelUpload.addEventListener('click', () => {
+      if (uploadRequest && uploadRequest.readyState !== XMLHttpRequest.DONE) {
+        cancelUpload.disabled = true;
+        progressMessage.textContent = 'در حال متوقف کردن ارسال از مرورگر...';
+        uploadRequest.abort();
+      }
+    });
+
+    episodeForm.addEventListener('submit', event => {
+      if (uploadActive) {
+        event.preventDefault();
+        return;
+      }
+
+      const file = episodeVideoInput.files && episodeVideoInput.files[0];
+      if (!file) return; // ویرایش اطلاعات بدون جایگزینی ویدئو، فرم معمول Django را حفظ می‌کند.
+
+      event.preventDefault();
+
+      const maxBytes = Number(episodeForm.dataset.maxUploadBytes || 0);
+      if (!/[.]mp4$/i.test(file.name)) {
+        progressBox.hidden = false;
+        finishVideoUpload('فقط فایل با پسوند MP4 مجاز است. فایل دیگری انتخاب کنید.');
+        episodeVideoInput.focus();
+        return;
+      }
+      if (Number.isFinite(maxBytes) && maxBytes > 0 && file.size > maxBytes) {
+        progressBox.hidden = false;
+        finishVideoUpload('حجم فایل از حد مجاز ' + formatUploadSize(maxBytes) + ' بیشتر است.');
+        episodeVideoInput.focus();
+        return;
+      }
+
+      uploadActive = true;
+      episodeForm.dataset.videoUploadActive = 'true';
+      progressBox.hidden = false;
+      progressBox.setAttribute('aria-busy', 'true');
+      progressMessage.textContent = 'در حال ارسال فایل «' + file.name + '»...';
+      progressBar.value = 0;
+      progressMeta.textContent = '۰٪ · ۰ مگابایت از ' + formatUploadSize(file.size);
+      cancelUpload.hidden = false;
+      cancelUpload.disabled = false;
+      if (submitControl) {
+        submitControl.disabled = true;
+        submitControl.classList.add('is-loading');
+      }
+
+      const request = new XMLHttpRequest();
+      uploadRequest = request;
+      const csrfInput = episodeForm.querySelector('input[name="csrfmiddlewaretoken"]');
+
+      request.open('POST', episodeForm.action || window.location.href, true);
+      request.withCredentials = true;
+      if (csrfInput && csrfInput.value) request.setRequestHeader('X-CSRFToken', csrfInput.value);
+
+      request.upload.addEventListener('progress', uploadEvent => {
+        if (!uploadEvent.lengthComputable || uploadEvent.total <= 0) {
+          progressMessage.textContent = 'بارگذاری ویدئو در حال انجام است...';
+          return;
+        }
+        const percent = Math.max(0, Math.min(100, Math.round((uploadEvent.loaded / uploadEvent.total) * 100)));
+        progressBar.value = percent;
+        progressMeta.textContent = toFaUploadDigits(percent) + '٪ · ' +
+          formatUploadSize(uploadEvent.loaded) + ' از ' + formatUploadSize(uploadEvent.total);
+        progressMessage.textContent = percent >= 100
+          ? 'ارسال فایل انجام شد؛ در انتظار پاسخ سرور...'
+          : 'بارگذاری ویدئو در حال انجام است...';
+      });
+
+      request.addEventListener('load', () => {
+        if (request.status >= 200 && request.status < 400) {
+          let finalUrl;
+          try {
+            finalUrl = new URL(request.responseURL || window.location.href, window.location.href);
+          } catch {
+            finishVideoUpload('پاسخ سرور قابل تشخیص نبود. صفحه را بررسی و دوباره تلاش کنید.');
+            return;
+          }
+
+          if (finalUrl.origin !== window.location.origin) {
+            finishVideoUpload('پاسخ سرور به نشانی غیرمجاز هدایت شد؛ برای امنیت، انتقال انجام نشد.');
+            return;
+          }
+          if (finalUrl.href !== window.location.href) {
+            window.location.assign(finalUrl.href);
+            return;
+          }
+
+          const contentType = request.getResponseHeader('Content-Type') || '';
+          if (request.responseText && contentType.toLowerCase().includes('text/html')) {
+            document.open();
+            document.write(request.responseText);
+            document.close();
+            return;
+          }
+          finishVideoUpload('پاسخ سرور دریافت شد، اما صفحه نتیجه قابل نمایش نبود. صفحه را تازه‌سازی و وضعیت قسمت را بررسی کنید.');
+          return;
+        }
+        finishVideoUpload('سرور درخواست را نپذیرفت (HTTP ' + toFaUploadDigits(request.status) +
+          '). پیام خطا را بررسی و دوباره تلاش کنید.');
+      });
+
+      request.addEventListener('error', () => {
+        finishVideoUpload('ارتباط با سرور قطع شد. اتصال را بررسی کنید و دوباره تلاش کنید.');
+      });
+
+      request.addEventListener('abort', () => {
+        finishVideoUpload('ارسال از مرورگر لغو شد. اگر سرور فایل را پیش از لغو کامل دریافت کرده باشد، ممکن است آن را ذخیره کرده باشد؛ وضعیت قسمت را بررسی کنید.');
+      });
+
+      request.send(new FormData(episodeForm));
+    });
+  }
+
   // ۵. جلوگیری از ارسال دوباره (دوبار کلیک)
-  $$('form[method=post]').forEach(f => f.addEventListener('submit', () => {
+  $$('form[method=post]').forEach(f => f.addEventListener('submit', event => {
+    if (event.defaultPrevented) return;
     const s = f.querySelector('[type=submit]'); if (s) { setTimeout(() => { s.disabled = true; s.classList.add('is-loading'); }, 0); }
   }));
 

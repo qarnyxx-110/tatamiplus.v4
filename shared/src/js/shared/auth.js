@@ -12,7 +12,7 @@ const UNAME_RE=/^[\p{L}\p{N}@.+_-]{1,150}$/u;
 const userKey=u=>String(u).toLowerCase();
 const validUser=v=>v&&typeof v==='object'&&typeof v.username==='string'&&UNAME_RE.test(v.username)&&typeof v.email==='string'&&v.email.length<=254&&AUTH_ROLES.includes(v.role)&&typeof v.h==='string'&&typeof v.salt==='string';
 // پاک‌سازی سبد ذخیره‌شده (همان قواعد state-guard)
-const cleanCart=a=>Array.isArray(a)?a.slice(0,50).map(x=>{if(!x||typeof x!=='object'||!Number.isInteger(x.id)||!P[x.id]||!P[x.id].st)return null;const p=P[x.id];
+const cleanCart=a=>Array.isArray(a)?a.slice(0,50).map(x=>{if(!x||typeof x!=='object'||!Number.isInteger(x.id)||!P[x.id]||P[x.id].ref||!P[x.id].st)return null;const p=P[x.id];
  return{id:x.id,s:p.sz.length?(p.sz.includes(x.s)?x.s:p.sz[0]):'',c:p.cl.length?(p.cl.includes(x.c)?x.c:p.cl[0]):'',q:Math.max(1,Math.min(p.st,Number.isInteger(x.q)?x.q:1))}}).filter(Boolean):[];
 const setCart=a=>{cart.splice(0,cart.length,...a);save()};
 (function(){const u=L('tp:users',{}),m=L('tp:me',null),clean={};
@@ -26,7 +26,7 @@ const authNext=()=>safeNext(hashParams().get('next')||'');
 const nextQ=()=>{const n=authNext();return n?'next='+encodeURIComponent(n):''};
 // ورود موفق: سبد مهمان با سبد حساب ادغام می‌شود (مثل بک‌اند)
 function signIn(u){resetCheckout();const guest=cart.map(x=>({...x}));ME=u;S('tp:me',userKey(u.username));if(!APP.fixed){role=u.role;S('role',u.role)}
- const mine=cleanCart(L(cartKey(),[]));let merged=0;for(const g of guest){const p=P[g.id];const e=mine.find(x=>x.id===g.id&&x.s===g.s&&x.c===g.c);if(e)e.q=Math.min(p.st,e.q+g.q);else mine.push({...g});merged++}
+ const mine=cleanCart(L(cartKey(),[]));let merged=0;for(const g of guest){const p=P[g.id];if(!p||p.ref||!p.st)continue;const e=mine.find(x=>x.id===g.id&&x.s===g.s&&x.c===g.c);if(e)e.q=Math.min(p.st,e.q+g.q);else mine.push({...g});merged++}
  setCart(mine.slice(0,50));S('cart',[]);return merged}
 function doLogout(){resetCheckout();ME=null;try{localStorage.removeItem('tp:me')}catch{}setCart(cleanCart(L('cart',[])));toast('از حساب خود خارج شدید');location.hash='#/'}
 

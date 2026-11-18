@@ -1,130 +1,439 @@
-name: Validate Django frontend against backend
+name: Django frontend checks and cPanel handoff
 
-on:
-  pull_request:
-    branches: [main]
-    paths:
-      - "django/templates/**"
-      - "django/static/**"
-      - "shared/src/css/**"
-      - "shared/src/design/tokens.json"
-      - "shared/public/fonts/**"
-      - "shared/build.js"
-      - "shared/package.json"
-      - ".github/workflows/django-frontend-contract.yml"
+'on':
   push:
-    branches: [main]
+    branches:
+      - main
+      - "feat/**"
     paths:
       - "django/templates/**"
       - "django/static/**"
-      - "shared/src/css/**"
-      - "shared/src/design/tokens.json"
-      - "shared/public/fonts/**"
       - "shared/build.js"
-      - "shared/package.json"
+      - "shared/src/css/**"
+      - "shared/src/js/shared/django-route-bridge.js"
+      - "shared/src/data/store-products.json"
+      - "shared/src/design/tokens.json"
+      - "deploy/frontend-manifest.json"
+      - ".github/workflows/django-frontend-contract.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "django/templates/**"
+      - "django/static/**"
+      - "shared/build.js"
+      - "shared/src/css/**"
+      - "shared/src/js/shared/django-route-bridge.js"
+      - "shared/src/data/store-products.json"
+      - "shared/src/design/tokens.json"
+      - "deploy/frontend-manifest.json"
       - ".github/workflows/django-frontend-contract.yml"
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  django-template-contract:
-    name: Render frontend templates with the real Django backend
+  validate-and-package:
+    name: Validate Django frontend and build cPanel handoff
     runs-on: ubuntu-latest
     steps:
-      - name: Check out frontend repository
+      - name: Check out frontend source
         uses: actions/checkout@v4
-        with:
-          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
-          ref: ${{ github.event.pull_request.head.ref || github.ref }}
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "24"
+          node-version: "22"
 
-      - name: Regenerate Django CSS from the shared design system
+      - name: Check browser JavaScript syntax
+        run: |
+          set -euo pipefail
+          node --check django/static/js/tatami.js
+          node --check django/static/js/module-pages.js
+          node --check django/static/js/home-restored.js
+          node --check django/static/js/reference-store.js
+          node --check shared/src/js/shared/django-route-bridge.js
+
+      - name: Verify shared design system output
         run: |
           set -euo pipefail
           node shared/build.js
-          test -s django/static/css/tatami.css
-          grep -q 'grid,.pg' django/static/css/tatami.css
+          git diff --exit-code -- django/static/css/tatami.css
 
-      - name: Check Django browser JavaScript syntax
-        run: node --check django/static/js/tatami.js
+      - name: Check frontend patch contracts
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json
 
-      - name: Verify Django Admin brand color follows the design system
-        run: grep -q -- '--tp-admin-brand: #2F62D6;' django/static/css/tatami-admin.css
+          base = Path("django/templates/base.html").read_text(encoding="utf-8")
+          navigation = Path("django/templates/components/platform_navigation.html").read_text(encoding="utf-8")
+          login = Path("django/templates/accounts/login.html").read_text(encoding="utf-8")
+          otp = Path("django/templates/accounts/otp_verify.html").read_text(encoding="utf-8")
+          profile = Path("django/templates/accounts/complete_profile.html").read_text(encoding="utf-8")
+          auth_layout = Path("django/templates/layouts/auth.html").read_text(encoding="utf-8")
+          auth_aside = Path("django/templates/components/auth_aside.html").read_text(encoding="utf-8")
+          auth_pages = [login, otp, profile]
+          auth_ui_css = Path("shared/src/css/ui.css").read_text(encoding="utf-8")
+          gem_history = Path("django/templates/gems/history.html").read_text(encoding="utf-8")
+          gem_badge = Path("django/templates/components/gem_badge.html").read_text(encoding="utf-8")
+          order_templates = [
+              Path("django/templates/orders") / name
+              for name in ("address.html", "review.html", "payment_result.html", "order_list.html", "order_detail.html")
+          ]
+          order_sources = [path.read_text(encoding="utf-8") for path in order_templates]
+          shared_css = Path("django/static/css/tatami.css").read_text(encoding="utf-8")
+          frontend_manifest = json.loads(Path("deploy/frontend-manifest.json").read_text(encoding="utf-8"))
+          admin = Path("django/templates/admin/base_site.html").read_text(encoding="utf-8")
+          store_template = Path("django/templates/store/product_list.html").read_text(encoding="utf-8")
+          store_detail_template = Path("django/templates/store/product_detail.html").read_text(encoding="utf-8")
+          store_card_template = Path("django/templates/components/store_product_card.html").read_text(encoding="utf-8")
+          store_card = Path("django/templates/components/store_product_card.html").read_text(encoding="utf-8")
+          coach_join = Path("django/templates/coaches/join.html").read_text(encoding="utf-8")
+          coach_join_entry = Path("django/templates/coaches/join_enter.html").read_text(encoding="utf-8")
+          coach_students = Path("django/templates/coaches/coach_students.html").read_text(encoding="utf-8")
+          bridge = Path("shared/src/js/shared/django-route-bridge.js").read_text(encoding="utf-8")
+          module_pages = Path("django/static/js/module-pages.js").read_text(encoding="utf-8")
+          reference_catalog = json.loads(Path("django/static/data/reference-store-catalog.json").read_text(encoding="utf-8"))
+          import_catalog = json.loads(Path("deploy/store-catalog-import.json").read_text(encoding="utf-8"))
+          episode = Path("django/templates/club/coach/episode_form.html").read_text(encoding="utf-8")
+          js = Path("django/static/js/tatami.js").read_text(encoding="utf-8")
+          admin_css = Path("django/static/css/tatami-admin.css").read_text(encoding="utf-8")
+          module_css = Path("django/static/css/module-pages.css").read_text(encoding="utf-8")
+          backend_css = Path("django/static/css/backend-templates.css").read_text(encoding="utf-8")
+          manifest = json.loads(Path("deploy/frontend-manifest.json").read_text(encoding="utf-8"))
+
+          assert 'data-auth-form="login"' in login
+          assert "{% if mode == 'sms' %}" in login and "با شمارهٔ همراه و رمز وارد شوید" in login
+          assert "phone_auth:sms_login" in login and "phone_auth:password_reset" in login
+          assert all('{% extends "layouts/auth.html" %}' in source for source in auth_pages)
+          assert '{% include "components/auth_aside.html" %}' in auth_layout
+          assert 'class="w tp-auth-layout" data-page-layout="auth"' in auth_layout
+          assert 'aria-labelledby="auth-page-title"' in auth_layout
+          assert 'class="tp-auth-aside"' in auth_aside
+          assert all('class="tp-auth tp-auth-layout"' not in source for source in auth_pages)
+          assert '.tp-auth-layout{display:grid;width:100%;max-width:64rem;margin-inline:auto;' in auth_ui_css
+          assert '.tp-auth-main>.tp-auth-card{width:100%;max-width:none}' in auth_ui_css
+          assert 'grid-template-columns:minmax(0,1fr)' in auth_ui_css
+          assert "{% include 'includes/form_fields.html' %}" in login
+          assert "{% url 'phone_auth:verify_otp' %}" in otp
+          assert "{% url 'phone_auth:send_otp' %}" in otp
+          assert "{% include 'includes/form_fields.html' %}" in profile
+          assert "{% url 'gems:history' %}" in gem_badge
+          assert "tp-gem-table" in gem_history and "tp-gem-positive" in gem_history
+          assert all("page-main" not in source and "button-dark" not in source for source in order_sources)
+          assert all("{% csrf_token %}" in source for source in order_sources if "method=\"post\"" in source)
+          assert ".tp-auth-layout{" in shared_css and ".tp-auth-aside{" in shared_css
+          assert ".tp-gem-table{" in shared_css
+          assert "accounts/login.html" not in next(item for item in frontend_manifest["mappings"] if item["destination"] == "templates").get("exclude", [])
+          assert "data-reference-store" in store_template and "صرفاً جهت مشاهده، بدون امکان خرید" in store_template
+          assert len(reference_catalog["products"]) == 59
+          imported_products = import_catalog["products"]
+          assert import_catalog["classification"] == "REFERENCE_ONLY_NOT_A_SALE_PRICE"
+          assert import_catalog["records_count"] == 59 and len(imported_products) == 59
+          assert len({p["catalog_key"] for p in imported_products}) == 59
+          assert len({p["product_slug"] for p in imported_products}) == 59
+          assert len(import_catalog["categories"]) == 7
+          assert sum(c["count"] for c in import_catalog["categories"]) == 59
+          assert all(p["inventory_status"] == "unverified" for p in imported_products)
+          assert all(p["import_policy"]["create_sellable_variant"] is False for p in imported_products)
+          assert all(p["import_policy"]["initial_stock_quantity"] is None for p in imported_products)
+          assert all(p["import_policy"]["publish_for_purchase"] is False for p in imported_products)
+          assert all(p["image_asset_path"].startswith("preview/assets/images/products/") for p in imported_products)
+          assert all(p["price_source"] in ("torob", "digikala") for p in imported_products)
+          assert "{% include 'components/store_product_card.html'" in store_template
+          assert "availability_status=product.availability_status|default:'in_stock'" in store_template
+          assert all(state in store_detail_template for state in ("in_stock", "out_of_stock", "inventory_unregistered"))
+          assert 'data-availability="{% if availability_status %}' in store_detail_template
+          assert "در حال حاضر ناموجود" not in store_detail_template
+          assert "invite.remaining_uses|persian_digits" in coach_join
+          assert "جای خالی از" in coach_join
+          assert "کد دعوت را وارد کن" in coach_join_entry
+          assert "data-copy-target" in coach_students and "کپی لینک" in coach_students
+          assert "data-copy-target" in bridge and "navigator.clipboard.writeText" in bridge
+          assert "data-copy-target" in module_pages and "navigator.clipboard.writeText" in module_pages
+          assert "موجودی ثبت نشده" in store_detail_template
+          assert "if starting_price or starting_price == 0" in store_card_template
+          assert all(token in store_card for token in ("in_stock", "out_of_stock", "inventory_unregistered"))
+          assert 'data-availability="{{ availability_status|default:' in store_card
+          assert "stock_quantity" not in store_card
+          assert "ProductVariant.price" not in store_card
+          assert all("sourceUrl" not in product and "shop" not in product for product in reference_catalog["products"])
+          static_mapping = next(item for item in frontend_manifest["mappings"] if item["destination"] == "static")
+          assert "css/tatami.css" not in static_mapping.get("exclude", [])
+          assert '<header>' in base
+          assert '<a class="logo"' in base
+          assert 'components/platform_navigation.html' in base and 'nav_id="nv"' in base
+          assert 'nav_id="nvd"' in base and 'nav_class="tp-drawer-n"' in base
+          assert 'id="{{ nav_id }}"' in navigation and 'class="{{ nav_class }}"' in navigation
+          assert navigation.count('href="/preview/#/') == 15
+          assert 'id="hcart"' in base
+          assert 'id="hgem"' in base
+          assert 'id="mnb"' in base and 'id="mnd"' in base and 'id="mnx"' in base
+          assert 'css/styles.css' not in base, "Legacy backend theme must not be loaded by the Django shell"
+          assert 'class="site-header"' not in base and 'class="site-nav"' not in base and 'class="wordmark"' not in base
+          assert 'class="site-footer"' not in base
+          assert 'class="ib tp-gem-header gem-chip" id="hgem"' in base
+          assert 'nav_class="tp-drawer-n"' in base
+          assert 'css/tatami.css' in base, "Shared Tatami Plus design system must be loaded"
+          assert "new_coach_leads_count" in admin
+          assert "admin:accounts_signuplead_changelist" in admin
+          assert "data-video-upload-form" in episode
+          assert "tp-otp-resend-until:" in js
+          assert "request.upload.addEventListener('progress'" in js
+          assert "uploadRequest.abort()" in js
+          assert "X-CSRFToken" in js
+          assert ".tp-video-upload-progress" in module_css
+          assert ".tp-admin-lead-notice" in admin_css
+          assert ".site-header" not in backend_css and ".site-nav" not in backend_css
+          assert ".wordmark" not in backend_css and ".site-footer" not in backend_css
+          assert ".page-main" not in backend_css and ".button-dark" not in backend_css
+          assert ".product-grid" not in backend_css and ".cart-row" not in backend_css
+          assert len(backend_css) < 1000
+          assert "#app" in backend_css and ".tp-msgs" in backend_css
+          account = Path("django/templates/pages/account.html").read_text(encoding="utf-8")
+          assert "{% url 'orders:list' %}" in account
+          assert "{% url 'gems:history' %}" in account
+          assert "{% url 'club:course_list' %}" in account
+          for episode_template in ("django/templates/club/course_detail.html", "django/templates/club/episode_play.html"):
+              episode_source = Path(episode_template).read_text(encoding="utf-8")
+              assert 'class="lesson-done"' not in episode_source
+
+          for template in (
+              "accounts/password_reset.html",
+              "accounts/password_reset_confirm.html",
+              "accounts/set_password.html",
+              "coaches/join_enter.html",
+              "orders/mock_gateway.html",
+          ):
+              assert Path("django/templates", template).is_file(), template
+
+          print("FRONTEND_PATCH_CONTRACT_OK")
+          PY
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
-      - name: Check out the backend contract revision (read-only)
+      - name: Check out the pinned backend contract revision
         run: |
           set -euo pipefail
           git clone https://github.com/Radinsharifi/Tatami-demo.git backend
-          git -C backend checkout --detach c88d977949897017e848c3ba23b3ec1bcc0a3ebb
+          git -C backend checkout --detach 25fde937def556edc7b81291e5900a9ac84fccb2
 
       - name: Install backend dependencies
         run: |
           python -m pip install --upgrade pip
           python -m pip install -r backend/requirements.txt
 
-      - name: Install the frontend templates and static assets into the isolated backend checkout
+      - name: Install proposed frontend templates and static files into isolated backend checkout
         run: |
           set -euo pipefail
           mkdir -p backend/templates backend/static
           cp -a django/templates/. backend/templates/
           cp -a django/static/. backend/static/
 
-      - name: Validate Django settings and template URL reversals
+      - name: Validate Django settings
         working-directory: backend
         run: python manage.py check
 
-      - name: Verify Django Admin override template and static asset
+      - name: Verify the store-card stock fallback precondition
         working-directory: backend
         run: |
-          python manage.py shell -c "from django.template.loader import get_template; from django.urls import reverse; from django.contrib.staticfiles.finders import find; get_template('admin/base_site.html'); assert reverse('admin:index') == '/admin/'; assert find('css/tatami-admin.css'); print('Django Admin template, URL and stylesheet: OK')"
+          python - <<'PY'
+          from pathlib import Path
+          source = Path("store/views.py").read_text(encoding="utf-8")
+          assert "variants__stock_quantity__gt=0" in source
+          assert "filter(starting_price__isnull=False)" in source
+          print("STORE_CARD_IN_STOCK_FALLBACK_PRECONDITION_OK")
+          PY
 
-      - name: Run backend tests with the proposed frontend templates
+      - name: Compile templates and resolve required static assets
         working-directory: backend
-        run: python manage.py test --verbosity 2
-
-      - name: Commit regenerated Django CSS to the pull request branch
-        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}
-        env:
-          TARGET_BRANCH: ${{ github.head_ref }}
         run: |
-          set -euo pipefail
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add django/static/css/tatami.css
-          if git diff --cached --quiet; then
-            echo "Generated Django CSS is already synchronized."
-            exit 0
-          fi
-          git commit -m "Build Django CSS from shared design tokens"
-          git push origin "HEAD:${TARGET_BRANCH}"
+          python manage.py shell -c "from django.template.loader import get_template; from django.contrib.staticfiles.finders import find; names=('base.html','layouts/auth.html','components/auth_aside.html','components/store_product_card.html','admin/base_site.html','pages/home.html','pages/account.html','store/product_list.html','store/product_detail.html','store/cart_detail.html','coaches/directory.html','coaches/profile_detail.html','coaches/join.html','coaches/join_enter.html','coaches/coach_students.html','club/course_list.html','club/course_detail.html','club/coach/episode_form.html','gems/history.html','accounts/login.html','accounts/otp_verify.html','accounts/complete_profile.html','accounts/password_reset.html','accounts/password_reset_confirm.html','accounts/set_password.html','coaches/join_enter.html','orders/mock_gateway.html','orders/address.html','orders/review.html','orders/payment_result.html','orders/order_list.html','orders/order_detail.html','includes/form_fields.html'); [get_template(name) for name in names]; assets=('css/tatami.css','css/tatami-admin.css','css/backend-templates.css','css/module-pages.css','css/home-restored.css','css/reference-store.css','js/tatami.js','js/module-pages.js','js/home-restored.js','js/reference-store.js','data/reference-store-catalog.json'); assert all(find(name) for name in assets); print('DJANGO_TEMPLATE_AND_STATIC_CHECK_OK')"
 
-      - name: Verify generated CSS when the workflow cannot write it back
-        if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository }}
-        run: git diff --exit-code -- django/static/css/tatami.css
+      - name: Run backend tests with proposed frontend
+        working-directory: backend
+        run: python manage.py test accounts.tests.AuthenticationFlowTests accounts.tests.CoachSignupLeadTests accounts.tests.AccountPageTests coaches.tests.CoachInviteTests gems.tests.GemPageTests orders.tests.CheckoutFlowTests --verbosity 1
 
-      - name: Package the complete Django frontend handoff
+      - name: Build separate templates and static cPanel packages
         run: |
-          set -euo pipefail
-          mkdir -p handoff/templates handoff/static
-          cp -a django/templates/. handoff/templates/
-          cp -a django/static/. handoff/static/
-          (cd handoff && zip -qr "$GITHUB_WORKSPACE/tatami-django-frontend-handoff.zip" templates static)
+          python - <<'PY'
+          import hashlib
+          import json
+          import zipfile
+          from pathlib import Path
 
-      - name: Upload backend handoff package
+          manifest = json.loads(Path("deploy/frontend-manifest.json").read_text(encoding="utf-8"))
+          packages = {"templates": [], "static": []}
+          roots = {"templates": Path("package-templates"), "static": Path("package-static")}
+
+          for root in roots.values():
+              if root.exists():
+                  import shutil
+                  shutil.rmtree(root)
+              root.mkdir(parents=True)
+
+          for mapping in manifest["mappings"]:
+              kind = Path(mapping["destination"]).name
+              if kind not in packages:
+                  raise SystemExit(f"Unsupported deployment destination: {mapping['destination']}")
+              source_root = Path(mapping["source"])
+              extensions = {suffix.lower() for suffix in mapping["extensions"]}
+              excludes = mapping.get("exclude", [])
+
+              for source in sorted(source_root.rglob("*")):
+                  if not source.is_file():
+                      continue
+                  if source.is_symlink():
+                      raise SystemExit(f"Refusing symlink: {source}")
+                  relative = source.relative_to(source_root).as_posix()
+                  if any(relative == item or relative.startswith(item.rstrip("/") + "/") for item in excludes):
+                      continue
+                  if source.suffix.lower() not in extensions:
+                      continue
+
+                  target = roots[kind] / relative
+                  target.parent.mkdir(parents=True, exist_ok=True)
+                  target.write_bytes(source.read_bytes())
+                  data = target.read_bytes()
+                  packages[kind].append({
+                      "path": relative,
+                      "size": len(data),
+                      "sha256": hashlib.sha256(data).hexdigest(),
+                  })
+
+          for kind, entries in packages.items():
+              if not entries:
+                  raise SystemExit(f"Manifest selected zero {kind} files")
+              entries.sort(key=lambda item: item["path"])
+              archive = Path(f"{kind}.zip")
+              with zipfile.ZipFile(archive, "w", compression=zipfile.ZIP_DEFLATED) as bundle:
+                  for source in sorted(roots[kind].rglob("*")):
+                      if source.is_file():
+                          bundle.write(source, source.relative_to(roots[kind]).as_posix())
+              with zipfile.ZipFile(archive) as bundle:
+                  bad = bundle.testzip()
+                  if bad:
+                      raise SystemExit(f"{kind}.zip integrity failure: {bad}")
+                  archived = set(bundle.namelist())
+              expected = {item["path"] for item in entries}
+              if archived != expected:
+                  raise SystemExit(f"{kind}.zip file list mismatch")
+              print(
+                  f"{kind.upper()}_PACKAGE_OK | files={len(entries)} | "
+                  f"bytes={archive.stat().st_size} | source_commit={__import__('os').environ.get('GITHUB_SHA')}"
+              )
+          PY
+
+      - name: Upload templates package
         uses: actions/upload-artifact@v4
         with:
-          name: tatami-django-frontend-handoff
-          path: tatami-django-frontend-handoff.zip
+          name: tatami-templates
+          path: templates.zip
           if-no-files-found: error
           retention-days: 14
+
+      - name: Upload static package
+        uses: actions/upload-artifact@v4
+        with:
+          name: tatami-static
+          path: static.zip
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Build backend product-catalog handoff package
+        run: |
+          python - <<'PY'
+          import hashlib
+          import json
+          import zipfile
+          from pathlib import Path
+
+          catalog_path = Path("deploy/store-catalog-import.json")
+          contract_path = Path("docs/STORE_CATALOG_IMPORT_CONTRACT.md")
+          catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+          products = catalog.get("products", [])
+          if catalog.get("records_count") != 59 or len(products) != 59:
+              raise SystemExit("Expected exactly 59 source catalogue records")
+
+          image_paths = [Path(product["image_asset_path"]) for product in products]
+          if len(set(image_paths)) != 59:
+              raise SystemExit("Duplicate product image paths in import manifest")
+          missing = [path.as_posix() for path in image_paths if not path.is_file()]
+          if missing:
+              raise SystemExit(f"Missing product image assets: {missing}")
+
+          readme = """# بسته تحویل کاتالوگ محصولات تاتامی پلاس
+
+          این بسته برای بررسی و آماده‌سازی Import توسط مسئول بک‌اند تهیه شده است؛
+          فایل را مستقیماً در cPanel یا پوشه public/static استخراج نکنید.
+
+          محتویات:
+          - deploy/store-catalog-import.json: 59 رکورد مرجع و mapping پیشنهادی
+          - docs/STORE_CATALOG_IMPORT_CONTRACT.md: قرارداد داده و مراحل import
+          - preview/assets/images/products/: 59 فایل تصویری متناظر با رکوردها
+
+          هشدارهای الزامی:
+          1. قیمت‌ها از ترب/دیجی‌کالا و صرفاً قیمت مرجع بازار هستند؛ قیمت فروش تاتامی پلاس نیستند.
+          2. هیچ موجودی واقعی در داده منبع وجود ندارد؛ stock_quantity باید فقط با شمارش انبار ثبت شود.
+          3. candidate_sizes و candidate_colors فقط گزینه‌های پیشنهادی‌اند و به‌تنهایی ProductVariant قابل فروش ایجاد نمی‌کنند.
+          4. مجوز انتشار تصاویر تأیید نشده است؛ تا تأیید حقوق استفاده، تصاویر را عمومی یا در Media production منتشر نکنید.
+          5. اجرای Import باید idempotent و ابتدا در حالت dry-run باشد.
+          6. محصول بدون variant/موجودی معتبر باید «موجودی ثبت نشده» تلقی شود، نه «ناموجود».
+          7. هیچ محصولی تا تکمیل قیمت فروش، تنوع، موجودی و مجوز تصویر قابل خرید/انتشار نشود.
+          """
+          readme_path = Path("STORE-CATALOG-HANDOFF-README.md")
+          readme_path.write_text(readme, encoding="utf-8")
+
+          archive = Path("store-catalog-backend-handoff.zip")
+          checksums = []
+          with zipfile.ZipFile(archive, "w", compression=zipfile.ZIP_DEFLATED) as bundle:
+              files = [
+                  (catalog_path, catalog_path.as_posix()),
+                  (contract_path, contract_path.as_posix()),
+                  (readme_path, readme_path.as_posix()),
+              ]
+              files.extend((image, image.as_posix()) for image in image_paths)
+              for source, archive_name in files:
+                  data = source.read_bytes()
+                  bundle.writestr(archive_name, data)
+                  checksums.append(f"{hashlib.sha256(data).hexdigest()}  {archive_name}")
+
+              bundle.writestr("SHA256SUMS.txt", "\n".join(checksums) + "\n")
+
+          with zipfile.ZipFile(archive) as bundle:
+              bad = bundle.testzip()
+              if bad:
+                  raise SystemExit(f"Backend handoff ZIP integrity failure: {bad}")
+              names = bundle.namelist()
+              archived_images = [n for n in names if n.startswith("preview/assets/images/products/")]
+              if len(archived_images) != 59:
+                  raise SystemExit(f"Expected 59 product images, found {len(archived_images)}")
+              for required in (
+                  "deploy/store-catalog-import.json",
+                  "docs/STORE_CATALOG_IMPORT_CONTRACT.md",
+                  "STORE-CATALOG-HANDOFF-README.md",
+                  "SHA256SUMS.txt",
+              ):
+                  if required not in names:
+                      raise SystemExit(f"Missing handoff file: {required}")
+
+          print(
+              f"STORE_CATALOG_BACKEND_HANDOFF_OK | products=59 | images=59 | "
+              f"files={len(names)} | bytes={archive.stat().st_size}"
+          )
+          PY
+
+      - name: Upload backend product-catalog handoff
+        uses: actions/upload-artifact@v4
+        with:
+          name: tatami-store-catalog-backend-handoff
+          path: store-catalog-backend-handoff.zip
+          if-no-files-found: error
+          retention-days: 14
+
+

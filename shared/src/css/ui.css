@@ -319,11 +319,11 @@ html:has(.tp-drawer[open]){overflow:hidden}
 
 
 /* ===== Authentication refresh: same design tokens, responsive composition ===== */
-.tp-auth-layout{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(16rem,.88fr);gap:var(--tp-space-lg);max-width:64rem;align-items:stretch;padding-block:var(--tp-space-2xl)}
-.tp-auth-main{min-width:0;display:flex;flex-direction:column;justify-content:center}
+.tp-auth-layout{display:grid;width:100%;max-width:64rem;margin-inline:auto;grid-template-columns:minmax(0,1.12fr) minmax(18rem,.88fr);gap:var(--tp-space-lg);align-items:stretch;padding-block:var(--tp-space-2xl)}.tp-auth-layout>*{min-width:0}.tp-auth-main{min-width:0;width:100%;display:flex;flex-direction:column;justify-content:center}.tp-auth-main>.tp-auth-card{width:100%;max-width:none}
+
 .tp-auth-kicker{font-size:var(--tp-font-size-xs);font-weight:var(--tp-font-weight-bold);letter-spacing:.06em;color:var(--tp-color-text-secondary);margin:0 0 var(--tp-space-sm)}
 .tp-auth-card h1{line-height:1.45}
-.tp-auth-aside{position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;min-height:28rem;padding:clamp(var(--tp-space-lg),3vw,var(--tp-space-2xl));border:1px solid var(--tp-color-border);border-radius:var(--tp-radius-card);background:var(--tp-color-surface);isolation:isolate}
+.tp-auth-aside{position:relative;overflow:hidden;display:flex;width:100%;min-width:0;box-sizing:border-box;flex-direction:column;justify-content:flex-end;min-height:28rem;padding:clamp(var(--tp-space-lg),3vw,var(--tp-space-2xl));border:1px solid var(--tp-color-border);border-radius:var(--tp-radius-card);background:var(--tp-color-surface);isolation:isolate}
 .tp-auth-aside::before,.tp-auth-aside::after{content:"";position:absolute;z-index:-1;inset:auto -18% 18% -18%;height:12rem;border:1px solid var(--tp-color-border);border-radius:50%;transform:rotate(-18deg)}
 .tp-auth-aside::after{inset:auto -12% 10% -12%;height:9rem;transform:rotate(18deg)}
 .tp-auth-aside-mark{position:absolute;inset:var(--tp-space-xl) var(--tp-space-xl) auto auto;width:9rem;height:9rem;display:grid;grid-template-columns:repeat(2,1fr);gap:5px;opacity:.55;transform:rotate(-9deg)}

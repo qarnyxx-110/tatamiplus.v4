@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "description": "Only the Django-compatible frontend layer is deployed. Backend-owned files and unsupported club-map UI are excluded.",
+  "mappings": [
+    {
+      "source": "django/templates",
+      "destination": "templates",
+      "extensions": [
+        ".html"
+      ],
+      "exclude": [
+        "clubs",
+        "accounts/register.html"
+      ]
+    },
+    {
+      "source": "django/static",
+      "destination": "static",
+      "extensions": [
+        ".css",
+        ".js",
+        ".mjs",
+        ".svg",
+        ".png",
+        ".jpg",
+        ".jpeg",
+        ".webp",
+        ".avif",
+        ".gif",
+        ".ico",
+        ".woff",
+        ".woff2",
+        ".ttf",
+        ".otf",
+        ".json",
+        ".webmanifest"
+      ],
+      "exclude": [
+        "css/styles.css",
+        "css/clubs-map.css",
+        "js/clubs-map.js"
+      ]
+    }
+  ]
+}

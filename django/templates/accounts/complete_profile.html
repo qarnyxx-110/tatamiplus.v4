@@ -1,0 +1,15 @@
+{% extends "layouts/auth.html" %}
+
+{% block title %}تکمیل پروفایل | تاتامی پلاس{% endblock %}
+
+{% block auth_content %}
+  <p class="tp-auth-kicker">TATAMI PLUS · حساب کاربری</p>
+  <h1 id="auth-page-title">پروفایلت را تکمیل کن</h1>
+  <p class="mu">برای فعال‌شدن حساب، اطلاعات خواسته‌شده را تکمیل کنید.</p>
+
+  <form id="tp-complete-profile-form" method="post" novalidate aria-labelledby="auth-page-title">
+    {% csrf_token %}
+    {% include 'includes/form_fields.html' %}
+    <button class="btn tp-auth-btn" type="submit">ذخیره و ادامه</button>
+  </form>
+{% endblock %}

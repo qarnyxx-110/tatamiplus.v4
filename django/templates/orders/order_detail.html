@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% load store_format %}
+{% load persian %}
+{% load jformat %}
+
+{% block title %}سفارش {{ order.number }} | تاتامی پلاس{% endblock %}
+{% block content %}
+<main class="w tp-store-page">
+  <nav class="tp-crumbs" aria-label="مسیر صفحه">
+    <ol>
+      <li><a href="{% url 'home' %}">خانه</a></li>
+      <li><a href="{% url 'orders:list' %}">سفارش‌های من</a></li>
+      <li aria-current="page">{{ order.number }}</li>
+    </ol>
+  </nav>
+
+  <header class="sh">
+    <div>
+      <span class="eyebrow">ORDER</span>
+      <h1>{{ order.number }}</h1>
+      <p class="mu">وضعیت: {{ order.get_status_display }} · ثبت در {{ order.created_at|jformat:'%Y/%m/%d %H:%M'|persian_digits }}</p>
+    </div>
+    <a class="btn o" href="{% url 'orders:list' %}">بازگشت به سفارش‌ها</a>
+  </header>
+
+  <section class="d-s" aria-labelledby="order-items-title">
+    <h2 id="order-items-title">اقلام سفارش</h2>
+    <div class="tp-stack">
+      {% for item in order.items.all %}
+        <article class="d-c">
+          <h3>{{ item.product_name }}</h3>
+          <p class="mu sm">{{ item.size }}{% if item.color %}، {{ item.color }}{% endif %}</p>
+          <p>{{ item.unit_price|price_fa }} × {{ item.quantity|price_fa }} = <strong>{{ item.subtotal|price_fa }} تومان</strong></p>
+        </article>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="d-c" aria-labelledby="order-totals-title">
+    <h2 id="order-totals-title">مبالغ سفارش</h2>
+    <div class="rw2"><span class="mu">جمع اقلام</span><strong>{{ order.subtotal|price_fa }} تومان</strong></div>
+    <div class="rw2"><span class="mu">هزینهٔ ارسال</span><strong>{{ order.shipping_cost|price_fa }} تومان</strong></div>
+    <div class="rw2"><strong>مبلغ کل</strong><strong class="tp-price">{{ order.total|price_fa }} تومان</strong></div>
+    {% if order.payment %}<p class="tp-hint">کد پیگیری: {{ order.payment.ref_id|default:'—' }}</p>{% endif %}
+  </section>
+
+  <section class="d-c" aria-labelledby="order-address-title">
+    <h2 id="order-address-title">نشانی ارسال</h2>
+    <p>{{ order.province }}، {{ order.city }}</p>
+    <p>{{ order.full_address }}</p>
+    <p class="mu sm">کد پستی: {{ order.postal_code }}{% if order.receiver_name %} · گیرنده: {{ order.receiver_name }}{% endif %}</p>
+    {% if order.receiver_phone %}<p class="mu sm">همراه گیرنده: {{ order.receiver_phone }}</p>{% endif %}
+  </section>
+</main>
+{% endblock %}

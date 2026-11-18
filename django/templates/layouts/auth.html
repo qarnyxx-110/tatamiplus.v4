@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+<main class="w tp-auth-layout" data-page-layout="auth">
+  <section class="tp-auth-main" aria-labelledby="auth-page-title">
+    <div class="tp-auth-card">
+      {% block auth_content %}{% endblock %}
+    </div>
+    {% block auth_after_card %}{% endblock %}
+  </section>
+  {% include "components/auth_aside.html" %}
+</main>
+{% endblock %}

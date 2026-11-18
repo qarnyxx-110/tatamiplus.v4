@@ -10,7 +10,14 @@
 </h1>
 {% endblock %}
 
-{% block nav-global %}{% endblock %}
+{% block nav-global %}
+{% if new_coach_leads_count %}
+  <a class="tp-admin-lead-notice" href="{% url 'admin:accounts_signuplead_changelist' %}" aria-label="سرنخ‌های جدید مربی: {{ new_coach_leads_count }}">
+    <span>درخواست‌های مربیگری جدید</span>
+    <strong class="tp-admin-lead-count">{{ new_coach_leads_count }}</strong>
+  </a>
+{% endif %}
+{% endblock %}
 
 {% block extrastyle %}
   {{ block.super }}

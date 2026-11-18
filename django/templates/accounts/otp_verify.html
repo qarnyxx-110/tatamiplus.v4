@@ -1,0 +1,29 @@
+{% extends "layouts/auth.html" %}
+
+{% block title %}تأیید شمارهٔ همراه | تاتامی پلاس{% endblock %}
+
+{% block auth_content %}
+  <p class="tp-auth-kicker">TATAMI PLUS · تأیید حساب</p>
+  <h1 id="auth-page-title">کد یک‌بارمصرف را وارد کن</h1>
+  <p class="mu">کد پنج‌رقمی ارسال‌شده برای شمارهٔ <bdi dir="ltr">{{ phone_hint }}</bdi> را وارد کنید.</p>
+
+  {% if error %}
+    <p class="tp-error-text" role="alert" aria-live="assertive">{{ error }}</p>
+  {% endif %}
+
+  <form id="tp-otp-verify-form" method="post" action="{% url 'phone_auth:verify_otp' %}" novalidate aria-labelledby="auth-page-title">
+    {% csrf_token %}
+    {% include 'includes/form_fields.html' %}
+    <button class="btn tp-auth-btn" type="submit">تأیید و ادامه</button>
+  </form>
+
+  <form id="tp-otp-resend-form" class="tp-auth-alt" method="post" action="{% url 'phone_auth:send_otp' %}" data-tp-otp-resend data-resend-in="{{ resend_in|default:0 }}">
+    {% csrf_token %}
+    <button class="btn o s" type="submit">ارسال دوبارهٔ کد</button>
+  </form>
+
+  <p class="tp-hint">در صورت نرسیدن پیامک، پس از پایان زمان انتظار می‌توانید درخواست ارسال دوباره بدهید. محدودیت نهایی توسط سامانه بررسی می‌شود.</p>
+  {% with next_value=request.session.otp_next|default:'' role_value=request.session.otp_role|default:'' %}
+    <p class="tp-auth-alt"><a href="{% url 'phone_auth:login' %}{% if next_value or role_value %}?{% if next_value %}next={{ next_value|urlencode }}{% endif %}{% if next_value and role_value %}&amp;{% endif %}{% if role_value %}role={{ role_value|urlencode }}{% endif %}{% endif %}">بازگشت به ورود پیامکی</a></p>
+  {% endwith %}
+{% endblock %}

@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - "feat/**"
     paths:
       - "shared/src/**"
       - "shared/public/assets/**"
@@ -11,6 +12,8 @@ on:
       - "shared/package.json"
       - "shared/tests/**"
       - "django/static/js/**"
+      - "django/static/css/**"
+      - "django/templates/**"
       - ".github/workflows/deploy-preview.yml"
   pull_request:
     branches:
@@ -22,6 +25,8 @@ on:
       - "shared/package.json"
       - "shared/tests/**"
       - "django/static/js/**"
+      - "django/static/css/**"
+      - "django/templates/**"
       - ".github/workflows/deploy-preview.yml"
   workflow_dispatch:
     inputs:
@@ -82,6 +87,10 @@ jobs:
       - name: Run Django browser runtime regression tests
         working-directory: shared
         run: node tests/django-ui.test.mjs
+
+      - name: Run Django Preview bridge browser regression tests
+        working-directory: shared
+        run: node tests/django-bridge.test.mjs
 
       - name: Run focused clubs and map browser tests
         working-directory: shared

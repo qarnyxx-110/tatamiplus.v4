@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% load persian %}
+{% load jformat %}
+
+{% block title %}جم‌های من | تاتامی پلاس{% endblock %}
+{% block content %}
+<main class="w tp-gems">
+  <header class="d-s">
+    <h1>جم‌های من</h1>
+    <p class="tp-hint">موجودی و گردش جم‌های حساب شما</p>
+  </header>
+
+  <section class="tp-gem-balance-card" aria-label="موجودی جم">
+    <span class="tp-gem-icon" aria-hidden="true">💎</span>
+    <div>
+      <p class="tp-hint">موجودی فعلی</p>
+      <strong class="tp-gem-number">{{ balance|persian_digits }} <span>جم</span></strong>
+    </div>
+  </section>
+
+  {% if rules %}
+    <section class="d-s" aria-labelledby="gem-rules-title">
+      <h2 id="gem-rules-title">راه‌های دریافت جم</h2>
+      <div class="d-c tp-gem-help">
+        <ul>
+          {% for rule in rules %}
+            <li>
+              {{ rule.get_reason_display }}:
+              {% if rule.is_percentage %}{{ rule.amount|persian_digits }}٪ از مبلغ{% else %}{{ rule.amount|persian_digits }} جم{% endif %}
+              {% if rule.daily_limit %}<small>(حداکثر {{ rule.daily_limit|persian_digits }} جم در روز)</small>{% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+        <p class="tp-hint">مقدارها را تیم تاتامی پلاس تعیین می‌کند و ممکن است تغییر کند.</p>
+      </div>
+    </section>
+  {% endif %}
+
+  {% if page.object_list %}
+    <section class="d-s" aria-labelledby="gem-history-title">
+      <h2 id="gem-history-title">تاریخچهٔ تراکنش‌ها</h2>
+      <div class="tp-gem-table-wrap">
+        <table class="tp-gem-table">
+          <caption class="tp-sr-only">تاریخ، شرح و مقدار تراکنش‌های جم</caption>
+          <thead>
+            <tr>
+              <th scope="col">تاریخ</th>
+              <th scope="col">شرح تراکنش</th>
+              <th scope="col">مقدار</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for entry in page.object_list %}
+              <tr>
+                <td>{{ entry.created_at|jformat:'%Y/%m/%d %H:%M'|persian_digits }}</td>
+                <td>
+                  <strong>{{ entry.get_reason_display }}</strong>
+                  {% if entry.note %}<small>{{ entry.note }}</small>{% endif %}
+                </td>
+                <td>
+                  <span class="{% if entry.is_credit %}tp-gem-positive{% else %}tp-gem-negative{% endif %}">
+                    {% if entry.is_credit %}+{% endif %}{{ entry.amount|persian_digits }} جم
+                  </span>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    {% if page.has_other_pages %}
+      <nav class="tp-cluster" aria-label="صفحه‌بندی تاریخچه جم">
+        {% if page.has_previous %}
+          <a class="btn o s" href="?page={{ page.previous_page_number }}">قبلی</a>
+        {% endif %}
+        <span class="tp-hint">صفحهٔ {{ page.number|persian_digits }} از {{ page.paginator.num_pages|persian_digits }}</span>
+        {% if page.has_next %}
+          <a class="btn o s" href="?page={{ page.next_page_number }}">بعدی</a>
+        {% endif %}
+      </nav>
+    {% endif %}
+  {% else %}
+    <section class="tp-state" aria-labelledby="gem-empty-title">
+      <h2 id="gem-empty-title">هنوز جمی جمع نکرده‌اید</h2>
+      <p>هنوز تراکنشی برای نمایش در تاریخچهٔ جم شما ثبت نشده است.</p>
+      <a class="btn" href="{% url 'club:course_list' %}">رفتن به باشگاه مجازی</a>
+    </section>
+  {% endif %}
+</main>
+{% endblock %}

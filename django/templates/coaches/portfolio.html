@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}پروفایل عمومی من | پنل مربی تاتامی پلاس{% endblock %}
+{% block content %}
+<main class="w tp-coach-panel">
+  <header class="sh"><div><span class="eyebrow">COACH PROFILE</span><h1>پروفایل عمومی من</h1><p class="mu">اطلاعاتی که پس از انتشار در صفحه عمومی مربی نمایش داده می‌شود.</p></div></header>
+  <section class="d-c tp-coach-publish-state" aria-label="وضعیت انتشار پروفایل">
+    <div class="dh"><b>وضعیت انتشار</b>{% if profile.is_published %}<span class="tag ok">منتشر شده</span>{% else %}<span class="tag g">در انتظار انتشار</span>{% endif %}</div>
+    {% if profile.is_published %}
+      <p class="mu sm">پروفایل شما برای عموم قابل مشاهده است.</p>
+      <a class="btn o s" href="{% url 'club:coach_detail' profile.pk %}">مشاهده صفحه عمومی</a>
+    {% else %}
+      <p class="mu sm">ذخیره این فرم پروفایل را منتشر نمی‌کند؛ انتشار آن پس از بررسی تیم تاتامی پلاس انجام می‌شود.</p>
+    {% endif %}
+  </section>
+  <nav class="tp-panel-nav" aria-label="بخش‌های پنل مربی">
+    <a class="chip" href="{% url 'coach_panel:course_list' %}">دوره‌های من</a>
+    <a class="chip" href="{% url 'coach_students:list' %}">هنرجوها و کدهای دعوت</a>
+    <a class="chip on" href="{% url 'coaches:portfolio' %}">پروفایل مربی</a>
+    <a class="chip" href="{% url 'coaches:application_status' %}">وضعیت درخواست</a>
+  </nav>
+  <form class="d-c tp-editor-form" method="post" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+    {% include 'includes/form_fields.html' %}
+    <div class="tp-editor-actions"><button class="btn" type="submit">ذخیره پروفایل</button></div>
+  </form>
+</main>
+{% endblock %}

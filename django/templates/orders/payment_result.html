@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% load store_format %}
+
+{% block title %}نتیجهٔ پرداخت | تاتامی پلاس{% endblock %}
+{% block content %}
+<main class="w tp-store-page">
+  <header class="sh">
+    <div><span class="eyebrow">PAYMENT RESULT</span><h1>نتیجهٔ پرداخت</h1></div>
+  </header>
+
+  {% if payment.status == 'succeeded' %}
+    <section class="tp-state" aria-live="polite" aria-labelledby="payment-success-title">
+      <h2 id="payment-success-title">پرداخت انجام شد</h2>
+      <p>کد پیگیری: <strong>{{ payment.ref_id }}</strong></p>
+      {% if order %}
+        <p>شمارهٔ سفارش: <strong>{{ order.number }}</strong></p>
+        <p>مبلغ: <strong>{{ payment.amount|price_fa }} تومان</strong></p>
+        <a class="btn" href="{% url 'orders:detail' order.number %}">مشاهدهٔ سفارش</a>
+      {% elif course %}
+        <p>دسترسی شما به دورهٔ «{{ course.title }}» فعال شد.</p>
+        <a class="btn" href="{% url 'club:course_detail' course.slug %}">رفتن به دوره</a>
+      {% endif %}
+    </section>
+  {% else %}
+    <section class="tp-state tp-state--error" role="status" aria-labelledby="payment-failure-title">
+      <h2 id="payment-failure-title">پرداخت انجام نشد</h2>
+      {% if course %}
+        <p>مبلغی از حساب شما کم نشده است. دسترسی به دوره فعال نشد و می‌توانید دوباره تلاش کنید.</p>
+        <a class="btn o" href="{% url 'club:course_detail' course.slug %}">بازگشت به دوره</a>
+      {% else %}
+        <p>مبلغی از حساب شما کم نشده است. می‌توانید سبد خرید را بررسی و دوباره تلاش کنید.</p>
+        <a class="btn o" href="{% url 'store:cart' %}">بازگشت به سبد خرید</a>
+      {% endif %}
+    </section>
+  {% endif %}
+
+  <nav class="tp-cluster" aria-label="پیوندهای مرتبط">
+    <a class="text-link" href="{% url 'orders:list' %}">سفارش‌های من</a>
+    <a class="text-link" href="{% url 'club:course_list' %}">باشگاه مجازی</a>
+  </nav>
+</main>
+{% endblock %}

@@ -177,7 +177,7 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
    garmentsHaveSizes:garments.every(product=>Array.isArray(product.sz)&&product.sz.length>0),
    firstPageCategories:ids.map(id=>P[id]?.c),
    cardsHideVariants:cards.every(card=>!card.querySelector('.pc-variants,[data-product-size],[data-product-color]')),
-   cardsHaveDetailCta:cards.length>0&&cards.every(card=>[...card.querySelectorAll('a.btn')].some(link=>link.textContent.includes('مشاهده و انتخاب محصول')&&link.getAttribute('href')?.startsWith('#/product/'))),
+   cardsHaveDetailCta:cards.length>0&&cards.every(card=>[...card.querySelectorAll('a.btn')].some(link=>/مشاهده (?:و انتخاب محصول|اطلاعات مرجع)/.test(link.textContent)&&link.getAttribute('href')?.startsWith('#/product/'))),
    cardsHaveNoDirectAdd:cards.every(card=>![...card.querySelectorAll('button')].some(button=>/افزودن به سبد|افزودن به خرید/.test(button.textContent)))
   };
  });
@@ -192,14 +192,15 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
  const estimatedSizeProduct=await pg.evaluate(()=>P.find(product=>product.szEstimated)?.id??-1);
  if(estimatedSizeProduct>=0){
   await go('#/product/'+estimatedSizeProduct);
-  S.ok('جزئیات محصول: سایز حدسی با توضیح شفاف نمایش داده می‌شود',
-   (await T()).includes('تخمینی است')&&await cnt('#pd-sz .chip')===1);
+  S.ok('جزئیات محصول: سایز تخمینی فقط اطلاع‌رسانی است و به‌عنوان تنوع خرید ارائه نمی‌شود',
+   (await T()).includes('تخمینی است')&&await cnt('#pd-sz .chip')===0&&await pg.locator('#pd-add').isDisabled());
   await go('#/store');
  }else S.ok('کاتالوگ: نشانگر سایز تخمینی در محصولات تکمیل‌شده وجود دارد',false);
 
 
  S.ok('فروشگاه: برچسب «قیمت مرجع بازار» روی کارت‌های کاتالوگ',(await T()).includes('قیمت مرجع بازار'));
- S.ok('فروشگاه: موجودی کاتالوگ به‌عنوان موجودی واقعی نمایش داده نمی‌شود',(await T()).includes('موجودی نمونه'));
+ const referenceStockAudit=await pg.evaluate(()=>({allReferenceRowsHaveNoStock:P.filter(product=>product.ref).every(product=>product.st===0),visibleReferenceCard:[...document.querySelectorAll('#app .sl .pg .pcd')].some(card=>{const href=card.querySelector('a[href^="#/product/"]')?.getAttribute('href')||'';const id=Number(href.split('/').pop());return !!P[id]?.ref&&card.textContent.includes('موجودی تأیید نشده')})}));
+ S.ok('فروشگاه: کالای مرجع موجودی ساختگی ندارد و کارت آن موجودی تأییدنشده نشان می‌دهد',referenceStockAudit.allReferenceRowsHaveNoStock&&referenceStockAudit.visibleReferenceCard,JSON.stringify(referenceStockAudit));
  const demoProductName=await pg.evaluate(()=>P.find(product=>product.demo&&product.st>0)?.n||'');
  if(demoProductName){
   await pg.fill('#fq',demoProductName);await wait(140);
@@ -212,9 +213,11 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
  await pg.waitForFunction(()=>{const images=[...document.querySelectorAll('#app .sl .pg article.pcd img')];return images.length>0&&images.every(img=>img.complete)},null,{timeout:15000});
  S.ok('فروشگاه: تصاویر همه کارت‌های بارگذاری‌شده شکسته نیستند',await productCardImages.evaluateAll(images=>images.every(img=>img.naturalWidth>0)));
  // Checkout نمایشی فقط در Preview؛ PWAهای نقش‌محور نباید CTA یا مسیر فعال داشته باشند.
- const checkoutTestProduct=await pg.evaluate(()=>P.findIndex(p=>!p.sz.length&&!p.cl.length&&p.st>0));
+ const checkoutTestProduct=await pg.evaluate(()=>P.findIndex(p=>p.demo&&p.st>0));
  if(checkoutTestProduct>=0){
   await go('#/product/'+checkoutTestProduct);
+  if(await pg.locator('#pd-sz .chip').count())await pg.locator('#pd-sz .chip').first().click();
+  if(await pg.locator('#pd-cl .chip').count())await pg.locator('#pd-cl .chip').first().click();
   await pg.locator('#app .pa button.btn').first().click();
   await pg.waitForFunction(()=>location.hash.split('?')[0]==='#/cart',null,{timeout:5000});
   S.ok('PWA نقش‌محور: دکمه ادامه خرید به Checkout نمایشی نمایش داده نمی‌شود',await cnt('#app a[href="#/checkout"]')===0);
@@ -233,9 +236,17 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
  await go('#/store');S.ok('فروشگاه: پیشنهادها (۳ بخش × ۴ محصول) از کاتالوگ',await cnt('section[aria-label="تازه جودو را شروع کرده‌ام"] article')===4&&await cnt('section[aria-label="برای تمرین حرفه‌ای آماده‌ام"] article')===4&&await cnt('section[aria-label="برای مسابقه آماده می‌شوم"] article')===4);
  await go('#/product/0');t=await T();S.ok('جزئیات محصول کاتالوگ: قیمت مرجع، منبع، بدون ستاره/نظر جعلی، سایزهای نام محصول',t.includes('قیمت نهایی تاتامی پلاس نیست')&&t.includes('منبع قیمت مرجع')&&!t.includes('★')&&!/نظر\)/.test(t)&&t.includes('XXL'));
  S.ok('جزئیات: قیمت منبع ۱۴٬۵۰۰٬۰۰۰ تومان (بدون تغییر)',t.includes('۱۴٬۵۰۰٬۰۰۰ تومان'));
- S.ok('جزئیات محصول: موجودی نمونه به‌صورت شفاف برچسب خورده است',t.includes('موجودی نمونه'));
- await go('#/product/'+await pg.evaluate(()=>P.find(p=>p.ref&&!p.sz.length&&!p.cl.length).id));S.ok('جزئیات: محصول بدون رنگ/سایز، بخش رنگ نمایش داده نمی‌شود و افزودن به سبد کار می‌کند',!(await T()).includes('\nرنگ\n')&&await pg.evaluate(()=>{addP();return JSON.parse(localStorage.getItem('cart')).length>=1}));
- await go('#/cart');S.ok('سبد: محصول کاتالوگ با یادداشت قیمت مرجع',(await T()).includes('قیمت مرجع'));
+ S.ok('جزئیات محصول: موجودی نمونه به‌صورت شفاف برچسب خورده است',t.includes('موجودی تأیید نشده'));
+ const referenceProductId=await pg.evaluate(()=>P.find(p=>p.ref&&!p.sz.length&&!p.cl.length)?.id??-1);
+ if(referenceProductId>=0){
+  await go('#/product/'+referenceProductId);
+  S.ok('جزئیات مرجع: دکمه خرید غیرفعال است',await pg.locator('#pd-add').isDisabled()&&(await pg.locator('#pd-add').innerText()).includes('خرید غیرفعال'));
+  const beforeReferenceAdd=await pg.evaluate(()=>cart.length);
+  await pg.evaluate(()=>addP());
+  S.ok('جزئیات مرجع: فراخوانی مستقیم addP هم سبد را تغییر نمی‌دهد',await pg.evaluate(n=>cart.length===n,beforeReferenceAdd));
+  await go('#/cart');
+  S.ok('سبد: کالای مرجع بازار وارد سبد خرید نمی‌شود',(await T()).includes('سبد خرید شما خالی است'));
+ }else S.ok('کاتالوگ مرجع بدون تنوع برای کنترل خرید غیرفعال موجود است',false);
  await pg.evaluate(()=>localStorage.clear());
 
  // --- کاتالوگ دوره‌های نمایشی Preview
@@ -253,10 +264,11 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
  // --- حامیان
  await go('#/sponsors');S.ok('حامیان: شش جایگاه نمونه با توضیح شفاف',await cnt('#app .tp-sponsors li')===6&&(await T()).includes('موارد زیر جایگاه‌های نمونه هستند'));
  // --- امنیت: داده localStorage و آدرس
- await pg.evaluate(()=>{localStorage.setItem('cart',JSON.stringify([{id:1,s:'<img src=x onerror=window.__ls=1>',c:'<b>x</b>',q:99999},{id:9999,s:'',c:'',q:1},{id:'x'},null]));localStorage.setItem('prog',JSON.stringify({3:500,abc:5,'-1':3}));localStorage.setItem('fav',JSON.stringify([1,1,'a',9999]));localStorage.setItem('saved','"nope"');localStorage.setItem('lastWatched','"<script>"');localStorage.setItem('role','"<img src=x>"')});
+ const [safeCartId,referenceCartId]=await pg.evaluate(()=>[P.findIndex(product=>!product.ref&&product.st>0),P.findIndex(product=>product.ref)]);
+ await pg.evaluate(({safeId,referenceId})=>{localStorage.setItem('cart',JSON.stringify([{id:safeId,s:'<img src=x onerror=window.__ls=1>',c:'<b>x</b>',q:99999},{id:referenceId,s:'',c:'',q:2},{id:9999,s:'',c:'',q:1},{id:'x'},null]));localStorage.setItem('prog',JSON.stringify({3:500,abc:5,'-1':3}));localStorage.setItem('fav',JSON.stringify([1,1,'a',9999]));localStorage.setItem('saved','"nope"');localStorage.setItem('lastWatched','"<script>"');localStorage.setItem('role','"<img src=x>"')}, {safeId:safeCartId,referenceId:referenceCartId});
  await pg.goto('about:blank');await pg.goto(base+'/index.html#/cart');await wait(400);
  S.ok('امنیت: HTML تزریق‌شده از localStorage اجرا نمی‌شود',!await pg.evaluate(()=>!!window.__ls));
- S.ok('امنیت: داده نامعتبر سبد پاک‌سازی/محدود شد',await pg.evaluate(()=>{const c=JSON.parse(localStorage.getItem('cart'));return c.length===1&&c[0].id===1&&c[0].q<=50&&!/[<>]/.test(JSON.stringify(c))}));
+ S.ok('امنیت: داده نامعتبر سبد پاک‌سازی/محدود شد',await pg.evaluate((safeId)=>{const c=JSON.parse(localStorage.getItem('cart'));return c.length===1&&c[0].id===safeId&&c[0].q<=50&&!/[<>]/.test(JSON.stringify(c))},safeCartId));
  S.ok('امنیت: پیشرفت ویدیو در بازه ۰..۱۰۰ و کلیدهای نامعتبر حذف',await pg.evaluate(()=>{const p=JSON.parse(localStorage.getItem('prog'));return Object.keys(p).join()==='3'&&p[3]===100}));
  S.ok('امنیت: علاقه‌مندی/ذخیره‌ها اعتبارسنجی شد',await pg.evaluate(()=>JSON.stringify(JSON.parse(localStorage.getItem('fav')))==='[1]'&&localStorage.getItem('saved')==='[]'));
  await go('#/dashboard');S.ok('امنیت: بدون خطای JS با داده خراب',!errs.length,errs.join(' | '));
@@ -342,17 +354,48 @@ export async function runPwa(app,base,browser,altRoot){
  if(altRoot){
   const before=keys[0];
   altRoot.use();
+
+  // Force the browser to check the changed Service Worker script rather than
+  // relying on its automatic update-check schedule.
+  const updateState=await pg.evaluate(async()=>{
+   const registration=await navigator.serviceWorker.getRegistration();
+   if(!registration)return{registration:false,controllerChanged:false,error:'no registration'};
+   let timer=0;
+   const controllerChanged=new Promise(resolve=>{
+    const onChange=()=>{if(timer)clearTimeout(timer);resolve(true)};
+    navigator.serviceWorker.addEventListener('controllerchange',onChange,{once:true});
+    timer=setTimeout(()=>{navigator.serviceWorker.removeEventListener('controllerchange',onChange);resolve(false)},12000);
+   });
+   try{await registration.update()}catch(error){
+    if(timer)clearTimeout(timer);
+    return{registration:true,controllerChanged:false,error:String(error)};
+   }
+   const changed=await controllerChanged;
+   const latest=await navigator.serviceWorker.getRegistration();
+   return{
+    registration:true,
+    controllerChanged:changed,
+    active:latest?.active?.state||null,
+    installing:latest?.installing?.state||null,
+    waiting:latest?.waiting?.state||null,
+    controlled:!!navigator.serviceWorker.controller
+   };
+  });
+
   await pg.goto(base+'/index.html');
-  await wait(1200);
-  await pg.reload();
   let after=[];
-  for(let i=0;i<20;i++){
+  for(let i=0;i<30;i++){
    await wait(400);
    after=await pg.evaluate(()=>caches.keys());
    if(after.length===1&&after[0]!==before)break;
   }
-  S.ok('به‌روزرسانی: Cache نسخه جدید جایگزین قدیمی شد',after.length===1&&after[0]!==before,before+' → '+after.join());
-  S.ok('به‌روزرسانی: محتوای نسخه جدید نمایش داده می‌شود',await pg.evaluate(()=>document.documentElement.outerHTML.includes('UPDATE_MARKER')));
+  const cacheReplaced=after.length===1&&after[0]!==before;
+  S.ok('به‌روزرسانی: ثبت نسخه جدید Service Worker و controllerchange',
+   updateState.registration&&updateState.controllerChanged,JSON.stringify(updateState));
+  S.ok('به‌روزرسانی: Cache نسخه جدید جایگزین قدیمی شد',
+   cacheReplaced,before+' → '+after.join());
+  S.ok('به‌روزرسانی: محتوای نسخه جدید نمایش داده می‌شود',
+   await pg.evaluate(()=>document.documentElement.outerHTML.includes('UPDATE_MARKER')));
   altRoot.reset();
  }
  const get=async p=>{const r=await pg.request.get(base+p,{maxRedirects:0});return{s:r.status(),t:await r.text()}};

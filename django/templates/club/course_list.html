@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% load store_format %}
+{% load persian %}
+
+{% block title %}باشگاه مجازی | دوره‌های آنلاین تاتامی پلاس{% endblock %}
+{% block description %}دوره‌های آنلاین جودو را بر اساس مربی و سطح آموزشی پیدا کنید.{% endblock %}
+{% block content %}
+<main class="w tp-course-page">
+  <header class="sh">
+    <div>
+      <span class="eyebrow">ONLINE JUDO ACADEMY</span>
+      <h1>باشگاه مجازی</h1>
+      <h2 class="gold tp-course-lead">آموزش آنلاین، قدم‌به‌قدم تا پیشرفت</h2>
+      <p class="mu">دوره‌های منتشرشده را بر اساس مربی و سطح آموزشی پیدا کنید و آموزش را از قسمت‌های در دسترس شروع کنید.</p>
+    </div>
+    <a class="ib" href="{% url 'coaches:directory' %}">آشنایی با مربیان</a>
+  </header>
+
+  <form class="tp-course-filter" method="get" action="{% url 'club:course_list' %}" role="search" aria-label="جست‌وجو و فیلتر دوره‌ها">
+    <div class="sbar">
+      <label class="sr" for="{{ form.q.id_for_label }}">جست‌وجوی دوره</label>
+      {{ form.q }}
+      <button class="btn s" type="submit">جستجو</button>
+    </div>
+    <div class="cn tp-course-filter-row">
+      <label class="fl">مربی {{ form.coach }}</label>
+      <label class="fl">سطح {{ form.level }}</label>
+      <button class="btn o s" type="submit">اعمال فیلتر</button>
+      <a class="chip" href="{% url 'club:course_list' %}">پاک‌کردن</a>
+    </div>
+    {% if form.errors %}<p class="tp-note" role="alert">مقادیر فیلتر را بررسی کنید.</p>{% endif %}
+  </form>
+
+  <section class="tp-course-results" aria-label="دوره‌های منتشرشده">
+    <div class="tb">
+      <b>{{ page.paginator.count|price_fa }} دوره</b>
+      {% if page.paginator.num_pages > 1 %}<span class="mu sm">صفحهٔ {{ page.number|price_fa }} از {{ page.paginator.num_pages|price_fa }}</span>{% endif %}
+    </div>
+
+    {% if page.object_list %}
+      <div class="pg tp-course-grid">
+        {% for course in page.object_list %}
+          <article class="card vcd tp-course-card">
+            <a href="{% url 'club:course_detail' course.slug %}" aria-label="مشاهده دوره {{ course.title }}">
+              <figure class="ph r169{% if course.cover %} ok{% endif %}">
+                {% if course.cover %}
+                  <img src="{{ course.cover.url }}" alt="{{ course.title }}" loading="lazy" decoding="async">
+                {% else %}
+                  <svg viewBox="0 0 40 40" fill="currentColor" aria-hidden="true"><circle cx="20" cy="20" r="14"/><path d="M17 12l12 8-12 8z" fill="var(--tp-color-bg)"/></svg>
+                  <figcaption>دوره آموزشی</figcaption>
+                {% endif %}
+              </figure>
+            </a>
+            <div class="b">
+              <div class="tp-course-card-tags"><span class="tag">{{ course.get_level_display }}</span><span class="mu sm">{{ course.episodes.count|price_fa }} قسمت</span></div>
+              <h3><a href="{% url 'club:course_detail' course.slug %}">{{ course.title }}</a></h3>
+              <p class="mu sm">{{ course.description|truncatechars:125 }}</p>
+              <div class="tp-course-card-coach">مربی: <b>{{ course.coach.display_name }}</b></div>
+              <div class="tp-course-card-bottom">
+                <strong>{% if course.price > 0 %}{{ course.price|price_fa }} تومان{% else %}رایگان{% endif %}</strong>
+                <a class="btn s" href="{% url 'club:course_detail' course.slug %}">مشاهده دوره</a>
+              </div>
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+
+      {% if page.has_other_pages %}
+        <nav class="tp-pagination" aria-label="صفحه‌بندی دوره‌ها">
+          <ul class="tp-pager" role="list">
+            <li>{% if page.has_previous %}<a href="{% querystring page=page.previous_page_number %}" aria-label="صفحه قبل">›</a>{% else %}<span class="off" aria-hidden="true">›</span>{% endif %}</li>
+            {% for n in page.paginator.page_range %}
+              <li>{% if n == page.number %}<a href="{% querystring page=n %}" aria-current="page">{{ n|price_fa }}</a>{% else %}<a href="{% querystring page=n %}">{{ n|price_fa }}</a>{% endif %}</li>
+            {% endfor %}
+            <li>{% if page.has_next %}<a href="{% querystring page=page.next_page_number %}" aria-label="صفحه بعد">‹</a>{% else %}<span class="off" aria-hidden="true">‹</span>{% endif %}</li>
+          </ul>
+        </nav>
+      {% endif %}
+    {% else %}
+      <div class="tp-state">
+        <span class="eyebrow">ONLINE ACADEMY</span>
+        <b>{% if request.GET %}دوره‌ای با این مشخصات پیدا نشد{% else %}هنوز دورهٔ منتشرشده‌ای وجود ندارد{% endif %}</b>
+        <p>دوره‌ها پس از ثبت توسط مربی و تأیید تیم تاتامی پلاس در این فهرست نمایش داده می‌شوند.</p>
+        {% if request.GET %}<a class="btn o s" href="{% url 'club:course_list' %}">نمایش همه دوره‌ها</a>{% endif %}
+      </div>
+    {% endif %}
+  </section>
+</main>
+{% endblock %}

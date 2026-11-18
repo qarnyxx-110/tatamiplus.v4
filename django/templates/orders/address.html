@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block title %}نشانی ارسال | تاتامی پلاس{% endblock %}
+{% block content %}
+<main class="w tp-store-page">
+  <header class="sh">
+    <div>
+      <span class="eyebrow">CHECKOUT</span>
+      <h1>نشانی ارسال</h1>
+      <p class="mu">یک نشانی از فهرست انتخاب کنید یا نشانی تازه ثبت کنید. بدون نشانی، سفارش ثبت نمی‌شود.</p>
+    </div>
+  </header>
+
+  {% if addresses %}
+    <section class="d-s" aria-labelledby="saved-addresses-title">
+      <h2 id="saved-addresses-title">نشانی‌های ذخیره‌شده</h2>
+      <div class="tp-stack">
+        {% for address in addresses %}
+          <form class="d-c" method="post">
+            {% csrf_token %}
+            <div>
+              <div class="tp-cluster">
+                <h3>{{ address.province }}، {{ address.city }}</h3>
+                {% if address.is_default %}<span class="tag m">نشانی پیش‌فرض</span>{% endif %}
+              </div>
+              <p>{{ address.full_address }}</p>
+              <p class="mu sm">کد پستی: {{ address.postal_code }}{% if address.receiver_name %} · گیرنده: {{ address.receiver_name }}{% endif %}</p>
+            </div>
+            <input type="hidden" name="address_id" value="{{ address.pk }}">
+            <button class="btn o" type="submit">ارسال به این نشانی</button>
+          </form>
+        {% endfor %}
+      </div>
+    </section>
+  {% endif %}
+
+  <section class="d-s" aria-labelledby="new-address-title">
+    <h2 id="new-address-title">{% if addresses %}ثبت نشانی تازه{% else %}نشانی تازه{% endif %}</h2>
+    <form class="d-c" method="post" novalidate>
+      {% csrf_token %}
+      {% include 'includes/form_fields.html' %}
+      <button class="btn" type="submit">ذخیره و ادامه</button>
+    </form>
+  </section>
+</main>
+{% endblock %}

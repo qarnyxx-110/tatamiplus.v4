@@ -2,34 +2,76 @@
 {% load store_format %}
 
 {% block title %}{{ product.name }} | فروشگاه تاتامی پلاس{% endblock %}
+{% block description %}جزئیات، تصاویر و تنوع‌های قابل انتخاب {{ product.name }} در فروشگاه تاتامی پلاس.{% endblock %}
 {% block content %}
-<div class="w">
-  <nav class="tp-crumbs" aria-label="مسیر صفحه"><ol><li><a href="{% url 'home' %}">خانه</a></li><li><a href="{% url 'store:product_list' %}">فروشگاه</a></li><li aria-current="page">{{ product.name }}</li></ol></nav>
-  <div class="pd">
-    <section class="pm" aria-label="تصاویر محصول">
-      {% for image in product.images.all %}
-        <figure class="ph r43 ok"><img src="{{ image.image.url }}" alt="{{ image.alt_text|default:product.name }}"{% if not forloop.first %} loading="lazy"{% endif %} decoding="async"></figure>
-      {% empty %}
-        <figure class="ph r43"><figcaption>تصویری برای این محصول ثبت نشده است</figcaption></figure>
-      {% endfor %}
+<main class="w tp-store-page tp-product-detail-page">
+  <nav class="tp-crumbs" aria-label="مسیر صفحه">
+    <ol><li><a href="{% url 'home' %}">خانه</a></li><li><a href="{% url 'store:product_list' %}">فروشگاه</a></li><li aria-current="page">{{ product.name }}</li></ol>
+  </nav>
+
+  <div class="pd tp-product-detail">
+    <section data-product-gallery aria-label="تصاویر محصول">
+      {% with main_image=product.images.all|first %}
+        <div class="pm">
+          <figure class="ph r43{% if main_image %} ok{% endif %}" data-gallery-main>
+            {% if main_image %}
+              <img data-gallery-main-image src="{{ main_image.image.url }}" alt="{{ main_image.alt_text|default:product.name }}" decoding="async">
+            {% else %}
+              <svg viewBox="0 0 40 40" fill="currentColor" aria-hidden="true"><path d="M5 8h30v24H5zM11 26l6-7 4 4 4-6 5 9z"/></svg>
+              <figcaption>تصویری برای این محصول ثبت نشده است</figcaption>
+            {% endif %}
+          </figure>
+        </div>
+      {% endwith %}
+      {% if product.images.count > 1 %}
+        <div class="pt" role="group" aria-label="انتخاب تصویر محصول">
+          {% for image in product.images.all %}
+            <button type="button" class="ptb{% if forloop.first %} on is-active{% endif %}"
+              data-gallery-select data-src="{{ image.image.url }}" data-alt="{{ image.alt_text|default:product.name }}"
+              aria-label="نمایش تصویر {{ forloop.counter }}" aria-pressed="{% if forloop.first %}true{% else %}false{% endif %}">
+              <figure class="ph th ok">
+                <img src="{{ image.image.url }}" alt="" loading="lazy" decoding="async">
+              </figure>
+            </button>
+          {% endfor %}
+        </div>
+      {% endif %}
     </section>
 
-    <section aria-labelledby="pd-t">
+    <section class="tp-product-purchase" aria-labelledby="pd-title" data-availability="{% if availability_status %}{{ availability_status }}{% elif starting_price or starting_price == 0 %}in_stock{% else %}inventory_unregistered{% endif %}">
       <a class="mu sm" href="{% url 'store:product_list' %}?category={{ product.category.pk }}">{{ product.category.name }}</a>
-      <h1 id="pd-t">{{ product.name }}</h1>
+      <h1 id="pd-title">{{ product.name }}</h1>
       {% if product.training_level %}<p class="mu sm">سطح تمرین: {{ product.training_level }}</p>{% endif %}
-      {% if starting_price %}<p class="sv">از {{ starting_price|price_fa }}</p>{% else %}<p><span class="tag m">ناموجود</span></p>{% endif %}
+      {% if availability_status == 'in_stock' %}
+        <p><span class="tp-product-stock tp-product-stock--available">موجود</span></p>
+      {% elif availability_status == 'out_of_stock' %}
+        <p><span class="tp-product-stock tp-product-stock--unavailable">ناموجود</span></p>
+      {% elif availability_status == 'inventory_unregistered' %}
+        <p><span class="tp-product-stock tp-product-stock--unregistered">موجودی ثبت نشده</span></p>
+      {% elif starting_price or starting_price == 0 %}
+        <p><span class="tp-product-stock tp-product-stock--available">موجود</span></p>
+      {% else %}
+        <p><span class="tp-product-stock tp-product-stock--unregistered">موجودی ثبت نشده</span></p>
+      {% endif %}
+      {% if starting_price or starting_price == 0 %}
+        <p class="sv">از {{ starting_price|price_fa }}</p>
+      {% else %}
+        <p class="tp-product-no-price">قیمت فروش ثبت نشده</p>
+      {% endif %}
+      {% if product.description %}<div class="tp-product-description">{{ product.description|linebreaks }}</div>{% endif %}
 
-      <form method="post" novalidate>
+      <form method="post" class="tp-product-form" novalidate>
         {% csrf_token %}
         {% include 'includes/form_fields.html' %}
-        <button class="btn" type="submit"{% if not starting_price %} disabled{% endif %}>افزودن به سبد خرید</button>
+        {% if availability_status %}
+          <button class="btn" type="submit"{% if availability_status != 'in_stock' or not starting_price and starting_price != 0 %} disabled{% endif %}>افزودن به سبد خرید</button>
+        {% else %}
+          <button class="btn" type="submit"{% if not starting_price and starting_price != 0 %} disabled{% endif %}>افزودن به سبد خرید</button>
+        {% endif %}
       </form>
-      <p class="mu sm">واحد پول قیمت‌ها هنوز نهایی نشده است.</p>
+      <p class="mu sm">قیمت و موجودی نهایی هنگام ثبت درخواست از سمت سرور بررسی می‌شود.</p>
+      <a class="btn o" href="{% url 'store:cart' %}">مشاهده سبد خرید</a>
     </section>
   </div>
-  {% if product.description %}
-    <section class="d-s" aria-labelledby="desc-t"><h2 id="desc-t">توضیحات محصول</h2><div class="mu">{{ product.description|linebreaks }}</div></section>
-  {% endif %}
-</div>
+</main>
 {% endblock %}

@@ -1,0 +1,754 @@
+{
+  "schema_version": 1,
+  "price_date": "۱۴۰۵/۰۷/۲۸",
+  "currency": "تومان",
+  "notice": "این فهرست فقط کاتالوگ مرجع بازار است؛ قیمت فروش تاتامی پلاس، موجودی انبار یا امکان خرید را نشان نمی‌دهد.",
+  "products": [
+    {
+      "name": "لباس جودو سامکو مدل Approved (سایز S تا XXL)",
+      "category": "لباس جودو",
+      "group": "بزرگسال — حرفه‌ای / مسابقه",
+      "level": "پیشرفته",
+      "reference_price": 14500000,
+      "price_date": "۱۴۰۵/۰۷/۲۸",
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL",
+        "XXL"
+      ],
+      "colors": [],
+      "size_estimated": false
+    },
+    {
+      "name": "لباس جودو میزانو",
+      "category": "لباس جودو",
+      "group": "بزرگسال — حرفه‌ای / مسابقه",
+      "level": "پیشرفته",
+      "reference_price": 23000000,
+      "price_date": "۱۴۰۵/۰۷/۲۸",
+      "sizes": [
+        "M"
+      ],
+      "colors": [],
+      "size_estimated": true
+    },
+    {
+      "name": "لباس جودو مسابقاتی",
+      "category": "لباس جودو",
+      "group": "بزرگسال — حرفه‌ای / مسابقه",
+      "level": "پیشرفته",
+      "reference_price": 5500000,
+      "price_date": "۱۴۰۵/۰۷/۲۸",
+      "sizes": [
+        "M"
+      ],
+      "colors": [],
+      "size_estimated": true
+    },
+    {
+      "name": "لباس رزمی جودو سامکو مدل Olympic",
+      "category": "لباس جودو",
+      "group": "بزرگسال — اقتصادی / مبتدی",
+      "level": "مبتدی",
+      "reference_price": 4450000,
+      "price_date": "۱۴۰۵/۰۷/۲۸",
+      "sizes": [
+        "M"
+      ],
+      "colors": [],
+      "size_estimated": true
+    },
+    {
+      "name": "لباس جودو ایران رزم کد ۲۵۰۰",
+      "category": "لباس جودو",
+      "group": "بزرگسال — اقتصادی / مبتدی",
+      "level": "مبتدی",
+      "reference_price": 3100000,
+      "price_date": "۱۴۰۵/۰۷/۲۸",
+      "sizes": [
+        "M"
+      ],
+      "colors": [],
+      "size_estimated": true
+    },
+    {
+      "name": "لباس جودو (Gi) طرح Fuji",
+      "category": "لباس جودو",
+      "group": "بزرگسال — اقتصادی / مبتدی",
+      "level": "مبتدی",
+      "reference_price": 4200000,
+      "price_date": "۱۴۰۵/۰۷/۲۸",
+      "sizes": [
+        "M"
+      ],
+      "colors": [],
+      "size_estimated": true
+    },
+    {
+      "name": "لباس جودو قهرمانی ایران رزم کد ۴۰۰۰ آبی",
+      "category": "لباس جودو",
+      "group": "لباس جودو آبی",
+      "level": "همه سطوح",
+      "reference_price": 8200000,
+      "price_date": "۱۴۰۵/۰۷/۲۸",
+      "sizes": [
+        "M"
+      ],
+      "colors": [
+        "آبی"
+      ],
+      "size_estimated": true
+    },
+    {
+      "name": "لباس جودو تورنادو آبی سوپر A",
+      "category": "لباس جودو",
+      "group": "لباس جودو آبی",
+      "level": "همه سطوح",
+      "reference_price": 6500000,
+      "price_date": "۱۴۰۵/۰۷/۲۸",
+      "sizes": [
+        "M"
+      ],
+      "colors": [
+        "آبی"
+      ],
+      "size_estimated": true
+    },
+    {
+      "name": "لباس جودو آبی سایز ۲ تا ۵",
+      "category": "لباس جودو",
+      "group": "لباس جودو آبی",
+      "level": "همه سطوح",
+      "reference_price": 5497000,
+      "price_date": "۱۴۰۵/۰۷/۲۸",
+      "sizes": [
+        "2",
+        "3",
+        "4",
+        "5"
+      ],
+      "colors": [
+        "آبی"
+      ],
+      "size_estimated": false
+    },
+    {
+      "name": "لباس جودو بچگانه سامکو مدل Olympic",
+      "category": "لباس جودو",
+      "group": "کودک و نوجوان",
+      "level": "مبتدی",
+      "reference_price": 3950000,
+      "price_date": "۱۴۰۵/۰۷/۲۸",
+      "sizes": [
+        "3"
+      ],
+      "colors": [],
+      "size_estimated": true
+    },
+    {
+      "name": "لباس جودو خورجینی سایز ۲ تا ۵",
+      "category": "لباس جودو",
+      "group": "کودک و نوجوان",
+      "level": "مبتدی",
+      "reference_price": 2619500,
+      "price_date": "۱۴۰۵/۰۷/۲۸",
+      "sizes": [
+        "2",
+        "3",
+        "4",
+        "5"
+      ],
+      "colors": [],
+      "size_estimated": false
+    },
+    {
+      "name": "شلوار تک جودو ۶ اونسی",
+      "category": "لباس جودو",
+      "group": "شلوار جداگانه",
+      "level": "همه سطوح",
+      "reference_price": 990000,
+      "price_date": "۱۴۰۵/۰۷/۲۸",
+      "sizes": [
+        "M"
+      ],
+      "colors": [],
+      "size_estimated": true
+    },
+    {
+      "name": "شلوار جودو تورنادو",
+      "category": "لباس جودو",
+      "group": "شلوار جداگانه",
+      "level": "همه سطوح",
+      "reference_price": 1995000,
+      "price_date": "۱۴۰۵/۰۷/۲۸",
+      "sizes": [
+        "M"
+      ],
+      "colors": [],
+      "size_estimated": true
+    },
+    {
+      "name": "کمربند رزمی رنگی",
+      "category": "کمربند جودو",
+      "group": "کمربند رنگی (سفید، زرد، نارنجی، سبز، آبی، قهوه‌ای)",
+      "level": "همه سطوح",
+      "reference_price": 150000,
+      "price_date": "۱۴۰۵/۰۷/۲۸",
+      "sizes": [],
+      "colors": [
+        "سفید",
+        "زرد",
+        "نارنجی",
+        "سبز",
+        "آبی",
+        "قهوه‌ای"
+      ],
+      "size_estimated": false
+    },
+    {
+      "name": "کمربند ورزشی اقتصادی رنگ‌بندی",
+      "category": "کمربند جودو",
+      "group": "کمربند رنگی (سفید، زرد، نارنجی، سبز، آبی، قهوه‌ای)",
+      "level": "همه سطوح",
+      "reference_price": 200000,
+      "price_date": "۱۴۰۵/۰۷/۲۸",
+      "sizes": [],
+      "colors": [
+        "سفید",
+        "زرد",
+        "نارنجی",
+        "سبز",
+        "آبی",
+        "قهوه‌ای"
+      ],
+      "size_estimated": false
+    },
+    {
+      "name": "کمربند رزمی رنگی ۵ سانتی",
+      "category": "کمربند جودو",
+      "group": "کمربند رنگی (سفید، زرد، نارنجی، سبز، آبی، قهوه‌ای)",
+      "level": "همه سطوح",
+      "reference_price": 495000,
+      "price_date": "۱۴۰۵/۰۷/۲۸",
+      "sizes": [],
+      "colors": [
+        "سفید",
+        "زرد",
+        "نارنجی",
+        "سبز",
+        "آبی",
+        "قهوه‌ای"
+      ],
+      "size_estimated": false
+    },
+    {
+      "name": "کمربند ورزشی ضخیم رنگی",
+      "category": "کمربند جودو",
+      "group": "کمربند رنگی (سفید، زرد، نارنجی، سبز، آبی، قهوه‌ای)",
+      "level": "همه سطوح",
+      "reference_price": 502000,
+      "price_date": "۱۴۰۵/۰۷/۲۸",
+      "sizes": [],
+      "colors": [
+        "سفید",
+        "زرد",
+        "نارنجی",
+        "سبز",
+        "آبی",
+        "قهوه‌ای"
+      ],
+      "size_estimated": false
+    },
+    {
+      "name": "کمربند احسان رزم ضخیم — سفید",
+      "category": "کمربند جودو",
+      "group": "کمربند رنگی (سفید، زرد، نارنجی، سبز، آبی، قهوه‌ای)",
+      "level": "همه سطوح",
+      "reference_price": 375000,
+      "price_date": "۱۴۰۵/۰۷/۲۸",
+      "sizes": [],
+      "colors": [
+        "سفید",
+        "زرد",
+        "نارنجی",
+        "سبز",
+        "آبی",
+        "قهوه‌ای"
+      ],
+      "size_estimated": false
+    },
+    {
+      "name": "کمربند ضخیم تکواندو/کاراته/جودو",
+      "category": "کمربند جودو",
+      "group": "کمربند رنگی (سفید، زرد، نارنجی، سبز، آبی، قهوه‌ای)",
+      "level": "همه سطوح",
+      "reference_price": 609000,
+      "price_date": "۱۴۰۵/۰۷/۲۸",
+      "sizes": [],
+      "colors": [
+        "سفید",
+        "زرد",
+        "نارنجی",
+        "سبز",
+        "آبی",
+        "قهوه‌ای"
+      ],
+      "size_estimated": false
+    },
+    {
+      "name": "کمربند مشکی دان ۳",
+      "category": "کمربند جودو",
+      "group": "کمربند مشکی و درجه‌دار (دان)",
+      "level": "همه سطوح",
+      "reference_price": 348000,
+      "price_date": "۱۴۰۵/۰۷/۲۸",
+      "sizes": [],
+      "colors": [
+        "مشکی"
+      ],
+      "size_estimated": false
+    },
+    {
+      "name": "کمربند ضخیم مشکی",
+      "category": "کمربند جودو",
+      "group": "کمربند مشکی و درجه‌دار (دان)",
+      "level": "همه سطوح",
+      "reference_price": 398000,
+      "price_date": "۱۴۰۵/۰۷/۲۸",
+      "sizes": [],
+      "colors": [
+        "مشکی"
+      ],
+      "size_estimated": false
+    },
+    {
+      "name": "کمربند مشکی دولایه (کتان و نمد)",
+      "category": "کمربند جودو",
+      "group": "کمربند مشکی و درجه‌دار (دان)",
+      "level": "همه سطوح",
+      "reference_price": 2500000,
+      "price_date": "۱۴۰۵/۰۷/۲۸",
+      "sizes": [],
+      "colors": [
+        "مشکی"
+      ],
+      "size_estimated": false
+    },
+    {
+      "name": "کمربند مشکی دولایه با گلدوزی سفارشی نام",
+      "category": "کمربند جودو",
+      "group": "کمربند مشکی و درجه‌دار (دان)",
+      "level": "همه سطوح",
+      "reference_price": 4000000,
+      "price_date": "۱۴۰۵/۰۷/۲۸",
+      "sizes": [],
+      "colors": [
+        "مشکی"
+      ],
+      "size_estimated": false
+    },
+    {
+      "name": "زانوبند تمرین کشتی آتل‌دار (M تا XXL)",
+      "category": "محافظ‌ها و ایمنی",
+      "group": "زانوبند و چسب ورزشی",
+      "level": "همه سطوح",
+      "reference_price": 1210000,
+      "price_date": "۱۴۰۵/۰۷/۲۸",
+      "sizes": [
+        "M",
+        "L",
+        "XL",
+        "XXL"
+      ],
+      "colors": [],
+      "size_estimated": false
+    },
+    {
+      "name": "زانوبند ضربدری FD-8803 بسته ۲ عددی",
+      "category": "محافظ‌ها و ایمنی",
+      "group": "زانوبند و چسب ورزشی",
+      "level": "همه سطوح",
+      "reference_price": 470000,
+      "price_date": "۱۴۰۵/۰۷/۲۸",
+      "sizes": [],
+      "colors": [],
+      "size_estimated": false
+    },
+    {
+      "name": "زانوبند اسیکس",
+      "category": "محافظ‌ها و ایمنی",
+      "group": "زانوبند و چسب ورزشی",
+      "level": "همه سطوح",
+      "reference_price": 2140000,
+      "price_date": "۱۴۰۵/۰۷/۲۸",
+      "sizes": [],
+      "colors": [],
+      "size_estimated": false
+    },
+    {
+      "name": "چسب کینزیولوژی ۵ سانت × ۵ متر",
+      "category": "محافظ‌ها و ایمنی",
+      "group": "زانوبند و چسب ورزشی",
+      "level": "همه سطوح",
+      "reference_price": 395000,
+      "price_date": "۱۴۰۵/۰۷/۲۸",
+      "sizes": [],
+      "colors": [],
+      "size_estimated": false
+    },
+    {
+      "name": "چسب آندرتیپ ۵ سانتی",
+      "category": "محافظ‌ها و ایمنی",
+      "group": "زانوبند و چسب ورزشی",
+      "level": "همه سطوح",
+      "reference_price": 139000,
+      "price_date": "۱۴۰۵/۰۷/۲۸",
+      "sizes": [],
+      "colors": [],
+      "size_estimated": false
+    },
+    {
+      "name": "چسب عضله کنزیوتیپ",
+      "category": "محافظ‌ها و ایمنی",
+      "group": "زانوبند و چسب ورزشی",
+      "level": "همه سطوح",
+      "reference_price": 340000,
+      "price_date": "۱۴۰۵/۰۷/۲۸",
+      "sizes": [],
+      "colors": [],
+      "size_estimated": false
+    },
+    {
+      "name": "محافظ لثه بدبوی سیلیکونی مناسب جودو",
+      "category": "محافظ‌ها و ایمنی",
+      "group": "محافظ دندان (در صورت تقاضا)",
+      "level": "همه سطوح",
+      "reference_price": 372000,
+      "price_date": "۱۴۰۵/۰۷/۲۸",
+      "sizes": [],
+      "colors": [],
+      "size_estimated": false
+    },
+    {
+      "name": "محافظ لثه ونوم VG203",
+      "category": "محافظ‌ها و ایمنی",
+      "group": "محافظ دندان (در صورت تقاضا)",
+      "level": "همه سطوح",
+      "reference_price": 228000,
+      "price_date": "۱۴۰۵/۰۷/۲۸",
+      "sizes": [],
+      "colors": [],
+      "size_estimated": false
+    },
+    {
+      "name": "محافظ دهان Everlast اورژل",
+      "category": "محافظ‌ها و ایمنی",
+      "group": "محافظ دندان (در صورت تقاضا)",
+      "level": "همه سطوح",
+      "reference_price": 1450000,
+      "price_date": "۱۴۰۵/۰۷/۲۸",
+      "sizes": [],
+      "colors": [],
+      "size_estimated": false
+    },
+    {
+      "name": "ساک ورزشی مدل SH-0013",
+      "category": "لوازم شخصی",
+      "group": "ساک ورزشی و حوله",
+      "level": "همه سطوح",
+      "reference_price": 600000,
+      "price_date": "۱۴۰۵/۰۷/۲۸",
+      "sizes": [],
+      "colors": [],
+      "size_estimated": false
+    },
+    {
+      "name": "ساک ورزشی تکواندو دوکاره دیدو",
+      "category": "لوازم شخصی",
+      "group": "ساک ورزشی و حوله",
+      "level": "همه سطوح",
+      "reference_price": 1300000,
+      "price_date": "۱۴۰۵/۰۷/۲۸",
+      "sizes": [],
+      "colors": [],
+      "size_estimated": false
+    },
+    {
+      "name": "ساک نایک T90 دومنظوره کوله‌شو",
+      "category": "لوازم شخصی",
+      "group": "ساک ورزشی و حوله",
+      "level": "همه سطوح",
+      "reference_price": 1760000,
+      "price_date": "۱۴۰۵/۰۷/۲۸",
+      "sizes": [],
+      "colors": [],
+      "size_estimated": false
+    },
+    {
+      "name": "حوله ورزشی سابلیمیشن ۳۰×۶۰ (قابل چاپ لوگو)",
+      "category": "لوازم شخصی",
+      "group": "ساک ورزشی و حوله",
+      "level": "همه سطوح",
+      "reference_price": 185000,
+      "price_date": "۱۴۰۵/۰۷/۲۸",
+      "sizes": [],
+      "colors": [],
+      "size_estimated": false
+    },
+    {
+      "name": "حوله ورزشی هزاردستان H202",
+      "category": "لوازم شخصی",
+      "group": "ساک ورزشی و حوله",
+      "level": "همه سطوح",
+      "reference_price": 423000,
+      "price_date": "۱۴۰۵/۰۷/۲۸",
+      "sizes": [],
+      "colors": [],
+      "size_estimated": false
+    },
+    {
+      "name": "دمپایی آرنیس مدل استخری",
+      "category": "لوازم شخصی",
+      "group": "دمپایی رختکن، بطری آب، بهداشتی",
+      "level": "همه سطوح",
+      "reference_price": 220000,
+      "price_date": "۱۴۰۵/۰۷/۲۸",
+      "sizes": [],
+      "colors": [],
+      "size_estimated": false
+    },
+    {
+      "name": "دمپایی نایس مدل استخری",
+      "category": "لوازم شخصی",
+      "group": "دمپایی رختکن، بطری آب، بهداشتی",
+      "level": "همه سطوح",
+      "reference_price": 282000,
+      "price_date": "۱۴۰۵/۰۷/۲۸",
+      "sizes": [],
+      "colors": [],
+      "size_estimated": false
+    },
+    {
+      "name": "قمقمه ورزشی EYUN ۹۰۰ میلی‌لیتر",
+      "category": "لوازم شخصی",
+      "group": "دمپایی رختکن، بطری آب، بهداشتی",
+      "level": "همه سطوح",
+      "reference_price": 398000,
+      "price_date": "۱۴۰۵/۰۷/۲۸",
+      "sizes": [],
+      "colors": [],
+      "size_estimated": false
+    },
+    {
+      "name": "قمقمه ورزشی NEW 01 نیم لیتری",
+      "category": "لوازم شخصی",
+      "group": "دمپایی رختکن، بطری آب، بهداشتی",
+      "level": "همه سطوح",
+      "reference_price": 377000,
+      "price_date": "۱۴۰۵/۰۷/۲۸",
+      "sizes": [],
+      "colors": [],
+      "size_estimated": false
+    },
+    {
+      "name": "اسپری ضدقارچ و بوگیر پا دوال ۳۰ میل",
+      "category": "لوازم شخصی",
+      "group": "دمپایی رختکن، بطری آب، بهداشتی",
+      "level": "همه سطوح",
+      "reference_price": 294000,
+      "price_date": "۱۴۰۵/۰۷/۲۸",
+      "sizes": [],
+      "colors": [],
+      "size_estimated": false
+    },
+    {
+      "name": "تاتامی جودو یک تخته",
+      "category": "تجهیزات باشگاهی",
+      "group": "تاتامی و تشک استاندارد جودو",
+      "level": "همه سطوح",
+      "reference_price": 14000000,
+      "price_date": "۱۴۰۵/۰۷/۲۸",
+      "sizes": [],
+      "colors": [],
+      "size_estimated": false
+    },
+    {
+      "name": "تشک جودو مسابقاتی و باشگاهی (ریباند فدراسیونی)",
+      "category": "تجهیزات باشگاهی",
+      "group": "تاتامی و تشک استاندارد جودو",
+      "level": "همه سطوح",
+      "reference_price": 5320000,
+      "price_date": "۱۴۰۵/۰۷/۲۸",
+      "sizes": [],
+      "colors": [],
+      "size_estimated": false
+    },
+    {
+      "name": "تشک جودو ریباند ۸۰، ضخامت ۵ سانت",
+      "category": "تجهیزات باشگاهی",
+      "group": "تاتامی و تشک استاندارد جودو",
+      "level": "همه سطوح",
+      "reference_price": 6200000,
+      "price_date": "۱۴۰۵/۰۷/۲۸",
+      "sizes": [],
+      "colors": [],
+      "size_estimated": false
+    },
+    {
+      "name": "کفپوش تاتامی ۲۵ میل دورو (کودکان/گرم کردن)",
+      "category": "تجهیزات باشگاهی",
+      "group": "تاتامی و تشک استاندارد جودو",
+      "level": "همه سطوح",
+      "reference_price": 475000,
+      "price_date": "۱۴۰۵/۰۷/۲۸",
+      "sizes": [],
+      "colors": [],
+      "size_estimated": false
+    },
+    {
+      "name": "دیوارپوش (ضربه‌گیر) ۴ سانت",
+      "category": "تجهیزات باشگاهی",
+      "group": "ضربه‌گیر دیواری",
+      "level": "همه سطوح",
+      "reference_price": 1650000,
+      "price_date": "۱۴۰۵/۰۷/۲۸",
+      "sizes": [],
+      "colors": [],
+      "size_estimated": false
+    },
+    {
+      "name": "ایمن‌سازی دیوار سالن ورزشی ۵۰ میل",
+      "category": "تجهیزات باشگاهی",
+      "group": "ضربه‌گیر دیواری",
+      "level": "همه سطوح",
+      "reference_price": 1280000,
+      "price_date": "۱۴۰۵/۰۷/۲۸",
+      "sizes": [],
+      "colors": [],
+      "size_estimated": false
+    },
+    {
+      "name": "کش تمرین جودو سامکو (اوچی‌کمی)",
+      "category": "تجهیزات تمرینی",
+      "group": "تمرین قدرتی، تعادل و کمک‌آموزشی مربی",
+      "level": "همه سطوح",
+      "reference_price": 2950000,
+      "price_date": "۱۴۰۵/۰۷/۲۸",
+      "sizes": [],
+      "colors": [],
+      "size_estimated": false
+    },
+    {
+      "name": "آدمک کشتی",
+      "category": "تجهیزات تمرینی",
+      "group": "تمرین قدرتی، تعادل و کمک‌آموزشی مربی",
+      "level": "همه سطوح",
+      "reference_price": 5200000,
+      "price_date": "۱۴۰۵/۰۷/۲۸",
+      "sizes": [],
+      "colors": [],
+      "size_estimated": false
+    },
+    {
+      "name": "آدمک تمرینی گراپلینگ ۱۷۵ ساورینا",
+      "category": "تجهیزات تمرینی",
+      "group": "تمرین قدرتی، تعادل و کمک‌آموزشی مربی",
+      "level": "همه سطوح",
+      "reference_price": 9990000,
+      "price_date": "۱۴۰۵/۰۷/۲۸",
+      "sizes": [],
+      "colors": [],
+      "size_estimated": false
+    },
+    {
+      "name": "بوسوبال حرفه‌ای تراباند",
+      "category": "قدرت و آمادگی جسمانی",
+      "group": "تمرین قدرتی، تعادل و کمک‌آموزشی مربی",
+      "level": "همه سطوح",
+      "reference_price": 7500000,
+      "price_date": "۱۴۰۵/۰۷/۲۸",
+      "sizes": [],
+      "colors": [],
+      "size_estimated": false
+    },
+    {
+      "name": "کش پاورباند Pro کد Blk-22mm",
+      "category": "قدرت و آمادگی جسمانی",
+      "group": "تمرین قدرتی، تعادل و کمک‌آموزشی مربی",
+      "level": "همه سطوح",
+      "reference_price": 705500,
+      "price_date": "۱۴۰۵/۰۷/۲۸",
+      "sizes": [],
+      "colors": [],
+      "size_estimated": false
+    },
+    {
+      "name": "نردبان چابکی ۵ متری",
+      "category": "قدرت و آمادگی جسمانی",
+      "group": "تمرین قدرتی، تعادل و کمک‌آموزشی مربی",
+      "level": "همه سطوح",
+      "reference_price": 450000,
+      "price_date": "۱۴۰۵/۰۷/۲۸",
+      "sizes": [],
+      "colors": [],
+      "size_estimated": false
+    },
+    {
+      "name": "اسکوربورد ورزشی صنایع نوین ایران",
+      "category": "تجهیزات باشگاهی",
+      "group": "تابلو امتیاز، کرنومتر، سوت",
+      "level": "همه سطوح",
+      "reference_price": 40000000,
+      "price_date": "۱۴۰۵/۰۷/۲۸",
+      "sizes": [],
+      "colors": [],
+      "size_estimated": false
+    },
+    {
+      "name": "تابلو زمان و امتیازات",
+      "category": "تجهیزات باشگاهی",
+      "group": "تابلو امتیاز، کرنومتر، سوت",
+      "level": "همه سطوح",
+      "reference_price": 92000000,
+      "price_date": "۱۴۰۵/۰۷/۲۸",
+      "sizes": [],
+      "colors": [],
+      "size_estimated": false
+    },
+    {
+      "name": "کرنومتر فلوت F5853",
+      "category": "تجهیزات باشگاهی",
+      "group": "تابلو امتیاز، کرنومتر، سوت",
+      "level": "همه سطوح",
+      "reference_price": 380000,
+      "price_date": "۱۴۰۵/۰۷/۲۸",
+      "sizes": [],
+      "colors": [],
+      "size_estimated": false
+    },
+    {
+      "name": "کرنومتر XL-5853",
+      "category": "تجهیزات باشگاهی",
+      "group": "تابلو امتیاز، کرنومتر، سوت",
+      "level": "همه سطوح",
+      "reference_price": 540000,
+      "price_date": "۱۴۰۵/۰۷/۲۸",
+      "sizes": [],
+      "colors": [],
+      "size_estimated": false
+    },
+    {
+      "name": "سوت داوری FOX 40",
+      "category": "تجهیزات باشگاهی",
+      "group": "تابلو امتیاز، کرنومتر، سوت",
+      "level": "همه سطوح",
+      "reference_price": 94000,
+      "price_date": "۱۴۰۵/۰۷/۲۸",
+      "sizes": [],
+      "colors": [],
+      "size_estimated": false
+    }
+  ]
+}

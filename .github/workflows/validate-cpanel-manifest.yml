@@ -1,0 +1,125 @@
+name: Validate cPanel frontend manifest
+
+on:
+  pull_request:
+    branches: [main, "feat/**"]
+    paths:
+      - "deploy/frontend-manifest.json"
+      - "django/templates/**"
+      - "django/static/**"
+      - "shared/build.js"
+      - "shared/src/js/shared/django-route-bridge.js"
+      - ".github/workflows/validate-cpanel-manifest.yml"
+  push:
+    branches: [main, "feat/**"]
+    paths:
+      - "deploy/frontend-manifest.json"
+      - "django/templates/**"
+      - "django/static/**"
+      - "shared/build.js"
+      - "shared/src/js/shared/django-route-bridge.js"
+      - ".github/workflows/validate-cpanel-manifest.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate-manifest:
+    name: Check safe frontend deployment scope
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out frontend repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js for Preview route validation
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Check canonical Preview route bridge source
+        run: |
+          node --check shared/src/js/shared/django-route-bridge.js
+          python - <<'PY'
+          from pathlib import Path
+
+          build = Path("shared/build.js").read_text(encoding="utf-8")
+          source = Path("shared/src/js/shared/django-route-bridge.js")
+          assert source.is_file(), "Missing canonical Preview route bridge source"
+          public_js = build.split("const PUBLIC_JS=", 1)[1].split("const MKT_JS=", 1)[0]
+          assert "shared/django-route-bridge" not in public_js, "Django bridge must not be bundled into Student/Coach/Club PWAs"
+          assert "name==='preview'?" in build and "R('js/shared/django-route-bridge.js')" in build, "Preview build does not bundle the route bridge exclusively"
+          print("PREVIEW_ONLY_DJANGO_ROUTE_BRIDGE_SOURCE_OK")
+          PY
+
+      - name: Verify generated bridge is included in Preview only
+        run: |
+          node shared/build.js
+          python - <<'PY'
+          from pathlib import Path
+
+          preview = Path("shared/dist/preview/index.html").read_text(encoding="utf-8")
+          pwa_pages = [
+              Path(f"shared/dist/{name}/index.html").read_text(encoding="utf-8")
+              for name in ("student", "coach", "club")
+          ]
+          assert "tatamiplus.ir" in preview, "Generated Preview is missing its live-host route guard"
+          bridge_markers = ("serverHashForUrl", "loadDjangoPath", "localStorage.removeItem('tp:users')")
+          assert all(marker in preview for marker in bridge_markers), "Generated Preview is missing the Django route bridge"
+          assert all(marker not in html for html in pwa_pages for marker in bridge_markers), "Django route bridge leaked into a role-based PWA"
+          print("PREVIEW_BRIDGE_SCOPE_OK")
+          PY
+
+      - name: Validate manifest and selected files
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          path = Path("deploy/frontend-manifest.json")
+          manifest = json.loads(path.read_text(encoding="utf-8"))
+          assert manifest.get("schema_version") == 1
+          mappings = manifest.get("mappings")
+          assert isinstance(mappings, list) and mappings
+
+          forbidden = {".py", ".pyc", ".php", ".phtml", ".sh", ".cgi", ".pl", ".env"}
+          destinations = set()
+
+          for mapping in mappings:
+              source = mapping["source"]
+              destination = mapping["destination"]
+              assert destination in {"templates", "static"}
+              expected = "django/templates" if destination == "templates" else "django/static"
+              assert source == expected or source.startswith(expected + "/")
+              extensions = {item.lower() for item in mapping["extensions"]}
+              excludes = mapping.get("exclude", [])
+              source_root = Path(source)
+              assert source_root.is_dir(), f"Missing source root: {source}"
+
+              for item in source_root.rglob("*"):
+                  if not item.is_file():
+                      continue
+                  relative = item.relative_to(source_root).as_posix()
+                  if any(relative == excluded or relative.startswith(excluded.rstrip("/") + "/")
+                         for excluded in excludes):
+                      continue
+                  suffix = item.suffix.lower()
+                  if suffix not in extensions:
+                      continue
+                  assert not item.is_symlink(), f"Symlinks are not deployable: {item}"
+                  assert suffix not in forbidden, f"Forbidden extension selected: {item}"
+                  target = f"{destination}/{relative}"
+                  assert target not in destinations, f"Duplicate destination: {target}"
+                  destinations.add(target)
+
+          assert destinations, "Manifest selected zero files"
+          assert "static/css/styles.css" not in destinations, "Backend-owned styles.css must be excluded"
+          assert "static/css/tatami.css" in destinations, "Shared Tatami Plus design bundle is required by the new Django shell"
+          assert "static/css/reference-store.css" in destinations
+          assert "static/js/reference-store.js" in destinations
+          assert "static/data/reference-store-catalog.json" in destinations
+          assert "templates/store/product_list.html" in destinations
+          assert not any(item.startswith("templates/clubs/") for item in destinations)
+          assert "static/css/clubs-map.css" not in destinations
+          assert "static/js/clubs-map.js" not in destinations
+          print(f"CPANEL_FRONTEND_MANIFEST_OK | files={len(destinations)}")
+          PY

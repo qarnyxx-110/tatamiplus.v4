@@ -35,7 +35,7 @@ function page(name,pwa){const a=APPS[name],cfg={...a};delete cfg.name;delete cfg
  h=h.replace(/<a ([^>]*?)href="#\/([a-z-]*)[^"]*"([^>]*)>[^<]*<\/a>/g,(m,x,k)=>a.deny.includes(k)?'':m);
  const tags=pwa?`<meta name="theme-color" content="#121418"><meta name="description" content="${a.desc}"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icons/icon-192.png"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png">`:'';
  const files=PUBLIC_JS;
- const js=(pwa?'':'window.__ARTIFACT__=true;\n')+`const APP=${JSON.stringify(cfg)},IMG_AVAIL=${JSON.stringify(AVAIL)},TP_API_BASE=${JSON.stringify(API)},COACHES=${JSON.stringify(DATA.coaches)},STORE_CATALOG=${JSON.stringify(STORE)},SPONSORS=${JSON.stringify(DATA.sponsors)},TPD=${JSON.stringify(DATA.tpd)};\n`+files.map(R).join('\n');
+ const js=(pwa?'':'window.__ARTIFACT__=true;\n')+`const APP=${JSON.stringify(cfg)},IMG_AVAIL=${JSON.stringify(AVAIL)},TP_API_BASE=${JSON.stringify(API)},COACHES=${JSON.stringify(DATA.coaches)},STORE_CATALOG=${JSON.stringify(STORE)},SPONSORS=${JSON.stringify(DATA.sponsors)},TPD=${JSON.stringify(DATA.tpd)};\n`+files.map(R).join('\n')+(name==='preview'?'\n'+R('js/shared/django-route-bridge.js'):'');
  return h.replace('<!--PWA-->',()=>tags).replace('/*CSS*/',()=>baseCss()).replace('/*JS*/',()=>min(js,'js'))}
 function marketing(){const js=`const TP_CMS=${JSON.stringify({apiBase:API,mode:API?'api':'demo'})},BL_SEED=${JSON.stringify(R('data/blog-seed.json')?JSON.parse(R('data/blog-seed.json')):[])},TPD_SEED=${JSON.stringify(DATA.tpd)},TP_DEMO_AUTHOR='تیم مارکتینگ';\n`+MKT_JS.map(R).join('\n');
  return dropGoogle(R('marketing.html')).replace('/*CSS*/',()=>baseCss(R('css/marketing.css'))).replace('/*JS*/',()=>min(js,'js'))}

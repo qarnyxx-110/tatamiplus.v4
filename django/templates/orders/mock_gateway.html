@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load store_format %}
+
+{% block title %}درگاه آزمایشی | تاتامی پلاس{% endblock %}
+{% block content %}
+<main class="w tp-store-page">
+  <header class="sh">
+    <div>
+      <span class="eyebrow">SANDBOX ONLY</span>
+      <h1>صفحهٔ پرداخت آزمایشی</h1>
+      <p class="mu">این صفحه فقط شبیه‌ساز توسعه است؛ هیچ پولی جابه‌جا نمی‌شود و رسید واقعی صادر نمی‌کند.</p>
+    </div>
+  </header>
+
+  <section class="d-c" aria-labelledby="mock-payment-title">
+    <h2 id="mock-payment-title">اطلاعات تراکنش آزمایشی</h2>
+    <p>شناسهٔ آزمایشی: <code>{{ payment.authority }}</code></p>
+    <p>مبلغ نمایشی: <strong>{{ payment.amount|price_fa }} تومان</strong></p>
+    <div class="tp-cluster">
+      <a class="btn" href="{{ ok_url }}">شبیه‌سازی نتیجهٔ موفق</a>
+      <a class="btn o" href="{{ fail_url }}">شبیه‌سازی نتیجهٔ ناموفق</a>
+    </div>
+  </section>
+</main>
+{% endblock %}

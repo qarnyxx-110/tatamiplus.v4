@@ -1,0 +1,12 @@
+<section class="w">
+  <div class="cta">
+    <h2>آماده شروع هستید؟</h2>
+    <p class="mu">برای ورود به مسیر یادگیری و استفاده از قابلیت‌های متصل، حساب خود را در تاتامی پلاس ادامه دهید.</p>
+    {% if user.is_authenticated %}
+      <a class="btn" href="/preview/#/profile">مشاهده حساب کاربری</a>
+    {% else %}
+      <a class="btn" href="/preview/#/login">ورود به حساب</a>
+      <a class="btn o" href="/preview/#/register">ثبت‌نام</a>
+    {% endif %}
+  </div>
+</section>
