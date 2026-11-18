@@ -13,6 +13,8 @@ const base = `http://tatamiplus.ir:${port}`;
 const failures = [];
 let browser = null;
 let postMode = 'success';
+let logoutPostCount = 0;
+let logoutCsrfSeen = '';
 
 const serverNavItems = [
   ['/', 'خانه'], ['/store/', 'فروشگاه'], ['/preview/#/online-coach', 'مربی آنلاین'],
@@ -143,7 +145,9 @@ try {
       await route.fulfill({ status: 405, body: 'method not allowed' });
       return;
     }
-    assert.equal(route.request().headers()['x-csrftoken'], 'test-csrf');
+    logoutPostCount += 1;
+    logoutCsrfSeen = route.request().headers()['x-csrftoken'] || '';
+    assert.equal(logoutCsrfSeen, 'test-csrf');
     await route.fulfill({
       status: 302,
       headers: { location: '/auth/login/' },
@@ -271,8 +275,35 @@ try {
   assert.equal(await page.locator('#server-footer-marker').count(), 0);
   await page.locator('#mnb').click();
   await page.locator('#mnd[open]').waitFor({ state: 'visible' });
+  const logoutFormState = await page.locator('#mndf form[action="/accounts/logout/"]').evaluate(form => ({
+    action: form.action,
+    method: form.method.toUpperCase(),
+    insideDrawer: Boolean(form.closest('#mnd')),
+    buttonType: form.querySelector('button')?.type || ''
+  }));
+  assert.deepEqual(logoutFormState, {
+    action: base + '/accounts/logout/',
+    method: 'POST',
+    insideDrawer: true,
+    buttonType: 'submit'
+  });
   await page.locator('#mndf form[action="/accounts/logout/"] button[type="submit"]').click();
-  await page.locator('#login-target').waitFor({ state: 'visible', timeout: 15000 });
+  try {
+    await page.locator('#login-target').waitFor({ state: 'visible', timeout: 15000 });
+  } catch (error) {
+    const state = await page.evaluate(() => ({
+      hash: location.hash,
+      bodyPath: location.pathname,
+      drawerOpen: document.getElementById('mnd')?.open,
+      logoutForm: Boolean(document.querySelector('#mndf form[action="/accounts/logout/"]')),
+      loginTarget: Boolean(document.getElementById('login-target')),
+      accountText: document.getElementById('hbu')?.innerText
+    }));
+    throw new Error('Drawer logout did not complete | requests=' + logoutPostCount +
+      ' | csrf=' + logoutCsrfSeen + ' | state=' + JSON.stringify(state) +
+      ' | ' + error.message);
+  }
+  assert.equal(logoutPostCount, 1, 'drawer logout must be submitted through the Preview bridge');
   assert.equal(await page.locator('#app').getAttribute('data-django-view'), '/auth/login/');
   assert.equal(await page.locator('#app').evaluate(el => el.tagName), 'MAIN');
   assert.equal(await page.locator('#hbu').getAttribute('href'), '#/login');
