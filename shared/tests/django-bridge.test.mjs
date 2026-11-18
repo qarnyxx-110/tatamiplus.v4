@@ -141,7 +141,13 @@ try {
   });
 
   let serverAuthenticated = true;
-  await page.route(base + '/', async route => {
+  let rootPageRequests = 0;
+  const baseOrigin = new URL(base).origin;
+  await page.route(url => {
+    const target = new URL(url);
+    return target.origin === baseOrigin && target.pathname === '/';
+  }, async route => {
+    rootPageRequests += 1;
     await route.fulfill({
       status: 200,
       contentType: 'text/html; charset=utf-8',
@@ -310,6 +316,7 @@ try {
       ' | ' + error.message);
   }
   assert.equal(logoutPostCount, 1, 'drawer logout must be submitted through the Preview bridge');
+  assert.ok(rootPageRequests >= 1, 'logout redirect to the Django home route must be served by the test fixture');
   assert.equal(await page.locator('#app').getAttribute('data-django-view'), '/');
   assert.equal(await page.locator('#app').evaluate(el => el.tagName), 'MAIN');
   assert.equal(await page.locator('#hbu').getAttribute('href'), '#/login');
