@@ -142,19 +142,6 @@ try {
 
   let serverAuthenticated = true;
   let rootPageRequests = 0;
-  const baseOrigin = new URL(base).origin;
-  await page.route(url => {
-    const target = new URL(url);
-    return target.origin === baseOrigin && target.pathname === '/';
-  }, async route => {
-    rootPageRequests += 1;
-    await route.fulfill({
-      status: 200,
-      contentType: 'text/html; charset=utf-8',
-      body: documentHtml('<h1 id="logged-out-home">صفحهٔ خانهٔ سرور</h1>', 'خانه', serverAuthenticated)
-    });
-  });
-
   await page.route('**/accounts/logout/**', async route => {
     if (route.request().method() !== 'POST') {
       await route.fulfill({ status: 405, body: 'method not allowed' });
@@ -178,6 +165,20 @@ try {
       contentType: 'text/html; charset=utf-8',
       body: documentHtml('<h1 id="club-target">صفحهٔ واقعی باشگاه</h1><a id="club-store-link" href="/store/">بازگشت به فروشگاه</a>', 'باشگاه آزمایشی')
     });
+  });
+
+  await page.route('**/*', async route => {
+    const target = new URL(route.request().url());
+    if (target.hostname === 'tatamiplus.ir' && target.pathname === '/') {
+      rootPageRequests += 1;
+      await route.fulfill({
+        status: 200,
+        contentType: 'text/html; charset=utf-8',
+        body: documentHtml('<h1 id="logged-out-home">صفحهٔ خانهٔ سرور</h1>', 'خانه', serverAuthenticated)
+      });
+      return;
+    }
+    await route.fallback();
   });
 
   await page.goto(`${base}/preview/#/store`, { waitUntil: 'load' });
