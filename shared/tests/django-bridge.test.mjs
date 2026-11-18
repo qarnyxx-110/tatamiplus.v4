@@ -177,7 +177,8 @@ try {
   });
 
   let serverAuthenticated = true;
-  let rootPageRequests = 0;
+  const rootHomeHtml = () => documentHtml('<h1 id="logged-out-home">صفحهٔ خانهٔ سرور</h1>', 'خانه', serverAuthenticated);
+  fs.writeFileSync(path.join(tempRoot, 'index.html'), rootHomeHtml());
   await page.route('**/accounts/logout/**', async route => {
     if (route.request().method() !== 'POST') {
       await route.fulfill({ status: 405, body: 'method not allowed' });
@@ -185,6 +186,7 @@ try {
     }
     logoutPostCount += 1;
     serverAuthenticated = false;
+    fs.writeFileSync(path.join(tempRoot, 'index.html'), rootHomeHtml());
     logoutCsrfSeen = route.request().headers()['x-csrftoken'] || '';
     assert.equal(logoutCsrfSeen, 'test-csrf');
     await route.fulfill({
@@ -203,19 +205,6 @@ try {
     });
   });
 
-  await page.route('**/', async route => {
-    const target = new URL(route.request().url());
-    if (target.hostname === 'tatamiplus.ir' && target.pathname === '/') {
-      rootPageRequests += 1;
-      await route.fulfill({
-        status: 200,
-        contentType: 'text/html; charset=utf-8',
-        body: documentHtml('<h1 id="logged-out-home">صفحهٔ خانهٔ سرور</h1>', 'خانه', serverAuthenticated)
-      });
-      return;
-    }
-    await route.fallback();
-  });
 
   await page.goto(`${base}/preview/#/store`, { waitUntil: 'load' });
   await page.locator('#bridge-form').waitFor({ state: 'visible', timeout: 15000 });
@@ -366,13 +355,16 @@ try {
       formState: document.querySelector('#mndf form')?.innerText || '',
       xhr: window.__tpXHRHistory || []
     }));
-    console.error('DRAWER_LOGOUT_DIAGNOSTICS', JSON.stringify({ rootPageRequests, routeTrace, state }));
+    console.error('DRAWER_LOGOUT_DIAGNOSTICS', JSON.stringify({ routeTrace, state }));
     throw new Error('Drawer logout did not complete | requests=' + logoutPostCount +
-      ' | csrf=' + logoutCsrfSeen + ' | rootRequests=' + rootPageRequests +
+      ' | csrf=' + logoutCsrfSeen + ' | routeTrace=' + JSON.stringify(routeTrace) +
       ' | state=' + JSON.stringify(state) + ' | ' + error.message);
   }
   assert.equal(logoutPostCount, 1, 'drawer logout must be submitted through the Preview bridge');
-  assert.ok(rootPageRequests >= 1, 'logout redirect to the Django home route must be served by the test fixture');
+  const homeResponses = routeTrace.filter(item =>
+    item.event === 'response' && new URL(item.url).pathname === '/' && item.status === 200
+  );
+  assert.ok(homeResponses.length >= 2, 'session hydration and the real logout redirect must both receive the Home document');
   assert.equal(await page.locator('#app').getAttribute('data-django-view'), '/');
   assert.equal(await page.locator('#app').evaluate(el => el.tagName), 'MAIN');
   assert.equal(await page.locator('#hbu').getAttribute('href'), '#/login');
