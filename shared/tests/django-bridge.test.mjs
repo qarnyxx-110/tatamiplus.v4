@@ -136,7 +136,7 @@ try {
     await route.fulfill({
       status: 200,
       contentType: 'text/html; charset=utf-8',
-      body: documentHtml('<h1 id="club-target">صفحهٔ واقعی باشگاه</h1>', 'باشگاه آزمایشی')
+      body: documentHtml('<h1 id="club-target">صفحهٔ واقعی باشگاه</h1><a id="club-store-link" href="/store/">بازگشت به فروشگاه</a>', 'باشگاه آزمایشی')
     });
   });
 
@@ -177,29 +177,6 @@ try {
   assert.equal(await page.locator('#nvd a').count(), 15);
   await page.keyboard.press('Escape');
 
-  await page.locator('#server-cart-link').click();
-  await page.locator('#cart-target').waitFor({ state: 'visible', timeout: 15000 });
-  assert.equal(await page.locator('#app').getAttribute('data-django-view'), '/store/cart/');
-  assert.equal(await page.locator('#app').evaluate(el => el.tagName), 'MAIN');
-  assert.equal(await page.locator('#app').innerText(), 'سبد خرید واقعی از Django');
-
-  await page.evaluate(() => { location.hash = '#/store'; });
-  await page.locator('#bridge-form').waitFor({ state: 'visible', timeout: 15000 });
-  await page.evaluate(() => { location.hash = '#/online-coach'; });
-  await page.waitForFunction(() => document.querySelector('#app')?.innerText.includes('روشن کردن دوربین'));
-  assert.equal(await page.locator('#app').getAttribute('data-django-view'), null);
-  assert.equal(await page.locator('#app').getAttribute('class'), '');
-  assert.equal(await page.locator('link[data-tp-django-style]').count(), 0, 'Django styles must be removed when returning to Preview-only routes');
-  assert.equal(await page.locator('#app').evaluate(el => el.tagName), 'MAIN');
-  assert.equal(await page.locator('#cc').count(), 1);
-  assert.equal(await page.locator('#nv a[href="#/store"]').count(), 1);
-  assert.equal(await page.locator('footer a[href="#/store"]').count(), 1);
-  assert.equal((await page.locator('#hbu .hb-t').textContent()).trim(), 'کاربر آزمایشی', 'real Django session header state must survive Preview-only navigation');
-  assert.equal(await page.locator('#mndf form[action="/accounts/logout/"]').count(), 1);
-  assert.equal(await page.locator('#server-footer-marker').count(), 0);
-  await page.locator('#mnb').click();
-  await page.locator('#mnd[open]').waitFor({ state: 'visible' });
-  await page.keyboard.press('Escape');
 
   await page.evaluate(() => {
     Object.defineProperty(navigator, 'clipboard', {
@@ -242,6 +219,30 @@ try {
   await wait(1400);
   assert.equal(await page.locator('#club-target').count(), 1);
   assert.equal(await page.locator('#post-result').count(), 0);
+
+  await page.locator('#club-store-link').click();
+  await page.locator('#bridge-form').waitFor({ state: 'visible', timeout: 15000 });
+  await page.locator('#server-cart-link').click();
+  await page.locator('#cart-target').waitFor({ state: 'visible', timeout: 15000 });
+  assert.equal(await page.locator('#app').getAttribute('data-django-view'), '/store/cart/');
+  assert.equal(await page.locator('#app').evaluate(el => el.tagName), 'MAIN');
+  assert.equal(await page.locator('#app').innerText(), 'سبد خرید واقعی از Django');
+
+  await page.evaluate(() => { location.hash = '#/online-coach'; });
+  await page.waitForFunction(() => document.querySelector('#app')?.innerText.includes('روشن کردن دوربین'));
+  assert.equal(await page.locator('#app').getAttribute('data-django-view'), null);
+  assert.equal(await page.locator('#app').getAttribute('class'), '');
+  assert.equal(await page.locator('link[data-tp-django-style]').count(), 0, 'Django styles must be removed when returning to Preview-only routes');
+  assert.equal(await page.locator('#app').evaluate(el => el.tagName), 'MAIN');
+  assert.equal(await page.locator('#cc').count(), 1);
+  assert.equal(await page.locator('#nv a[href="#/store"]').count(), 1);
+  assert.equal(await page.locator('footer a[href="#/store"]').count(), 1);
+  assert.equal((await page.locator('#hbu .hb-t').textContent()).trim(), 'کاربر آزمایشی', 'real Django session header state must survive Preview-only navigation');
+  assert.equal(await page.locator('#mndf form[action="/accounts/logout/"]').count(), 1);
+  assert.equal(await page.locator('#server-footer-marker').count(), 0);
+  await page.locator('#mnb').click();
+  await page.locator('#mnd[open]').waitFor({ state: 'visible' });
+  await page.keyboard.press('Escape');
 
   assert.deepEqual(failures, [], 'Preview and Django route transitions must not produce browser runtime errors');
   await page.close();
