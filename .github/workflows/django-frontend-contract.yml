@@ -176,7 +176,13 @@ jobs:
           assert '<div id="app" data-enter>' in base
           assert 'href="/store/cart/"' in base and 'href="/account/"' in base
           assert '@media(min-width:1024px){body>header .mnb{display:none!important}}' not in shared_css
-          assert 'function syncPreviewShell' in bridge and 'django-bridge.css' in bridge
+          assert 'function syncPreviewShell' not in bridge
+          assert 'function hydratePreviewShell' not in bridge
+          assert 'syncPreviewAccountState' in bridge and 'django-bridge.css' in bridge
+          assert 'clearDjangoStyles' in bridge
+          assert 'localApp.replaceChildren' in bridge
+          assert 'localApp.replaceWith' not in bridge
+          assert 'renderPreviewNavigation(route)' in Path("shared/src/js/shared/router.js").read_text(encoding="utf-8")
           assert 'css/styles.css' not in base, "Legacy backend theme must not be loaded by the Django shell"
           assert 'class="site-header"' not in base and 'class="site-nav"' not in base and 'class="wordmark"' not in base
           assert 'class="site-footer"' not in base
