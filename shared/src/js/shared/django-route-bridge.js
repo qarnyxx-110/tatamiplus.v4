@@ -940,7 +940,18 @@
         releaseControls(true);
         return;
       }
-      const finalUrl = new URL(request.responseURL || action.href, action.href);
+      let finalUrl = new URL(request.responseURL || action.href, action.href);
+      const redirectLocation = request.status >= 300 && request.status < 400
+        ? request.getResponseHeader('Location')
+        : null;
+      if (redirectLocation) {
+        try {
+          finalUrl = new URL(redirectLocation, finalUrl);
+        } catch {
+          showInlineFailure('نشانی مقصد پس از خروج معتبر نیست. صفحه را تازه کنید.');
+          return;
+        }
+      }
       if (finalUrl.origin !== location.origin || !isAllowedDjangoUrl(finalUrl)) {
         showInlineFailure('سرور درخواست را به نشانی پشتیبانی‌نشده هدایت کرد. صفحه را تازه کنید.');
         return;
