@@ -28,7 +28,7 @@ export async function runCheckout(_base,browser){
           id,
           hasVariant:!!card.querySelector('.pc-variants,[data-product-size],[data-product-color]'),
           hasDirectAdd:[...card.querySelectorAll('button')].some(button=>/افزودن به سبد|افزودن به خرید/.test(button.textContent)),
-          hasDetailCta:!!cta&&cta.textContent.includes('مشاهده و انتخاب محصول')
+          hasDetailCta:!!cta&&/مشاهده (?:و انتخاب محصول|اطلاعات مرجع)/.test(cta.textContent)
         };
       });
     });
@@ -44,10 +44,12 @@ export async function runCheckout(_base,browser){
     await pg.waitForFunction(id=>location.hash==='#/product/'+id,firstCardId);
     S.ok('انتخاب از کارت وارد صفحه جزئیات می‌شود و سبد تا آن مرحله تغییر نمی‌کند',
       await pg.evaluate(()=>cart.length===0));
-    const picked=await pg.evaluate(()=>{const i=P.findIndex(p=>p.st>0&&(!p.sz||!p.sz.length)&&(!p.cl||!p.cl.length));return i<0?null:{id:i,name:P[i].n}});
+    const picked=await pg.evaluate(()=>{const i=P.findIndex(p=>p.demo&&p.st>0);if(i<0)return null;const p=P[i];return{id:i,name:p.n,hasSize:!!p.sz.length,hasColor:!!p.cl.length}});
     if(!picked)throw new Error('No in-stock product without variant options was found for the checkout test');
     await pg.evaluate(id=>{location.hash='#/product/'+id},picked.id);
     await pg.waitForSelector('#app .pd');
+    if(picked.hasSize)await pg.locator('#pd-sz .chip').first().click();
+    if(picked.hasColor)await pg.locator('#pd-cl .chip').first().click();
     const countBeforeFlight=await pg.locator('#cc').innerText();
     await pg.evaluate(()=>{
       const icon=document.querySelector('#hcart .tp-ico');
@@ -163,6 +165,8 @@ export async function runCheckout(_base,browser){
     await pg.evaluate(()=>Object.assign(CHECKOUT,{name:'نشانی کاربر قبلی',phone:'09123456789',province:'تهران',city:'تهران',postal:'1234567890',address:'نشانی آزمایشی کاربر قبلی',notes:'یادداشت قبلی'}));
     await pg.evaluate(id=>{location.hash='#/product/'+id},picked.id);
     await pg.waitForSelector('#app .pd');
+    if(picked.hasSize)await pg.locator('#pd-sz .chip').first().click();
+    if(picked.hasColor)await pg.locator('#pd-cl .chip').first().click();
     await pg.locator('#pd-add').click();
     await pg.waitForFunction(()=>document.querySelector('#ts')?.classList.contains('on')&&document.querySelector('#ts')?.textContent.includes('با موفقیت به سبد خرید اضافه شد.'));
     await pg.evaluate(()=>{location.hash='#/cart'});
@@ -192,7 +196,7 @@ export async function runCheckout(_base,browser){
     variantPg.on('pageerror',e=>errors.push(String(e)));
     await variantPg.goto(srv.url+'/index.html');
     await wait(180);
-    const variant=await variantPg.evaluate(()=>{const p=P.find(x=>x.st>0&&(x.sz.length||x.cl.length));return p?{id:p.id,hasSize:p.sz.length>0,hasColor:p.cl.length>0}:null});
+    const variant=await variantPg.evaluate(()=>{const p=P.find(x=>!x.ref&&x.demo&&x.st>0&&(x.sz.length||x.cl.length));return p?{id:p.id,hasSize:p.sz.length>0,hasColor:p.cl.length}:null});
     if(variant){
       await variantPg.evaluate(id=>{location.hash='#/product/'+id},variant.id);
       await variantPg.waitForSelector('#pd-add');
@@ -221,6 +225,8 @@ export async function runCheckout(_base,browser){
     await wait(180);
     await reducedPg.evaluate(id=>{location.hash='#/product/'+id},picked.id);
     await reducedPg.waitForSelector('#pd-add');
+    if(picked.hasSize)await reducedPg.locator('#pd-sz .chip').first().click();
+    if(picked.hasColor)await reducedPg.locator('#pd-cl .chip').first().click();
     await reducedPg.locator('#pd-add').click();
     await reducedPg.waitForFunction(()=>document.querySelector('#ts')?.classList.contains('on')&&document.querySelector('#ts')?.textContent.includes('با موفقیت به سبد خرید اضافه شد.'));
     S.ok('در حالت کاهش حرکت، پرواز تصویر اجرا نمی‌شود اما افزودن محصول موفق است',

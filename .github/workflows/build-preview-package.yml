@@ -11,6 +11,7 @@ on:
       - "shared/public/assets/**"
       - "shared/build.js"
       - "shared/package.json"
+      - "shared/tests/**"
       - ".github/workflows/build-preview-package.yml"
   pull_request:
     branches:
@@ -20,6 +21,7 @@ on:
       - "shared/public/assets/**"
       - "shared/build.js"
       - "shared/package.json"
+      - "shared/tests/**"
       - ".github/workflows/build-preview-package.yml"
 
 permissions:
@@ -28,6 +30,7 @@ permissions:
 jobs:
   build-package:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - name: Check out source
         uses: actions/checkout@v4
@@ -36,6 +39,16 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "24"
+
+      - name: Install browser regression dependencies
+        working-directory: shared
+        run: |
+          npm install --no-package-lock --no-audit --no-fund
+          npx playwright install --with-deps chromium
+
+      - name: Run full frontend browser regression suite
+        working-directory: shared
+        run: npm test
 
       - name: Build Preview
         working-directory: shared

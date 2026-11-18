@@ -1,7 +1,7 @@
 // اعتبارسنجی داده‌های localStorage: همه مقدارها غیرقابل‌اعتماد فرض می‌شوند و فقط شکل و محدوده معتبر پذیرفته می‌شود.
 (function(){const isInt=v=>Number.isInteger(v)&&v>=0;
  role=RN[role]?role:null;
- const sc=Array.isArray(cart)?cart.slice(0,50).map(x=>{if(!x||typeof x!=='object'||!isInt(x.id)||!P[x.id]||!P[x.id].st)return null;const p=P[x.id];
+ const sc=Array.isArray(cart)?cart.slice(0,50).map(x=>{if(!x||typeof x!=='object'||!isInt(x.id)||!P[x.id]||P[x.id].ref||!P[x.id].st)return null;const p=P[x.id];
   const s=p.sz.length?(p.sz.includes(x.s)?x.s:p.sz[0]):'',c=p.cl.length?(p.cl.includes(x.c)?x.c:p.cl[0]):'',q=Math.max(1,Math.min(p.st,Number.isInteger(x.q)?x.q:1));return {id:x.id,s,c,q}}).filter(Boolean):[];
  cart=sc;
  fav=Array.isArray(fav)?[...new Set(fav.filter(i=>isInt(i)&&P[i]))]:[];

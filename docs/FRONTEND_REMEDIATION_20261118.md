@@ -9,6 +9,8 @@ Scope: frontend repository only. No backend implementation, database, migrations
 - The Preview bridge checks GET HTTP status, aborts obsolete POST requests after navigation, restores submit controls on transport/server errors, and provides video-upload progress/cancel in the AJAX-rendered Preview.
 - Added Playwright browser regression coverage for successful POST, network failure recovery, video upload cancellation, and stale-request cancellation.
 - Product-detail `data-availability` now follows the same fallback as its visible status.
+- The 59 marketplace-reference products no longer receive synthetic stock; they remain visible for research, but purchase is disabled and direct cart insertion is rejected. Legacy LocalStorage/account-cart entries for these reference rows are discarded.
+- Preview checkout browser tests now use only the three clearly marked demo products; the market-reference catalogue is view-only. The Preview checkout still does not create a real order or payment.
 - CI checks the exact precondition that makes the existing product-list `in_stock` fallback safe.
 
 ## Coach invitation overlay compatibility
