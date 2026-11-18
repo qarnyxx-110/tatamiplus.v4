@@ -188,9 +188,21 @@ try {
   assert.equal(await page.locator('body').evaluate(el => el.classList.contains('tp-django-shell')), false);
   assert.equal(await page.locator('#app').evaluate(el => el.classList.contains('tp-store-page')), true);
   await page.setViewportSize({ width: 390, height: 850 });
-  const expectedMobilePadding = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--tp-space-sm').trim());
-  const actualMobilePadding = await page.locator('#app').evaluate(el => getComputedStyle(el).paddingInlineStart);
-  assert.equal(actualMobilePadding, expectedMobilePadding, 'Preview bridge root must receive the same mobile page padding as a direct Django .w child');
+  const mobilePadding = await page.locator('#app').evaluate(el => {
+    const probe = document.createElement('div');
+    probe.className = 'w';
+    probe.setAttribute('data-mobile-padding-probe', 'true');
+    el.append(probe);
+    const expected = getComputedStyle(probe).paddingInlineStart;
+    const actual = getComputedStyle(el).paddingInlineStart;
+    probe.remove();
+    return { expected, actual };
+  });
+  assert.equal(
+    mobilePadding.actual,
+    mobilePadding.expected,
+    'Preview bridge root mobile padding must match a direct Django .w child: ' + JSON.stringify(mobilePadding)
+  );
   await page.setViewportSize({ width: 1280, height: 900 });
   assert.equal(await page.locator('#hcart').getAttribute('href'), '#/cart', 'Preview cart route must remain hash-based');
   assert.equal(await page.locator('#cc').count(), 1, 'Preview cart counter mount must remain present');
