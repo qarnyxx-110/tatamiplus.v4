@@ -154,11 +154,10 @@
 
   feeds.forEach(loadFeed);
 
-  // Scroll-led technique story used by the original Preview homepage.
+  // Mirror the scroll-led .cine/.sc stack used by the original Preview shell.
   const story = document.querySelector('[data-home-cine]');
   if (story) {
-    const slides = Array.from(story.querySelectorAll('.tp-home-technique'));
-    const bar = story.querySelector('.tp-home-cine-progress span');
+    const slides = Array.from(story.querySelectorAll('.sc'));
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
     let frame = 0;
     const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
@@ -171,24 +170,19 @@
           slide.style.transform = 'none';
           slide.style.pointerEvents = 'auto';
         });
-        if (bar) bar.style.width = '100%';
         return;
       }
 
       const rect = story.getBoundingClientRect();
       const travel = Math.max(1, story.offsetHeight - window.innerHeight);
-      const lastIndex = Math.max(0, slides.length - 1);
-      const progress = clamp((-rect.top / travel) * lastIndex, 0, lastIndex);
-
+      const progress = clamp((-rect.top / travel) * 3, 0, 3);
       slides.forEach((slide, index) => {
-        const distance = progress - index;
-        const opacity = Math.max(0, 1 - Math.abs(distance) * 1.6);
+        const distance = progress - (index + 0.5);
+        const opacity = Math.max(0, 1 - Math.abs(distance) * 1.7);
         slide.style.opacity = String(opacity);
-        slide.style.transform = 'translateY(' + (distance * -44) + 'px) scale(' + (0.94 + opacity * 0.06) + ')';
+        slide.style.transform = 'translateY(' + (distance * -50) + 'px) scale(' + (0.92 + opacity * 0.08) + ')';
         slide.style.pointerEvents = opacity > 0.5 ? 'auto' : 'none';
       });
-
-      if (bar) bar.style.width = (lastIndex ? (progress / lastIndex) * 100 : 100) + '%';
     }
 
     function scheduleStory() {
