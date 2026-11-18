@@ -841,7 +841,7 @@
     const drawer = document.getElementById('mnd');
     const inDrawer = Boolean(drawer && drawer.contains(form));
     const isSessionLogout = inDrawer && method === 'POST' &&
-      action.pathname.replace(/\\/+$/, '/') === '/accounts/logout/';
+      (action.pathname === '/accounts/logout/' || action.pathname === '/accounts/logout');
     if ((!activeDjangoView && !isSessionLogout) ||
         (!inApp && !isSessionLogout) ||
         (form.target && form.target.toLowerCase() !== '_self') ||
