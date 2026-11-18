@@ -953,6 +953,10 @@
       const finalHash = serverHashForUrl(finalUrl);
       const samePath = finalUrl.pathname === action.pathname && finalUrl.search === action.search;
       if (!samePath && location.hash !== finalHash) {
+        if (isSessionLogout) {
+          const drawer = form.closest('dialog');
+          if (drawer && drawer.open) drawer.close();
+        }
         releaseControls(true);
         location.hash = finalHash;
         return;

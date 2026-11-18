@@ -26,7 +26,7 @@ const serverNavItems = [
 const serverNav = (id) => `<nav id="${id}" aria-label="منوی اصلی">${serverNavItems.map(([href, label], index) =>
   `<a href="${href}"${index === 1 ? ' class="on" aria-current="page"' : ''}>${label}</a>`
 ).join('')}</nav>`;
-const documentHtml = (content, title = 'Django test page') => `<!doctype html>
+const documentHtml = (content, title = 'Django test page', authenticated = true) => `<!doctype html>
 <html lang="fa" dir="rtl">
 <head><meta charset="utf-8"><title>${title}</title><meta name="description" content="bridge test"></head>
 <body>
@@ -34,17 +34,17 @@ const documentHtml = (content, title = 'Django test page') => `<!doctype html>
   <a class="logo" href="/" aria-label="تاتامی پلاس">تاتامی پلاس</a>
   ${serverNav('nv')}
   <div class="hb">
-    <a class="ib tp-gem-header" id="hgem" href="/account/gems/" aria-label="موجودی ۱۲ جم؛ مشاهده تاریخچه">
+    ${authenticated ? `<a class="ib tp-gem-header" id="hgem" href="/account/gems/" aria-label="موجودی ۱۲ جم؛ مشاهده تاریخچه">
       <svg class="tp-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10l5 6-10 12L2 9l5-6Z"/></svg>
       <span class="hb-t">جم</span><b class="tp-gem-header-value">۱۲</b>
-    </a>
+    </a>` : ''}
     <a class="ib" id="hcart" href="/store/cart/" aria-label="سبد خرید">
       <svg class="tp-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.4 11.2"/></svg>
       <span class="hb-t">سبد خرید</span>
     </a>
-    <a class="ib" id="hbu" href="/account/" aria-label="حساب کاربری">
+    <a class="ib" id="hbu" href="${authenticated ? '/account/' : '/auth/login/'}" aria-label="${authenticated ? 'حساب کاربری' : 'ورود یا ثبت‌نام'}">
       <svg class="tp-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/></svg>
-      <span class="hb-t">کاربر آزمایشی</span>
+      <span class="hb-t">${authenticated ? 'کاربر آزمایشی' : 'ورود / ثبت‌نام'}</span>
     </a>
     <button type="button" class="ib mnb" id="mnb" aria-haspopup="dialog" aria-controls="mnd">بیشتر</button>
   </div>
@@ -52,7 +52,7 @@ const documentHtml = (content, title = 'Django test page') => `<!doctype html>
 <dialog id="mnd" class="tp-drawer">
   <div class="tp-drawer-h"><b>منو</b><button type="button" id="mnx">بستن</button></div>
   ${serverNav('nvd')}
-  <div class="tp-drawer-f"><form method="post" action="/accounts/logout/"><input type="hidden" name="csrfmiddlewaretoken" value="test-csrf"><button>خروج</button></form></div>
+  <div class="tp-drawer-f">${authenticated ? '<form method="post" action="/accounts/logout/"><input type="hidden" name="csrfmiddlewaretoken" value="test-csrf"><button type="submit">خروج</button></form>' : '<a class="btn" href="/auth/login/">ورود / ثبت‌نام</a>'}</div>
 </dialog>
 <div id="app"><main class="w tp-store-page">${content}</main></div>
 <footer class="ft"><nav><a href="/store/">فروشگاه سرور</a><a href="/club/">دوره‌های سرور</a></nav><span id="server-footer-marker">فوتر سرور</span></footer>
@@ -85,8 +85,14 @@ try {
   const page = await browser.newPage();
   page.on('pageerror', error => failures.push('browser error: ' + error.message));
 
+  const backendCss = fs.readFileSync(new URL('../../django/static/css/backend-templates.css', import.meta.url), 'utf8');
   await page.route('**/static/css/**', async route => {
-    await route.fulfill({ status: 200, contentType: 'text/css; charset=utf-8', body: 'body{color:inherit}' });
+    const url = new URL(route.request().url());
+    await route.fulfill({
+      status: 200,
+      contentType: 'text/css; charset=utf-8',
+      body: url.pathname === '/static/css/backend-templates.css' ? backendCss : 'body{color:inherit}'
+    });
   });
 
   await page.route('**/store/**', async route => {
@@ -132,6 +138,27 @@ try {
     });
   });
 
+  await page.route('**/accounts/logout/**', async route => {
+    if (route.request().method() !== 'POST') {
+      await route.fulfill({ status: 405, body: 'method not allowed' });
+      return;
+    }
+    assert.equal(route.request().headers()['x-csrftoken'], 'test-csrf');
+    await route.fulfill({
+      status: 302,
+      headers: { location: '/auth/login/' },
+      body: ''
+    });
+  });
+
+  await page.route('**/auth/login/**', async route => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'text/html; charset=utf-8',
+      body: documentHtml('<h1 id="login-target">ورود یا ثبت‌نام با پیامک</h1>', 'ورود', false)
+    });
+  });
+
   await page.route('**/club/**', async route => {
     await route.fulfill({
       status: 200,
@@ -144,6 +171,8 @@ try {
   await page.locator('#bridge-form').waitFor({ state: 'visible', timeout: 15000 });
   assert.equal(await page.locator('#app').getAttribute('data-django-view'), '/store/');
   assert.equal(await page.locator('#app').evaluate(el => el.tagName), 'MAIN', 'the original Preview mount element must not be replaced');
+  assert.equal(await page.evaluate(() => getComputedStyle(document.body).display), 'block', 'Django-only body flex rules must not affect the Preview shell');
+  assert.equal(await page.locator('body').evaluate(el => el.classList.contains('tp-django-shell')), false);
   assert.equal(await page.locator('#app').evaluate(el => el.classList.contains('tp-store-page')), true);
   assert.equal(await page.locator('#hcart').getAttribute('href'), '#/cart', 'Preview cart route must remain hash-based');
   assert.equal(await page.locator('#cc').count(), 1, 'Preview cart counter mount must remain present');
@@ -242,7 +271,17 @@ try {
   assert.equal(await page.locator('#server-footer-marker').count(), 0);
   await page.locator('#mnb').click();
   await page.locator('#mnd[open]').waitFor({ state: 'visible' });
-  await page.keyboard.press('Escape');
+  await page.locator('#mndf form[action="/accounts/logout/"] button[type="submit"]').click();
+  await page.locator('#login-target').waitFor({ state: 'visible', timeout: 15000 });
+  assert.equal(await page.locator('#app').getAttribute('data-django-view'), '/auth/login/');
+  assert.equal(await page.locator('#app').evaluate(el => el.tagName), 'MAIN');
+  assert.equal(await page.locator('#hbu').getAttribute('href'), '#/login');
+  assert.equal((await page.locator('#hbu .hb-t').textContent()).trim(), 'ورود / ثبت‌نام');
+  assert.equal(await page.locator('#hgem').isHidden(), true);
+  assert.equal(await page.locator('#cc').count(), 1);
+  assert.equal(await page.locator('#nv a[href="#/store"]').count(), 1);
+  assert.equal(await page.locator('footer a[href="#/store"]').count(), 1);
+  assert.equal(await page.locator('#mndf a[href="#/login"]').count(), 1);
 
   assert.deepEqual(failures, [], 'Preview and Django route transitions must not produce browser runtime errors');
   await page.close();
