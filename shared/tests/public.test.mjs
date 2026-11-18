@@ -192,14 +192,15 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
  const estimatedSizeProduct=await pg.evaluate(()=>P.find(product=>product.szEstimated)?.id??-1);
  if(estimatedSizeProduct>=0){
   await go('#/product/'+estimatedSizeProduct);
-  S.ok('جزئیات محصول: سایز حدسی با توضیح شفاف نمایش داده می‌شود',
-   (await T()).includes('تخمینی است')&&await cnt('#pd-sz .chip')===1);
+  S.ok('جزئیات محصول: سایز تخمینی فقط اطلاع‌رسانی است و به‌عنوان تنوع خرید ارائه نمی‌شود',
+   (await T()).includes('تخمینی است')&&await cnt('#pd-sz .chip')===0&&await pg.locator('#pd-add').isDisabled());
   await go('#/store');
  }else S.ok('کاتالوگ: نشانگر سایز تخمینی در محصولات تکمیل‌شده وجود دارد',false);
 
 
  S.ok('فروشگاه: برچسب «قیمت مرجع بازار» روی کارت‌های کاتالوگ',(await T()).includes('قیمت مرجع بازار'));
- S.ok('فروشگاه: موجودی کاتالوگ به‌عنوان موجودی واقعی نمایش داده نمی‌شود',(await T()).includes('موجودی نمونه'));
+ const referenceStockAudit=await pg.evaluate(()=>({allReferenceRowsHaveNoStock:P.filter(product=>product.ref).every(product=>product.st===0),visibleReferenceCard:[...document.querySelectorAll('#app .sl .pg .pcd')].some(card=>{const href=card.querySelector('a[href^="#/product/"]')?.getAttribute('href')||'';const id=Number(href.split('/').pop());return !!P[id]?.ref&&card.textContent.includes('موجودی تأیید نشده')})}));
+ S.ok('فروشگاه: کالای مرجع موجودی ساختگی ندارد و کارت آن موجودی تأییدنشده نشان می‌دهد',referenceStockAudit.allReferenceRowsHaveNoStock&&referenceStockAudit.visibleReferenceCard,JSON.stringify(referenceStockAudit));
  const demoProductName=await pg.evaluate(()=>P.find(product=>product.demo&&product.st>0)?.n||'');
  if(demoProductName){
   await pg.fill('#fq',demoProductName);await wait(140);
@@ -267,7 +268,7 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
  await pg.evaluate(({safeId,referenceId})=>{localStorage.setItem('cart',JSON.stringify([{id:safeId,s:'<img src=x onerror=window.__ls=1>',c:'<b>x</b>',q:99999},{id:referenceId,s:'',c:'',q:2},{id:9999,s:'',c:'',q:1},{id:'x'},null]));localStorage.setItem('prog',JSON.stringify({3:500,abc:5,'-1':3}));localStorage.setItem('fav',JSON.stringify([1,1,'a',9999]));localStorage.setItem('saved','"nope"');localStorage.setItem('lastWatched','"<script>"');localStorage.setItem('role','"<img src=x>"')}, {safeId:safeCartId,referenceId:referenceCartId});
  await pg.goto('about:blank');await pg.goto(base+'/index.html#/cart');await wait(400);
  S.ok('امنیت: HTML تزریق‌شده از localStorage اجرا نمی‌شود',!await pg.evaluate(()=>!!window.__ls));
- S.ok('امنیت: داده نامعتبر سبد پاک‌سازی/محدود شد',await pg.evaluate(()=>{const c=JSON.parse(localStorage.getItem('cart'));return c.length===1&&c[0].id===safeCartId&&c[0].q<=50&&!/[<>]/.test(JSON.stringify(c))}));
+ S.ok('امنیت: داده نامعتبر سبد پاک‌سازی/محدود شد',await pg.evaluate((safeId)=>{const c=JSON.parse(localStorage.getItem('cart'));return c.length===1&&c[0].id===safeId&&c[0].q<=50&&!/[<>]/.test(JSON.stringify(c))},safeCartId));
  S.ok('امنیت: پیشرفت ویدیو در بازه ۰..۱۰۰ و کلیدهای نامعتبر حذف',await pg.evaluate(()=>{const p=JSON.parse(localStorage.getItem('prog'));return Object.keys(p).join()==='3'&&p[3]===100}));
  S.ok('امنیت: علاقه‌مندی/ذخیره‌ها اعتبارسنجی شد',await pg.evaluate(()=>JSON.stringify(JSON.parse(localStorage.getItem('fav')))==='[1]'&&localStorage.getItem('saved')==='[]'));
  await go('#/dashboard');S.ok('امنیت: بدون خطای JS با داده خراب',!errs.length,errs.join(' | '));
