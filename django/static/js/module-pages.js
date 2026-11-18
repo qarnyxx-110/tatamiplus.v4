@@ -62,6 +62,7 @@
         gallery.querySelectorAll('[data-gallery-select]').forEach((item) => {
           const active = item === button;
           item.classList.toggle('is-active', active);
+          item.classList.toggle('on', active);
           item.setAttribute('aria-pressed', String(active));
         });
       });
