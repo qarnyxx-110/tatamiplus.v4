@@ -140,28 +140,31 @@ try {
     });
   });
 
+  let serverAuthenticated = true;
+  await page.route(base + '/', async route => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'text/html; charset=utf-8',
+      body: documentHtml('<h1 id="logged-out-home">صفحهٔ خانهٔ سرور</h1>', 'خانه', serverAuthenticated)
+    });
+  });
+
   await page.route('**/accounts/logout/**', async route => {
     if (route.request().method() !== 'POST') {
       await route.fulfill({ status: 405, body: 'method not allowed' });
       return;
     }
     logoutPostCount += 1;
+    serverAuthenticated = false;
     logoutCsrfSeen = route.request().headers()['x-csrftoken'] || '';
     assert.equal(logoutCsrfSeen, 'test-csrf');
     await route.fulfill({
       status: 302,
-      headers: { location: '/auth/login/' },
+      headers: { location: '/' },
       body: ''
     });
   });
 
-  await page.route('**/auth/login/**', async route => {
-    await route.fulfill({
-      status: 200,
-      contentType: 'text/html; charset=utf-8',
-      body: documentHtml('<h1 id="login-target">ورود یا ثبت‌نام با پیامک</h1>', 'ورود', false)
-    });
-  });
 
   await page.route('**/club/**', async route => {
     await route.fulfill({
@@ -289,22 +292,25 @@ try {
   });
   await page.locator('#mndf form[action="/accounts/logout/"] button[type="submit"]').click();
   try {
-    await page.locator('#login-target').waitFor({ state: 'visible', timeout: 15000 });
+    await page.locator('#logged-out-home').waitFor({ state: 'visible', timeout: 15000 });
   } catch (error) {
     const state = await page.evaluate(() => ({
       hash: location.hash,
       bodyPath: location.pathname,
       drawerOpen: document.getElementById('mnd')?.open,
       logoutForm: Boolean(document.querySelector('#mndf form[action="/accounts/logout/"]')),
-      loginTarget: Boolean(document.getElementById('login-target')),
-      accountText: document.getElementById('hbu')?.innerText
+      loginTarget: Boolean(document.getElementById('logged-out-home')),
+      accountText: document.getElementById('hbu')?.innerText,
+      bridgeError: document.querySelector('#mndf .tp-bridge-submit-error')?.textContent ||
+        document.querySelector('#mndf .tp-error-text')?.textContent || '',
+      formState: document.querySelector('#mndf form')?.innerText || ''
     }));
     throw new Error('Drawer logout did not complete | requests=' + logoutPostCount +
       ' | csrf=' + logoutCsrfSeen + ' | state=' + JSON.stringify(state) +
       ' | ' + error.message);
   }
   assert.equal(logoutPostCount, 1, 'drawer logout must be submitted through the Preview bridge');
-  assert.equal(await page.locator('#app').getAttribute('data-django-view'), '/auth/login/');
+  assert.equal(await page.locator('#app').getAttribute('data-django-view'), '/');
   assert.equal(await page.locator('#app').evaluate(el => el.tagName), 'MAIN');
   assert.equal(await page.locator('#hbu').getAttribute('href'), '#/login');
   assert.equal((await page.locator('#hbu .hb-t').textContent()).trim(), 'ورود / ثبت‌نام');
