@@ -14,10 +14,40 @@ const failures = [];
 let browser = null;
 let postMode = 'success';
 
+const serverNavItems = [
+  ['/', 'خانه'], ['/store/', 'فروشگاه'], ['/preview/#/online-coach', 'مربی آنلاین'],
+  ['/club/', 'دوره‌ها'], ['/preview/#/tournaments', 'تورنمنت‌ها'],
+  ['/preview/#/videos', 'ویدیوهای ضبط‌شده'], ['/preview/#/ai', 'آنالیز هوش مصنوعی'],
+  ['/preview/#/academy', 'آکادمی اساتید'], ['/coaches/', 'مربیان تاتامی'],
+  ['/preview/#/clubs', 'باشگاه‌ها'], ['/preview/#/blog', 'بلاگ'],
+  ['/preview/#/tatamipedia', 'تاتامی‌پدیا'], ['/preview/#/sponsors', 'حامیان تاتامی پلاس'],
+  ['/account/gems/', 'جم'], ['/preview/#/search', 'جستجو']
+];
+const serverNav = (id) => `<nav id="${id}" aria-label="منوی اصلی">${serverNavItems.map(([href, label], index) =>
+  `<a href="${href}"${index === 1 ? ' class="on" aria-current="page"' : ''}>${label}</a>`
+).join('')}</nav>`;
 const documentHtml = (content, title = 'Django test page') => `<!doctype html>
 <html lang="fa" dir="rtl">
 <head><meta charset="utf-8"><title>${title}</title><meta name="description" content="bridge test"></head>
-<body><div id="app">${content}</div></body></html>`;
+<body>
+<header>
+  <a class="logo" href="/" aria-label="تاتامی پلاس">تاتامی پلاس</a>
+  ${serverNav('nv')}
+  <div class="hb">
+    <a class="ib" id="hgem" href="/account/gems/" aria-label="تاریخچه جم">جم <b>۱۲</b></a>
+    <a class="ib" id="hcart" href="/store/cart/" aria-label="سبد خرید">سبد خرید</a>
+    <a class="ib" id="hbu" href="/account/" aria-label="حساب کاربری">کاربر آزمایشی</a>
+    <button type="button" class="ib mnb" id="mnb" aria-haspopup="dialog" aria-controls="mnd">بیشتر</button>
+  </div>
+</header>
+<dialog id="mnd" class="tp-drawer">
+  <div class="tp-drawer-h"><b>منو</b><button type="button" id="mnx">بستن</button></div>
+  ${serverNav('nvd')}
+  <div class="tp-drawer-f"><form method="post" action="/accounts/logout/"><button>خروج</button></form></div>
+</dialog>
+<div id="app">${content}</div>
+<footer class="ft"><nav><a href="/store/">فروشگاه</a><a href="/club/">دوره‌ها</a></nav><span id="footer-shell-marker">پاورقی آزمایشی</span></footer>
+</body></html>`;
 
 const storeForm = (result = '') => `
   ${result ? `<p id="post-result">${result}</p>` : ''}
@@ -90,6 +120,30 @@ try {
   await page.goto(`${base}/preview/#/store`, { waitUntil: 'load' });
   await page.locator('#bridge-form').waitFor({ state: 'visible', timeout: 15000 });
   assert.equal(await page.locator('#app').getAttribute('data-django-view'), '/store/');
+  assert.equal(await page.locator('#hcart').getAttribute('href'), '/store/cart/');
+  assert.equal(await page.locator('#hbu').getAttribute('href'), '/account/');
+  assert.equal((await page.locator('#hbu').textContent()).trim(), 'کاربر آزمایشی');
+  assert.equal(await page.locator('#nv a').count(), 15);
+  assert.equal(await page.locator('#nvd a').count(), 15);
+  assert.equal(await page.locator('#footer-shell-marker').count(), 1);
+  assert.equal(await page.locator('#nv a.on').textContent(), 'فروشگاه');
+
+  for (const width of [1024, 1199, 1200, 1439, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    assert.equal(await page.locator('#mnb').isVisible(), true, 'More menu must remain visible at ' + width + 'px');
+  }
+  await page.setViewportSize({ width: 1100, height: 900 });
+  assert.equal(await page.locator('#nv a:nth-child(5)').isVisible(), false);
+  await page.setViewportSize({ width: 1280, height: 900 });
+  assert.equal(await page.locator('#nv a:nth-child(5)').isVisible(), true);
+  assert.equal(await page.locator('#nv a:nth-child(7)').isVisible(), false);
+  await page.setViewportSize({ width: 1500, height: 900 });
+  assert.equal(await page.locator('#nv a:nth-child(8)').isVisible(), true);
+  assert.equal(await page.locator('#nv a:nth-child(9)').isVisible(), false);
+  await page.locator('#mnb').click();
+  await page.locator('#mnd[open]').waitFor({ state: 'visible' });
+  assert.equal(await page.locator('#nvd a').count(), 15);
+  await page.keyboard.press('Escape');
 
   await page.evaluate(() => {
     Object.defineProperty(navigator, 'clipboard', {

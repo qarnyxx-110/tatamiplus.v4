@@ -50,6 +50,10 @@ jobs:
         working-directory: shared
         run: npm test
 
+      - name: Run Django Preview shell and navigation browser regression
+        working-directory: shared
+        run: node tests/django-bridge.test.mjs
+
       - name: Build Preview
         working-directory: shared
         run: node build.js

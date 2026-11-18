@@ -24,23 +24,23 @@
   {% include "components/platform_navigation.html" with nav_id="nv" nav_class="tp-main-nav" nav_label="منوی اصلی" %}
   <div class="hb">
     {% if user.is_authenticated %}
-      <a class="ib tp-gem-header gem-chip" id="hgem" href="/preview/#/gems" aria-label="موجودی {{ gem_balance|default:0|persian_digits }} جم؛ مشاهده تاریخچه">
+      <a class="ib tp-gem-header gem-chip" id="hgem" href="/account/gems/" aria-label="موجودی {{ gem_balance|default:0|persian_digits }} جم؛ مشاهده تاریخچه">
         <svg class="tp-ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 3h10l5 6-10 12L2 9l5-6Z"/><path d="m7 3 5 18 5-18M2 9h20"/></svg>
         <span class="hb-t">جم</span>
         <b class="tp-gem-header-value">{{ gem_balance|default:0|persian_digits }}</b>
       </a>
     {% endif %}
-    <a class="ib" id="hcart" href="/preview/#/cart" aria-label="سبد خرید">
+    <a class="ib" id="hcart" href="/store/cart/" aria-label="سبد خرید">
       <svg class="tp-ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 4h2l2.4 11.2a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.5L21 8H6.2"/><circle cx="10" cy="20" r="1.4"/><circle cx="17" cy="20" r="1.4"/></svg>
       <span class="hb-t">سبد خرید</span>
     </a>
     {% if user.is_authenticated %}
-      <a class="ib" id="hbu" href="/preview/#/profile" aria-label="حساب کاربری">
+      <a class="ib" id="hbu" href="/account/" aria-label="حساب کاربری">
         <svg class="tp-ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>
         <span class="hb-t">{{ user.get_full_name|default:user.phone|default:user.username }}</span>
       </a>
     {% else %}
-      <a class="ib" id="hbu" href="/preview/#/login" aria-label="ورود یا ثبت‌نام">
+      <a class="ib" id="hbu" href="/auth/login/" aria-label="ورود یا ثبت‌نام">
         <svg class="tp-ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>
         <span class="hb-t">ورود / ثبت‌نام</span>
       </a>
@@ -80,7 +80,7 @@
 {% endif %}
 
 <div id="ts" class="tp-toast" role="status" aria-live="polite"></div>
-<div id="app" data-enter>{% block content %}{% endblock %}</div>
+<main id="app" data-enter>{% block content %}{% endblock %}</main>
 
 <footer class="ft">
   <div class="ftg">
@@ -93,8 +93,8 @@
     </div>
     <nav aria-label="پیوندهای پلتفرم">
       <b>پلتفرم</b>
-      <a href="/preview/#/store">فروشگاه</a>
-      <a href="/preview/#/courses">دوره‌ها</a>
+      <a href="/store/">فروشگاه</a>
+      <a href="/club/">دوره‌ها</a>
       <a href="/preview/#/tournaments">تورنمنت‌ها</a>
       <a href="/preview/#/videos">ویدیوهای ضبط‌شده</a>
     </nav>
@@ -102,7 +102,7 @@
       <b>جامعه</b>
       <a href="/preview/#/clubs">باشگاه‌ها</a>
       <a href="/preview/#/academy">آکادمی اساتید</a>
-      <a href="/preview/#/coaches">مربیان تاتامی</a>
+      <a href="/coaches/">مربیان تاتامی</a>
       <a href="/preview/#/blog">بلاگ</a>
       <a href="/preview/#/tatamipedia">تاتامی‌پدیا</a>
       <a href="/preview/#/online-coach">مربی آنلاین</a>
@@ -110,11 +110,11 @@
     </nav>
     <nav aria-label="پیوندهای حساب">
       <b>حساب</b>
-      <a href="/preview/#/profile">حساب کاربری</a>
-      <a href="/preview/#/cart">سبد خرید</a>
-      <a href="/preview/#/gems">تاریخچه جم</a>
+      <a href="/account/">حساب کاربری</a>
+      <a href="/store/cart/">سبد خرید</a>
+      <a href="/account/gems/">تاریخچه جم</a>
       <a href="/preview/#/search">جستجو</a>
-      {% if user.is_authenticated %}<a href="/preview/#/orders">سفارش‌های من</a>{% else %}<a href="/preview/#/login">ورود / ثبت‌نام</a>{% endif %}
+      {% if user.is_authenticated %}<a href="/orders/">سفارش‌های من</a>{% else %}<a href="/auth/login/">ورود / ثبت‌نام</a>{% endif %}
     </nav>
   </div>
   <p class="mu sm">تاتامی پلاس — همراه شما در مسیر یادگیری و پیشرفت جودو.</p>
