@@ -1,16 +1,12 @@
-<section class="w d-s tp-home-final">
-  <div class="cta tp-home-cta">
-    <span class="eyebrow">YOUR NEXT MOVE</span>
+<section class="w">
+  <div class="cta">
     <h2>آماده شروع هستید؟</h2>
-    <p class="mu">مسیر یادگیری و پیشرفت جودو را با تاتامی پلاس ادامه دهید.</p>
-    <div class="chips">
-      <a class="btn" href="{% url 'club:course_list' %}">مشاهده دوره‌ها</a>
-      <a class="btn o" href="{% url 'coaches:directory' %}">پیدا کردن مربی</a>
-      {% if user.is_authenticated %}
-        <a class="text-link" href="{% url 'account' %}">ورود به حساب کاربری</a>
-      {% else %}
-        <a class="text-link" href="{% url 'phone_auth:login' %}">ورود / ثبت‌نام</a>
-      {% endif %}
-    </div>
+    <p class="mu">برای ورود به مسیر یادگیری و استفاده از قابلیت‌های متصل، حساب خود را در تاتامی پلاس ادامه دهید.</p>
+    {% if user.is_authenticated %}
+      <a class="btn" href="/preview/#/profile">مشاهده حساب کاربری</a>
+    {% else %}
+      <a class="btn" href="/preview/#/login">ورود به حساب</a>
+      <a class="btn o" href="/preview/#/register">ثبت‌نام</a>
+    {% endif %}
   </div>
 </section>
