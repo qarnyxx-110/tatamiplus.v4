@@ -507,7 +507,7 @@
   }
 
   // ۵. جلوگیری از ارسال دوباره (دوبار کلیک)
-  $('form[method=post]').forEach(f => f.addEventListener('submit', event => {
+  $$('form[method=post]').forEach(f => f.addEventListener('submit', event => {
     if (event.defaultPrevented) return;
     const s = f.querySelector('[type=submit]'); if (s) { setTimeout(() => { s.disabled = true; s.classList.add('is-loading'); }, 0); }
   }));
