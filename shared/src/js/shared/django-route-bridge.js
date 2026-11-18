@@ -627,99 +627,6 @@
     }
   }
 
-  function syncPreviewShell(remoteDocument, options = {}) {
-    const remoteHeader = remoteDocument.querySelector('body>header');
-    const localHeader = document.querySelector('body>header');
-    if (!remoteHeader || !localHeader) return;
-
-    const syncNavigation = (selector) => {
-      const remote = remoteHeader.querySelector(selector) ||
-        remoteDocument.querySelector(selector);
-      const local = localHeader.querySelector(selector) ||
-        document.querySelector(selector);
-      if (!remote || !local) return;
-
-      const activeIndex = options.preserveActive
-        ? Array.from(local.querySelectorAll('a')).findIndex((link) => link.classList.contains('on'))
-        : -1;
-      local.innerHTML = remote.innerHTML;
-      if (activeIndex >= 0) {
-        const activeLink = local.querySelectorAll('a')[activeIndex];
-        if (activeLink) {
-          activeLink.classList.add('on');
-          activeLink.setAttribute('aria-current', 'page');
-        }
-      }
-    };
-
-    syncNavigation('nav#nv');
-    const remoteDrawer = remoteDocument.querySelector('#mnd');
-    const localDrawer = document.querySelector('#mnd');
-    const remoteDrawerNav = remoteDrawer && remoteDrawer.querySelector('#nvd');
-    const localDrawerNav = localDrawer && localDrawer.querySelector('#nvd');
-    if (remoteDrawerNav && localDrawerNav) {
-      const activeIndex = options.preserveActive
-        ? Array.from(localDrawerNav.querySelectorAll('a')).findIndex((link) => link.classList.contains('on'))
-        : -1;
-      localDrawerNav.innerHTML = remoteDrawerNav.innerHTML;
-      if (activeIndex >= 0) {
-        const activeLink = localDrawerNav.querySelectorAll('a')[activeIndex];
-        if (activeLink) {
-          activeLink.classList.add('on');
-          activeLink.setAttribute('aria-current', 'page');
-        }
-      }
-    }
-
-    const syncHeaderLink = (id, hideWhenMissing = false) => {
-      const local = document.getElementById(id);
-      const remote = remoteDocument.getElementById(id);
-      if (!local) return;
-      if (!remote) {
-        if (hideWhenMissing) local.hidden = true;
-        return;
-      }
-      local.hidden = false;
-      ['href', 'aria-label', 'class'].forEach((attribute) => {
-        if (remote.hasAttribute(attribute)) local.setAttribute(attribute, remote.getAttribute(attribute));
-        else local.removeAttribute(attribute);
-      });
-      local.innerHTML = remote.innerHTML;
-    };
-
-    const remoteLogo = remoteHeader.querySelector('a.logo');
-    const localLogo = localHeader.querySelector('a.logo');
-    if (remoteLogo && localLogo) {
-      localLogo.href = remoteLogo.getAttribute('href') || '/';
-      localLogo.setAttribute('aria-label', remoteLogo.getAttribute('aria-label') || 'تاتامی پلاس');
-      localLogo.innerHTML = remoteLogo.innerHTML;
-    }
-
-    syncHeaderLink('hcart');
-    syncHeaderLink('hbu');
-    syncHeaderLink('hgem', true);
-
-    const remoteDrawerFooter = remoteDrawer && remoteDrawer.querySelector('.tp-drawer-f');
-    const localDrawerFooter = localDrawer && localDrawer.querySelector('.tp-drawer-f, #mndf');
-    if (remoteDrawerFooter && localDrawerFooter) {
-      localDrawerFooter.innerHTML = remoteDrawerFooter.innerHTML;
-    }
-
-    const remoteFooter = remoteDocument.querySelector('body>footer.ft');
-    const localFooter = document.querySelector('body>footer.ft');
-    if (remoteFooter && localFooter) localFooter.innerHTML = remoteFooter.innerHTML;
-  }
-
-  function hydratePreviewShell() {
-    fetchDjangoPage('/').then((remoteDocument) => {
-      if (location.pathname === '/preview/' || location.pathname === '/preview') {
-        syncPreviewShell(remoteDocument, { preserveActive: true });
-      }
-    }).catch(() => {
-      // The Preview remains usable when the Django session endpoint is unavailable.
-    });
-  }
-
   function renderDjangoDocument(markup, finalUrl, expectedHash) {
     const documentFromServer = new DOMParser().parseFromString(markup, 'text/html');
     const remoteApp = documentFromServer.querySelector('#app');
@@ -817,12 +724,9 @@
       if (app) delete app.dataset.loading;
     } catch (error) {
       if (version !== requestVersion || expectedHash !== location.hash) return;
-      activeDjangoView = true;
+      resetPreviewBridgeState();
       if (app) {
-        app.className = '';
-        app.removeAttribute('data-django-view');
         delete app.dataset.loading;
-        app.setAttribute('role', 'main');
         app.setAttribute('aria-busy', 'false');
       }
       const detail = error && error.message && error.message.startsWith('Django returned HTTP ')

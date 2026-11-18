@@ -34,19 +34,28 @@ const documentHtml = (content, title = 'Django test page') => `<!doctype html>
   <a class="logo" href="/" aria-label="تاتامی پلاس">تاتامی پلاس</a>
   ${serverNav('nv')}
   <div class="hb">
-    <a class="ib" id="hgem" href="/account/gems/" aria-label="تاریخچه جم">جم <b>۱۲</b></a>
-    <a class="ib" id="hcart" href="/store/cart/" aria-label="سبد خرید">سبد خرید</a>
-    <a class="ib" id="hbu" href="/account/" aria-label="حساب کاربری">کاربر آزمایشی</a>
+    <a class="ib tp-gem-header" id="hgem" href="/account/gems/" aria-label="موجودی ۱۲ جم؛ مشاهده تاریخچه">
+      <svg class="tp-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10l5 6-10 12L2 9l5-6Z"/></svg>
+      <span class="hb-t">جم</span><b class="tp-gem-header-value">۱۲</b>
+    </a>
+    <a class="ib" id="hcart" href="/store/cart/" aria-label="سبد خرید">
+      <svg class="tp-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.4 11.2"/></svg>
+      <span class="hb-t">سبد خرید</span>
+    </a>
+    <a class="ib" id="hbu" href="/account/" aria-label="حساب کاربری">
+      <svg class="tp-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/></svg>
+      <span class="hb-t">کاربر آزمایشی</span>
+    </a>
     <button type="button" class="ib mnb" id="mnb" aria-haspopup="dialog" aria-controls="mnd">بیشتر</button>
   </div>
 </header>
 <dialog id="mnd" class="tp-drawer">
   <div class="tp-drawer-h"><b>منو</b><button type="button" id="mnx">بستن</button></div>
   ${serverNav('nvd')}
-  <div class="tp-drawer-f"><form method="post" action="/accounts/logout/"><button>خروج</button></form></div>
+  <div class="tp-drawer-f"><form method="post" action="/accounts/logout/"><input type="hidden" name="csrfmiddlewaretoken" value="test-csrf"><button>خروج</button></form></div>
 </dialog>
-<div id="app">${content}</div>
-<footer class="ft"><nav><a href="/store/">فروشگاه</a><a href="/club/">دوره‌ها</a></nav><span id="footer-shell-marker">پاورقی آزمایشی</span></footer>
+<div id="app"><main class="w tp-store-page">${content}</main></div>
+<footer class="ft"><nav><a href="/store/">فروشگاه سرور</a><a href="/club/">دوره‌های سرور</a></nav><span id="server-footer-marker">فوتر سرور</span></footer>
 </body></html>`;
 
 const storeForm = (result = '') => `
@@ -61,6 +70,7 @@ const storeForm = (result = '') => `
     <label for="video-file">ویدئو</label><input id="video-file" type="file" name="video_file">
     <button id="video-submit" type="submit">بارگذاری ویدئو</button>
   </form>
+  <a id="server-cart-link" href="/store/cart/">رفتن به سبد خرید واقعی</a>
   <label for="invite-copy-value">پیوند دعوت</label>
   <input id="invite-copy-value" readonly value="https://tatami.example/coaches/join/ABCD2345/">
   <button id="invite-copy-button" type="button" data-copy-target="invite-copy-value"
@@ -75,8 +85,21 @@ try {
   const page = await browser.newPage();
   page.on('pageerror', error => failures.push('browser error: ' + error.message));
 
+  await page.route('**/static/css/**', async route => {
+    await route.fulfill({ status: 200, contentType: 'text/css; charset=utf-8', body: 'body{color:inherit}' });
+  });
+
   await page.route('**/store/**', async route => {
     const request = route.request();
+    const requestUrl = new URL(request.url());
+    if (request.method() === 'GET' && requestUrl.pathname === '/store/cart/') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'text/html; charset=utf-8',
+        body: documentHtml('<h1 id="cart-target">سبد خرید واقعی از Django</h1>', 'سبد خرید آزمایشی')
+      });
+      return;
+    }
     if (request.method() === 'GET') {
       await route.fulfill({
         status: 200,
@@ -120,13 +143,22 @@ try {
   await page.goto(`${base}/preview/#/store`, { waitUntil: 'load' });
   await page.locator('#bridge-form').waitFor({ state: 'visible', timeout: 15000 });
   assert.equal(await page.locator('#app').getAttribute('data-django-view'), '/store/');
-  assert.equal(await page.locator('#hcart').getAttribute('href'), '/store/cart/');
-  assert.equal(await page.locator('#hbu').getAttribute('href'), '/account/');
-  assert.equal((await page.locator('#hbu').textContent()).trim(), 'کاربر آزمایشی');
+  assert.equal(await page.locator('#app').evaluate(el => el.tagName), 'MAIN', 'the original Preview mount element must not be replaced');
+  assert.equal(await page.locator('#app').evaluate(el => el.classList.contains('tp-store-page')), true);
+  assert.equal(await page.locator('#hcart').getAttribute('href'), '#/cart', 'Preview cart route must remain hash-based');
+  assert.equal(await page.locator('#cc').count(), 1, 'Preview cart counter mount must remain present');
+  assert.equal(await page.locator('#hbu').getAttribute('href'), '#/profile');
+  assert.equal((await page.locator('#hbu .hb-t').textContent()).trim(), 'کاربر آزمایشی');
+  assert.equal(await page.locator('#hgem').isVisible(), true);
+  assert.equal((await page.locator('#hgem .tp-gem-header-value').textContent()).trim(), '۱۲');
   assert.equal(await page.locator('#nv a').count(), 15);
   assert.equal(await page.locator('#nvd a').count(), 15);
-  assert.equal(await page.locator('#footer-shell-marker').count(), 1);
-  assert.equal(await page.locator('#nv a.on').textContent(), 'فروشگاه');
+  assert.equal(await page.locator('#nv a[href="/store/"]').count(), 0, 'server navigation must not replace Preview navigation');
+  assert.equal(await page.locator('#nv a[href="#/store"]').count(), 1);
+  assert.equal(await page.locator('#server-footer-marker').count(), 0, 'server footer must not replace Preview footer');
+  assert.equal(await page.locator('footer a[href="#/store"]').count(), 1);
+  assert.equal(await page.locator('#mndf form[action="/accounts/logout/"]').count(), 1);
+  assert.equal(await page.locator('link[data-tp-django-style]').count(), 4);
 
   for (const width of [1024, 1199, 1200, 1439, 1440]) {
     await page.setViewportSize({ width, height: 900 });
@@ -143,6 +175,30 @@ try {
   await page.locator('#mnb').click();
   await page.locator('#mnd[open]').waitFor({ state: 'visible' });
   assert.equal(await page.locator('#nvd a').count(), 15);
+  await page.keyboard.press('Escape');
+
+  await page.locator('#server-cart-link').click();
+  await page.locator('#cart-target').waitFor({ state: 'visible', timeout: 15000 });
+  assert.equal(await page.locator('#app').getAttribute('data-django-view'), '/store/cart/');
+  assert.equal(await page.locator('#app').evaluate(el => el.tagName), 'MAIN');
+  assert.equal(await page.locator('#app').innerText(), 'سبد خرید واقعی از Django');
+
+  await page.evaluate(() => { location.hash = '#/store'; });
+  await page.locator('#bridge-form').waitFor({ state: 'visible', timeout: 15000 });
+  await page.evaluate(() => { location.hash = '#/online-coach'; });
+  await page.waitForFunction(() => document.querySelector('#app')?.innerText.includes('روشن کردن دوربین'));
+  assert.equal(await page.locator('#app').getAttribute('data-django-view'), null);
+  assert.equal(await page.locator('#app').getAttribute('class'), '');
+  assert.equal(await page.locator('link[data-tp-django-style]').count(), 0, 'Django styles must be removed when returning to Preview-only routes');
+  assert.equal(await page.locator('#app').evaluate(el => el.tagName), 'MAIN');
+  assert.equal(await page.locator('#cc').count(), 1);
+  assert.equal(await page.locator('#nv a[href="#/store"]').count(), 1);
+  assert.equal(await page.locator('footer a[href="#/store"]').count(), 1);
+  assert.equal((await page.locator('#hbu .hb-t').textContent()).trim(), 'کاربر آزمایشی', 'real Django session header state must survive Preview-only navigation');
+  assert.equal(await page.locator('#mndf form[action="/accounts/logout/"]').count(), 1);
+  assert.equal(await page.locator('#server-footer-marker').count(), 0);
+  await page.locator('#mnb').click();
+  await page.locator('#mnd[open]').waitFor({ state: 'visible' });
   await page.keyboard.press('Escape');
 
   await page.evaluate(() => {
@@ -187,6 +243,7 @@ try {
   assert.equal(await page.locator('#club-target').count(), 1);
   assert.equal(await page.locator('#post-result').count(), 0);
 
+  assert.deepEqual(failures, [], 'Preview and Django route transitions must not produce browser runtime errors');
   await page.close();
 } catch (error) {
   failures.push(error?.stack || String(error));
