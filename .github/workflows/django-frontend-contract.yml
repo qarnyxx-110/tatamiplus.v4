@@ -204,6 +204,9 @@ jobs:
           assert ".product-grid" not in backend_css and ".cart-row" not in backend_css
           assert len(backend_css) < 1000
           assert "#app" in backend_css and ".tp-msgs" in backend_css
+          assert "body.tp-django-shell" in backend_css
+          assert "body {" not in backend_css and "#app {" not in backend_css
+          assert '<body class="tp-django-shell">' in base
           account = Path("django/templates/pages/account.html").read_text(encoding="utf-8")
           assert "{% url 'orders:list' %}" in account
           assert "{% url 'gems:history' %}" in account

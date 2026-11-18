@@ -830,15 +830,22 @@
       location.hash = '#/login';
       return;
     }
-    if (!activeDjangoView || !document.querySelector('#app')?.contains(form) ||
-        (form.target && form.target.toLowerCase() !== '_self')) return;
-
     const method = String(form.method || 'get').toUpperCase();
     let action;
     try {
       action = new URL(form.getAttribute('action') || currentServerUrl.href, currentServerUrl);
     } catch { return; }
-    if (!isAllowedDjangoUrl(action)) return;
+
+    const app = document.querySelector('#app');
+    const inApp = Boolean(app && app.contains(form));
+    const drawer = document.getElementById('mnd');
+    const inDrawer = Boolean(drawer && drawer.contains(form));
+    const isSessionLogout = inDrawer && method === 'POST' &&
+      action.pathname.replace(/\\/+$/, '/') === '/accounts/logout/';
+    if ((!activeDjangoView && !isSessionLogout) ||
+        (!inApp && !isSessionLogout) ||
+        (form.target && form.target.toLowerCase() !== '_self') ||
+        !isAllowedDjangoUrl(action)) return;
 
     event.preventDefault();
     event.stopImmediatePropagation();

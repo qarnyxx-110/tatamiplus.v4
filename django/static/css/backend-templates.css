@@ -1,11 +1,11 @@
 /* Django shell compatibility only.
    All page design and components are provided by the shared Tatami Plus CSS. */
-body {
+body.tp-django-shell {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
 }
-#app { flex: 1 0 auto; }
+body.tp-django-shell #app { flex: 1 0 auto; }
 .tp-msgs {
   width: min(100% - 32px, 1200px);
   margin: 0 auto;
