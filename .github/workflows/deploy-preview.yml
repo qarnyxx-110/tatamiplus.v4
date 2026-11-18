@@ -62,6 +62,10 @@ jobs:
           npm install --no-package-lock --no-audit --no-fund
           npx playwright install --with-deps chromium
 
+      - name: Run Django Preview bridge browser regression tests
+        working-directory: shared
+        run: node tests/django-bridge.test.mjs
+
       - name: Run Student PWA browser regression suite
         working-directory: shared
         env:
@@ -87,10 +91,6 @@ jobs:
       - name: Run Django browser runtime regression tests
         working-directory: shared
         run: node tests/django-ui.test.mjs
-
-      - name: Run Django Preview bridge browser regression tests
-        working-directory: shared
-        run: node tests/django-bridge.test.mjs
 
       - name: Run focused clubs and map browser tests
         working-directory: shared
