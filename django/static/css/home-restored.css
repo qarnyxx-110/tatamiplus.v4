@@ -1,152 +1,6 @@
-/* Tatami Plus homepage.
-   All selectors are scoped to .tp-home so page styling stays isolated.
-   Shared tokens and primitives come from tatami.css. */
-
-/* Hero */
+/* Homepage feed layout only.
+   Hero, intro, technique story, feature cards and CTA reuse Tatami Plus shared primitives. */
 .tp-home { overflow: clip; }
-.tp-home .eyebrow {
-  display: inline-block;
-  margin: 0 0 var(--tp-space-xs);
-  color: var(--tp-color-brand-text);
-  font-size: var(--tp-font-size-xs);
-  font-weight: 800;
-  letter-spacing: .12em;
-}
-.tp-home-hero {
-  position: relative;
-  isolation: isolate;
-  min-height: min(78vh, 780px);
-  display: grid;
-  align-items: center;
-  overflow: hidden;
-  background:
-    radial-gradient(75% 68% at 18% 30%, var(--tp-color-brand-tint), transparent 72%),
-    var(--tp-color-bg);
-}
-.tp-home-hero .w {
-  position: relative;
-  width: min(100%, 1200px);
-  padding-block: clamp(76px, 11vh, 136px);
-}
-.tp-home-hero-content { position: relative; z-index: 1; max-width: 800px; }
-.tp-home-hero h1 {
-  max-width: 900px;
-  margin: 20px 0 12px;
-  color: var(--tp-color-text-primary);
-  font-family: var(--tp-font-family-display, var(--tp-font-family));
-  font-size: clamp(2.6rem, 7vw, 5.35rem);
-  font-weight: 900;
-  line-height: 1.28;
-  letter-spacing: -.025em;
-}
-.tp-home-hero .tp-home-lead {
-  max-width: 790px;
-  margin: 0 0 14px;
-  font-size: clamp(1.2rem, 2.5vw, 1.75rem);
-  line-height: 1.8;
-}
-.tp-home-copy {
-  max-width: 650px;
-  line-height: 2.1;
-  font-size: var(--tp-font-size-lg);
-}
-.tp-home-actions { margin-top: var(--tp-space-lg); gap: var(--tp-space-sm); }
-.tp-home-hero-mark {
-  position: absolute;
-  inset-inline-end: 5%;
-  top: 50%;
-  transform: translateY(-52%) rotate(-10deg);
-  z-index: 0;
-  color: var(--tp-color-brand);
-  opacity: .08;
-  font: 900 clamp(10rem, 26vw, 22rem)/1 serif;
-  pointer-events: none;
-  user-select: none;
-}
-.tp-home-scroll {
-  position: absolute;
-  inset-inline-start: max(24px, calc((100% - 1160px)/2));
-  bottom: 26px;
-  display: inline-flex;
-  gap: 10px;
-  align-items: center;
-  color: var(--tp-color-text-secondary);
-  font-size: var(--tp-font-size-xs);
-}
-.tp-home-scroll span { width: 28px; height: 1px; background: var(--tp-color-brand); }
-
-/* Shared section heading and introduction */
-.tp-home-intro { padding-top: clamp(48px, 7vw, 88px); }
-.tp-home-section-head {
-  display: flex;
-  align-items: end;
-  justify-content: space-between;
-  gap: var(--tp-space-lg);
-  margin-bottom: var(--tp-space-lg);
-}
-.tp-home-section-head h2 {
-  margin: 0;
-  font-family: var(--tp-font-family-display, var(--tp-font-family));
-  font-size: clamp(1.5rem, 3vw, 2.15rem);
-}
-.tp-home-section-head > p {
-  max-width: 450px;
-  margin: 0;
-  line-height: 1.9;
-  font-size: var(--tp-font-size-sm);
-}
-.tp-home-intro-copy {
-  max-width: 900px;
-  margin-bottom: var(--tp-space-lg);
-  line-height: 2.15;
-  font-size: var(--tp-font-size-lg);
-}
-.tp-home-stats {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  margin-top: var(--tp-space-lg);
-}
-.tp-home-stats .sc2 { align-items: flex-start; min-height: 104px; }
-.tp-home-stats .sc2 p { margin: 5px 0 0; line-height: 1.8; }
-
-/* Only the three modules that have working Django destinations */
-.tp-home-feature-grid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-.tp-home-feature-card {
-  position: relative;
-  min-width: 0;
-  min-height: 218px;
-  border: 1px solid var(--tp-color-border);
-  transition: border-color var(--tp-motion-fast), transform var(--tp-motion-fast), box-shadow var(--tp-motion-fast);
-}
-.tp-home-feature-card .b {
-  display: flex;
-  height: 100%;
-  flex-direction: column;
-  align-items: flex-start;
-  padding: var(--tp-space-lg);
-}
-.tp-home-feature-card h3 { margin: 14px 0 8px; font-size: var(--tp-font-size-lg); }
-.tp-home-feature-card p { flex: 1; min-height: 62px; line-height: 1.9; }
-.tp-home-feature-card .tag { display: inline-flex; margin-top: 8px; }
-.tp-home-card-index {
-  position: absolute;
-  inset-inline-end: 16px;
-  top: 15px;
-  color: var(--tp-color-text-subtle);
-  opacity: .6;
-  font: 800 var(--tp-font-size-sm)/1 var(--tp-font-family);
-  direction: ltr;
-}
-a.tp-home-feature-card:hover {
-  border-color: var(--tp-color-brand);
-  transform: translateY(-3px);
-  box-shadow: var(--tp-shadow-card-hover);
-}
-.tp-home-feature-card .text-link { color: var(--tp-color-brand-text); font-weight: 750; }
-
-/* Live previews are extracted from the existing public Django pages.
-   No sample products, coaches, courses, prices or stock values are authored here. */
 .tp-home-feed-section { padding-top: var(--tp-space-xs); }
 .tp-home-feed { min-width: 0; min-height: 6rem; }
 .tp-home-feed-loading {
@@ -168,265 +22,48 @@ a.tp-home-feature-card:hover {
 .tp-home-feed-empty p { margin: 0; color: var(--tp-color-text-secondary); line-height: 1.9; }
 .tp-home-feed-empty.is-error { border-inline-start-color: var(--tp-color-danger); }
 
-.tp-home-feed.is-products .product-grid {
+.tp-home-feed.is-products .tp-product-grid {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--tp-space-md);
 }
-.tp-home-feed.is-products .product-item {
-  overflow: hidden;
-  border: 1px solid var(--tp-color-border);
-  border-radius: var(--tp-radius-card);
-  background: var(--tp-color-surface);
-}
-.tp-home-feed.is-products .product-image { display: grid; place-items: center; aspect-ratio: 4 / 3; }
-.tp-home-feed.is-products .product-info { padding: var(--tp-space-sm) var(--tp-space-md) var(--tp-space-md); }
-.tp-home-feed.is-products .product-info h2 { font-size: var(--tp-font-size-base); line-height: 1.8; }
-.tp-home-feed.is-products .product-price { margin-bottom: 0; }
-
-.tp-home-feed.is-courses .coach-list,
-.tp-home-feed.is-coaches .coach-list {
-  border-top: 1px solid var(--tp-color-border);
-}
-.tp-home-feed.is-courses .coach-row {
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: var(--tp-space-md);
-}
-.tp-home-feed.is-coaches .coach-row {
-  grid-template-columns: 38px minmax(0, 1fr) 20px;
-  gap: var(--tp-space-sm);
-}
-.tp-home-feed .coach-row {
-  min-width: 0;
-  padding: var(--tp-space-md);
-  border-bottom: 1px solid var(--tp-color-border);
-  border-radius: 0;
-}
-.tp-home-feed .coach-row:hover { background: var(--tp-color-surface); }
-.tp-home-feed .coach-row strong { overflow-wrap: anywhere; }
-.tp-home-feed .coach-row small { line-height: 1.8; }
-.tp-home-feed-footer { display: flex; justify-content: flex-start; margin-top: var(--tp-space-md); }
-
-/* Final call to action */
-.tp-home-cta {
-  padding: clamp(26px, 5vw, 52px);
-  border: 1px solid var(--tp-color-border);
-  border-radius: var(--tp-radius-card);
-  background:
-    radial-gradient(65% 120% at 100% 0%, var(--tp-color-brand-tint), transparent 72%),
-    var(--tp-color-surface);
-}
-.tp-home-cta h2 {
-  font-family: var(--tp-font-family-display, var(--tp-font-family));
-  font-size: clamp(1.8rem, 4vw, 2.7rem);
-}
-.tp-home-cta p { margin-bottom: var(--tp-space-md); }
-.tp-home-cta .chips { margin-bottom: 0; }
-
-/* Responsive behavior */
-@media (max-width: 900px) {
-  .tp-home-section-head { display: block; }
-  .tp-home-section-head > p { margin-top: var(--tp-space-xs); }
-  .tp-home-feature-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .tp-home-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
-@media (max-width: 600px) {
-  .tp-home-hero { min-height: 72vh; }
-  .tp-home-hero .w { padding-block: 58px 82px; }
-  .tp-home-hero h1 { font-size: clamp(2.2rem, 10vw, 3.5rem); }
-  .tp-home-hero-mark { inset-inline-end: -4%; opacity: .65; }
-  .tp-home-scroll { bottom: 18px; }
-  .tp-home-feature-grid,
-  .tp-home-stats { grid-template-columns: minmax(0, 1fr); }
-  .tp-home-feature-card { min-height: 0; }
-  .tp-home-feature-card p { min-height: 0; }
-  .tp-home-feed.is-products .product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--tp-space-sm); }
-  .tp-home-feed.is-courses .coach-row { grid-template-columns: minmax(0,1fr); }
-  .tp-home-feed.is-courses .coach-row > span:last-child { color: var(--tp-color-brand-text); }
-  .tp-home-feed.is-coaches .coach-row { grid-template-columns: 30px minmax(0,1fr) 18px; }
-  .tp-home-feed .coach-row { padding-inline: var(--tp-space-xs); }
-  .tp-home-feed-footer .btn { width: 100%; }
-}
-@media (max-width: 380px) {
-  .tp-home-feed.is-products .product-grid { grid-template-columns: minmax(0,1fr); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .tp-home-feature-card { transition: none; }
-  .tp-home-feature-card:hover { transform: none; }
-}
-
-/* Original Preview-style judo technique story */
-.tp-home-cine {
-  position: relative;
-  height: 310vh;
-  margin-top: var(--tp-space-2xl);
-  background: linear-gradient(180deg, transparent, var(--tp-color-surface) 14%, var(--tp-color-surface) 86%, transparent);
-}
-.tp-home-cine-heading {
-  position: relative;
-  z-index: 2;
-  width: min(100% - 36px, 1120px);
-  margin: 0 auto;
-  padding-top: var(--tp-space-xl);
-}
-.tp-home-cine-heading h2 {
-  margin: 0 0 var(--tp-space-2xs);
-  font-family: var(--tp-font-family-display, var(--tp-font-family));
-  font-size: clamp(1.6rem, 3vw, 2.3rem);
-}
-.tp-home-cine-heading p { max-width: 540px; line-height: 1.9; }
-.tp-home-cine-track {
-  position: sticky;
-  top: 68px;
-  height: calc(100vh - 68px);
-  margin-top: -8px;
-  overflow: hidden;
-}
-.tp-home-technique {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  grid-template-columns: minmax(0, .85fr) minmax(0, 1.35fr);
-  align-items: center;
-  gap: clamp(20px, 5vw, 72px);
-  padding: 0 max(18px, calc((100% - 1120px)/2));
-  opacity: 0;
-  pointer-events: none;
-  will-change: opacity, transform;
-}
-.tp-home-technique:first-child { opacity: 1; pointer-events: auto; }
-.tp-home-technique-copy { max-width: 460px; }
-.tp-home-technique-copy h3 {
-  margin: 12px 0;
-  font-family: var(--tp-font-family-display, var(--tp-font-family));
-  font-size: clamp(2rem, 4vw, 3.5rem);
-  line-height: 1.35;
-}
-.tp-home-technique-copy h3 span {
-  display: block;
-  color: var(--tp-color-brand-text);
-  font: 800 .78rem/1.6 var(--tp-font-family);
-  letter-spacing: .16em;
-  direction: ltr;
-  text-align: right;
-}
-.tp-home-technique-copy p { line-height: 2; }
-.tp-home-technique-note {
-  margin-top: var(--tp-space-md);
-  padding-inline-start: var(--tp-space-md);
-  border-inline-start: 2px solid var(--tp-color-brand);
-  color: var(--tp-color-text-primary);
-  font-size: var(--tp-font-size-sm);
-}
-.tp-home-technique-art {
+.tp-home-feed.is-products .tp-product-card {
   display: flex;
-  width: 100%;
-  min-height: 260px;
-  max-height: 68vh;
-  aspect-ratio: 16 / 10;
-  align-items: flex-end;
-  justify-content: flex-start;
-  border: 1px solid var(--tp-color-border);
-  border-radius: var(--tp-radius-lg);
-  background:
-    radial-gradient(70% 90% at 50% 5%, hsla(var(--h, 205), 65%, 52%, .27), transparent 68%),
-    linear-gradient(135deg, hsl(var(--h, 205), 42%, 20%), var(--tp-color-surface));
-  box-shadow: var(--tp-shadow-card);
-}
-.tp-home-technique-art svg {
-  width: clamp(110px, 18vw, 190px);
-  height: clamp(110px, 18vw, 190px);
-  margin: 0 auto;
-  opacity: .45;
-}
-.tp-home-technique-art figcaption {
-  z-index: 1;
-  padding: 6px 10px;
-  border: 1px solid rgba(255,255,255,.18);
-  border-radius: var(--tp-radius-control);
-  background: rgba(0,0,0,.28);
-  letter-spacing: .14em;
-}
-.tp-home-cine-progress {
-  position: sticky;
-  bottom: 22px;
-  z-index: 3;
-  width: min(180px, 30vw);
-  height: 3px;
-  margin: -18px auto 0;
-  overflow: hidden;
-  border-radius: 99px;
-  background: var(--tp-color-border);
-}
-.tp-home-cine-progress span {
-  display: block;
-  width: 0;
-  height: 100%;
-  background: var(--tp-color-brand);
-}
-
-/* Four active destination cards */
-.tp-home-feature-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-
-/* Homepage live previews use the exact card classes of each Django source page. */
-.tp-home-feed.is-products .tp-product-grid,
-.tp-home-feed.is-courses .tp-course-grid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--tp-space-md);
-}
-.tp-home-feed.is-products .tp-product-card,
-.tp-home-feed.is-courses .tp-course-card {
   min-width: 0;
-  height: 100%;
+  flex-direction: column;
+}
+.tp-home-feed.is-products .tp-product-card .b {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--tp-space-2xs);
+}
+.tp-home-feed.is-products .tp-product-card .tp-price { margin-top: auto; }
+
+.tp-home-feed.is-courses .tp-course-grid {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr));
+}
+.tp-home-feed.is-courses .tp-course-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+}
+.tp-home-feed.is-courses .tp-course-card .b {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--tp-space-xs);
 }
 .tp-home-feed.is-coaches .tp-coaches {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr));
 }
-.tp-home-feed.is-coaches .tp-coaches > li { display: flex; min-width: 0; }
-.tp-home-feed.is-coaches .tp-coaches > li > .tp-coach { width: 100%; }
-.tp-home-feed.is-coaches .tp-coach { min-width: 0; }
-.tp-home-feed.is-coaches .tp-coach b { overflow-wrap: anywhere; }
-
-@media (max-width: 900px) {
-  .tp-home-feature-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .tp-home-technique { grid-template-columns: minmax(0, 1fr); gap: var(--tp-space-md); align-content: center; }
-  .tp-home-technique-copy { max-width: 680px; }
-  .tp-home-technique-art { min-height: 200px; max-height: 38vh; }
-  .tp-home-feed.is-products .tp-product-grid,
-  .tp-home-feed.is-courses .tp-course-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .tp-home-feed.is-coaches .tp-coaches { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.tp-home-feed-footer {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: var(--tp-space-md);
 }
 @media (max-width: 600px) {
-  .tp-home-cine { height: 290vh; }
-  .tp-home-cine-heading { width: calc(100% - 36px); padding-top: var(--tp-space-lg); }
-  .tp-home-cine-track { top: 92px; height: calc(100vh - 92px); }
-  .tp-home-technique { padding-inline: 18px; }
-  .tp-home-technique-copy h3 { font-size: 2rem; }
-  .tp-home-technique-art { min-height: 155px; }
-  .tp-home-feature-grid { grid-template-columns: minmax(0, 1fr); }
-  .tp-home-feed.is-products .tp-product-grid,
-  .tp-home-feed.is-courses .tp-course-grid,
-  .tp-home-feed.is-coaches .tp-coaches { grid-template-columns: minmax(0, 1fr); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .tp-home-cine { height: auto; min-height: 0; }
-  .tp-home-cine-track {
-    position: static;
-    top: auto;
-    height: auto;
-    margin-top: 0;
-    overflow: visible;
-  }
-  .tp-home-technique {
-    position: relative;
-    inset: auto;
-    display: grid;
-    opacity: 1 !important;
-    transform: none !important;
-    pointer-events: auto !important;
-    min-height: 0;
-    margin-block: var(--tp-space-lg);
-    padding-block: var(--tp-space-md);
-    transition: none !important;
-  }
-  .tp-home-cine-progress { display: none; }
+  .tp-home-feed.is-products .tp-product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--tp-space-sm); }
+  .tp-home-feed.is-courses .tp-course-grid { grid-template-columns: minmax(0, 1fr); }
+  .tp-home-feed-footer .btn { width: 100%; }
 }
