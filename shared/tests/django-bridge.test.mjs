@@ -187,6 +187,11 @@ try {
   assert.equal(await page.evaluate(() => getComputedStyle(document.body).display), 'block', 'Django-only body flex rules must not affect the Preview shell');
   assert.equal(await page.locator('body').evaluate(el => el.classList.contains('tp-django-shell')), false);
   assert.equal(await page.locator('#app').evaluate(el => el.classList.contains('tp-store-page')), true);
+  await page.setViewportSize({ width: 390, height: 850 });
+  const expectedMobilePadding = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--tp-space-sm').trim());
+  const actualMobilePadding = await page.locator('#app').evaluate(el => getComputedStyle(el).paddingInlineStart);
+  assert.equal(actualMobilePadding, expectedMobilePadding, 'Preview bridge root must receive the same mobile page padding as a direct Django .w child');
+  await page.setViewportSize({ width: 1280, height: 900 });
   assert.equal(await page.locator('#hcart').getAttribute('href'), '#/cart', 'Preview cart route must remain hash-based');
   assert.equal(await page.locator('#cc').count(), 1, 'Preview cart counter mount must remain present');
   assert.equal(await page.locator('#hbu').getAttribute('href'), '#/profile');

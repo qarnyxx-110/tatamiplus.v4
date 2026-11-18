@@ -127,6 +127,7 @@ jobs:
           assert all("page-main" not in source and "button-dark" not in source for source in order_sources)
           assert all("{% csrf_token %}" in source for source in order_sources if "method=\"post\"" in source)
           assert ".tp-auth-layout{" in shared_css and ".tp-auth-aside{" in shared_css
+          assert '#app.w,#app .w{padding-inline:var(--tp-space-sm)}' in shared_css
           assert ".tp-gem-table{" in shared_css
           assert "accounts/login.html" not in next(item for item in frontend_manifest["mappings"] if item["destination"] == "templates").get("exclude", [])
           assert "data-reference-store" in store_template and "صرفاً جهت مشاهده، بدون امکان خرید" in store_template
