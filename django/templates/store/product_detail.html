@@ -10,23 +10,28 @@
   </nav>
 
   <div class="pd tp-product-detail">
-    <section class="tp-product-gallery" data-product-gallery aria-label="تصاویر محصول">
+    <section data-product-gallery aria-label="تصاویر محصول">
       {% with main_image=product.images.all|first %}
-        <figure class="ph r43 tp-product-gallery-main{% if main_image %} ok{% endif %}" data-gallery-main>
-          {% if main_image %}
-            <img data-gallery-main-image src="{{ main_image.image.url }}" alt="{{ main_image.alt_text|default:product.name }}" decoding="async">
-          {% else %}
-            <figcaption>تصویری برای این محصول ثبت نشده است</figcaption>
-          {% endif %}
-        </figure>
+        <div class="pm">
+          <figure class="ph r43{% if main_image %} ok{% endif %}" data-gallery-main>
+            {% if main_image %}
+              <img data-gallery-main-image src="{{ main_image.image.url }}" alt="{{ main_image.alt_text|default:product.name }}" decoding="async">
+            {% else %}
+              <svg viewBox="0 0 40 40" fill="currentColor" aria-hidden="true"><path d="M5 8h30v24H5zM11 26l6-7 4 4 4-6 5 9z"/></svg>
+              <figcaption>تصویری برای این محصول ثبت نشده است</figcaption>
+            {% endif %}
+          </figure>
+        </div>
       {% endwith %}
       {% if product.images.count > 1 %}
-        <div class="tp-product-gallery-thumbs" role="group" aria-label="انتخاب تصویر محصول">
+        <div class="pt" role="group" aria-label="انتخاب تصویر محصول">
           {% for image in product.images.all %}
-            <button type="button" class="tp-product-thumb{% if forloop.first %} is-active{% endif %}"
+            <button type="button" class="ptb{% if forloop.first %} on is-active{% endif %}"
               data-gallery-select data-src="{{ image.image.url }}" data-alt="{{ image.alt_text|default:product.name }}"
               aria-label="نمایش تصویر {{ forloop.counter }}" aria-pressed="{% if forloop.first %}true{% else %}false{% endif %}">
-              <img src="{{ image.image.url }}" alt="" loading="lazy" decoding="async">
+              <figure class="ph th ok">
+                <img src="{{ image.image.url }}" alt="" loading="lazy" decoding="async">
+              </figure>
             </button>
           {% endfor %}
         </div>
