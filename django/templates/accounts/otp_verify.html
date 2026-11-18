@@ -17,11 +17,13 @@
     <button class="btn tp-auth-btn" type="submit">تأیید و ادامه</button>
   </form>
 
-  <form id="tp-otp-resend-form" class="tp-auth-alt" method="post" action="{% url 'phone_auth:send_otp' %}">
+  <form id="tp-otp-resend-form" class="tp-auth-alt" method="post" action="{% url 'phone_auth:send_otp' %}" data-tp-otp-resend data-resend-in="{{ resend_in|default:0 }}">
     {% csrf_token %}
     <button class="btn o s" type="submit">ارسال دوبارهٔ کد</button>
   </form>
 
-  <p class="tp-hint">در صورت نرسیدن پیامک، می‌توانید درخواست ارسال دوباره بدهید. محدودیت ارسال توسط سامانه بررسی می‌شود.</p>
-  <p class="tp-auth-alt"><a href="{% url 'phone_auth:login' %}">بازگشت به ورود</a></p>
+  <p class="tp-hint">در صورت نرسیدن پیامک، پس از پایان زمان انتظار می‌توانید درخواست ارسال دوباره بدهید. محدودیت نهایی توسط سامانه بررسی می‌شود.</p>
+  {% with next_value=request.session.otp_next|default:'' role_value=request.session.otp_role|default:'' %}
+    <p class="tp-auth-alt"><a href="{% url 'phone_auth:login' %}{% if next_value or role_value %}?{% if next_value %}next={{ next_value|urlencode }}{% endif %}{% if next_value and role_value %}&amp;{% endif %}{% if role_value %}role={{ role_value|urlencode }}{% endif %}{% endif %}">بازگشت به ورود پیامکی</a></p>
+  {% endwith %}
 {% endblock %}
