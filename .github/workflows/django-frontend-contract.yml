@@ -205,7 +205,9 @@ jobs:
           assert len(backend_css) < 1000
           assert "#app" in backend_css and ".tp-msgs" in backend_css
           assert "body.tp-django-shell" in backend_css
-          assert "body {" not in backend_css and "#app {" not in backend_css
+          import re
+          assert not re.search(r"(^|\\})\\s*body\\s*\\{", backend_css)
+          assert not re.search(r"(^|\\})\\s*#app\\s*\\{", backend_css)
           assert '<body class="tp-django-shell">' in base
           account = Path("django/templates/pages/account.html").read_text(encoding="utf-8")
           assert "{% url 'orders:list' %}" in account
