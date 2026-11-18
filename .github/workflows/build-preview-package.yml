@@ -50,8 +50,48 @@ jobs:
         working-directory: shared
         run: node tests/django-bridge.test.mjs
 
-      - name: Run full frontend browser regression suite
+      - name: Run Student PWA browser regression suite
         working-directory: shared
+        env:
+          ONLY: student
+        run: npm test
+
+      - name: Run Coach PWA browser regression suite
+        working-directory: shared
+        env:
+          ONLY: coach
+        run: npm test
+
+      - name: Run Club PWA browser regression suite
+        working-directory: shared
+        env:
+          ONLY: club
+        run: npm test
+
+      - name: Run global card alignment regression tests
+        working-directory: shared
+        run: node tests/card-layout.test.mjs
+
+      - name: Run Django browser runtime regression tests
+        working-directory: shared
+        run: node tests/django-ui.test.mjs
+
+      - name: Run focused clubs and map browser tests
+        working-directory: shared
+        env:
+          ONLY: clubs
+        run: npm test
+
+      - name: Run marketing API and demo browser regression tests
+        working-directory: shared
+        env:
+          ONLY: marketing
+        run: npm test
+
+      - name: Run focused Preview access, account, and store browser tests
+        working-directory: shared
+        env:
+          ONLY: preview
         run: npm test
 
       - name: Build Preview
