@@ -188,6 +188,30 @@ try {
   let serverAuthenticated = true;
   const rootHomeHtml = () => documentHtml('<h1 id="logged-out-home">صفحهٔ خانهٔ سرور</h1>', 'خانه', serverAuthenticated);
   fs.writeFileSync(path.join(tempRoot, 'index.html'), rootHomeHtml());
+
+  // Hold the first session snapshot until the newer route response has rendered.
+  let releaseInitialHydration;
+  let markInitialHydrationStarted;
+  const initialHydrationStarted = new Promise(resolve => { markInitialHydrationStarted = resolve; });
+  let initialHydrationHeld = false;
+  await page.route(`${base}/`, async route => {
+    if (route.request().method() === 'GET' && !initialHydrationHeld) {
+      initialHydrationHeld = true;
+      markInitialHydrationStarted();
+      await new Promise(resolve => { releaseInitialHydration = resolve; });
+      await route.fulfill({
+        status: 200,
+        contentType: 'text/html; charset=utf-8',
+        body: documentHtml('<h1 id="stale-guest-home">پاسخ قدیمی مهمان</h1>', 'پاسخ قدیمی', false)
+      });
+      return;
+    }
+    await route.fulfill({
+      status: 200,
+      contentType: 'text/html; charset=utf-8',
+      body: rootHomeHtml()
+    });
+  });
   await page.route('**/accounts/logout/**', async route => {
     if (route.request().method() !== 'POST') {
       await route.fulfill({ status: 405, body: 'method not allowed' });
@@ -216,7 +240,18 @@ try {
 
 
   await page.goto(`${base}/preview/#/store`, { waitUntil: 'load' });
+  await initialHydrationStarted;
   await page.locator('#bridge-form').waitFor({ state: 'visible', timeout: 15000 });
+  assert.equal(await page.locator('#hbu').getAttribute('href'), '#/profile');
+  assert.equal(await page.locator('#hgem').isVisible(), true);
+
+  // A late guest snapshot must not overwrite the authenticated route response.
+  releaseInitialHydration();
+  await wait(100);
+  assert.equal(await page.locator('#hbu').getAttribute('href'), '#/profile',
+    'stale initial hydration must not replace the authenticated account link');
+  assert.equal(await page.locator('#hgem').isVisible(), true,
+    'stale initial hydration must not hide the authenticated gem link');
   assert.equal(await page.locator('#app').getAttribute('data-django-view'), '/store/');
   assert.equal(await page.locator('#app').evaluate(el => el.tagName), 'MAIN', 'the original Preview mount element must not be replaced');
   assert.equal(await page.evaluate(() => getComputedStyle(document.body).display), 'block', 'Django-only body flex rules must not affect the Preview shell');
