@@ -160,6 +160,21 @@ jobs:
           assert "if starting_price or starting_price == 0" in store_card_template
           assert all(token in store_card for token in ("in_stock", "out_of_stock", "inventory_unregistered"))
           assert 'data-availability="{{ availability_status|default:' in store_card
+          # The Django storefront must preserve the established Preview card and detail layout.
+          assert 'class="card pcd tp-product-card"' in store_card
+          assert '<figure class="ph r43' in store_card and '<div class="b">' in store_card
+          assert '<h3>' not in store_card, "Store product card title must retain the shared bold-title structure"
+          assert 'class="pg tp-product-grid"' in store_template
+          assert 'repeat(auto-fill, minmax(min(100%, 200px), 1fr))' in module_css
+          assert '.tp-store-page .tp-product-card { display: block;' in module_css
+          assert '.tp-store-page .tp-product-card .b { display: block; }' in module_css
+          assert 'margin-top: auto' not in module_css.split('.tp-store-page .tp-product-card', 1)[1].split('/* ---------------- Online academy', 1)[0]
+          assert 'class="pd tp-product-detail"' in store_detail_template
+          assert 'class="pm"' in store_detail_template and 'class="pt"' in store_detail_template
+          assert 'class="tp-product-purchase"' not in store_detail_template
+          assert 'class="tp-product-form"' in store_detail_template and 'class="pa"' in store_detail_template
+          assert 'padding: 0;\n  border: 0;' in module_css
+          assert 'grid-template-columns: repeat(2, minmax(0, 1fr));' in module_css
           assert "stock_quantity" not in store_card
           assert "ProductVariant.price" not in store_card
           assert all("sourceUrl" not in product and "shop" not in product for product in reference_catalog["products"])
