@@ -17,6 +17,13 @@
 <nav class="tp-admin-top-links" aria-label="پیوندهای بیرونی">
   <a href="/" target="_blank" rel="noopener noreferrer">بازگشت به سایت</a>
   <a href="/preview/#/" target="_blank" rel="noopener noreferrer">مشاهده پیش‌نمایش</a>
+  {% if new_coach_leads_count %}
+    <a class="tp-admin-lead-notice" href="{% url 'admin:accounts_signuplead_changelist' %}" aria-label="سرنخ‌های جدید مربی: {{ new_coach_leads_count }}">
+      <span class="tp-admin-lead-dot" aria-hidden="true"></span>
+      <span>درخواست‌های جدید مربیگری</span>
+      <strong>{{ new_coach_leads_count }}</strong>
+    </a>
+  {% endif %}
 </nav>
 {% endblock %}
 
