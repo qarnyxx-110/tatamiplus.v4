@@ -184,6 +184,37 @@ textarea:focus {
   background: #29364c;
   color: #fff !important;
 }
+.tp-admin-top-links .tp-admin-lead-notice {
+  gap: 7px;
+  border-color: #725d2c;
+  background: #342d1d;
+  color: #f1d58d !important;
+}
+.tp-admin-top-links .tp-admin-lead-notice:hover {
+  border-color: #9b7a37;
+  background: #41371f;
+  color: #ffe4a0 !important;
+}
+.tp-admin-lead-dot {
+  width: 6px;
+  height: 6px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: var(--tp-admin-accent);
+}
+.tp-admin-lead-notice strong {
+  display: inline-grid;
+  min-width: 19px;
+  height: 19px;
+  place-items: center;
+  padding-inline: 4px;
+  border-radius: 5px;
+  background: #f0c65e;
+  color: #201b10;
+  font-size: 9px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
 .tp-admin-lead-notice {
   color: var(--tp-admin-accent) !important;
 }
