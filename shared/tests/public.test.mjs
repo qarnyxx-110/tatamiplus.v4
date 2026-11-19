@@ -494,15 +494,16 @@ export async function runPreview(base,browser){
  const liveStoreHtml='<!doctype html><html><body><main class="tp-store-page"><div class="pg tp-product-grid"><article class="card pcd tp-product-card"><div class="b"><a href="/store/registered-product/"><b>محصول ثبت‌شده واقعی</b></a><div class="pa"><a class="btn s" href="/store/registered-product/">مشاهده و انتخاب محصول</a></div></div></article></div><section class="tp-reference-store" hidden><div class="pg tp-product-grid"><article class="card pcd tp-product-card"><div class="b"><b>نمونه مرجع مخفی</b></div></article></div></section></main></body></html>';
  await pg.route('**/store/',route=>homeStoreFeedMode==='mock-live'?route.fulfill({status:200,contentType:'text/html',body:liveStoreHtml}):route.continue());
  await pg.goto(base+'/index.html');await wait(350);
- await pg.waitForFunction(()=>document.querySelector('[data-preview-store-products]')?.dataset.state==='ready',{timeout:10000});
+ await pg.waitForFunction(()=>document.querySelector('[data-preview-store-products]')?.dataset.state==='ready',null,{timeout:10000});
  const liveHomeFeed=pg.locator('[data-preview-store-products]');
  S.ok('خانه Preview: کارت محصول از فهرست آنلاین فروشگاه می‌آید',await liveHomeFeed.locator('.tp-product-card').count()===1&&await liveHomeFeed.getByText('محصول ثبت‌شده واقعی').count()===1);
  S.ok('خانه Preview: کاتالوگ مرجع مخفی یا محصول نمونه نمایش داده نمی‌شود',await liveHomeFeed.getByText('نمونه مرجع مخفی').count()===0);
  homeStoreFeedMode='pass';
  const emptyPage=await ctx.newPage();
+ emptyPage.setDefaultTimeout(15000);
  await emptyPage.route('**/store/',route=>route.fulfill({status:200,contentType:'text/html',body:'<!doctype html><html><body><main class="tp-store-page"><div class="tp-state"><b>فروشگاه در حال حاضر محصول فعال ندارد</b><p>بعد از ثبت محصول، اینجا نمایش داده می‌شود.</p></div></main></body></html>'}));
  await emptyPage.goto(base+'/index.html');
- await emptyPage.waitForFunction(()=>document.querySelector('[data-preview-store-products]')?.dataset.state==='empty',{timeout:10000});
+ await emptyPage.waitForFunction(()=>document.querySelector('[data-preview-store-products]')?.dataset.state==='empty',null,{timeout:10000});
  S.ok('خانه Preview: فروشگاه خالی بدون محصول جعلی و با پیام وضعیت نمایش داده می‌شود',await emptyPage.locator('[data-preview-store-products] .tp-product-card').count()===0&&/محصول فعال ندارد/.test(await emptyPage.locator('[data-preview-store-products]').innerText()));
  await emptyPage.close();
  const freshCtx=await browser.newContext({viewport:{width:1280,height:900},serviceWorkers:'block'});
