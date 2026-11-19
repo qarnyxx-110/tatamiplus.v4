@@ -125,7 +125,6 @@ try {
 
   const backendCss = fs.readFileSync(new URL('../../django/static/css/backend-templates.css', import.meta.url), 'utf8');
   const modulePagesCss = fs.readFileSync(new URL('../../django/static/css/module-pages.css', import.meta.url), 'utf8');
-  const storeCartJs = fs.readFileSync(new URL('../../django/static/js/store-cart.js', import.meta.url), 'utf8');
   await page.route('**/static/css/**', async route => {
     const url = new URL(route.request().url());
     await route.fulfill({
@@ -133,10 +132,6 @@ try {
       contentType: 'text/css; charset=utf-8',
       body: url.pathname === '/static/css/backend-templates.css' ? backendCss : url.pathname === '/static/css/module-pages.css' ? modulePagesCss : 'body{color:inherit}'
     });
-  });
-
-  await page.route('**/static/js/store-cart.js', async route => {
-    await route.fulfill({ status: 200, contentType: 'text/javascript; charset=utf-8', body: storeCartJs });
   });
 
   await page.route('**/store/**', async route => {
