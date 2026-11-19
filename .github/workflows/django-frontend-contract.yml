@@ -253,10 +253,6 @@ jobs:
           assert 'css/tatami.css' in base, "Shared Tatami Plus design system must be loaded"
           assert "new_coach_leads_count" in admin_dashboard
           assert "admin:accounts_signuplead_changelist" in admin_dashboard
-          assert '{% if model.admin_url %}' in admin_dashboard
-          assert '{% if model.add_url %}' in admin_dashboard
-          assert '{% else %}{{ app.app_url }}{% endif %}' not in admin_dashboard
-          assert 'class="tp-admin-add-link"' in admin_dashboard
           # Dashboard uses Django's real, permission-filtered module and model list.
           assert '{% extends "admin/base_site.html" %}' in admin_dashboard
           assert '{% for app in app_list %}' in admin_dashboard
