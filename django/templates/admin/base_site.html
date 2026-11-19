@@ -1,26 +1,25 @@
 {% extends "admin/base.html" %}
 {% load static %}
+
 {% block title %}{{ title }} | مدیریت تاتامی پلاس{% endblock %}
+
 {% block branding %}
 <div class="tp-admin-brand">
   <span class="tp-admin-brand-mark" aria-hidden="true">ت</span>
   <div class="tp-admin-brand-copy">
     <h1 id="site-name"><a href="{% url 'admin:index' %}">تاتامی پلاس</a></h1>
-    <span class="tp-admin-brand-caption">مرکز مدیریت سامانه</span>
+    <span>پنل مدیریت</span>
   </div>
 </div>
 {% endblock %}
+
 {% block nav-global %}
-<nav class="tp-admin-top-links" aria-label="پیوندهای سریع">
-  <a href="/" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5M5.5 9v11h13V9M9.5 20v-6h5v6"/></svg><span>مشاهده سایت</span></a>
-  <a href="/preview/#/" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.4-6 9.5-6 9.5 6 9.5 6-3.4 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.5"/></svg><span>پیش‌نمایش</span></a>
-  {% if new_coach_leads_count %}
-    <a class="tp-admin-lead-notice" href="{% url 'admin:accounts_signuplead_changelist' %}" aria-label="سرنخ‌های جدید مربی: {{ new_coach_leads_count }}">
-      <span class="tp-admin-lead-dot" aria-hidden="true"></span><span>درخواست‌های مربیگری</span><strong class="tp-admin-lead-count">{{ new_coach_leads_count }}</strong>
-    </a>
-  {% endif %}
+<nav class="tp-admin-top-links" aria-label="پیوندهای بیرونی">
+  <a href="/" target="_blank" rel="noopener noreferrer">بازگشت به سایت</a>
+  <a href="/preview/#/" target="_blank" rel="noopener noreferrer">مشاهده پیش‌نمایش</a>
 </nav>
 {% endblock %}
+
 {% block extrastyle %}
   {{ block.super }}
   <link rel="stylesheet" href="{% static 'css/tatami-admin.css' %}">
