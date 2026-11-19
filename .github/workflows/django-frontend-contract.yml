@@ -9,6 +9,7 @@ name: Django frontend checks and cPanel handoff
       - "django/templates/**"
       - "django/static/**"
       - "shared/build.js"
+      - "shared/tests/admin-dashboard.test.mjs"
       - "shared/src/css/**"
       - "shared/src/js/shared/django-route-bridge.js"
       - "shared/src/data/store-products.json"
@@ -22,6 +23,7 @@ name: Django frontend checks and cPanel handoff
       - "django/templates/**"
       - "django/static/**"
       - "shared/build.js"
+      - "shared/tests/admin-dashboard.test.mjs"
       - "shared/src/css/**"
       - "shared/src/js/shared/django-route-bridge.js"
       - "shared/src/data/store-products.json"
@@ -54,7 +56,9 @@ jobs:
           node --check django/static/js/home-restored.js
           node --check django/static/js/reference-store.js
           node --check django/static/js/admin-dashboard.js
+          node --check shared/build.js
           node --check shared/src/js/shared/django-route-bridge.js
+          node shared/tests/admin-dashboard.test.mjs
 
       - name: Verify shared design system output
         run: |
