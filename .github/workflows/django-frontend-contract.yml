@@ -53,6 +53,7 @@ jobs:
           node --check django/static/js/module-pages.js
           node --check django/static/js/home-restored.js
           node --check django/static/js/reference-store.js
+          node --check django/static/js/store-cart.js
           node --check shared/src/js/shared/django-route-bridge.js
 
       - name: Verify shared design system output
@@ -86,6 +87,11 @@ jobs:
           shared_css = Path("django/static/css/tatami.css").read_text(encoding="utf-8")
           frontend_manifest = json.loads(Path("deploy/frontend-manifest.json").read_text(encoding="utf-8"))
           admin = Path("django/templates/admin/base_site.html").read_text(encoding="utf-8")
+          cart_template = Path("django/templates/store/cart_detail.html").read_text(encoding="utf-8")
+          home_template = Path("django/templates/pages/home.html").read_text(encoding="utf-8")
+          live_feed_template = Path("django/templates/pages/home/partials/live_feed.html").read_text(encoding="utf-8")
+          home_js = Path("django/static/js/home-restored.js").read_text(encoding="utf-8")
+          store_cart_js = Path("django/static/js/store-cart.js").read_text(encoding="utf-8")
           store_template = Path("django/templates/store/product_list.html").read_text(encoding="utf-8")
           store_detail_template = Path("django/templates/store/product_detail.html").read_text(encoding="utf-8")
           store_card_template = Path("django/templates/components/store_product_card.html").read_text(encoding="utf-8")
@@ -178,6 +184,25 @@ jobs:
           assert "stock_quantity" not in store_card
           assert "ProductVariant.price" not in store_card
           assert all("sourceUrl" not in product and "shop" not in product for product in reference_catalog["products"])
+          # Homepage store feed is sourced only from the live Django product-list HTML.
+          assert 'selector=".tp-product-grid > .tp-product-card"' in home_template
+          assert 'layout="products"' in home_template
+          assert "data-home-feed" in live_feed_template and "data-source=" in live_feed_template
+          assert "data-reference-catalog-url" not in live_feed_template
+          assert "referenceCatalogUrl" not in home_js
+          assert "renderReferenceProducts" not in home_js
+          assert "credentials: 'same-origin'" in home_js and "Accept: 'text/html'" in home_js
+          # Cart controls retain the real CSRF-protected Django endpoints and are never auto-submitted.
+          assert "data-quantity-form" in cart_template and "data-qty-step" in cart_template
+          assert "{% csrf_token %}" in cart_template
+          assert "{% url 'store:update_cart_item' item.pk %}" in cart_template
+          assert "{% url 'store:remove_cart_item' item.pk %}" in cart_template
+          assert "store-cart.js" in cart_template and "store-cart.js" in bridge
+          assert "form.requestSubmit" not in store_cart_js and "form.submit(" not in store_cart_js
+          assert "dispatchEvent(new Event('change'" in store_cart_js
+          assert ".tp-store-page .tp-qty-step" in module_css
+          assert ".tp-store-page .tp-cart-actions" in module_css
+
           static_mapping = next(item for item in frontend_manifest["mappings"] if item["destination"] == "static")
           assert "css/tatami.css" not in static_mapping.get("exclude", [])
           assert '<header>' in base
