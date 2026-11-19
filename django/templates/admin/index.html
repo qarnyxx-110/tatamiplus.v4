@@ -79,9 +79,29 @@
 
         <div class="tp-admin-module-grid" id="tp-admin-module-list">
           {% for app in app_list %}
-            <article class="tp-admin-module-card" data-admin-module data-search-name="{{ app.name }}">
+            <article class="tp-admin-module-card" data-admin-module data-admin-app="{{ app.app_label }}" data-search-name="{{ app.name }}">
               <div class="tp-admin-module-heading">
-                <span class="tp-admin-module-mark" aria-hidden="true">{{ app.name|slice:":1" }}</span>
+                <span class="tp-admin-module-mark" aria-hidden="true" data-admin-app="{{ app.app_label }}">
+                  {% if app.app_label == "accounts" %}
+                    <svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20v-1.5a5 5 0 0 1 5-5h3a5 5 0 0 1 5 5V20M16 5.2a3.4 3.4 0 0 1 0 6.6M17 14h.5a4 4 0 0 1 4 4v2"/></svg>
+                  {% elif app.app_label == "auth" %}
+                    <svg viewBox="0 0 24 24"><path d="M12 3 4.5 6v5c0 4.2 2.7 7.4 7.5 9.5 4.8-2.1 7.5-5.3 7.5-9.5V6L12 3Z"/><path d="m9 12 2 2 4-4"/></svg>
+                  {% elif app.app_label == "store" %}
+                    <svg viewBox="0 0 24 24"><path d="M4 8h16l-1.2 12H5.2L4 8Z"/><path d="M8 9V6a4 4 0 0 1 8 0v3"/></svg>
+                  {% elif app.app_label == "club" %}
+                    <svg viewBox="0 0 24 24"><path d="M3 21V8l9-5 9 5v13M8 21v-5h8v5M8 10h.01M12 10h.01M16 10h.01"/></svg>
+                  {% elif app.app_label == "coaches" %}
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0M17 4l2 2 3-3"/></svg>
+                  {% elif app.app_label == "gems" %}
+                    <svg viewBox="0 0 24 24"><path d="m12 3 7 5-7 13L5 8l7-5Z"/><path d="M5 8h14M9 8l3 13 3-13M9 3l-4 5M15 3l4 5"/></svg>
+                  {% elif app.app_label == "orders" %}
+                    <svg viewBox="0 0 24 24"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3Z"/><path d="M9 8h6M9 12h6M9 16h3"/></svg>
+                  {% elif app.app_label == "admin" %}
+                    <svg viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg>
+                  {% else %}
+                    <span>{{ app.name|slice:":1" }}</span>
+                  {% endif %}
+                </span>
                 <div class="tp-admin-module-title">
                   <h3><a href="{{ app.app_url }}">{{ app.name }}</a></h3>
                   <small>{{ app.models|length }} بخش</small>
