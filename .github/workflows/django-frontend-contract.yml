@@ -261,15 +261,20 @@ jobs:
           assert "toLocaleLowerCase" in admin_dashboard_js and "addEventListener('input'" in admin_dashboard_js
           assert "data-admin-model" in admin_dashboard_js and "aria-live" in admin_dashboard
           assert ".tp-admin-hero" in admin_css and ".tp-admin-module-grid" in admin_css
-          assert "@media(max-width:640px)" in admin_css and "prefers-reduced-motion" in admin_css
+          assert "@media (max-width: 640px)" in admin_css and "prefers-reduced-motion" in admin_css
           assert "document.querySelectorAll" in admin_dashboard_js
+          assert "color-scheme: dark" in admin_css
+          assert "--tp-admin-bg: #121418" in admin_css
+          assert "app_list|length" in admin_dashboard and "new_coach_leads_count" in admin_dashboard
+          assert 'aria-controls="tp-admin-module-list"' in admin_dashboard
+          assert "data-admin-result-count" in admin_dashboard and "data-admin-no-results" in admin_dashboard
           assert "data-video-upload-form" in episode
           assert "tp-otp-resend-until:" in js
           assert "request.upload.addEventListener('progress'" in js
           assert "uploadRequest.abort()" in js
           assert "X-CSRFToken" in js
           assert ".tp-video-upload-progress" in module_css
-          assert ".tp-admin-lead-notice" in admin_css
+          assert ".tp-admin-status-pending" in admin_css and ".tp-admin-stat-attention" in admin_css
           assert ".site-header" not in backend_css and ".site-nav" not in backend_css
           assert ".wordmark" not in backend_css and ".site-footer" not in backend_css
           assert ".page-main" not in backend_css and ".button-dark" not in backend_css
@@ -345,7 +350,7 @@ jobs:
       - name: Compile templates and resolve required static assets
         working-directory: backend
         run: |
-          python manage.py shell -c "from django.template.loader import get_template; from django.contrib.staticfiles.finders import find; names=('base.html','layouts/auth.html','components/auth_aside.html','components/store_product_card.html','admin/base_site.html','admin/index.html','pages/home.html','pages/account.html','store/product_list.html','store/product_detail.html','store/cart_detail.html','coaches/directory.html','coaches/profile_detail.html','coaches/join.html','coaches/join_enter.html','coaches/coach_students.html','club/course_list.html','club/course_detail.html','club/coach/episode_form.html','gems/history.html','accounts/login.html','accounts/otp_verify.html','accounts/complete_profile.html','accounts/password_reset.html','accounts/password_reset_confirm.html','accounts/set_password.html','coaches/join_enter.html','orders/mock_gateway.html','orders/address.html','orders/review.html','orders/payment_result.html','orders/order_list.html','orders/order_detail.html','includes/form_fields.html'); [get_template(name) for name in names]; assets=('css/tatami.css','css/django-bridge.css','css/tatami-admin.css','css/backend-templates.css','css/module-pages.css','css/home-restored.css','css/reference-store.css','js/tatami.js','js/module-pages.js','js/home-restored.js','js/reference-store.js','data/reference-store-catalog.json'); assert all(find(name) for name in assets); print('DJANGO_TEMPLATE_AND_STATIC_CHECK_OK')"
+          python manage.py shell -c "from django.template.loader import get_template; from django.contrib.staticfiles.finders import find; names=('base.html','layouts/auth.html','components/auth_aside.html','components/store_product_card.html','admin/base_site.html','admin/index.html','pages/home.html','pages/account.html','store/product_list.html','store/product_detail.html','store/cart_detail.html','coaches/directory.html','coaches/profile_detail.html','coaches/join.html','coaches/join_enter.html','coaches/coach_students.html','club/course_list.html','club/course_detail.html','club/coach/episode_form.html','gems/history.html','accounts/login.html','accounts/otp_verify.html','accounts/complete_profile.html','accounts/password_reset.html','accounts/password_reset_confirm.html','accounts/set_password.html','coaches/join_enter.html','orders/mock_gateway.html','orders/address.html','orders/review.html','orders/payment_result.html','orders/order_list.html','orders/order_detail.html','includes/form_fields.html'); [get_template(name) for name in names]; assets=('css/tatami.css','css/django-bridge.css','css/tatami-admin.css','css/backend-templates.css','css/module-pages.css','css/home-restored.css','css/reference-store.css','js/tatami.js','js/module-pages.js','js/home-restored.js','js/reference-store.js','js/admin-dashboard.js','data/reference-store-catalog.json'); assert all(find(name) for name in assets); print('DJANGO_TEMPLATE_AND_STATIC_CHECK_OK')"
 
       - name: Run backend tests with proposed frontend
         working-directory: backend
