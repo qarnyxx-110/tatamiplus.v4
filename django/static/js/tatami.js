@@ -295,31 +295,45 @@
     if (Number.isFinite(stock) && stock < 1) option.disabled = true;
   });
 
-  // ۲-هـ. کنترل تعداد سبد؛ بدون JS، ورودی عددی و دکمهٔ به‌روزرسانی عادی باقی می‌مانند.
-  $$('form[data-quantity-form]').forEach(form => {
+  // ۲-هـ. کنترل تعداد سبد؛ فقط با دکمهٔ «به‌روزرسانی» فرم به سرور ارسال می‌شود.
+  $('form[data-quantity-form]').forEach(form => {
+    if (form.dataset.tpQuantityBound === 'true') return;
     const input = form.querySelector('input[name=quantity]');
     if (!input) return;
-    const buttons = $$('[data-qty-step]', form);
-    const max = input.max === '' ? Infinity : Number(input.max);
-    buttons.forEach(button => {
-      if (Number.isFinite(max) && max < Number(input.min || 1)) return;
-      button.hidden = false;
-      button.addEventListener('click', () => {
-        const step = Number(button.dataset.qtyStep || 0);
-        const min = Number(input.min || 1);
-        const upper = Number.isFinite(max) ? Math.max(min, max) : Infinity;
-        const current = Number(input.value || min);
-        const next = Math.min(upper, Math.max(min, current + step));
-        if (next === current) return;
-        input.value = String(next);
-        input.dispatchEvent(new Event('change', { bubbles: true }));
-        if (form.__tpQtyTimer) window.clearTimeout(form.__tpQtyTimer);
-        form.__tpQtyTimer = window.setTimeout(() => {
-          if (typeof form.requestSubmit === 'function') form.requestSubmit();
-          else form.submit();
-        }, 350);
+    form.dataset.tpQuantityBound = 'true';
+    const buttons = $('[data-qty-step]', form);
+    const getLimits = () => {
+      const minValue = Number.parseInt(input.min || '1', 10);
+      const min = Number.isFinite(minValue) ? minValue : 1;
+      const maxValue = input.max === '' ? Infinity : Number.parseInt(input.max, 10);
+      const max = Number.isFinite(maxValue) ? maxValue : Infinity;
+      return { min, max, valid: max >= min };
+    };
+    const updateButtons = () => {
+      const { min, max, valid } = getLimits();
+      const current = Number.parseInt(input.value, 10);
+      buttons.forEach(button => {
+        const step = Number.parseInt(button.dataset.qtyStep || '0', 10);
+        button.hidden = !valid || (step !== -1 && step !== 1);
+        button.disabled = !valid || !Number.isFinite(current) ||
+          (step < 0 && current <= min) || (step > 0 && current >= max);
       });
-    });
+    };
+    buttons.forEach(button => button.addEventListener('click', () => {
+      const { min, max, valid } = getLimits();
+      if (!valid) return;
+      const step = Number.parseInt(button.dataset.qtyStep || '0', 10);
+      if (step !== -1 && step !== 1) return;
+      const current = Number.parseInt(input.value, 10);
+      const safeCurrent = Number.isFinite(current) ? current : min;
+      input.value = String(Math.min(max, Math.max(min, safeCurrent + step)));
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+      updateButtons();
+    }));
+    input.addEventListener('input', updateButtons);
+    input.addEventListener('change', updateButtons);
+    updateButtons();
   });
 
   // ۳. فیلترهای فروشگاه روی موبایل
