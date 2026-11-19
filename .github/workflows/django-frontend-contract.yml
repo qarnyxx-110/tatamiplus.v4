@@ -92,6 +92,8 @@ jobs:
           live_feed_template = Path("django/templates/pages/home/partials/live_feed.html").read_text(encoding="utf-8")
           home_js = Path("django/static/js/home-restored.js").read_text(encoding="utf-8")
           store_cart_js = Path("django/static/js/store-cart.js").read_text(encoding="utf-8")
+          preview_content = Path("shared/src/js/shared/content.js").read_text(encoding="utf-8")
+          preview_router = Path("shared/src/js/shared/router.js").read_text(encoding="utf-8")
           store_template = Path("django/templates/store/product_list.html").read_text(encoding="utf-8")
           store_detail_template = Path("django/templates/store/product_detail.html").read_text(encoding="utf-8")
           store_card_template = Path("django/templates/components/store_product_card.html").read_text(encoding="utf-8")
@@ -202,6 +204,13 @@ jobs:
           assert "dispatchEvent(new Event('change'" in store_cart_js
           assert ".tp-store-page .tp-qty-step" in module_css
           assert ".tp-store-page .tp-cart-actions" in module_css
+          # The Preview SPA homepage uses live Django store records, never the local demo catalog.
+          assert "data-preview-store-products" in preview_content
+          assert "loadPreviewStoreProducts" in preview_content and "loadPreviewStoreProducts();" in preview_router
+          assert ".tp-product-grid > .tp-product-card" in preview_content
+          assert "P.filter(p=>p.st>0)" not in preview_content.split("function homeMore", 1)[1].split("const BLOG_SLUGS", 1)[0]
+          assert "فروشگاه آنلاین" in preview_content
+
 
           static_mapping = next(item for item in frontend_manifest["mappings"] if item["destination"] == "static")
           assert "css/tatami.css" not in static_mapping.get("exclude", [])
