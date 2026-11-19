@@ -65,5 +65,32 @@ for(const n of ['student','coach','club']){const a=APPS[n],o=path.join(OUT,n);fs
 {const o=path.join(OUT,'marketing');fs.rmSync(o,{recursive:true,force:true});fs.mkdirSync(o,{recursive:true});fs.writeFileSync(o+'/index.html',marketing());console.log('marketing',fs.statSync(o+'/index.html').size,'bytes · mode',API?'api':'demo')}
 const previewOut=path.join(OUT,'preview');fs.mkdirSync(previewOut,{recursive:true});fs.cpSync(J('public/assets'),path.join(previewOut,'assets'),{recursive:true,force:true});fs.writeFileSync(path.join(previewOut,'index.html'),page('preview',false));fs.writeFileSync(J('build-artifact.html'),page('preview',false));
 console.log('minified:',!!es,'· image slots with files:',AVAIL.length,'· local fonts:',FONTS.length,'· SITE_URL:',SITE||'(unset)','· TP_API_BASE:',API||'(unset)');
-// خروجی CSS برای تمپلیت‌های Django (پوشه ../django): همان توکن‌ها و استایل‌ها + قواعد مخصوص تمپلیت‌ها؛ دستی ویرایش نشود
-{const dj=J('../django/static/css');if(fs.existsSync(J('../django'))){fs.mkdirSync(dj,{recursive:true});const pageCss=R('css/django.css');fs.writeFileSync(path.join(dj,'tatami.css'),'/* ساخته‌شده از shared/build.js — دستی ویرایش نکنید */\n'+baseCss(pageCss));fs.writeFileSync(path.join(dj,'django-bridge.css'),'/* افزونهٔ اختصاصی Django برای پوستهٔ مشترک Preview — ساخته‌شده از shared/build.js */\n'+min(pageCss,'css'));console.log('django css',fs.statSync(path.join(dj,'tatami.css')).size,'bytes · bridge css',fs.statSync(path.join(dj,'django-bridge.css')).size,'bytes')}}
+// خروجی CSS برای تمپلیت‌های Django؛ فایل توکن‌ها جداست تا Admin بدون بارگذاری قواعد عمومی سایت از همان منبع طراحی استفاده کند
+{
+  const dj = J('../django/static/css');
+  if (fs.existsSync(J('../django'))) {
+    fs.mkdirSync(dj, { recursive: true });
+    const pageCss = R('css/django.css');
+    fs.writeFileSync(
+      path.join(dj, 'tatami.css'),
+      '/* ساخته‌شده از shared/build.js — دستی ویرایش نکنید */\\n' + baseCss(pageCss)
+    );
+    fs.writeFileSync(
+      path.join(dj, 'tatami-admin-tokens.css'),
+      '/* توکن‌های مشترک طراحی تاتامی پلاس؛ ساخته‌شده از shared/src/design/tokens.json */\\n' + min(tokensCss(), 'css')
+    );
+    fs.writeFileSync(
+      path.join(dj, 'django-bridge.css'),
+      '/* افزونهٔ اختصاصی Django برای پوستهٔ مشترک Preview — ساخته‌شده از shared/build.js */\\n' + min(pageCss, 'css')
+    );
+    console.log(
+      'django css',
+      fs.statSync(path.join(dj, 'tatami.css')).size,
+      'bytes · admin tokens',
+      fs.statSync(path.join(dj, 'tatami-admin-tokens.css')).size,
+      'bytes · bridge css',
+      fs.statSync(path.join(dj, 'django-bridge.css')).size,
+      'bytes'
+    );
+  }
+}
