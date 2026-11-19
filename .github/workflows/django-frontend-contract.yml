@@ -283,6 +283,13 @@ jobs:
           assert "X-CSRFToken" in js
           assert ".tp-video-upload-progress" in module_css
           assert ".tp-admin-lead-link" in admin_css and ".tp-admin-overview-attention" in admin_css
+          assert "tp-admin-nav-link" in admin
+          assert 'data-admin-app="{{ app.app_label }}"' in admin_dashboard
+          assert "tp-admin-module-mark svg" in admin_css
+          assert "position: sticky" in admin_css and "--tp-z-header" in admin_css
+          assert "#changelist-search" in admin_css and "fieldset" in admin_css
+          assert "ul.messagelist li.success" in admin_css and "ul.messagelist li.warning" in admin_css
+          assert "prefers-reduced-motion" in admin_css and "@media (hover: none)" in admin_css
           assert ".site-header" not in backend_css and ".site-nav" not in backend_css
           assert ".wordmark" not in backend_css and ".site-footer" not in backend_css
           assert ".page-main" not in backend_css and ".button-dark" not in backend_css
