@@ -410,3 +410,120 @@
   color: var(--tp-color-text-secondary);
   font-size: var(--tp-font-size-sm);
 }
+
+/* ---------------- Store and cart controls ---------------- */
+/* These rules are scoped to the Django store and do not alter shared Preview buttons. */
+.tp-store-page .tp-product-card .pa {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--tp-space-xs);
+}
+.tp-store-page .tp-product-card .pa > .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: var(--tp-space-xs) var(--tp-space-sm);
+  line-height: 1.6;
+  white-space: normal;
+  text-align: center;
+}
+.tp-store-page .tp-product-form .pa {
+  display: flex;
+  align-items: stretch;
+  flex-wrap: wrap;
+  gap: var(--tp-space-sm);
+}
+.tp-store-page .tp-product-form .pa > .btn {
+  display: inline-flex;
+  flex: 1 1 12rem;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 48px;
+  white-space: normal;
+  line-height: 1.6;
+}
+.tp-store-page .tp-cart-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: var(--tp-space-sm);
+  width: 100%;
+}
+.tp-store-page .tp-cart-actions > form { min-width: 0; }
+.tp-store-page .tp-qty {
+  display: grid;
+  grid-template-columns: 44px minmax(4.5rem, 1fr) 44px;
+  align-items: end;
+  gap: var(--tp-space-xs);
+  width: 100%;
+  margin: 0;
+}
+.tp-store-page .tp-qty-label {
+  grid-column: 1 / -1;
+  color: var(--tp-color-text-secondary);
+  font-size: var(--tp-font-size-sm);
+}
+.tp-store-page .tp-qty-step {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  font-size: var(--tp-font-size-xl);
+  line-height: 1;
+}
+.tp-store-page .tp-qty-step[hidden] { display: none !important; }
+.tp-store-page .tp-qty-step:disabled {
+  background: var(--tp-color-neutral-tint);
+  border-color: var(--tp-color-border);
+  color: var(--tp-color-text-subtle);
+  opacity: 1;
+  transform: none;
+  box-shadow: none;
+}
+.tp-store-page .tp-qty-input {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding-inline: var(--tp-space-xs);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.tp-store-page .tp-qty-submit {
+  grid-column: 1 / -1;
+  width: 100%;
+  min-height: 44px;
+  white-space: nowrap;
+}
+.tp-store-page .tp-cart-remove-form {
+  display: flex;
+  align-items: stretch;
+}
+.tp-store-page .tp-cart-remove-btn {
+  min-width: 4.5rem;
+  min-height: 44px;
+  white-space: nowrap;
+}
+.tp-store-page .tp-cart-summary .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  white-space: normal;
+  line-height: 1.6;
+}
+@media (max-width: 600px) {
+  .tp-store-page .tp-cart-actions {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: stretch;
+  }
+  .tp-store-page .tp-cart-remove-form,
+  .tp-store-page .tp-cart-remove-btn { width: 100%; }
+  .tp-store-page .tp-product-form .pa > .btn { flex-basis: 100%; }
+}
