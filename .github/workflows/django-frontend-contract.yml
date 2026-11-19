@@ -53,6 +53,7 @@ jobs:
           node --check django/static/js/module-pages.js
           node --check django/static/js/home-restored.js
           node --check django/static/js/reference-store.js
+          node --check django/static/js/admin-dashboard.js
           node --check shared/src/js/shared/django-route-bridge.js
 
       - name: Verify shared design system output
@@ -86,6 +87,8 @@ jobs:
           shared_css = Path("django/static/css/tatami.css").read_text(encoding="utf-8")
           frontend_manifest = json.loads(Path("deploy/frontend-manifest.json").read_text(encoding="utf-8"))
           admin = Path("django/templates/admin/base_site.html").read_text(encoding="utf-8")
+          admin_dashboard = Path("django/templates/admin/index.html").read_text(encoding="utf-8")
+          admin_dashboard_js = Path("django/static/js/admin-dashboard.js").read_text(encoding="utf-8")
           cart_template = Path("django/templates/store/cart_detail.html").read_text(encoding="utf-8")
           home_template = Path("django/templates/pages/home.html").read_text(encoding="utf-8")
           live_feed_template = Path("django/templates/pages/home/partials/live_feed.html").read_text(encoding="utf-8")
@@ -245,6 +248,21 @@ jobs:
           assert 'css/tatami.css' in base, "Shared Tatami Plus design system must be loaded"
           assert "new_coach_leads_count" in admin
           assert "admin:accounts_signuplead_changelist" in admin
+          # Dashboard uses Django's real, permission-filtered module and model list.
+          assert '{% extends "admin/base_site.html" %}' in admin_dashboard
+          assert '{% for app in app_list %}' in admin_dashboard
+          assert '{% for model in app.models %}' in admin_dashboard
+          assert "model.admin_url" in admin_dashboard and "model.add_url" in admin_dashboard
+          assert "new_coach_leads_count" in admin_dashboard
+          assert "admin:accounts_signuplead_changelist" in admin_dashboard
+          assert "admin:password_change" in admin_dashboard
+          assert 'data-admin-search' in admin_dashboard and 'data-admin-module' in admin_dashboard
+          assert "data-admin-clear" in admin_dashboard and "data-admin-no-results" in admin_dashboard
+          assert "toLocaleLowerCase" in admin_dashboard_js and "addEventListener('input'" in admin_dashboard_js
+          assert "data-admin-model" in admin_dashboard_js and "aria-live" in admin_dashboard
+          assert ".tp-admin-hero" in admin_css and ".tp-admin-module-grid" in admin_css
+          assert "@media(max-width:640px)" in admin_css and "prefers-reduced-motion" in admin_css
+          assert "document.querySelectorAll" in admin_dashboard_js
           assert "data-video-upload-form" in episode
           assert "tp-otp-resend-until:" in js
           assert "request.upload.addEventListener('progress'" in js
@@ -327,7 +345,7 @@ jobs:
       - name: Compile templates and resolve required static assets
         working-directory: backend
         run: |
-          python manage.py shell -c "from django.template.loader import get_template; from django.contrib.staticfiles.finders import find; names=('base.html','layouts/auth.html','components/auth_aside.html','components/store_product_card.html','admin/base_site.html','pages/home.html','pages/account.html','store/product_list.html','store/product_detail.html','store/cart_detail.html','coaches/directory.html','coaches/profile_detail.html','coaches/join.html','coaches/join_enter.html','coaches/coach_students.html','club/course_list.html','club/course_detail.html','club/coach/episode_form.html','gems/history.html','accounts/login.html','accounts/otp_verify.html','accounts/complete_profile.html','accounts/password_reset.html','accounts/password_reset_confirm.html','accounts/set_password.html','coaches/join_enter.html','orders/mock_gateway.html','orders/address.html','orders/review.html','orders/payment_result.html','orders/order_list.html','orders/order_detail.html','includes/form_fields.html'); [get_template(name) for name in names]; assets=('css/tatami.css','css/django-bridge.css','css/tatami-admin.css','css/backend-templates.css','css/module-pages.css','css/home-restored.css','css/reference-store.css','js/tatami.js','js/module-pages.js','js/home-restored.js','js/reference-store.js','data/reference-store-catalog.json'); assert all(find(name) for name in assets); print('DJANGO_TEMPLATE_AND_STATIC_CHECK_OK')"
+          python manage.py shell -c "from django.template.loader import get_template; from django.contrib.staticfiles.finders import find; names=('base.html','layouts/auth.html','components/auth_aside.html','components/store_product_card.html','admin/base_site.html','admin/index.html','pages/home.html','pages/account.html','store/product_list.html','store/product_detail.html','store/cart_detail.html','coaches/directory.html','coaches/profile_detail.html','coaches/join.html','coaches/join_enter.html','coaches/coach_students.html','club/course_list.html','club/course_detail.html','club/coach/episode_form.html','gems/history.html','accounts/login.html','accounts/otp_verify.html','accounts/complete_profile.html','accounts/password_reset.html','accounts/password_reset_confirm.html','accounts/set_password.html','coaches/join_enter.html','orders/mock_gateway.html','orders/address.html','orders/review.html','orders/payment_result.html','orders/order_list.html','orders/order_detail.html','includes/form_fields.html'); [get_template(name) for name in names]; assets=('css/tatami.css','css/django-bridge.css','css/tatami-admin.css','css/backend-templates.css','css/module-pages.css','css/home-restored.css','css/reference-store.css','js/tatami.js','js/module-pages.js','js/home-restored.js','js/reference-store.js','data/reference-store-catalog.json'); assert all(find(name) for name in assets); print('DJANGO_TEMPLATE_AND_STATIC_CHECK_OK')"
 
       - name: Run backend tests with proposed frontend
         working-directory: backend
