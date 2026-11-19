@@ -345,6 +345,8 @@ try {
   assert.equal(await page.locator('#tp-test-quantity').inputValue(), '3');
   assert.equal(await increaseQuantity.isDisabled(), true, 'increase must stop at the server-provided stock maximum');
   await decreaseQuantity.click();
+  assert.equal(await page.locator('#tp-test-quantity').inputValue(), '2');
+  assert.equal(await decreaseQuantity.isEnabled(), true);
   await decreaseQuantity.click();
   assert.equal(await page.locator('#tp-test-quantity').inputValue(), '1');
   assert.equal(await decreaseQuantity.isDisabled(), true, 'decrease must stop at the minimum quantity');
