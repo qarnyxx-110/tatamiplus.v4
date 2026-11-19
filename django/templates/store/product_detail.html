@@ -23,10 +23,11 @@
           </figure>
         </div>
       {% endwith %}
+
       {% if product.images.count > 1 %}
         <div class="pt" role="group" aria-label="انتخاب تصویر محصول">
           {% for image in product.images.all %}
-            <button type="button" class="ptb{% if forloop.first %} on is-active{% endif %}"
+            <button type="button" class="ptb{% if forloop.first %} on{% endif %}"
               data-gallery-select data-src="{{ image.image.url }}" data-alt="{{ image.alt_text|default:product.name }}"
               aria-label="نمایش تصویر {{ forloop.counter }}" aria-pressed="{% if forloop.first %}true{% else %}false{% endif %}">
               <figure class="ph th ok">
@@ -38,40 +39,83 @@
       {% endif %}
     </section>
 
-    <section class="tp-product-purchase" aria-labelledby="pd-title" data-availability="{% if availability_status %}{{ availability_status }}{% elif starting_price or starting_price == 0 %}in_stock{% else %}inventory_unregistered{% endif %}">
+    <section aria-labelledby="pd-title" data-availability="{% if availability_status %}{{ availability_status }}{% elif starting_price or starting_price == 0 %}in_stock{% else %}inventory_unregistered{% endif %}">
       <a class="mu sm" href="{% url 'store:product_list' %}?category={{ product.category.pk }}">{{ product.category.name }}</a>
       <h1 id="pd-title">{{ product.name }}</h1>
-      {% if product.training_level %}<p class="mu sm">سطح تمرین: {{ product.training_level }}</p>{% endif %}
-      {% if availability_status == 'in_stock' %}
-        <p><span class="tp-product-stock tp-product-stock--available">موجود</span></p>
-      {% elif availability_status == 'out_of_stock' %}
-        <p><span class="tp-product-stock tp-product-stock--unavailable">ناموجود</span></p>
-      {% elif availability_status == 'inventory_unregistered' %}
-        <p><span class="tp-product-stock tp-product-stock--unregistered">موجودی ثبت نشده</span></p>
-      {% elif starting_price or starting_price == 0 %}
-        <p><span class="tp-product-stock tp-product-stock--available">موجود</span></p>
-      {% else %}
-        <p><span class="tp-product-stock tp-product-stock--unregistered">موجودی ثبت نشده</span></p>
-      {% endif %}
+      <p class="mu sm" style="margin:0">
+        {% if product.training_level %}<span class="tag m">سطح {{ product.training_level }}</span>{% endif %}
+        {% if availability_status == 'in_stock' %}
+          <span class="tag g">موجود</span>
+        {% elif availability_status == 'out_of_stock' %}
+          <span class="tag m">ناموجود</span>
+        {% elif availability_status == 'inventory_unregistered' %}
+          <span class="tag m">موجودی ثبت نشده</span>
+        {% elif starting_price or starting_price == 0 %}
+          <span class="tag g">موجود</span>
+        {% else %}
+          <span class="tag m">موجودی ثبت نشده</span>
+        {% endif %}
+      </p>
+
       {% if starting_price or starting_price == 0 %}
-        <p class="sv">از {{ starting_price|price_fa }}</p>
+        <h2 class="gold" style="margin:var(--tp-space-xs) 0">از {{ starting_price|price_fa }}</h2>
       {% else %}
-        <p class="tp-product-no-price">قیمت فروش ثبت نشده</p>
+        <p class="tp-note">قیمت فروش ثبت نشده است.</p>
       {% endif %}
-      {% if product.description %}<div class="tp-product-description">{{ product.description|linebreaks }}</div>{% endif %}
 
       <form method="post" class="tp-product-form" novalidate>
         {% csrf_token %}
         {% include 'includes/form_fields.html' %}
-        {% if availability_status %}
-          <button class="btn" type="submit"{% if availability_status != 'in_stock' or not starting_price and starting_price != 0 %} disabled{% endif %}>افزودن به سبد خرید</button>
-        {% else %}
-          <button class="btn" type="submit"{% if not starting_price and starting_price != 0 %} disabled{% endif %}>افزودن به سبد خرید</button>
-        {% endif %}
+        <div class="pa">
+          {% if availability_status %}
+            <button class="btn" type="submit"{% if availability_status != 'in_stock' or not starting_price and starting_price != 0 %} disabled{% endif %}>افزودن به سبد خرید</button>
+          {% else %}
+            <button class="btn" type="submit"{% if not starting_price and starting_price != 0 %} disabled{% endif %}>افزودن به سبد خرید</button>
+          {% endif %}
+          <a class="btn o" href="{% url 'store:cart' %}">مشاهده سبد خرید</a>
+        </div>
       </form>
       <p class="mu sm">قیمت و موجودی نهایی هنگام ثبت درخواست از سمت سرور بررسی می‌شود.</p>
-      <a class="btn o" href="{% url 'store:cart' %}">مشاهده سبد خرید</a>
     </section>
   </div>
+
+  {% if product.description %}
+    <section class="d-s">
+      <h2>توضیحات محصول</h2>
+      <div>{{ product.description|linebreaks }}</div>
+    </section>
+  {% endif %}
+
+  <section class="d-s">
+    <h2>مشخصات محصول</h2>
+    <table>
+      <tbody>
+        <tr><th scope="row" class="mu">نام محصول</th><td>{{ product.name }}</td></tr>
+        <tr><th scope="row" class="mu">دسته‌بندی</th><td>{{ product.category.name }}</td></tr>
+        {% if product.training_level %}
+          <tr><th scope="row" class="mu">سطح تمرین</th><td>{{ product.training_level }}</td></tr>
+        {% endif %}
+        <tr>
+          <th scope="row" class="mu">وضعیت موجودی</th>
+          <td>
+            {% if availability_status == 'in_stock' %}
+              موجود
+            {% elif availability_status == 'out_of_stock' %}
+              ناموجود
+            {% elif availability_status == 'inventory_unregistered' %}
+              موجودی ثبت نشده
+            {% elif starting_price or starting_price == 0 %}
+              موجود
+            {% else %}
+              موجودی ثبت نشده
+            {% endif %}
+          </td>
+        </tr>
+        {% if starting_price or starting_price == 0 %}
+          <tr><th scope="row" class="mu">شروع قیمت</th><td>{{ starting_price|price_fa }}</td></tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </section>
 </main>
 {% endblock %}
