@@ -124,23 +124,37 @@ try {
   page.on('pageerror', error => failures.push('browser error: ' + error.message));
 
   const backendCss = fs.readFileSync(new URL('../../django/static/css/backend-templates.css', import.meta.url), 'utf8');
+  const modulePagesCss = fs.readFileSync(new URL('../../django/static/css/module-pages.css', import.meta.url), 'utf8');
+  const storeCartJs = fs.readFileSync(new URL('../../django/static/js/store-cart.js', import.meta.url), 'utf8');
   await page.route('**/static/css/**', async route => {
     const url = new URL(route.request().url());
     await route.fulfill({
       status: 200,
       contentType: 'text/css; charset=utf-8',
-      body: url.pathname === '/static/css/backend-templates.css' ? backendCss : 'body{color:inherit}'
+      body: url.pathname === '/static/css/backend-templates.css' ? backendCss : url.pathname === '/static/css/module-pages.css' ? modulePagesCss : 'body{color:inherit}'
     });
+  });
+
+  await page.route('**/static/js/store-cart.js', async route => {
+    await route.fulfill({ status: 200, contentType: 'text/javascript; charset=utf-8', body: storeCartJs });
   });
 
   await page.route('**/store/**', async route => {
     const request = route.request();
     const requestUrl = new URL(request.url());
     if (request.method() === 'GET' && requestUrl.pathname === '/store/cart/') {
+      const cartMarkup = '<h1 id="cart-target">سبد خرید واقعی از Django</h1>' +
+        '<div class="cr tp-cart-actions"><form class="tp-qty" method="post" action="/store/cart/update/" data-quantity-form>' +
+        '<label class="tp-qty-label" for="tp-test-quantity">تعداد</label>' +
+        '<button class="btn o s tp-qty-step" type="button" data-qty-step="-1" aria-controls="tp-test-quantity" hidden>−</button>' +
+        '<input class="tp-qty-input" id="tp-test-quantity" name="quantity" type="number" min="1" max="3" value="2" required>' +
+        '<button class="btn o s tp-qty-step" type="button" data-qty-step="1" aria-controls="tp-test-quantity" hidden>+</button>' +
+        '<button class="btn o s tp-qty-submit" type="submit">به‌روزرسانی</button></form>' +
+        '<form class="tp-cart-remove-form" method="post" action="/store/cart/remove/"><button class="btn o s dg tp-cart-remove-btn" type="submit">حذف</button></form></div>';
       await route.fulfill({
         status: 200,
         contentType: 'text/html; charset=utf-8',
-        body: documentHtml('<h1 id="cart-target">سبد خرید واقعی از Django</h1>', 'سبد خرید آزمایشی')
+        body: documentHtml(cartMarkup, 'سبد خرید آزمایشی')
       });
       return;
     }
@@ -311,7 +325,30 @@ try {
   await page.locator('#cart-target').waitFor({ state: 'visible', timeout: 15000 });
   assert.equal(await page.locator('#app').getAttribute('data-django-view'), '/store/cart/');
   assert.equal(await page.locator('#app').evaluate(el => el.tagName), 'MAIN');
-  assert.equal(await page.locator('#app').innerText(), 'سبد خرید واقعی از Django');
+  assert.match(await page.locator('#app').innerText(), /سبد خرید واقعی از Django/);
+  const decreaseQuantity = page.locator('[data-qty-step="-1"]');
+  const increaseQuantity = page.locator('[data-qty-step="1"]');
+  await increaseQuantity.waitFor({ state: 'visible', timeout: 10000 });
+  await page.evaluate(() => {
+    window.__tpQuantitySubmitCount = 0;
+    document.querySelector('[data-quantity-form]').addEventListener('submit', event => {
+      window.__tpQuantitySubmitCount += 1;
+      event.preventDefault();
+    });
+  });
+  assert.equal(await page.locator('#tp-test-quantity').inputValue(), '2');
+  assert.equal(await decreaseQuantity.isEnabled(), true);
+  assert.equal(await increaseQuantity.isEnabled(), true);
+  const controlWidth = await increaseQuantity.evaluate(el => el.getBoundingClientRect().width);
+  assert.ok(controlWidth >= 44, 'cart quantity controls must be at least 44px wide: ' + controlWidth);
+  await increaseQuantity.click();
+  assert.equal(await page.locator('#tp-test-quantity').inputValue(), '3');
+  assert.equal(await increaseQuantity.isDisabled(), true, 'increase must stop at the server-provided stock maximum');
+  await decreaseQuantity.click();
+  await decreaseQuantity.click();
+  assert.equal(await page.locator('#tp-test-quantity').inputValue(), '1');
+  assert.equal(await decreaseQuantity.isDisabled(), true, 'decrease must stop at the minimum quantity');
+  assert.equal(await page.evaluate(() => window.__tpQuantitySubmitCount), 0, 'step buttons must not submit the cart form');
 
   await page.evaluate(() => { location.hash = '#/online-coach'; });
   await page.waitForFunction(() => document.querySelector('#app')?.innerText.includes('روشن کردن دوربین'));
