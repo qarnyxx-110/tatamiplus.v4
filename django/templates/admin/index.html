@@ -1,105 +1,180 @@
 {% extends "admin/base_site.html" %}
 {% load static %}
-{% block title %}مرکز فرمان | مدیریت تاتامی پلاس{% endblock %}
+
+{% block title %}داشبورد مدیریت | تاتامی پلاس{% endblock %}
 {% block bodyclass %}tp-admin-index{% endblock %}
 {% block breadcrumbs %}{% endblock %}
 {% block content_title %}{% endblock %}
-{% block extrahead %}{{ block.super }}
+
+{% block extrahead %}
+  {{ block.super }}
   <script src="{% static 'js/admin-dashboard.js' %}" defer></script>
 {% endblock %}
+
 {% block content %}
 <div class="tp-admin-dashboard" dir="rtl">
-  <section class="tp-admin-hero" aria-labelledby="tp-admin-title">
-    <div class="tp-admin-hero-copy">
-      <span class="tp-admin-eyebrow"><i></i> TATAMI PLUS · CONTROL CENTER</span>
-      <h1 id="tp-admin-title">مرکز فرمان تاتامی</h1>
-      <p>همه ابزارهای مدیریت سامانه، یک‌جا و مرتب. از همین‌جا می‌توانی بخش موردنظرت را باز کنی و کار را ادامه بدهی.</p>
-      <div class="tp-admin-hero-actions">
-        <a class="tp-admin-primary-action" href="#tp-admin-modules"><span>رفتن به ماژول‌ها</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5m0 0 6-6m-6 6 6 6"/></svg></a>
-        <a class="tp-admin-secondary-action" href="/preview/#/" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.4-6 9.5-6 9.5 6 9.5 6-3.4 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.5"/></svg><span>دیدن پیش‌نمایش</span></a>
-      </div>
+  <header class="tp-admin-hero">
+    <div class="tp-admin-page-heading">
+      <span class="tp-admin-eyebrow">پنل مدیریت</span>
+      <h1>داشبورد تاتامی پلاس</h1>
+      <p>مدیریت بخش‌های سامانه و پیگیری درخواست‌ها از یک فضای یکپارچه.</p>
     </div>
-    <div class="tp-admin-hero-art" aria-hidden="true">
-      <div class="tp-admin-orbit tp-admin-orbit-one"></div><div class="tp-admin-orbit tp-admin-orbit-two"></div>
-      <div class="tp-admin-emblem"><svg viewBox="0 0 88 88"><path d="M44 9 69 23v29L44 67 19 52V23L44 9Z"/><path d="m31 28 13-7 13 7v16L44 52 31 44V28Z"/><path d="M44 21v31M31 28l26 16M57 28 31 44"/></svg></div>
-      <span class="tp-admin-art-caption">مدیریت هوشمند تاتامی</span>
+    <div class="tp-admin-account-chip">
+      <span class="tp-admin-account-avatar" aria-hidden="true">{{ user.get_full_name|default:user.username|slice:":1" }}</span>
+      <span class="tp-admin-account-copy">
+        <small>حساب فعال</small>
+        <strong>{{ user.get_full_name|default:user.username }}</strong>
+      </span>
     </div>
-  </section>
+  </header>
 
-  <section class="tp-admin-stats" aria-label="خلاصه دسترسی‌ها">
-    <article class="tp-admin-stat-card">
-      <span class="tp-admin-stat-icon tp-stat-blue" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="8" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/><rect x="13" y="13" width="8" height="8" rx="2"/></svg></span>
-      <div><span class="tp-admin-stat-label">ماژول‌های در دسترس</span><strong class="tp-admin-stat-value">{{ app_list|length }}</strong><small>بر اساس سطح دسترسی فعلی</small></div>
-    </article>
-    <article class="tp-admin-stat-card">
-      <span class="tp-admin-stat-icon tp-stat-orange" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 3.8 7.5v5.8c0 4 3.4 6.6 8.2 7.7 4.8-1.1 8.2-3.7 8.2-7.7V7.5L12 3Z"/><path d="m8.5 12 2.2 2.2 4.8-5"/></svg></span>
-      <div><span class="tp-admin-stat-label">سطح دسترسی</span><strong class="tp-admin-stat-value tp-admin-stat-text">{% if user.is_superuser %}مدیر کل{% elif user.is_staff %}مدیر سامانه{% else %}کاربر مدیریتی{% endif %}</strong><small>مطابق حساب واردشده</small></div>
-    </article>
-    <article class="tp-admin-stat-card">
-      <span class="tp-admin-stat-icon tp-stat-green" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M16 20v-1.5a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4V20M9.5 10.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7ZM17 4.5a3.5 3.5 0 0 1 0 6.8M17 14.5h.5a3.5 3.5 0 0 1 3.5 3.5V20"/></svg></span>
-      <div><span class="tp-admin-stat-label">درخواست مربیگری جدید</span><strong class="tp-admin-stat-value">{{ new_coach_leads_count|default:0 }}</strong><small>{% if new_coach_leads_count %}نیازمند بررسی{% else %}درخواست بررسی‌نشده‌ای ثبت نشده{% endif %}</small></div>
-    </article>
+  <section class="tp-admin-stats" aria-label="خلاصه وضعیت دسترسی‌ها">
+    <a class="tp-admin-stat-card" href="#tp-admin-modules">
+      <span class="tp-admin-stat-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+      </span>
+      <span class="tp-admin-stat-copy">
+        <small>گروه‌های مدیریتی در دسترس</small>
+        <strong>{{ app_list|length }}</strong>
+        <span>بر اساس مجوزهای این حساب</span>
+      </span>
+      <span class="tp-admin-stat-arrow" aria-hidden="true">↙</span>
+    </a>
+
+    <a class="tp-admin-stat-card tp-admin-stat-attention" href="{% url 'admin:accounts_signuplead_changelist' %}">
+      <span class="tp-admin-stat-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M16 20v-1.5a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4V20M9.5 10.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7ZM17 4.5a3.5 3.5 0 0 1 0 6.8M17 14.5h.5a3.5 3.5 0 0 1 3.5 3.5V20"/></svg>
+      </span>
+      <span class="tp-admin-stat-copy">
+        <small>درخواست‌های مربیگری جدید</small>
+        <strong>{{ new_coach_leads_count|default:0 }}</strong>
+        <span>{% if new_coach_leads_count %}در انتظار بررسی{% else %}درخواست تازه‌ای برای بررسی نیست{% endif %}</span>
+      </span>
+      <span class="tp-admin-stat-arrow" aria-hidden="true">↙</span>
+    </a>
   </section>
 
   <div class="tp-admin-workspace">
     <section class="tp-admin-modules-panel" id="tp-admin-modules" aria-labelledby="tp-admin-modules-title">
       <div class="tp-admin-section-heading">
-        <div><span class="tp-admin-eyebrow">WORKSPACE</span><h2 id="tp-admin-modules-title">فضای مدیریت</h2><p>ماژول‌ها و ابزارهایی که با دسترسی حساب تو فعال هستند.</p></div>
-        <span class="tp-admin-module-total" data-admin-result-count aria-live="polite">{{ app_list|length }} ماژول</span>
+        <div>
+          <span class="tp-admin-section-kicker">دسترسی‌ها</span>
+          <h2 id="tp-admin-modules-title">بخش‌های مدیریتی</h2>
+          <p>فقط بخش‌هایی نمایش داده می‌شوند که حساب شما به آن‌ها دسترسی دارد.</p>
+        </div>
+        <span class="tp-admin-module-total" data-admin-result-count aria-live="polite">{{ app_list|length }} گروه</span>
       </div>
+
+      {% if app_list %}
       <div class="tp-admin-search">
         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg>
-        <label class="tp-admin-sr-only" for="tp-admin-search">جست‌وجوی ماژول یا بخش مدیریتی</label>
-        <input id="tp-admin-search" type="search" autocomplete="off" placeholder="نام ماژول یا بخش موردنظر را جست‌وجو کن..." data-admin-search>
-        <kbd>ESC</kbd><button type="button" data-admin-clear hidden>پاک‌کردن</button>
+        <label class="tp-admin-sr-only" for="tp-admin-search">جست‌وجو در بخش‌های مدیریتی</label>
+        <input id="tp-admin-search" type="search" autocomplete="off" spellcheck="false" placeholder="جست‌وجوی نام بخش یا مدل..." data-admin-search aria-controls="tp-admin-module-list">
+        <kbd aria-hidden="true">ESC</kbd>
+        <button type="button" data-admin-clear hidden>پاک‌کردن</button>
       </div>
-      <div class="tp-admin-no-results" data-admin-no-results hidden role="status"><span aria-hidden="true">⌕</span><strong>چیزی پیدا نشد</strong><p>عبارت جست‌وجو را کوتاه‌تر کن یا نام دیگری را امتحان کن.</p></div>
-      {% if app_list %}
-        <div class="tp-admin-module-grid" data-admin-module-list>
+
+      <div class="tp-admin-no-results" data-admin-no-results hidden role="status">
+        <span class="tp-admin-empty-mark" aria-hidden="true">⌕</span>
+        <strong>نتیجه‌ای پیدا نشد</strong>
+        <p>نام دیگری را جست‌وجو کنید یا عبارت را کوتاه‌تر بنویسید.</p>
+      </div>
+
+        <div class="tp-admin-module-grid" id="tp-admin-module-list" data-admin-module-list>
           {% for app in app_list %}
-            <article class="tp-admin-module-card" data-admin-module data-search-name="{{ app.name }}">
+            <section class="tp-admin-module-card" data-admin-module data-search-name="{{ app.name }}" aria-label="{{ app.name }}">
               <header class="tp-admin-module-heading">
-                <span class="tp-admin-module-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></span>
-                <div class="tp-admin-module-title"><h3><a href="{{ app.app_url }}">{{ app.name }}</a></h3><span>{{ app.models|length }} بخش مدیریتی</span></div>
-                <a class="tp-admin-module-open" href="{{ app.app_url }}" aria-label="باز کردن {{ app.name }}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg></a>
+                <span class="tp-admin-module-symbol" aria-hidden="true">{{ app.name|slice:":1" }}</span>
+                <span class="tp-admin-module-title">
+                  <strong>{{ app.name }}</strong>
+                  <small>{{ app.models|length }} بخش</small>
+                </span>
+                <a class="tp-admin-module-open" href="{{ app.app_url }}" aria-label="ورود به {{ app.name }}">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg>
+                </a>
               </header>
+
               <div class="tp-admin-model-list">
                 {% for model in app.models %}
                   <div class="tp-admin-model-row" data-admin-model data-search-name="{{ model.name }}">
-                    <a class="tp-admin-model-main" href="{% if model.admin_url %}{{ model.admin_url }}{% else %}{{ app.app_url }}{% endif %}"><span>{{ model.name }}</span><span class="tp-admin-model-view">{% if model.view_only %}مشاهده{% else %}مدیریت{% endif %}</span></a>
-                    {% if model.add_url %}<a class="tp-admin-model-add" href="{{ model.add_url }}" aria-label="افزودن مورد جدید در {{ model.name }}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>افزودن</span></a>{% endif %}
+                    <a class="tp-admin-model-main" href="{% if model.admin_url %}{{ model.admin_url }}{% else %}{{ app.app_url }}{% endif %}">
+                      <span>{{ model.name }}</span>
+                      <small>{% if model.view_only %}فقط مشاهده{% else %}ورود به بخش{% endif %}</small>
+                    </a>
+                    {% if model.add_url %}
+                      <a class="tp-admin-model-add" href="{{ model.add_url }}" aria-label="افزودن مورد در {{ model.name }}" title="افزودن مورد جدید">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+                      </a>
+                    {% endif %}
                   </div>
                 {% endfor %}
               </div>
-            </article>
+            </section>
           {% endfor %}
         </div>
       {% else %}
-        <div class="tp-admin-no-results tp-admin-no-access"><span aria-hidden="true">◈</span><strong>ماژولی برای نمایش وجود ندارد</strong><p>در حال حاضر دسترسی مدیریتی فعالی برای این حساب تعریف نشده است.</p></div>
+        <div class="tp-admin-no-results tp-admin-no-access">
+          <span class="tp-admin-empty-mark" aria-hidden="true">◎</span>
+          <strong>بخش مدیریتی در دسترس نیست</strong>
+          <p>برای این حساب، دسترسی مدیریتی فعالی در سامانه ثبت نشده است.</p>
+        </div>
       {% endif %}
     </section>
 
-    <aside class="tp-admin-side-column" aria-label="ابزارهای جانبی">
+    <aside class="tp-admin-side-column" aria-label="ابزارهای مدیریتی">
       <section class="tp-admin-side-card tp-admin-leads-card">
-        <div class="tp-admin-side-card-top">
-          <span class="tp-admin-side-icon tp-stat-orange" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M16 20v-1.5a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4V20M9.5 10.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7ZM17 4.5a3.5 3.5 0 0 1 0 6.8M17 14.5h.5a3.5 3.5 0 0 1 3.5 3.5V20"/></svg></span>
-          {% if new_coach_leads_count %}<span class="tp-admin-live-badge"><i></i> نیازمند بررسی</span>{% else %}<span class="tp-admin-calm-badge">وضعیت عادی</span>{% endif %}
+        <div class="tp-admin-side-card-head">
+          <span class="tp-admin-side-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M16 20v-1.5a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4V20M9.5 10.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7ZM17 4.5a3.5 3.5 0 0 1 0 6.8M17 14.5h.5a3.5 3.5 0 0 1 3.5 3.5V20"/></svg>
+          </span>
+          {% if new_coach_leads_count %}
+            <span class="tp-admin-status tp-admin-status-pending"><i></i> نیازمند بررسی</span>
+          {% else %}
+            <span class="tp-admin-status tp-admin-status-clear"><i></i> بدون مورد جدید</span>
+          {% endif %}
         </div>
-        <h3>درخواست‌های مربیگری</h3><p>درخواست‌های همکاری مربیان را از این بخش بررسی و پیگیری کن.</p>
-        <div class="tp-admin-leads-number"><strong>{{ new_coach_leads_count|default:0 }}</strong><span>درخواست جدید</span></div>
-        <a class="tp-admin-wide-link" href="{% url 'admin:accounts_signuplead_changelist' %}"><span>رفتن به درخواست‌ها</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5m0 0 6-6m-6 6 6 6"/></svg></a>
+        <h2>درخواست‌های مربیگری</h2>
+        <p>درخواست‌های همکاری ثبت‌شده را از این بخش مشاهده و پیگیری کنید.</p>
+        <div class="tp-admin-leads-count">
+          <strong>{{ new_coach_leads_count|default:0 }}</strong>
+          <span>درخواست جدید</span>
+        </div>
+        <a class="tp-admin-wide-link" href="{% url 'admin:accounts_signuplead_changelist' %}">
+          <span>مشاهده درخواست‌ها</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5m0 0 6-6m-6 6 6 6"/></svg>
+        </a>
       </section>
 
-      <section class="tp-admin-side-card tp-admin-help-card">
-        <span class="tp-admin-eyebrow">QUICK ACCESS</span><h3>دسترسی سریع</h3>
-        <a href="{% url 'admin:password_change' %}"><span class="tp-admin-quick-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/></svg></span><span><b>تغییر گذرواژه</b><small>امنیت حساب مدیریتی</small></span><svg class="tp-admin-quick-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></a>
-        <a href="/" target="_blank" rel="noopener noreferrer"><span class="tp-admin-quick-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5M5.5 9v11h13V9"/></svg></span><span><b>وب‌سایت اصلی</b><small>مشاهده تجربه کاربران</small></span><svg class="tp-admin-quick-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></a>
-        <a href="/preview/#/" target="_blank" rel="noopener noreferrer"><span class="tp-admin-quick-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M2.5 12s3.4-6 9.5-6 9.5 6 9.5 6-3.4 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.5"/></svg></span><span><b>پیش‌نمایش پلتفرم</b><small>مشاهده نسخه نمایشی</small></span><svg class="tp-admin-quick-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></a>
+      <section class="tp-admin-side-card tp-admin-quick-card">
+        <span class="tp-admin-section-kicker">میان‌برها</span>
+        <h2>دسترسی سریع</h2>
+        <a class="tp-admin-quick-link" href="{% url 'admin:password_change' %}">
+          <span class="tp-admin-quick-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/></svg></span>
+          <span><strong>تغییر گذرواژه</strong><small>تنظیمات امنیت حساب</small></span>
+          <svg class="tp-admin-quick-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg>
+        </a>
+        <a class="tp-admin-quick-link" href="/" target="_blank" rel="noopener noreferrer">
+          <span class="tp-admin-quick-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5M5.5 9v11h13V9"/></svg></span>
+          <span><strong>وب‌سایت اصلی</strong><small>مشاهده سایت تاتامی پلاس</small></span>
+          <svg class="tp-admin-quick-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg>
+        </a>
+        <a class="tp-admin-quick-link" href="/preview/#/" target="_blank" rel="noopener noreferrer">
+          <span class="tp-admin-quick-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M2.5 12s3.4-6 9.5-6 9.5 6 9.5 6-3.4 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.5"/></svg></span>
+          <span><strong>پیش‌نمایش پلتفرم</strong><small>مشاهده نسخه پیش‌نمایش</small></span>
+          <svg class="tp-admin-quick-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg>
+        </a>
       </section>
 
-      <section class="tp-admin-security-note"><span class="tp-admin-security-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 4 6.5v5.3c0 4.4 3.2 7.6 8 9.2 4.8-1.6 8-4.8 8-9.2V6.5L12 3Z"/><path d="m9 12 2 2 4-4"/></svg></span><div><b>دسترسی کنترل‌شده</b><p>بخش‌هایی که در این پنل می‌بینی بر اساس مجوز حساب فعلی نمایش داده می‌شوند.</p></div></section>
+      <p class="tp-admin-note">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 4 6.5v5.3c0 4.4 3.2 7.6 8 9.2 4.8-1.6 8-4.8 8-9.2V6.5L12 3Z"/><path d="m9 12 2 2 4-4"/></svg>
+        دسترسی هر بخش مطابق مجوزهای حساب شما در سامانه کنترل می‌شود.
+      </p>
     </aside>
   </div>
-  <footer class="tp-admin-dashboard-footer"><span>تاتامی پلاس <b>·</b> مرکز مدیریت</span><span>ساخته‌شده برای مدیریت ساده‌تر و دقیق‌تر</span></footer>
+
+  <footer class="tp-admin-dashboard-footer">
+    <span>تاتامی پلاس <b>·</b> پنل مدیریت</span>
+    <a href="{% url 'admin:password_change' %}">امنیت حساب</a>
+  </footer>
 </div>
 {% endblock %}
