@@ -1,33 +1,32 @@
 {% extends "admin/base.html" %}
 {% load static %}
 
-{% block title %}{{ title }} | مدیریت تاتامی پلاس{% endblock %}
+{% block title %}{{ title }} | تاتامی پلاس{% endblock %}
+{% block bodyclass %}tp-admin-root{% endblock %}
 
 {% block branding %}
-<div class="tp-admin-brand">
-  <span class="tp-admin-brand-mark" aria-hidden="true">ت</span>
-  <div class="tp-admin-brand-copy">
-    <h1 id="site-name"><a href="{% url 'admin:index' %}">تاتامی پلاس</a></h1>
-    <span>پنل مدیریت</span>
-  </div>
-</div>
+  <h1 id="site-name" class="tp-admin-wordmark">
+    <a href="{% url 'admin:index' %}">تاتامی پلاس</a>
+    <span>مدیریت سامانه</span>
+  </h1>
 {% endblock %}
 
 {% block nav-global %}
-<nav class="tp-admin-top-links" aria-label="پیوندهای بیرونی">
-  <a href="/" target="_blank" rel="noopener noreferrer">بازگشت به سایت</a>
-  <a href="/preview/#/" target="_blank" rel="noopener noreferrer">مشاهده پیش‌نمایش</a>
-  {% if new_coach_leads_count %}
-    <a class="tp-admin-lead-notice" href="{% url 'admin:accounts_signuplead_changelist' %}" aria-label="سرنخ‌های جدید مربی: {{ new_coach_leads_count }}">
-      <span class="tp-admin-lead-dot" aria-hidden="true"></span>
-      <span>درخواست‌های جدید مربیگری</span>
-      <strong>{{ new_coach_leads_count }}</strong>
-    </a>
-  {% endif %}
-</nav>
+  <nav class="tp-admin-global-nav" aria-label="پیوندهای سریع">
+    <a href="/" target="_blank" rel="noopener noreferrer">مشاهده سایت</a>
+    <a href="/preview/#/" target="_blank" rel="noopener noreferrer">پیش‌نمایش</a>
+    {% if new_coach_leads_count %}
+      <a class="tp-admin-lead-link" href="{% url 'admin:accounts_signuplead_changelist' %}" aria-label="سرنخ‌های جدید مربی: {{ new_coach_leads_count }}">
+        <span class="tp-admin-lead-dot" aria-hidden="true"></span>
+        <span>درخواست مربیگری</span>
+        <strong>{{ new_coach_leads_count }}</strong>
+      </a>
+    {% endif %}
+  </nav>
 {% endblock %}
 
 {% block extrastyle %}
   {{ block.super }}
+  <link rel="stylesheet" href="{% static 'css/tatami-admin-tokens.css' %}">
   <link rel="stylesheet" href="{% static 'css/tatami-admin.css' %}">
 {% endblock %}
