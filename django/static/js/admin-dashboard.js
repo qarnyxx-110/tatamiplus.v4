@@ -14,12 +14,15 @@
     .toLocaleLowerCase('fa-IR')
     .replace(/[يى]/g, 'ی')
     .replace(/ك/g, 'ک')
-    .replace(/[\u064B-\u065F\u0670\u0640]/g, '')
+    .replace(/[\u064B-\u065F\u0670\u0640\u200c]/g, '')
     .replace(/\s+/g, ' ')
     .trim();
 
-  const toPersianDigits = (value) => String(value).replace(/[0-9]/g, (digit) => '۰۱۲۳۴۵۶۷۸۹'[Number(digit)]);
-  const totalModels = modules.reduce((total, module) => total + module.querySelectorAll('[data-admin-model]').length, 0);
+  const persianDigits = (value) => String(value).replace(/[0-9]/g, (digit) => '۰۱۲۳۴۵۶۷۸۹'[Number(digit)]);
+  const totalModels = modules.reduce(
+    (total, module) => total + module.querySelectorAll('[data-admin-model]').length,
+    0
+  );
 
   function filterModules() {
     const query = normalize(input.value);
@@ -33,28 +36,28 @@
 
       rows.forEach((row) => {
         const modelMatches = !query || normalize(row.dataset.searchName || row.textContent).includes(query);
-        const rowVisible = moduleMatches || modelMatches;
-        row.hidden = !rowVisible;
-        if (rowVisible) matchingRows += 1;
+        const visible = moduleMatches || modelMatches;
+        row.hidden = !visible;
+        if (visible) matchingRows += 1;
       });
 
-      const moduleVisible = moduleMatches || matchingRows > 0 || rows.length === 0;
-      module.hidden = !moduleVisible;
-      if (moduleVisible) {
+      const visible = moduleMatches || matchingRows > 0 || rows.length === 0;
+      module.hidden = !visible;
+      if (visible) {
         visibleModules += 1;
         visibleModels += matchingRows;
       }
     });
 
-    if (noResults) noResults.hidden = visibleModules !== 0;
+    if (noResults) noResults.hidden = visibleModules > 0;
     if (clearButton) clearButton.hidden = query.length === 0;
 
     if (resultCount) {
-      const groups = toPersianDigits(visibleModules);
-      const models = toPersianDigits(visibleModels);
+      const groups = persianDigits(visibleModules);
+      const models = persianDigits(visibleModels);
       resultCount.textContent = query
         ? `${groups} گروه · ${models} بخش`
-        : `${toPersianDigits(modules.length)} گروه · ${toPersianDigits(totalModels)} بخش`;
+        : `${persianDigits(modules.length)} گروه · ${persianDigits(totalModels)} بخش`;
     }
   }
 
