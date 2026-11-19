@@ -1,11 +1,9 @@
-/* Tatami Plus Admin UI
-   Scoped to Django Admin. Shared colors, type, spacing and motion come from tokens. */
+/* Tatami Plus Django Admin
+   Only Django admin components are styled here. Tokens come from the shared build. */
 
 body.tp-admin-root {
-  --tp-admin-sticky-offset: 72px;
-  direction: rtl;
-  min-height: 100vh;
   margin: 0;
+  min-height: 100vh;
   background: var(--tp-color-bg);
   color: var(--tp-color-text-primary);
   font-family: var(--tp-font-family);
@@ -13,23 +11,18 @@ body.tp-admin-root {
   line-height: var(--tp-font-leading-base);
 }
 
-body.tp-admin-root,
-body.tp-admin-root * {
-  box-sizing: border-box;
-}
-
 body.tp-admin-root #container {
   min-height: 100vh;
   background: var(--tp-color-bg);
 }
 
-body.tp-admin-root a {
+body.tp-admin-root a:link,
+body.tp-admin-root a:visited {
   color: var(--tp-color-brand-light);
-  text-decoration-thickness: 1px;
-  text-underline-offset: 3px;
 }
 
-body.tp-admin-root a:hover {
+body.tp-admin-root a:hover,
+body.tp-admin-root a:focus {
   color: var(--tp-color-text-primary);
 }
 
@@ -42,27 +35,21 @@ body.tp-admin-root textarea:focus-visible {
   outline-offset: var(--tp-focus-offset);
 }
 
-/* Header: three clear zones, arranged right-to-left. */
+/* Header follows the compact wordmark / navigation language of the public site. */
 body.tp-admin-root #header {
-  position: sticky;
-  top: 0;
-  z-index: var(--tp-z-header);
-  display: grid;
-  grid-template-columns: minmax(180px, 1fr) auto auto;
+  display: flex;
+  min-height: 58px;
+  flex-wrap: wrap;
   align-items: center;
-  gap: var(--tp-space-sm) var(--tp-space-lg);
-  min-height: 68px;
-  padding: var(--tp-space-xs) clamp(16px, 2.4vw, 36px);
+  gap: var(--tp-space-xs) var(--tp-space-lg);
+  padding: var(--tp-space-xs) var(--tp-space-lg);
   border-bottom: 1px solid var(--tp-color-border);
   background: var(--tp-color-header-bg);
   color: var(--tp-color-text-primary);
-  box-shadow: 0 5px 18px rgba(0, 0, 0, .13);
-  backdrop-filter: blur(12px);
+  box-shadow: none;
 }
 
 body.tp-admin-root #branding {
-  grid-column: 1;
-  grid-row: 1;
   display: flex;
   min-width: 0;
   align-items: center;
@@ -79,7 +66,7 @@ body.tp-admin-root .tp-admin-wordmark {
 }
 
 body.tp-admin-root .tp-admin-wordmark a {
-  color: var(--tp-color-text-primary);
+  color: var(--tp-color-accent);
   font-family: var(--tp-font-family-display);
   font-size: var(--tp-font-size-xl);
   font-weight: var(--tp-font-weight-bold);
@@ -95,15 +82,11 @@ body.tp-admin-root .tp-admin-wordmark span {
 }
 
 body.tp-admin-root #user-tools {
-  grid-column: 2;
-  grid-row: 1;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: flex-start;
-  gap: var(--tp-space-2xs) var(--tp-space-xs);
-  margin: 0;
-  padding: 0;
+  gap: 0 var(--tp-space-xs);
+  margin-inline-start: auto;
   color: var(--tp-color-text-secondary);
   font-family: var(--tp-font-family);
   font-size: var(--tp-font-size-xs);
@@ -112,29 +95,22 @@ body.tp-admin-root #user-tools {
 }
 
 body.tp-admin-root #user-tools a {
-  display: inline-flex;
-  min-height: 32px;
-  align-items: center;
-  padding: 2px var(--tp-space-2xs);
-  border-radius: var(--tp-radius-control);
   color: var(--tp-color-text-secondary);
   text-decoration: none;
 }
 
 body.tp-admin-root #user-tools a:hover {
-  background: var(--tp-color-surface-hover);
   color: var(--tp-color-text-primary);
 }
 
 body.tp-admin-root #user-tools form {
   display: inline-flex;
-  align-items: center;
   margin: 0;
 }
 
 body.tp-admin-root #user-tools button,
 body.tp-admin-root #user-tools .theme-toggle {
-  min-height: 32px;
+  min-height: 30px;
   padding: 3px var(--tp-space-xs);
   border: 1px solid var(--tp-color-border);
   border-radius: var(--tp-radius-control);
@@ -145,22 +121,17 @@ body.tp-admin-root #user-tools .theme-toggle {
 }
 
 body.tp-admin-root .tp-admin-global-nav {
-  grid-column: 3;
-  grid-row: 1;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: flex-start;
   gap: var(--tp-space-2xs);
-  min-width: 0;
-  margin: 0;
+  margin-inline-start: 0;
 }
 
 body.tp-admin-root .tp-admin-global-nav a {
   display: inline-flex;
-  min-height: 34px;
+  min-height: 32px;
   align-items: center;
-  justify-content: center;
   gap: var(--tp-space-2xs);
   padding: 4px var(--tp-space-sm);
   border: 1px solid transparent;
@@ -180,17 +151,6 @@ body.tp-admin-root .tp-admin-global-nav a:hover {
   color: var(--tp-color-text-primary);
 }
 
-body.tp-admin-root .tp-admin-nav-link svg {
-  width: 16px;
-  height: 16px;
-  flex: 0 0 auto;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.7;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
 body.tp-admin-root .tp-admin-global-nav .tp-admin-lead-link {
   border-color: var(--tp-color-border);
   background: var(--tp-color-surface);
@@ -207,8 +167,8 @@ body.tp-admin-root .tp-admin-lead-dot {
 
 body.tp-admin-root .tp-admin-lead-link strong {
   display: inline-grid;
-  min-width: 20px;
-  height: 20px;
+  min-width: 19px;
+  height: 19px;
   place-items: center;
   padding-inline: 4px;
   border-radius: var(--tp-radius-xs);
@@ -218,9 +178,8 @@ body.tp-admin-root .tp-admin-lead-link strong {
   font-variant-numeric: tabular-nums;
 }
 
-/* Breadcrumbs and the native model sidebar. */
 body.tp-admin-root div.breadcrumbs {
-  padding: var(--tp-space-xs) clamp(16px, 2.4vw, 36px);
+  padding: var(--tp-space-xs) var(--tp-space-lg);
   border-bottom: 1px solid var(--tp-color-border);
   background: var(--tp-color-surface);
   color: var(--tp-color-text-subtle);
@@ -230,7 +189,6 @@ body.tp-admin-root div.breadcrumbs {
 
 body.tp-admin-root div.breadcrumbs a {
   color: var(--tp-color-text-secondary);
-  text-decoration: none;
 }
 
 body.tp-admin-root .main,
@@ -243,7 +201,7 @@ body.tp-admin-root #content {
   width: 100%;
   max-width: var(--tp-container-page);
   margin-inline: auto;
-  padding: var(--tp-space-xl) clamp(16px, 2.4vw, 36px);
+  padding: var(--tp-space-xl) var(--tp-space-md);
   color: var(--tp-color-text-primary);
 }
 
@@ -269,17 +227,21 @@ body.tp-admin-root #content-main {
   min-width: 0;
 }
 
+body.tp-admin-root #footer {
+  min-height: 30px;
+  padding: var(--tp-space-md);
+  border-top: 1px solid var(--tp-color-border);
+  background: var(--tp-color-bg);
+  color: var(--tp-color-text-subtle);
+  font-size: var(--tp-font-size-xs);
+}
+
+/* Native model navigation remains available on inner admin pages and mobile. */
 body.tp-admin-root #nav-sidebar {
-  position: sticky;
-  top: var(--tp-admin-sticky-offset);
-  width: 248px;
-  min-width: 220px;
-  max-height: calc(100vh - var(--tp-admin-sticky-offset) - 12px);
-  overflow: auto;
+  width: 235px;
+  min-width: 210px;
   border-inline-end: 1px solid var(--tp-color-border);
   background: var(--tp-color-surface);
-  scrollbar-color: var(--tp-color-border-strong) transparent;
-  scrollbar-width: thin;
 }
 
 body.tp-admin-root #nav-sidebar .module {
@@ -308,10 +270,8 @@ body.tp-admin-root #nav-sidebar a {
   display: block;
   padding: var(--tp-space-xs) var(--tp-space-md);
   border-inline-start: 2px solid transparent;
-  border-radius: 0;
   color: var(--tp-color-text-secondary);
   text-decoration: none;
-  transition: background var(--tp-motion-fast), border-color var(--tp-motion-fast), color var(--tp-motion-fast);
 }
 
 body.tp-admin-root #nav-sidebar a:hover {
@@ -327,16 +287,7 @@ body.tp-admin-root #nav-sidebar .current-model {
   color: var(--tp-color-text-primary);
 }
 
-body.tp-admin-root .toggle-nav-sidebar {
-  min-width: 36px;
-  min-height: 36px;
-  border: 1px solid var(--tp-color-border);
-  border-radius: var(--tp-radius-control);
-  background: var(--tp-color-surface);
-  color: var(--tp-color-text-secondary);
-}
-
-/* Dashboard layout. */
+/* Dashboard: intentionally compact, without a decorative hero or fabricated metrics. */
 body.tp-admin-index #nav-sidebar,
 body.tp-admin-index .toggle-nav-sidebar {
   display: none !important;
@@ -347,9 +298,8 @@ body.tp-admin-index .main {
 }
 
 body.tp-admin-index #content {
-  max-width: 1320px;
-  padding-top: clamp(22px, 3vw, 34px);
-  padding-bottom: var(--tp-space-2xl);
+  max-width: var(--tp-container-page);
+  padding-top: var(--tp-space-xl);
 }
 
 .tp-admin-page {
@@ -363,12 +313,8 @@ body.tp-admin-index #content {
   align-items: center;
   justify-content: space-between;
   gap: var(--tp-space-lg);
-  padding-bottom: var(--tp-space-lg);
+  padding-bottom: var(--tp-space-md);
   border-bottom: 1px solid var(--tp-color-border);
-}
-
-.tp-admin-page-title {
-  min-width: 0;
 }
 
 .tp-admin-kicker {
@@ -382,7 +328,7 @@ body.tp-admin-index #content {
 .tp-admin-page-heading h1 {
   margin: 0 0 var(--tp-space-2xs);
   color: var(--tp-color-text-primary);
-  font-size: clamp(1.5rem, 2.4vw, 1.9rem);
+  font-size: var(--tp-font-size-2xl);
   font-weight: var(--tp-font-weight-bold);
   line-height: var(--tp-font-leading-tight);
 }
@@ -395,10 +341,9 @@ body.tp-admin-index #content {
 
 .tp-admin-welcome {
   display: flex;
-  min-width: 0;
   flex: 0 0 auto;
   align-items: center;
-  gap: var(--tp-space-sm);
+  gap: var(--tp-space-xs);
   padding: var(--tp-space-xs) var(--tp-space-sm);
   border: 1px solid var(--tp-color-border);
   border-radius: var(--tp-radius-card);
@@ -407,8 +352,8 @@ body.tp-admin-index #content {
 
 .tp-admin-welcome-mark {
   display: grid;
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   flex: 0 0 auto;
   place-items: center;
   border-radius: var(--tp-radius-control);
@@ -418,20 +363,20 @@ body.tp-admin-index #content {
   font-weight: var(--tp-font-weight-bold);
 }
 
-.tp-admin-welcome-copy {
+.tp-admin-welcome > span:last-child {
   display: flex;
   min-width: 0;
   flex-direction: column;
   line-height: 1.65;
 }
 
-.tp-admin-welcome-copy small {
+.tp-admin-welcome small {
   color: var(--tp-color-text-subtle);
   font-size: var(--tp-font-size-xs);
 }
 
-.tp-admin-welcome-copy strong {
-  max-width: 220px;
+.tp-admin-welcome strong {
+  max-width: 180px;
   overflow: hidden;
   color: var(--tp-color-text-primary);
   font-size: var(--tp-font-size-sm);
@@ -441,15 +386,15 @@ body.tp-admin-index #content {
 
 .tp-admin-overview {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 245px), 1fr));
   gap: var(--tp-space-sm);
-  margin: var(--tp-space-lg) 0 var(--tp-space-xl);
+  margin: var(--tp-space-md) 0 var(--tp-space-lg);
 }
 
 .tp-admin-overview-card {
   display: flex;
   min-width: 0;
-  min-height: 82px;
+  min-height: 74px;
   align-items: center;
   gap: var(--tp-space-sm);
   padding: var(--tp-space-sm) var(--tp-space-md);
@@ -461,19 +406,18 @@ body.tp-admin-index #content {
 }
 
 .tp-admin-overview-card[href] {
-  transition: border-color var(--tp-motion-base), background var(--tp-motion-base), transform var(--tp-motion-base);
+  transition: border-color var(--tp-motion-fast), background var(--tp-motion-fast);
 }
 
 .tp-admin-overview-card[href]:hover {
-  transform: translateY(-2px);
-  border-color: var(--tp-color-brand);
+  border-color: var(--tp-color-border-strong);
   background: var(--tp-color-surface-hover);
 }
 
 .tp-admin-overview-icon {
   display: grid;
-  width: 42px;
-  height: 42px;
+  width: 40px;
+  height: 40px;
   flex: 0 0 auto;
   place-items: center;
   border-radius: var(--tp-radius-control);
@@ -483,8 +427,7 @@ body.tp-admin-index #content {
 
 .tp-admin-overview-icon svg,
 .tp-admin-quick-icon svg,
-.tp-admin-module-mark svg,
-.tp-admin-module-enter svg,
+.tp-admin-module-link svg,
 .tp-admin-add-link svg,
 .tp-admin-search svg,
 .tp-admin-note svg {
@@ -517,7 +460,7 @@ body.tp-admin-index #content {
 }
 
 .tp-admin-overview-attention .tp-admin-overview-icon {
-  background: var(--tp-color-shido-soft);
+  background: var(--tp-color-accent-tint);
   color: var(--tp-color-shido);
 }
 
@@ -530,9 +473,9 @@ body.tp-admin-index #content {
 
 .tp-admin-content-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(260px, 290px);
+  grid-template-columns: minmax(0, 1fr) 270px;
   align-items: start;
-  gap: var(--tp-space-lg);
+  gap: var(--tp-space-md);
 }
 
 .tp-admin-modules,
@@ -563,35 +506,33 @@ body.tp-admin-index #content {
 
 .tp-admin-count {
   flex: 0 0 auto;
-  padding: 4px var(--tp-space-sm);
+  padding: var(--tp-space-2xs) var(--tp-space-xs);
   border: 1px solid var(--tp-color-border);
-  border-radius: var(--tp-radius-pill);
+  border-radius: var(--tp-radius-control);
   background: var(--tp-color-surface);
   color: var(--tp-color-text-secondary);
   font-size: var(--tp-font-size-xs);
   font-variant-numeric: tabular-nums;
-  white-space: nowrap;
 }
 
 .tp-admin-search {
   display: flex;
-  min-height: 48px;
+  min-height: 44px;
   align-items: center;
-  gap: var(--tp-space-sm);
-  margin-bottom: var(--tp-space-md);
+  gap: var(--tp-space-xs);
+  margin-bottom: var(--tp-space-sm);
   padding: 0 var(--tp-space-sm);
-  border: 1px solid var(--tp-color-border-strong);
+  border: 1px solid var(--tp-color-border);
   border-radius: var(--tp-radius-control);
   background: var(--tp-color-surface);
-  transition: border-color var(--tp-motion-fast), box-shadow var(--tp-motion-fast);
 }
 
 .tp-admin-search:focus-within {
-  border-color: var(--tp-color-brand-light);
+  border-color: var(--tp-color-brand);
   box-shadow: var(--tp-shadow-glow);
 }
 
-.tp-admin-search > svg {
+.tp-admin-search svg {
   flex: 0 0 auto;
   color: var(--tp-color-text-secondary);
 }
@@ -599,7 +540,7 @@ body.tp-admin-index #content {
 .tp-admin-search input[type="search"] {
   width: 100%;
   min-width: 0;
-  min-height: 44px;
+  min-height: 40px;
   padding: var(--tp-space-2xs) 0;
   border: 0;
   border-radius: 0;
@@ -620,29 +561,26 @@ body.tp-admin-index #content {
   color: var(--tp-color-text-subtle);
 }
 
-.tp-admin-search-hint {
+.tp-admin-search kbd {
   flex: 0 0 auto;
+  padding: 2px 6px;
+  border: 1px solid var(--tp-color-border);
+  border-radius: var(--tp-radius-xs);
+  background: var(--tp-color-bg);
   color: var(--tp-color-text-subtle);
-  font-size: 11px;
-  white-space: nowrap;
+  font: var(--tp-font-size-xs) var(--tp-font-family);
 }
 
 .tp-admin-search button {
-  min-height: 32px;
+  min-height: 29px;
   flex: 0 0 auto;
-  padding: var(--tp-space-2xs) var(--tp-space-sm);
+  padding: var(--tp-space-2xs) var(--tp-space-xs);
   border: 1px solid var(--tp-color-border);
   border-radius: var(--tp-radius-xs);
-  background: var(--tp-color-surface-raised);
+  background: var(--tp-color-surface-hover);
   color: var(--tp-color-text-secondary);
   font: var(--tp-font-size-xs) var(--tp-font-family);
   cursor: pointer;
-}
-
-.tp-admin-search button:hover {
-  border-color: var(--tp-color-brand);
-  background: var(--tp-color-brand-tint);
-  color: var(--tp-color-text-primary);
 }
 
 .tp-admin-search button[hidden],
@@ -664,9 +602,9 @@ body.tp-admin-index #content {
 
 .tp-admin-module-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 290px), 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: start;
-  gap: var(--tp-space-md);
+  gap: var(--tp-space-sm);
 }
 
 .tp-admin-module-card {
@@ -675,32 +613,23 @@ body.tp-admin-index #content {
   border: 1px solid var(--tp-color-border);
   border-radius: var(--tp-radius-card);
   background: var(--tp-color-surface);
-  transition: border-color var(--tp-motion-base), transform var(--tp-motion-base), box-shadow var(--tp-motion-base);
-}
-
-.tp-admin-module-card:hover {
-  transform: translateY(-2px);
-  border-color: var(--tp-color-border-strong);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, .13);
 }
 
 .tp-admin-module-heading {
   display: flex;
-  min-height: 76px;
+  min-height: 62px;
   align-items: center;
-  gap: var(--tp-space-sm);
+  gap: var(--tp-space-xs);
   padding: var(--tp-space-sm) var(--tp-space-md);
   border-bottom: 1px solid var(--tp-color-border);
-  background: var(--tp-color-surface-raised);
 }
 
 .tp-admin-module-mark {
   display: grid;
-  width: 42px;
-  height: 42px;
+  width: 34px;
+  height: 34px;
   flex: 0 0 auto;
   place-items: center;
-  border: 1px solid rgba(141, 176, 255, .14);
   border-radius: var(--tp-radius-control);
   background: var(--tp-color-brand-tint);
   color: var(--tp-color-brand-light);
@@ -708,29 +637,12 @@ body.tp-admin-index #content {
   font-weight: var(--tp-font-weight-bold);
 }
 
-.tp-admin-module-mark svg {
-  width: 21px;
-  height: 21px;
-}
-
-.tp-admin-module-mark[data-admin-app="gems"] {
-  border-color: rgba(255, 201, 51, .18);
-  background: var(--tp-color-shido-soft);
-  color: var(--tp-color-shido);
-}
-
-.tp-admin-module-mark[data-admin-app="store"],
-.tp-admin-module-mark[data-admin-app="orders"] {
-  background: var(--tp-color-surface);
-  color: var(--tp-color-brand-light);
-}
-
 .tp-admin-module-title {
   display: flex;
   min-width: 0;
   flex: 1 1 auto;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
 }
 
 .tp-admin-module-title h3 {
@@ -744,12 +656,12 @@ body.tp-admin-index #content {
 }
 
 .tp-admin-module-title h3 a {
-  color: inherit;
+  color: inherit !important;
   text-decoration: none;
 }
 
 .tp-admin-module-title h3 a:hover {
-  color: var(--tp-color-brand-light);
+  color: var(--tp-color-brand-light) !important;
 }
 
 .tp-admin-module-title small {
@@ -757,32 +669,24 @@ body.tp-admin-index #content {
   font-size: var(--tp-font-size-xs);
 }
 
-.tp-admin-module-enter {
-  display: inline-flex;
-  min-height: 34px;
+.tp-admin-module-link,
+.tp-admin-add-link {
+  display: grid;
+  width: 29px;
+  height: 29px;
   flex: 0 0 auto;
-  align-items: center;
-  gap: var(--tp-space-2xs);
-  padding: 4px var(--tp-space-xs);
+  place-items: center;
   border: 1px solid var(--tp-color-border);
   border-radius: var(--tp-radius-control);
-  background: var(--tp-color-surface);
-  color: var(--tp-color-text-secondary) !important;
-  font-size: var(--tp-font-size-xs);
+  background: var(--tp-color-bg);
+  color: var(--tp-color-brand-light) !important;
   text-decoration: none !important;
-  white-space: nowrap;
-  transition: border-color var(--tp-motion-fast), background var(--tp-motion-fast), color var(--tp-motion-fast);
 }
 
-.tp-admin-module-enter:hover {
+.tp-admin-module-link:hover,
+.tp-admin-add-link:hover {
   border-color: var(--tp-color-brand);
   background: var(--tp-color-brand-tint);
-  color: var(--tp-color-text-primary) !important;
-}
-
-.tp-admin-module-enter svg {
-  width: 15px;
-  height: 15px;
 }
 
 .tp-admin-model-list {
@@ -792,95 +696,76 @@ body.tp-admin-index #content {
 .tp-admin-model-row {
   display: flex;
   min-width: 0;
-  min-height: 48px;
   align-items: center;
-  gap: var(--tp-space-sm);
-  padding: var(--tp-space-2xs);
+  gap: var(--tp-space-xs);
   border-bottom: 1px solid var(--tp-color-border);
-  border-radius: var(--tp-radius-xs);
-  transition: background var(--tp-motion-fast);
 }
 
 .tp-admin-model-row:last-child {
   border-bottom: 0;
 }
 
-.tp-admin-model-row:hover {
-  background: var(--tp-color-surface-hover);
-}
-
-.tp-admin-model-main {
+.tp-admin-model-link {
   display: flex;
   min-width: 0;
+  min-height: 38px;
   flex: 1 1 auto;
   align-items: center;
   justify-content: space-between;
   gap: var(--tp-space-xs);
+  color: var(--tp-color-text-secondary) !important;
+  text-decoration: none !important;
 }
 
-.tp-admin-model-link,
-.tp-admin-model-name {
-  min-width: 0;
+.tp-admin-model-link > span {
   overflow: hidden;
-  color: var(--tp-color-text-secondary);
   font-size: var(--tp-font-size-xs);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.tp-admin-model-link {
-  text-decoration: none;
-}
-
-.tp-admin-model-link:hover {
-  color: var(--tp-color-brand-light);
-}
-
-.tp-admin-model-name {
-  color: var(--tp-color-text-subtle);
-}
-
-.tp-admin-model-permission {
+.tp-admin-model-link small {
   flex: 0 0 auto;
-  padding: 2px 7px;
-  border: 1px solid var(--tp-color-border);
-  border-radius: var(--tp-radius-pill);
-  background: var(--tp-color-surface-raised);
   color: var(--tp-color-text-subtle);
   font-size: 10px;
-  line-height: 1.6;
-  white-space: nowrap;
+}
+
+.tp-admin-model-link:hover > span {
+  color: var(--tp-color-text-primary);
 }
 
 .tp-admin-add-link {
-  display: inline-flex;
-  min-height: 32px;
-  flex: 0 0 auto;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  padding: 3px var(--tp-space-xs);
-  border: 1px solid var(--tp-color-border);
-  border-radius: var(--tp-radius-control);
-  background: var(--tp-color-bg);
-  color: var(--tp-color-brand-light) !important;
-  font-size: 11px;
-  text-decoration: none !important;
-  white-space: nowrap;
-  transition: border-color var(--tp-motion-fast), background var(--tp-motion-fast);
+  width: 26px;
+  height: 26px;
 }
 
-.tp-admin-add-link svg {
-  width: 14px;
-  height: 14px;
+.tp-admin-empty {
+  display: grid;
+  min-height: 130px;
+  place-content: center;
+  justify-items: center;
+  padding: var(--tp-space-lg);
+  border: 1px dashed var(--tp-color-border-strong);
+  border-radius: var(--tp-radius-card);
+  background: var(--tp-color-surface);
+  text-align: center;
 }
 
-.tp-admin-add-link:hover {
-  border-color: var(--tp-color-brand);
-  background: var(--tp-color-brand-tint);
+.tp-admin-empty strong {
+  color: var(--tp-color-text-primary);
+  font-size: var(--tp-font-size-sm);
 }
 
-/* Quick actions stay visually secondary to the actual model list. */
+.tp-admin-empty p {
+  margin: var(--tp-space-2xs) 0 0;
+  color: var(--tp-color-text-secondary);
+  font-size: var(--tp-font-size-xs);
+}
+
+.tp-admin-empty-access {
+  margin-top: var(--tp-space-sm);
+}
+
 .tp-admin-aside {
   display: grid;
   gap: var(--tp-space-sm);
@@ -904,25 +789,18 @@ body.tp-admin-index #content {
 .tp-admin-quick-link {
   display: flex;
   min-width: 0;
-  min-height: 58px;
+  min-height: 56px;
   align-items: center;
   gap: var(--tp-space-xs);
-  padding: var(--tp-space-2xs);
   border-top: 1px solid var(--tp-color-border);
-  border-radius: var(--tp-radius-xs);
   color: var(--tp-color-text-primary) !important;
   text-decoration: none !important;
-  transition: background var(--tp-motion-fast);
-}
-
-.tp-admin-quick-link:hover {
-  background: var(--tp-color-surface-hover);
 }
 
 .tp-admin-quick-icon {
   display: grid;
-  width: 36px;
-  height: 36px;
+  width: 33px;
+  height: 33px;
   flex: 0 0 auto;
   place-items: center;
   border-radius: var(--tp-radius-control);
@@ -930,7 +808,7 @@ body.tp-admin-index #content {
   color: var(--tp-color-brand-light);
 }
 
-.tp-admin-quick-copy {
+.tp-admin-quick-link > span:nth-child(2) {
   display: flex;
   min-width: 0;
   flex: 1 1 auto;
@@ -938,13 +816,13 @@ body.tp-admin-index #content {
   line-height: 1.55;
 }
 
-.tp-admin-quick-copy strong {
+.tp-admin-quick-link strong {
   color: var(--tp-color-text-primary);
   font-size: var(--tp-font-size-xs);
   font-weight: var(--tp-font-weight-bold);
 }
 
-.tp-admin-quick-copy small {
+.tp-admin-quick-link small {
   color: var(--tp-color-text-subtle);
   font-size: 10px;
 }
@@ -953,6 +831,10 @@ body.tp-admin-index #content {
   flex: 0 0 auto;
   color: var(--tp-color-text-subtle);
   font-size: var(--tp-font-size-base);
+}
+
+.tp-admin-quick-link:hover strong {
+  color: var(--tp-color-brand-light);
 }
 
 .tp-admin-note {
@@ -966,7 +848,6 @@ body.tp-admin-index #content {
   background: var(--tp-color-surface);
   color: var(--tp-color-text-secondary);
   font-size: var(--tp-font-size-xs);
-  line-height: 1.7;
 }
 
 .tp-admin-note svg {
@@ -974,7 +855,7 @@ body.tp-admin-index #content {
   color: var(--tp-color-brand-light);
 }
 
-/* Native Django change lists and tables. */
+/* Shared admin tables, filters and forms use the same surfaces and controls. */
 body.tp-admin-root .module,
 body.tp-admin-root .inline-group,
 body.tp-admin-root #changelist,
@@ -1006,26 +887,19 @@ body.tp-admin-root #changelist-filter h2 {
 
 body.tp-admin-root #result_list {
   width: 100%;
-  min-width: 720px;
-  border-collapse: separate;
-  border-spacing: 0;
+  border-collapse: collapse;
   background: var(--tp-color-surface);
   color: var(--tp-color-text-primary);
 }
 
 body.tp-admin-root #result_list thead th {
-  padding: var(--tp-space-sm);
-  border-bottom: 1px solid var(--tp-color-border-strong);
   background: var(--tp-color-surface-raised);
   color: var(--tp-color-text-secondary);
-  font-size: var(--tp-font-size-xs);
-  font-weight: var(--tp-font-weight-bold);
-  text-align: start;
 }
 
 body.tp-admin-root #result_list th,
 body.tp-admin-root #result_list td {
-  padding: var(--tp-space-sm);
+  padding: var(--tp-space-xs) var(--tp-space-sm);
   border-bottom: 1px solid var(--tp-color-border);
   text-align: start;
   vertical-align: middle;
@@ -1033,11 +907,6 @@ body.tp-admin-root #result_list td {
 
 body.tp-admin-root #result_list tbody tr {
   background: var(--tp-color-surface);
-  transition: background var(--tp-motion-fast);
-}
-
-body.tp-admin-root #result_list tbody tr:nth-child(even) {
-  background: rgba(255, 255, 255, .012);
 }
 
 body.tp-admin-root #result_list tbody tr:hover {
@@ -1050,13 +919,7 @@ body.tp-admin-root .module a {
 }
 
 body.tp-admin-root #changelist {
-  min-width: 0;
   padding: var(--tp-space-sm);
-}
-
-body.tp-admin-root #changelist .results {
-  max-width: 100%;
-  overflow-x: auto;
 }
 
 body.tp-admin-root #changelist .actions {
@@ -1079,55 +942,26 @@ body.tp-admin-root #changelist-filter h2 {
 }
 
 body.tp-admin-root #changelist-filter h3 {
-  padding: var(--tp-space-sm) var(--tp-space-sm) var(--tp-space-2xs);
   color: var(--tp-color-text-secondary);
   font-size: var(--tp-font-size-xs);
 }
 
-body.tp-admin-root #changelist-filter li {
-  border-bottom: 1px solid var(--tp-color-border);
-}
-
-body.tp-admin-root #changelist-filter li:last-child {
-  border-bottom: 0;
-}
-
-body.tp-admin-root #changelist-filter li a {
-  display: block;
-  padding: var(--tp-space-2xs) var(--tp-space-sm);
-  border-radius: var(--tp-radius-xs);
-  color: var(--tp-color-text-secondary);
-  text-decoration: none;
-}
-
-body.tp-admin-root #changelist-filter li a:hover,
 body.tp-admin-root #changelist-filter li.selected a {
-  background: var(--tp-color-brand-tint);
   color: var(--tp-color-brand-light);
 }
 
 body.tp-admin-root .paginator {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--tp-space-2xs);
   padding: var(--tp-space-sm) 0;
   color: var(--tp-color-text-secondary);
 }
 
 body.tp-admin-root .paginator a:link,
 body.tp-admin-root .paginator a:visited {
-  display: inline-flex;
-  min-width: 30px;
-  min-height: 30px;
-  align-items: center;
-  justify-content: center;
-  padding: 2px var(--tp-space-xs);
+  padding: var(--tp-space-2xs) var(--tp-space-xs);
   border: 1px solid var(--tp-color-border);
   border-radius: var(--tp-radius-control);
   background: var(--tp-color-surface);
   color: var(--tp-color-brand-light);
-  text-decoration: none;
 }
 
 body.tp-admin-root .object-tools {
@@ -1138,22 +972,344 @@ body.tp-admin-root .object-tools {
 
 body.tp-admin-root .object-tools a,
 body.tp-admin-root .addlink {
-  display: inline-flex;
-  min-height: 36px;
-  align-items: center;
-  justify-content: center;
-  padding: var(--tp-space-2xs) var(--tp-space-sm);
   border: 1px solid var(--tp-color-brand);
   border-radius: var(--tp-radius-control);
   background: var(--tp-color-brand);
   color: var(--tp-color-text-on-brand) !important;
+  font-family: var(--tp-font-family);
+  font-weight: var(--tp-font-weight-medium);
+}
+
+body.tp-admin-root #content input[type="text"],
+body.tp-admin-root #content input[type="email"],
+body.tp-admin-root #content input[type="password"],
+body.tp-admin-root #content input[type="number"],
+body.tp-admin-root #content input[type="url"],
+body.tp-admin-root #content input[type="search"],
+body.tp-admin-root #content select,
+body.tp-admin-root #content textarea {
+  max-width: 100%;
+  border: 1px solid var(--tp-color-border-strong);
+  border-radius: var(--tp-radius-control);
+  background: var(--tp-color-surface);
+  color: var(--tp-color-text-primary);
+  font-family: var(--tp-font-family);
+}
+
+body.tp-admin-root #content input:focus,
+body.tp-admin-root #content select:focus,
+body.tp-admin-root #content textarea:focus {
+  border-color: var(--tp-color-brand);
+  box-shadow: var(--tp-shadow-glow);
+  outline: 0;
+}
+
+body.tp-admin-root #content label {
+  color: var(--tp-color-text-secondary);
+  font-family: var(--tp-font-family);
+}
+
+body.tp-admin-root .form-row {
+  border-bottom-color: var(--tp-color-border);
+}
+
+body.tp-admin-root .help,
+body.tp-admin-root .helptext,
+body.tp-admin-root p.help,
+body.tp-admin-root .quiet {
+  color: var(--tp-color-text-subtle);
+}
+
+body.tp-admin-root .submit-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--tp-space-xs);
+  border: 1px solid var(--tp-color-border);
+  border-radius: var(--tp-radius-card);
+  background: var(--tp-color-surface);
+}
+
+body.tp-admin-root #content .button,
+body.tp-admin-root #content input[type="submit"],
+body.tp-admin-root #content input[type="button"],
+body.tp-admin-root #content button,
+body.tp-admin-root .submit-row a {
+  min-height: var(--tp-control-height-md);
+  padding: var(--tp-space-xs) var(--tp-space-md);
+  border: 1px solid var(--tp-color-border);
+  border-radius: var(--tp-radius-control);
+  background: var(--tp-color-surface-raised);
+  color: var(--tp-color-text-primary) !important;
   font-family: var(--tp-font-family);
   font-size: var(--tp-font-size-xs);
   font-weight: var(--tp-font-weight-medium);
   text-decoration: none;
 }
 
-/* Search, field filters and form controls. */
+body.tp-admin-root #content .button.default,
+body.tp-admin-root #content input[type="submit"].default,
+body.tp-admin-root .submit-row input.default {
+  border-color: var(--tp-color-brand);
+  background: var(--tp-color-brand);
+  color: var(--tp-color-text-on-brand) !important;
+}
+
+body.tp-admin-root .errornote,
+body.tp-admin-root ul.messagelist li {
+  border-radius: var(--tp-radius-control);
+  box-shadow: none;
+  font-family: var(--tp-font-family);
+}
+
+body.tp-admin-root #footer {
+  border-top: 1px solid var(--tp-color-border);
+}
+
+/* Responsive: keep Django's own sidebar toggle on all inner pages. */
+@media (max-width: 1100px) {
+  .tp-admin-content-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .tp-admin-aside {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+
+  .tp-admin-note {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 767px) {
+  body.tp-admin-root #header {
+    align-items: flex-start;
+    gap: var(--tp-space-xs);
+    padding: var(--tp-space-sm) var(--tp-space-md);
+  }
+
+  body.tp-admin-root #user-tools {
+    width: 100%;
+    margin-inline-start: 0;
+  }
+
+  body.tp-admin-root .tp-admin-global-nav {
+    width: 100%;
+  }
+
+  body.tp-admin-root .tp-admin-global-nav a {
+    flex: 1 1 auto;
+  }
+
+  body.tp-admin-root div.breadcrumbs {
+    padding-inline: var(--tp-space-md);
+  }
+
+  body.tp-admin-root #content {
+    padding: var(--tp-space-md) var(--tp-space-sm);
+  }
+
+  .tp-admin-page-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: var(--tp-space-sm);
+  }
+
+  .tp-admin-welcome {
+    width: 100%;
+  }
+
+  .tp-admin-module-grid,
+  .tp-admin-aside {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .tp-admin-section-heading {
+    align-items: flex-start;
+  }
+
+  body.tp-admin-root #changelist {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  body.tp-admin-root #result_list {
+    min-width: 620px;
+  }
+
+  body.tp-admin-root .submit-row {
+    align-items: stretch;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.tp-admin-root *,
+  body.tp-admin-root *::before,
+  body.tp-admin-root *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
+
+
+/* --------------------------------------------------------------------------
+   Tatami Plus Admin refinements
+   These additions stay inside the Django admin scope and reuse shared tokens.
+   -------------------------------------------------------------------------- */
+
+/* 1. A steadier header with clearer quick links and existing account controls. */
+body.tp-admin-root #header {
+  position: sticky;
+  top: 0;
+  z-index: var(--tp-z-header);
+  background: var(--tp-color-header-bg);
+  box-shadow: 0 5px 18px rgba(0, 0, 0, .14);
+  backdrop-filter: blur(12px);
+}
+
+body.tp-admin-root .tp-admin-global-nav a:focus-visible,
+body.tp-admin-root #user-tools a:focus-visible {
+  outline: var(--tp-focus-ring);
+  outline-offset: var(--tp-focus-offset);
+}
+
+body.tp-admin-root .tp-admin-global-nav .tp-admin-nav-link {
+  gap: var(--tp-space-2xs);
+}
+
+body.tp-admin-root .tp-admin-nav-link svg {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+body.tp-admin-root #user-tools {
+  padding-inline-start: var(--tp-space-sm);
+}
+
+body.tp-admin-root #user-tools > a,
+body.tp-admin-root #user-tools form {
+  min-height: 30px;
+  align-items: center;
+}
+
+body.tp-admin-root #user-tools > a {
+  padding-inline: var(--tp-space-2xs);
+  border-radius: var(--tp-radius-control);
+}
+
+body.tp-admin-root #user-tools > a:hover {
+  background: var(--tp-color-surface-hover);
+}
+
+/* 2–3. Small, consistent emphasis for dashboard cards and module navigation. */
+body.tp-admin-index .tp-admin-overview-card,
+body.tp-admin-index .tp-admin-module-card,
+body.tp-admin-index .tp-admin-aside-card {
+  transition:
+    border-color var(--tp-motion-base),
+    background var(--tp-motion-base),
+    box-shadow var(--tp-motion-base),
+    transform var(--tp-motion-base);
+}
+
+body.tp-admin-index .tp-admin-overview-card[href]:hover {
+  border-color: var(--tp-color-brand);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, .14);
+  transform: translateY(-2px);
+}
+
+body.tp-admin-index .tp-admin-module-card:hover {
+  border-color: var(--tp-color-border-strong);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, .12);
+  transform: translateY(-2px);
+}
+
+body.tp-admin-index .tp-admin-module-mark {
+  border: 1px solid rgba(141, 176, 255, .12);
+  background: var(--tp-color-brand-tint);
+}
+
+body.tp-admin-index .tp-admin-module-mark svg {
+  width: 19px;
+  height: 19px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.65;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+body.tp-admin-index .tp-admin-module-mark[data-admin-app="store"],
+body.tp-admin-index .tp-admin-module-mark[data-admin-app="orders"] {
+  background: var(--tp-color-surface-raised);
+  color: var(--tp-color-brand-light);
+}
+
+body.tp-admin-index .tp-admin-module-mark[data-admin-app="gems"] {
+  background: var(--tp-color-shido-soft);
+  color: var(--tp-color-shido);
+}
+
+body.tp-admin-index .tp-admin-model-row {
+  padding-inline: var(--tp-space-2xs);
+  border-radius: var(--tp-radius-xs);
+  transition: background var(--tp-motion-fast);
+}
+
+body.tp-admin-index .tp-admin-model-row:hover {
+  background: var(--tp-color-surface-hover);
+}
+
+body.tp-admin-index .tp-admin-model-link small {
+  padding: 2px 7px;
+  border: 1px solid var(--tp-color-border);
+  border-radius: var(--tp-radius-pill);
+  background: var(--tp-color-surface-raised);
+}
+
+body.tp-admin-index .tp-admin-module-link,
+body.tp-admin-index .tp-admin-add-link,
+body.tp-admin-index .tp-admin-quick-link {
+  transition:
+    color var(--tp-motion-fast),
+    border-color var(--tp-motion-fast),
+    background var(--tp-motion-fast);
+}
+
+body.tp-admin-index .tp-admin-module-link:hover,
+body.tp-admin-index .tp-admin-add-link:hover {
+  color: var(--tp-color-text-primary) !important;
+}
+
+body.tp-admin-index .tp-admin-quick-link {
+  padding-inline: var(--tp-space-2xs);
+  border-radius: var(--tp-radius-xs);
+}
+
+body.tp-admin-index .tp-admin-quick-link:hover {
+  background: var(--tp-color-surface-hover);
+}
+
+/* 4. Preserve the brand palette; improve contrast and interaction states. */
+body.tp-admin-root ::selection {
+  background: var(--tp-color-selection);
+  color: var(--tp-color-text-primary);
+}
+
+body.tp-admin-root .tp-admin-count,
+body.tp-admin-root .tp-admin-note {
+  line-height: 1.7;
+}
+
+/* 5. More predictable Django changelist, filter, field and feedback controls. */
 body.tp-admin-root #changelist-search {
   display: flex;
   max-width: 100%;
@@ -1178,36 +1334,54 @@ body.tp-admin-root #changelist-search input[type="submit"] {
   min-height: var(--tp-control-height-md);
 }
 
-body.tp-admin-root #content input[type="text"],
-body.tp-admin-root #content input[type="email"],
-body.tp-admin-root #content input[type="password"],
-body.tp-admin-root #content input[type="number"],
-body.tp-admin-root #content input[type="url"],
-body.tp-admin-root #content input[type="search"],
-body.tp-admin-root #content input[type="tel"],
-body.tp-admin-root #content select,
-body.tp-admin-root #content textarea {
-  max-width: 100%;
-  min-height: var(--tp-control-height-md);
-  padding: var(--tp-space-2xs) var(--tp-space-sm);
-  border: 1px solid var(--tp-color-border-strong);
-  border-radius: var(--tp-radius-control);
+body.tp-admin-root #changelist-filter li {
+  border-bottom: 1px solid var(--tp-color-border);
+}
+
+body.tp-admin-root #changelist-filter li:last-child {
+  border-bottom: 0;
+}
+
+body.tp-admin-root #changelist-filter li a {
+  display: block;
+  padding-block: var(--tp-space-2xs);
+  border-radius: var(--tp-radius-xs);
+}
+
+body.tp-admin-root #changelist-filter li a:hover {
+  background: var(--tp-color-surface-hover);
+}
+
+body.tp-admin-root #result_list thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  font-weight: var(--tp-font-weight-bold);
+}
+
+body.tp-admin-root #result_list tbody tr:nth-child(even) {
+  background: rgba(255, 255, 255, .012);
+}
+
+body.tp-admin-root #result_list tbody tr:hover {
+  background: var(--tp-color-surface-hover);
+}
+
+body.tp-admin-root #content fieldset {
+  min-width: 0;
+  margin-bottom: var(--tp-space-md);
+  border: 1px solid var(--tp-color-border);
+  border-radius: var(--tp-radius-card);
   background: var(--tp-color-surface);
-  color: var(--tp-color-text-primary);
-  font-family: var(--tp-font-family);
-  font-size: var(--tp-font-size-sm);
 }
 
-body.tp-admin-root #content textarea {
-  min-height: 110px;
+body.tp-admin-root #content fieldset h2 {
+  margin: 0;
+  border-radius: var(--tp-radius-card) var(--tp-radius-card) 0 0;
 }
 
-body.tp-admin-root #content input:focus,
-body.tp-admin-root #content select:focus,
-body.tp-admin-root #content textarea:focus {
-  border-color: var(--tp-color-brand);
-  box-shadow: var(--tp-shadow-glow);
-  outline: 0;
+body.tp-admin-root #content .form-row {
+  padding: var(--tp-space-sm) var(--tp-space-md);
 }
 
 body.tp-admin-root #content input[type="checkbox"],
@@ -1229,77 +1403,6 @@ body.tp-admin-root #content button:disabled {
   opacity: .58;
 }
 
-body.tp-admin-root #content label {
-  color: var(--tp-color-text-secondary);
-  font-family: var(--tp-font-family);
-}
-
-body.tp-admin-root .form-row {
-  padding-block: var(--tp-space-xs);
-  border-bottom-color: var(--tp-color-border);
-}
-
-body.tp-admin-root .help,
-body.tp-admin-root .helptext,
-body.tp-admin-root p.help,
-body.tp-admin-root .quiet {
-  color: var(--tp-color-text-subtle);
-  font-size: var(--tp-font-size-xs);
-}
-
-body.tp-admin-root #content fieldset {
-  min-width: 0;
-  margin-bottom: var(--tp-space-md);
-  border: 1px solid var(--tp-color-border);
-  border-radius: var(--tp-radius-card);
-  background: var(--tp-color-surface);
-}
-
-body.tp-admin-root #content fieldset h2 {
-  margin: 0;
-  border-radius: var(--tp-radius-card) var(--tp-radius-card) 0 0;
-}
-
-body.tp-admin-root #content .submit-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--tp-space-xs);
-  padding: var(--tp-space-sm);
-  border: 1px solid var(--tp-color-border);
-  border-radius: var(--tp-radius-card);
-  background: var(--tp-color-surface);
-}
-
-body.tp-admin-root #content .button,
-body.tp-admin-root #content input[type="submit"],
-body.tp-admin-root #content input[type="button"],
-body.tp-admin-root #content button,
-body.tp-admin-root .submit-row a {
-  display: inline-flex;
-  min-height: var(--tp-control-height-md);
-  align-items: center;
-  justify-content: center;
-  padding: var(--tp-space-xs) var(--tp-space-md);
-  border: 1px solid var(--tp-color-border);
-  border-radius: var(--tp-radius-control);
-  background: var(--tp-color-surface-raised);
-  color: var(--tp-color-text-primary) !important;
-  font-family: var(--tp-font-family);
-  font-size: var(--tp-font-size-xs);
-  font-weight: var(--tp-font-weight-medium);
-  text-decoration: none;
-  cursor: pointer;
-}
-
-body.tp-admin-root #content .button.default,
-body.tp-admin-root #content input[type="submit"].default,
-body.tp-admin-root #content .submit-row input.default {
-  border-color: var(--tp-color-brand);
-  background: var(--tp-color-brand);
-  color: var(--tp-color-text-on-brand) !important;
-}
-
 body.tp-admin-root #content .button:hover,
 body.tp-admin-root #content input[type="submit"]:hover,
 body.tp-admin-root #content input[type="button"]:hover,
@@ -1312,20 +1415,12 @@ body.tp-admin-root .submit-row a:hover {
 
 body.tp-admin-root #content .button.default:hover,
 body.tp-admin-root #content input[type="submit"].default:hover,
-body.tp-admin-root #content .submit-row input.default:hover {
+body.tp-admin-root .submit-row input.default:hover {
   border-color: var(--tp-color-brand-hover);
   background: var(--tp-color-brand-hover);
   color: var(--tp-color-text-on-brand) !important;
 }
 
-body.tp-admin-root #content a.deletelink,
-body.tp-admin-root #content .deletelink-box a {
-  border-color: rgba(255, 138, 138, .35);
-  background: var(--tp-color-danger-tint);
-  color: var(--tp-color-danger) !important;
-}
-
-/* Django feedback messages. */
 body.tp-admin-root ul.messagelist {
   display: grid;
   gap: var(--tp-space-xs);
@@ -1334,16 +1429,12 @@ body.tp-admin-root ul.messagelist {
   list-style: none;
 }
 
-body.tp-admin-root ul.messagelist li,
-body.tp-admin-root .errornote {
+body.tp-admin-root ul.messagelist li {
   margin: 0;
   padding: var(--tp-space-sm) var(--tp-space-md);
   border: 1px solid var(--tp-color-border);
-  border-radius: var(--tp-radius-control);
   background: var(--tp-color-surface);
   color: var(--tp-color-text-primary);
-  box-shadow: none;
-  font-family: var(--tp-font-family);
 }
 
 body.tp-admin-root ul.messagelist li.success {
@@ -1360,158 +1451,70 @@ body.tp-admin-root ul.messagelist li.warning {
 
 body.tp-admin-root ul.messagelist li.error,
 body.tp-admin-root .errornote {
-  border-color: rgba(255, 138, 138, .32);
+  border: 1px solid rgba(255, 138, 138, .32);
   background: var(--tp-color-danger-tint);
   color: var(--tp-color-danger);
 }
 
-body.tp-admin-root #footer {
-  min-height: 30px;
-  padding: var(--tp-space-md);
-  border-top: 1px solid var(--tp-color-border);
-  background: var(--tp-color-bg);
-  color: var(--tp-color-text-subtle);
-  font-size: var(--tp-font-size-xs);
+body.tp-admin-root .submit-row {
+  align-items: center;
 }
 
-/* Responsive layout. The native sidebar toggle is retained on inner pages. */
-@media (max-width: 1100px) {
-  body.tp-admin-root {
-    --tp-admin-sticky-offset: 112px;
-  }
-
-  body.tp-admin-root #header {
-    grid-template-columns: minmax(0, 1fr) auto;
-  }
-
-  body.tp-admin-root .tp-admin-global-nav {
-    grid-column: 1 / -1;
-    grid-row: 2;
-  }
-
-  .tp-admin-content-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .tp-admin-aside {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    align-items: start;
-  }
-
-  .tp-admin-note {
-    grid-column: 1 / -1;
-  }
+/* 6. Keep the dashboard and Django's native search tools legible and reachable. */
+body.tp-admin-index .tp-admin-search {
+  min-height: 46px;
+  border-color: var(--tp-color-border-strong);
+  transition: border-color var(--tp-motion-fast), box-shadow var(--tp-motion-fast);
 }
 
+body.tp-admin-index .tp-admin-search:focus-within {
+  border-color: var(--tp-color-brand-light);
+  box-shadow: var(--tp-shadow-glow);
+}
+
+body.tp-admin-index .tp-admin-search button:hover {
+  border-color: var(--tp-color-brand);
+  background: var(--tp-color-brand-tint);
+  color: var(--tp-color-text-primary);
+}
+
+body.tp-admin-index .tp-admin-empty {
+  border-style: solid;
+  border-color: var(--tp-color-border);
+}
+
+/* 7. Responsive refinements remain limited to the admin shell. */
 @media (max-width: 767px) {
-  body.tp-admin-root {
-    --tp-admin-sticky-offset: 0px;
-  }
-
   body.tp-admin-root #header {
     position: relative;
     top: auto;
-    grid-template-columns: minmax(0, 1fr);
     gap: var(--tp-space-xs);
-    padding: var(--tp-space-sm) var(--tp-space-md);
-  }
-
-  body.tp-admin-root #branding,
-  body.tp-admin-root #user-tools,
-  body.tp-admin-root .tp-admin-global-nav {
-    grid-column: 1;
-    grid-row: auto;
-    width: 100%;
   }
 
   body.tp-admin-root #user-tools {
-    padding-top: var(--tp-space-2xs);
-    border-top: 1px solid var(--tp-color-border);
+    gap: var(--tp-space-2xs) var(--tp-space-xs);
+    padding-inline-start: 0;
   }
 
   body.tp-admin-root .tp-admin-global-nav a {
-    flex: 1 1 auto;
+    justify-content: center;
+    min-width: 0;
   }
 
-  body.tp-admin-root div.breadcrumbs {
-    padding-inline: var(--tp-space-md);
+  body.tp-admin-root #changelist-search input[type="text"],
+  body.tp-admin-root #changelist-search input[type="search"] {
+    width: min(100%, 320px);
   }
 
-  body.tp-admin-root #content {
-    padding: var(--tp-space-md) var(--tp-space-sm);
-  }
-
-  body.tp-admin-root #nav-sidebar {
-    position: static;
-    width: 100%;
-    max-height: none;
-  }
-
-  .tp-admin-page-heading {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: var(--tp-space-sm);
-  }
-
-  .tp-admin-welcome {
-    width: 100%;
-  }
-
-  .tp-admin-content-grid,
-  .tp-admin-module-grid,
-  .tp-admin-aside {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .tp-admin-section-heading {
-    align-items: flex-start;
-  }
-
-  .tp-admin-search-hint {
-    display: none;
-  }
-
-  .tp-admin-module-heading {
-    flex-wrap: wrap;
-  }
-
-  .tp-admin-module-enter {
-    margin-inline-start: auto;
-  }
-
-  body.tp-admin-root #changelist {
-    max-width: 100%;
-    overflow-x: auto;
-  }
-
-  body.tp-admin-root #result_list {
-    min-width: 720px;
-  }
-
-  body.tp-admin-root #content .submit-row {
-    align-items: stretch;
-  }
-
-  body.tp-admin-root #content .submit-row > * {
-    flex: 1 1 auto;
+  body.tp-admin-root #content fieldset {
+    padding-inline: var(--tp-space-2xs);
   }
 }
 
 @media (hover: none) {
-  .tp-admin-module-card:hover,
-  .tp-admin-overview-card[href]:hover {
+  body.tp-admin-index .tp-admin-module-card:hover,
+  body.tp-admin-index .tp-admin-overview-card[href]:hover {
     transform: none;
     box-shadow: none;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  body.tp-admin-root *,
-  body.tp-admin-root *::before,
-  body.tp-admin-root *::after {
-    scroll-behavior: auto !important;
-    animation-duration: .01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: .01ms !important;
   }
 }
