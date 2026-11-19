@@ -687,6 +687,9 @@
     if (localApp.querySelector('[data-home-feed]')) {
       loadPageScript('home-restored', '/static/js/home-restored.js');
     }
+    if (localApp.querySelector('[data-quantity-form]')) {
+      loadPageScript('store-cart', '/static/js/store-cart.js');
+    }
     localApp.setAttribute('aria-busy', 'false');
   }
 
