@@ -246,8 +246,8 @@ jobs:
           assert 'class="ib tp-gem-header gem-chip" id="hgem"' in base
           assert 'nav_class="tp-drawer-n"' in base
           assert 'css/tatami.css' in base, "Shared Tatami Plus design system must be loaded"
-          assert "new_coach_leads_count" in admin
-          assert "admin:accounts_signuplead_changelist" in admin
+          assert "new_coach_leads_count" in admin_dashboard
+          assert "admin:accounts_signuplead_changelist" in admin_dashboard
           # Dashboard uses Django's real, permission-filtered module and model list.
           assert '{% extends "admin/base_site.html" %}' in admin_dashboard
           assert '{% for app in app_list %}' in admin_dashboard
