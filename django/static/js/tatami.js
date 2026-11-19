@@ -296,7 +296,7 @@
   });
 
   // ۲-هـ. کنترل تعداد سبد؛ فقط با دکمهٔ «به‌روزرسانی» فرم به سرور ارسال می‌شود.
-  $('form[data-quantity-form]').forEach(form => {
+  document.querySelectorAll('form[data-quantity-form]').forEach(form => {
     if (form.dataset.tpQuantityBound === 'true') return;
     const input = form.querySelector('input[name=quantity]');
     if (!input) return;
