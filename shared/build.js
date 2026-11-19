@@ -73,15 +73,15 @@ console.log('minified:',!!es,'· image slots with files:',AVAIL.length,'· local
     const pageCss = R('css/django.css');
     fs.writeFileSync(
       path.join(dj, 'tatami.css'),
-      '/* ساخته‌شده از shared/build.js — دستی ویرایش نکنید */\\n' + baseCss(pageCss)
+      '/* ساخته‌شده از shared/build.js — دستی ویرایش نکنید */\n' + baseCss(pageCss)
     );
     fs.writeFileSync(
       path.join(dj, 'tatami-admin-tokens.css'),
-      '/* توکن‌های مشترک طراحی تاتامی پلاس؛ ساخته‌شده از shared/src/design/tokens.json */\\n' + min(tokensCss(), 'css')
+      '/* توکن‌های مشترک طراحی تاتامی پلاس؛ ساخته‌شده از shared/src/design/tokens.json */\n' + min(tokensCss(), 'css')
     );
     fs.writeFileSync(
       path.join(dj, 'django-bridge.css'),
-      '/* افزونهٔ اختصاصی Django برای پوستهٔ مشترک Preview — ساخته‌شده از shared/build.js */\\n' + min(pageCss, 'css')
+      '/* افزونهٔ اختصاصی Django برای پوستهٔ مشترک Preview — ساخته‌شده از shared/build.js */\n' + min(pageCss, 'css')
     );
     console.log(
       'django css',
