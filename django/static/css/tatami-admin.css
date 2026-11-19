@@ -659,7 +659,8 @@ ul.messagelist li.error {
 }
 
 /* Dashboard */
-body.tp-admin-index #nav-sidebar {
+body.tp-admin-index #nav-sidebar,
+body.tp-admin-index .toggle-nav-sidebar {
   display: none !important;
 }
 body.tp-admin-index .main {
@@ -1348,9 +1349,7 @@ body.tp-admin-index #content {
     width: 100%;
     margin-inline-start: 0;
   }
-  #nav-sidebar {
-    display: none;
-  }
+  /* Keep Django's native sidebar toggle available on compact screens. */
   .tp-admin-workspace {
     grid-template-columns: minmax(0, 1fr);
   }
