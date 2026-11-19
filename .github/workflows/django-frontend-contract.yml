@@ -201,7 +201,7 @@ jobs:
           bridge_qty = bridge.split("root.querySelectorAll('form[data-quantity-form]')", 1)[1].split("const otp =", 1)[0]
           django_js = Path("django/static/js/tatami.js").read_text(encoding="utf-8")
           django_qty = django_js.split("// ۲-هـ. کنترل تعداد سبد", 1)[1].split("// ۳. فیلترهای فروشگاه", 1)[0]
-          assert "$('form[data-quantity-form]')" in django_js and "$('form[data-quantity-form]')" not in django_js
+          assert django_js.count("$('form[data-quantity-form]')") == 1
           assert "requestSubmit" not in bridge_qty and "form.submit(" not in bridge_qty
           assert "requestSubmit" not in django_qty and "form.submit(" not in django_qty
           assert "button.disabled" in bridge_qty and "button.disabled" in django_qty
