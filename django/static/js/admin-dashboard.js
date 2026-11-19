@@ -7,7 +7,14 @@
   const noResults = document.querySelector('[data-admin-no-results]');
   const resultCount = document.querySelector('[data-admin-result-count]');
 
-  if (!input || !modules.length) return;
+  if (!input || modules.length === 0) return;
+
+  const digitMap = {
+    '۰': '0', '۱': '1', '۲': '2', '۳': '3', '۴': '4',
+    '۵': '5', '۶': '6', '۷': '7', '۸': '8', '۹': '9',
+    '٠': '0', '١': '1', '٢': '2', '٣': '3', '٤': '4',
+    '٥': '5', '٦': '6', '٧': '7', '٨': '8', '٩': '9'
+  };
 
   const normalize = (value) => String(value || '')
     .normalize('NFKC')
@@ -15,6 +22,7 @@
     .replace(/[يى]/g, 'ی')
     .replace(/ك/g, 'ک')
     .replace(/[\u064B-\u065F\u0670\u0640\u200c]/g, '')
+    .replace(/[۰-۹٠-٩]/g, (digit) => digitMap[digit])
     .replace(/\s+/g, ' ')
     .trim();
 
@@ -41,7 +49,7 @@
         if (visible) matchingRows += 1;
       });
 
-      const visible = moduleMatches || matchingRows > 0 || rows.length === 0;
+      const visible = moduleMatches || matchingRows > 0;
       module.hidden = !visible;
       if (visible) {
         visibleModules += 1;
@@ -56,8 +64,8 @@
       const groups = persianDigits(visibleModules);
       const models = persianDigits(visibleModels);
       resultCount.textContent = query
-        ? `${groups} گروه · ${models} بخش`
-        : `${persianDigits(modules.length)} گروه · ${persianDigits(totalModels)} بخش`;
+        ? `${groups} گروه · ${models} مدل`
+        : `${persianDigits(modules.length)} گروه · ${persianDigits(totalModels)} مدل`;
     }
   }
 
