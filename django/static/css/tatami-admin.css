@@ -1152,3 +1152,369 @@ body.tp-admin-root #footer {
     transition-duration: .01ms !important;
   }
 }
+
+
+/* --------------------------------------------------------------------------
+   Tatami Plus Admin refinements
+   These additions stay inside the Django admin scope and reuse shared tokens.
+   -------------------------------------------------------------------------- */
+
+/* 1. A steadier header with clearer quick links and existing account controls. */
+body.tp-admin-root #header {
+  position: sticky;
+  top: 0;
+  z-index: var(--tp-z-header);
+  background: var(--tp-color-header-bg);
+  box-shadow: 0 5px 18px rgba(0, 0, 0, .14);
+  backdrop-filter: blur(12px);
+}
+
+body.tp-admin-root .tp-admin-global-nav a:focus-visible,
+body.tp-admin-root #user-tools a:focus-visible {
+  outline: var(--tp-focus-ring);
+  outline-offset: var(--tp-focus-offset);
+}
+
+body.tp-admin-root .tp-admin-global-nav .tp-admin-nav-link {
+  gap: var(--tp-space-2xs);
+}
+
+body.tp-admin-root .tp-admin-nav-link svg {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+body.tp-admin-root #user-tools {
+  padding-inline-start: var(--tp-space-sm);
+}
+
+body.tp-admin-root #user-tools > a,
+body.tp-admin-root #user-tools form {
+  min-height: 30px;
+  align-items: center;
+}
+
+body.tp-admin-root #user-tools > a {
+  padding-inline: var(--tp-space-2xs);
+  border-radius: var(--tp-radius-control);
+}
+
+body.tp-admin-root #user-tools > a:hover {
+  background: var(--tp-color-surface-hover);
+}
+
+/* 2–3. Small, consistent emphasis for dashboard cards and module navigation. */
+body.tp-admin-index .tp-admin-overview-card,
+body.tp-admin-index .tp-admin-module-card,
+body.tp-admin-index .tp-admin-aside-card {
+  transition:
+    border-color var(--tp-motion-base),
+    background var(--tp-motion-base),
+    box-shadow var(--tp-motion-base),
+    transform var(--tp-motion-base);
+}
+
+body.tp-admin-index .tp-admin-overview-card[href]:hover {
+  border-color: var(--tp-color-brand);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, .14);
+  transform: translateY(-2px);
+}
+
+body.tp-admin-index .tp-admin-module-card:hover {
+  border-color: var(--tp-color-border-strong);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, .12);
+  transform: translateY(-2px);
+}
+
+body.tp-admin-index .tp-admin-module-mark {
+  border: 1px solid rgba(141, 176, 255, .12);
+  background: var(--tp-color-brand-tint);
+}
+
+body.tp-admin-index .tp-admin-module-mark svg {
+  width: 19px;
+  height: 19px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.65;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+body.tp-admin-index .tp-admin-module-mark[data-admin-app="store"],
+body.tp-admin-index .tp-admin-module-mark[data-admin-app="orders"] {
+  background: var(--tp-color-surface-raised);
+  color: var(--tp-color-brand-light);
+}
+
+body.tp-admin-index .tp-admin-module-mark[data-admin-app="gems"] {
+  background: var(--tp-color-shido-soft);
+  color: var(--tp-color-shido);
+}
+
+body.tp-admin-index .tp-admin-model-row {
+  padding-inline: var(--tp-space-2xs);
+  border-radius: var(--tp-radius-xs);
+  transition: background var(--tp-motion-fast);
+}
+
+body.tp-admin-index .tp-admin-model-row:hover {
+  background: var(--tp-color-surface-hover);
+}
+
+body.tp-admin-index .tp-admin-model-link small {
+  padding: 2px 7px;
+  border: 1px solid var(--tp-color-border);
+  border-radius: var(--tp-radius-pill);
+  background: var(--tp-color-surface-raised);
+}
+
+body.tp-admin-index .tp-admin-module-link,
+body.tp-admin-index .tp-admin-add-link,
+body.tp-admin-index .tp-admin-quick-link {
+  transition:
+    color var(--tp-motion-fast),
+    border-color var(--tp-motion-fast),
+    background var(--tp-motion-fast);
+}
+
+body.tp-admin-index .tp-admin-module-link:hover,
+body.tp-admin-index .tp-admin-add-link:hover {
+  color: var(--tp-color-text-primary) !important;
+}
+
+body.tp-admin-index .tp-admin-quick-link {
+  padding-inline: var(--tp-space-2xs);
+  border-radius: var(--tp-radius-xs);
+}
+
+body.tp-admin-index .tp-admin-quick-link:hover {
+  background: var(--tp-color-surface-hover);
+}
+
+/* 4. Preserve the brand palette; improve contrast and interaction states. */
+body.tp-admin-root ::selection {
+  background: var(--tp-color-selection);
+  color: var(--tp-color-text-primary);
+}
+
+body.tp-admin-root .tp-admin-count,
+body.tp-admin-root .tp-admin-note {
+  line-height: 1.7;
+}
+
+/* 5. More predictable Django changelist, filter, field and feedback controls. */
+body.tp-admin-root #changelist-search {
+  display: flex;
+  max-width: 100%;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--tp-space-xs);
+  margin-bottom: var(--tp-space-sm);
+}
+
+body.tp-admin-root #changelist-search label {
+  display: inline-flex;
+  align-items: center;
+}
+
+body.tp-admin-root #changelist-search input[type="text"],
+body.tp-admin-root #changelist-search input[type="search"] {
+  min-height: var(--tp-control-height-md);
+  padding: var(--tp-space-2xs) var(--tp-space-sm);
+}
+
+body.tp-admin-root #changelist-search input[type="submit"] {
+  min-height: var(--tp-control-height-md);
+}
+
+body.tp-admin-root #changelist-filter li {
+  border-bottom: 1px solid var(--tp-color-border);
+}
+
+body.tp-admin-root #changelist-filter li:last-child {
+  border-bottom: 0;
+}
+
+body.tp-admin-root #changelist-filter li a {
+  display: block;
+  padding-block: var(--tp-space-2xs);
+  border-radius: var(--tp-radius-xs);
+}
+
+body.tp-admin-root #changelist-filter li a:hover {
+  background: var(--tp-color-surface-hover);
+}
+
+body.tp-admin-root #result_list thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  font-weight: var(--tp-font-weight-bold);
+}
+
+body.tp-admin-root #result_list tbody tr:nth-child(even) {
+  background: rgba(255, 255, 255, .012);
+}
+
+body.tp-admin-root #result_list tbody tr:hover {
+  background: var(--tp-color-surface-hover);
+}
+
+body.tp-admin-root #content fieldset {
+  min-width: 0;
+  margin-bottom: var(--tp-space-md);
+  border: 1px solid var(--tp-color-border);
+  border-radius: var(--tp-radius-card);
+  background: var(--tp-color-surface);
+}
+
+body.tp-admin-root #content fieldset h2 {
+  margin: 0;
+  border-radius: var(--tp-radius-card) var(--tp-radius-card) 0 0;
+}
+
+body.tp-admin-root #content .form-row {
+  padding: var(--tp-space-sm) var(--tp-space-md);
+}
+
+body.tp-admin-root #content input[type="checkbox"],
+body.tp-admin-root #content input[type="radio"] {
+  accent-color: var(--tp-color-brand);
+}
+
+body.tp-admin-root #content input[type="file"] {
+  max-width: 100%;
+  color: var(--tp-color-text-secondary);
+  font-family: var(--tp-font-family);
+}
+
+body.tp-admin-root #content input:disabled,
+body.tp-admin-root #content select:disabled,
+body.tp-admin-root #content textarea:disabled,
+body.tp-admin-root #content button:disabled {
+  cursor: not-allowed;
+  opacity: .58;
+}
+
+body.tp-admin-root #content .button:hover,
+body.tp-admin-root #content input[type="submit"]:hover,
+body.tp-admin-root #content input[type="button"]:hover,
+body.tp-admin-root #content button:hover,
+body.tp-admin-root .submit-row a:hover {
+  border-color: var(--tp-color-brand);
+  background: var(--tp-color-brand-tint);
+  color: var(--tp-color-text-primary) !important;
+}
+
+body.tp-admin-root #content .button.default:hover,
+body.tp-admin-root #content input[type="submit"].default:hover,
+body.tp-admin-root .submit-row input.default:hover {
+  border-color: var(--tp-color-brand-hover);
+  background: var(--tp-color-brand-hover);
+  color: var(--tp-color-text-on-brand) !important;
+}
+
+body.tp-admin-root ul.messagelist {
+  display: grid;
+  gap: var(--tp-space-xs);
+  margin: 0 0 var(--tp-space-md);
+  padding: 0;
+  list-style: none;
+}
+
+body.tp-admin-root ul.messagelist li {
+  margin: 0;
+  padding: var(--tp-space-sm) var(--tp-space-md);
+  border: 1px solid var(--tp-color-border);
+  background: var(--tp-color-surface);
+  color: var(--tp-color-text-primary);
+}
+
+body.tp-admin-root ul.messagelist li.success {
+  border-color: rgba(79, 216, 174, .28);
+  background: var(--tp-color-success-soft);
+  color: var(--tp-color-success);
+}
+
+body.tp-admin-root ul.messagelist li.warning {
+  border-color: rgba(255, 201, 51, .28);
+  background: var(--tp-color-shido-soft);
+  color: var(--tp-color-shido);
+}
+
+body.tp-admin-root ul.messagelist li.error,
+body.tp-admin-root .errornote {
+  border: 1px solid rgba(255, 138, 138, .32);
+  background: var(--tp-color-danger-tint);
+  color: var(--tp-color-danger);
+}
+
+body.tp-admin-root .submit-row {
+  align-items: center;
+}
+
+/* 6. Keep the dashboard and Django's native search tools legible and reachable. */
+body.tp-admin-index .tp-admin-search {
+  min-height: 46px;
+  border-color: var(--tp-color-border-strong);
+  transition: border-color var(--tp-motion-fast), box-shadow var(--tp-motion-fast);
+}
+
+body.tp-admin-index .tp-admin-search:focus-within {
+  border-color: var(--tp-color-brand-light);
+  box-shadow: var(--tp-shadow-glow);
+}
+
+body.tp-admin-index .tp-admin-search button:hover {
+  border-color: var(--tp-color-brand);
+  background: var(--tp-color-brand-tint);
+  color: var(--tp-color-text-primary);
+}
+
+body.tp-admin-index .tp-admin-empty {
+  border-style: solid;
+  border-color: var(--tp-color-border);
+}
+
+/* 7. Responsive refinements remain limited to the admin shell. */
+@media (max-width: 767px) {
+  body.tp-admin-root #header {
+    position: relative;
+    top: auto;
+    gap: var(--tp-space-xs);
+  }
+
+  body.tp-admin-root #user-tools {
+    gap: var(--tp-space-2xs) var(--tp-space-xs);
+    padding-inline-start: 0;
+  }
+
+  body.tp-admin-root .tp-admin-global-nav a {
+    justify-content: center;
+    min-width: 0;
+  }
+
+  body.tp-admin-root #changelist-search input[type="text"],
+  body.tp-admin-root #changelist-search input[type="search"] {
+    width: min(100%, 320px);
+  }
+
+  body.tp-admin-root #content fieldset {
+    padding-inline: var(--tp-space-2xs);
+  }
+}
+
+@media (hover: none) {
+  body.tp-admin-index .tp-admin-module-card:hover,
+  body.tp-admin-index .tp-admin-overview-card[href]:hover {
+    transform: none;
+    box-shadow: none;
+  }
+}
