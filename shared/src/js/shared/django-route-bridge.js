@@ -452,6 +452,7 @@
   }
 
   let lastServerDocument = null;
+  let shellStateRevision = 0;
 
   function resetPreviewBridgeState() {
     activeDjangoView = false;
@@ -480,7 +481,9 @@
   }
 
   function hydratePreviewAccountState() {
+    const hydrationRevision = shellStateRevision;
     fetchDjangoPage('/').then((remoteDocument) => {
+      if (hydrationRevision !== shellStateRevision) return;
       if (location.pathname === '/preview/' || location.pathname === '/preview') {
         lastServerDocument = remoteDocument;
         syncPreviewAccountState(remoteDocument);
@@ -660,6 +663,9 @@
     if (!remoteApp || !localApp) {
       throw new Error('The server response did not contain a Django content area.');
     }
+
+    // A rendered Django response carries newer session state than the initial shell snapshot.
+    shellStateRevision += 1;
 
     const remoteChildren = Array.from(remoteApp.children);
     const pageMain = remoteChildren.length === 1 && remoteChildren[0].tagName === 'MAIN'
