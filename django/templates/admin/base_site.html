@@ -13,8 +13,14 @@
 
 {% block nav-global %}
   <nav class="tp-admin-global-nav" aria-label="پیوندهای سریع">
-    <a href="/" target="_blank" rel="noopener noreferrer">مشاهده سایت</a>
-    <a href="/preview/#/" target="_blank" rel="noopener noreferrer">پیش‌نمایش</a>
+    <a class="tp-admin-nav-link" href="/" target="_blank" rel="noopener noreferrer">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1V10Z"/></svg>
+      <span>مشاهده سایت</span>
+    </a>
+    <a class="tp-admin-nav-link" href="/preview/#/" target="_blank" rel="noopener noreferrer">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.4-6 9.5-6 9.5 6 9.5 6-3.4 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.5"/></svg>
+      <span>پیش‌نمایش</span>
+    </a>
     {% if new_coach_leads_count %}
       <a class="tp-admin-lead-link" href="{% url 'admin:accounts_signuplead_changelist' %}" aria-label="سرنخ‌های جدید مربی: {{ new_coach_leads_count }}">
         <span class="tp-admin-lead-dot" aria-hidden="true"></span>
