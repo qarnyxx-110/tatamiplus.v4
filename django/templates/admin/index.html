@@ -64,13 +64,13 @@
       </div>
 
       {% if app_list %}
-        <label class="tp-admin-search" for="tp-admin-search">
+        <div class="tp-admin-search">
           <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg>
-          <span class="tp-admin-sr-only">جست‌وجو در بخش‌های مدیریتی</span>
+          <label class="tp-admin-sr-only" for="tp-admin-search">جست‌وجو در بخش‌های مدیریتی</label>
           <input id="tp-admin-search" type="search" autocomplete="off" spellcheck="false" placeholder="جست‌وجوی بخش یا مدل..." data-admin-search aria-controls="tp-admin-module-list">
           <kbd aria-hidden="true">ESC</kbd>
           <button type="button" data-admin-clear hidden>پاک‌کردن</button>
-        </label>
+        </div>
 
         <div class="tp-admin-empty" data-admin-no-results hidden role="status">
           <strong>نتیجه‌ای پیدا نشد</strong>
