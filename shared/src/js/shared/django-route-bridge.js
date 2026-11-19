@@ -596,20 +596,45 @@
     });
 
     root.querySelectorAll('form[data-quantity-form]').forEach((form) => {
-      if (form.dataset.tpBound === 'true') return;
-      form.dataset.tpBound = 'true';
+      if (form.dataset.tpQuantityBound === 'true') return;
       const input = form.querySelector('input[name="quantity"]');
       if (!input) return;
-      form.querySelectorAll('[data-qty-step]').forEach((button) => {
-        button.hidden = false;
+      form.dataset.tpQuantityBound = 'true';
+      const buttons = Array.from(form.querySelectorAll('[data-qty-step]'));
+      const getLimits = () => {
+        const minValue = Number.parseInt(input.min || '1', 10);
+        const min = Number.isFinite(minValue) ? minValue : 1;
+        const maxValue = input.max === '' ? Number.POSITIVE_INFINITY : Number.parseInt(input.max, 10);
+        const max = Number.isFinite(maxValue) ? maxValue : Number.POSITIVE_INFINITY;
+        return { min, max, valid: max >= min };
+      };
+      const updateQuantityButtons = () => {
+        const { min, max, valid } = getLimits();
+        const current = Number.parseInt(input.value, 10);
+        buttons.forEach((button) => {
+          const step = Number.parseInt(button.dataset.qtyStep || '0', 10);
+          button.hidden = !valid || (step !== -1 && step !== 1);
+          button.disabled = !valid || !Number.isFinite(current) ||
+            (step < 0 && current <= min) || (step > 0 && current >= max);
+        });
+      };
+      buttons.forEach((button) => {
         button.addEventListener('click', () => {
-          const min = Number(input.min || 1);
-          const max = input.max ? Number(input.max) : Infinity;
-          const current = Number(input.value || min);
-          const step = Number(button.dataset.qtyStep || 0);
-          input.value = String(Math.max(min, Math.min(max, current + step)));
+          const { min, max, valid } = getLimits();
+          if (!valid) return;
+          const step = Number.parseInt(button.dataset.qtyStep || '0', 10);
+          if (step !== -1 && step !== 1) return;
+          const current = Number.parseInt(input.value, 10);
+          const safeCurrent = Number.isFinite(current) ? current : min;
+          input.value = String(Math.min(max, Math.max(min, safeCurrent + step)));
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+          input.dispatchEvent(new Event('change', { bubbles: true }));
+          updateQuantityButtons();
         });
       });
+      input.addEventListener('input', updateQuantityButtons);
+      input.addEventListener('change', updateQuantityButtons);
+      updateQuantityButtons();
     });
 
     const otp = root.querySelector('#id_code');
@@ -686,9 +711,6 @@
     }
     if (localApp.querySelector('[data-home-feed]')) {
       loadPageScript('home-restored', '/static/js/home-restored.js');
-    }
-    if (localApp.querySelector('[data-quantity-form]')) {
-      loadPageScript('store-cart', '/static/js/store-cart.js');
     }
     localApp.setAttribute('aria-busy', 'false');
   }
