@@ -146,7 +146,8 @@ try {
     const box = await locator.boundingBox();
     assert.ok(box && box.height >= 42);
   }
-  assert.equal(await submitRow.locator("a.deletelink").getAttribute("href"), "https://tatamiplus.ir/admin/blog/post/1/delete/");
+  assert.equal(await submitRow.locator("a.deletelink").getAttribute("href"), "/admin/blog/post/1/delete/");
+  assert.equal(await submitRow.locator("a.deletelink").evaluate((link) => link.href), "https://tatamiplus.ir/admin/blog/post/1/delete/");
   assert.equal(await submitRow.locator('input[name="_save"]').getAttribute("name"), "_save");
 
   // Mobile: labels stack over their controls and nothing expands beyond the viewport.
