@@ -28,7 +28,7 @@ const djangoSidebarCss = [
   "#nav-sidebar .module td { white-space: nowrap; }",
   "#nav-sidebar table { width: 100%; }",
   "@media (max-width: 767px) { #nav-sidebar, #toggle-nav-sidebar { display: none; } .main > #nav-sidebar + .content, .main.shifted > #nav-sidebar + .content { max-width: 100%; } }"
-].join("\\n");
+].join("\n");
 
 const fixture = [
 '<!doctype html>',
