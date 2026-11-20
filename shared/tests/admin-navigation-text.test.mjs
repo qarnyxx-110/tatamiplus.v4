@@ -104,8 +104,12 @@ try {
   assert.ok(await rowTable.evaluate((el) => el.scrollWidth <= el.clientWidth + 1),
     "Navigation table creates horizontal overflow");
   assert.equal(await longRow.locator("td .addlink").getAttribute("href"),
+    "/admin/accounts/signuplead/add/");
+  assert.equal(await longRow.locator("td .addlink").evaluate((link) => link.href),
     "https://tatamiplus.ir/admin/accounts/signuplead/add/");
   assert.equal(await longRow.locator("td .changelink").getAttribute("href"),
+    "/admin/accounts/signuplead/");
+  assert.equal(await longRow.locator("td .changelink").evaluate((link) => link.href),
     "https://tatamiplus.ir/admin/accounts/signuplead/");
 
   // Narrow display: the sidebar remains within the viewport and model labels still wrap.
