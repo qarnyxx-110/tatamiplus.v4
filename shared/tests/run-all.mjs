@@ -47,6 +47,20 @@ try{
   console.log('→',app,'PWA technical regression');
   out.push(await runPwa(app,srv.url,browser,ctl));
   await srv.close();
+ }else if(process.env.ONLY==='section-smoke'){
+  // Focused section-consolidation smoke run. Run the public browser suites for
+  // all three roles without the separate PWA update-lifecycle harness.
+  for(const app of apps){
+   const srv=await serve(path.join(A,app));
+   console.log('→',app,'section-consolidation browser regression');
+   out.push(await runPublic(app,srv.url,browser));
+   await srv.close();
+  }
+  const previewSrv=await serve(path.join(A,'preview'));
+  console.log('→ Preview access/account/store regression tests');
+  out.push(await runPreview(previewSrv.url,browser));
+  out.push(await runCheckout(previewSrv.url,browser));
+  await previewSrv.close();
  }else if(process.env.ONLY==='preview'){
   const srv=await serve(path.join(A,'preview'));
   console.log('→ Preview access/account/store regression tests');

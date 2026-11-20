@@ -1,0 +1,217 @@
+name: Build Tatami Plus sections cPanel installer
+
+'on':
+  push:
+    branches:
+      - feat/frontend-section-consolidation-20261121
+    paths:
+      - "shared/src/**"
+      - "shared/public/assets/**"
+      - "shared/build.js"
+      - "shared/tests/**"
+      - "django/templates/**"
+      - "deploy/install_tatami_sections.py"
+      - "deploy/TatamiPlus-Sections-README.fa.md"
+      - ".github/workflows/build-sections-cpanel-package.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "shared/src/**"
+      - "shared/public/assets/**"
+      - "shared/build.js"
+      - "shared/tests/**"
+      - "django/templates/**"
+      - "deploy/install_tatami_sections.py"
+      - "deploy/TatamiPlus-Sections-README.fa.md"
+      - ".github/workflows/build-sections-cpanel-package.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build-installer:
+    name: Test, build and package the cPanel installer
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      SOURCE_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Install browser regression dependencies
+        working-directory: shared
+        run: |
+          npm install --no-package-lock --no-audit --no-fund
+          npx playwright install --with-deps chromium
+
+      - name: Run consolidated-section browser regression for all roles
+        working-directory: shared
+        env:
+          ONLY: section-smoke
+        run: npm test
+
+      - name: Run live Preview route bridge regression
+        working-directory: shared
+        run: node tests/django-bridge.test.mjs
+
+      - name: Check JavaScript source syntax
+        run: |
+          set -euo pipefail
+          node --check shared/src/js/shared/core.js
+          node --check shared/src/js/shared/views-academy.js
+          node --check shared/src/js/shared/views-videos.js
+          node --check shared/src/js/shared/views-blog.js
+          node --check shared/src/js/shared/views-tatamipedia.js
+          node --check shared/src/js/shared/views-online-coach.js
+          node --check shared/src/js/shared/views-new.js
+          node --check shared/src/js/shared/views-coaches.js
+          node --check shared/src/js/shared/views-core.js
+          node --check shared/src/js/shared/django-route-bridge.js
+
+      - name: Build Preview
+        working-directory: shared
+        run: node build.js
+
+      - name: Validate generated Preview and Django template names
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s shared/dist/preview/index.html
+          test -s shared/dist/preview/assets/neshan-config.js
+          test -s shared/dist/preview/assets/images/manifest.json
+          node --input-type=module <<'NODE'
+          import fs from "node:fs";
+          const html = fs.readFileSync("shared/dist/preview/index.html", "utf8");
+          const required = [
+            '<main id="app"></main>',
+            "باشگاه مجازی",
+            "tpSectionTabs",
+            "دوره‌های آموزشی",
+            "ویدیوهای ضبط‌شده",
+            "وبلاگ",
+            "تاتامی‌پدیا",
+            "مربی آنلاین",
+            "آنالیز هوش مصنوعی",
+            "مربیان",
+            "/coaches/"
+          ];
+          for (const marker of required) {
+            if (!html.includes(marker)) throw new Error("Missing Preview marker: " + marker);
+          }
+          const scripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)];
+          if (!scripts.length) throw new Error("No inline application script was generated");
+          fs.writeFileSync("/tmp/tatami-sections-preview.js", scripts.map(x => x[1]).join("\n"));
+          JSON.parse(fs.readFileSync("shared/dist/preview/assets/images/manifest.json", "utf8"));
+          NODE
+          node --check /tmp/tatami-sections-preview.js
+          python3 - <<'PY'
+          from pathlib import Path
+          base = Path("django/templates/base.html").read_text(encoding="utf-8")
+          navigation = Path("django/templates/components/platform_navigation.html").read_text(encoding="utf-8")
+          courses = Path("django/templates/club/course_list.html").read_text(encoding="utf-8")
+          coaches = Path("django/templates/coaches/directory.html").read_text(encoding="utf-8")
+          assert "باشگاه مجازی" in base and "وبلاگ" in base and "مربیان" in base
+          assert "ویدیوهای ضبط‌شده" not in navigation
+          assert "آکادمی اساتید" not in navigation
+          assert "تاتامی‌پدیا" not in navigation
+          assert "دوره‌های آموزشی" in courses and "ویدیوهای ضبط‌شده" in courses
+          assert "<h1>مربیان</h1>" in coaches
+          print("DJANGO_SECTION_TEMPLATES_OK")
+          PY
+
+      - name: Build transactional cPanel installer ZIP
+        env:
+          SOURCE_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib
+          import json
+          import shutil
+          import zipfile
+          from pathlib import Path
+
+          name = "TatamiPlus-Sections-2026-11-21"
+          release = Path("release") / name
+          if release.exists():
+              shutil.rmtree(release)
+          (release / "payload" / "preview").parent.mkdir(parents=True, exist_ok=True)
+          shutil.copytree("shared/dist/preview", release / "payload" / "preview")
+
+          template_paths = [
+              "base.html",
+              "components/platform_navigation.html",
+              "pages/home.html",
+              "pages/home/partials/features.html",
+              "pages/home/partials/intro.html",
+              "club/course_list.html",
+              "club/course_detail.html",
+              "coaches/directory.html",
+          ]
+          (release / "payload" / "templates").mkdir(parents=True, exist_ok=True)
+          for relative in template_paths:
+              source = Path("django/templates") / relative
+              if not source.is_file():
+                  raise SystemExit(f"Missing Django template: {source}")
+              destination = release / "payload" / "templates" / relative
+              destination.parent.mkdir(parents=True, exist_ok=True)
+              shutil.copy2(source, destination)
+
+          shutil.copy2("deploy/install_tatami_sections.py", release / "install.py")
+          shutil.copy2("deploy/TatamiPlus-Sections-README.fa.md", release / "README_FA.md")
+
+          entries = []
+          for area in ("preview", "templates"):
+              root = release / "payload" / area
+              for path in sorted(root.rglob("*")):
+                  if not path.is_file() or path.is_symlink():
+                      continue
+                  entries.append({
+                      "area": area,
+                      "path": path.relative_to(root).as_posix(),
+                      "size": path.stat().st_size,
+                      "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+                  })
+
+          manifest = {
+              "schema_version": 1,
+              "source_commit": "${{ github.event.pull_request.head.sha || github.sha }}",
+              "description": "Tatami Plus frontend section consolidation; Preview plus selected Django templates only.",
+              "files": entries,
+          }
+          (release / "MANIFEST.json").write_text(
+              json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
+              encoding="utf-8",
+          )
+
+          archive = Path(f"{name}.zip")
+          with zipfile.ZipFile(archive, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=7) as bundle:
+              for path in sorted(release.rglob("*")):
+                  if path.is_file():
+                      bundle.write(path, path.relative_to(release.parent).as_posix())
+
+          with zipfile.ZipFile(archive) as bundle:
+              bad = bundle.testzip()
+              if bad:
+                  raise SystemExit(f"ZIP integrity failure: {bad}")
+              if f"{name}/install.py" not in bundle.namelist():
+                  raise SystemExit("Installer entry is missing from ZIP")
+          print(f"CPANEL_INSTALLER_OK | files={len(entries)} | preview={sum(x['area']=='preview' for x in entries)} | templates=8")
+          PY
+          python3 "release/TatamiPlus-Sections-2026-11-21/install.py" --check
+
+      - name: Upload cPanel installer ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: tatami-plus-sections-cpanel-installer
+          path: TatamiPlus-Sections-2026-11-21.zip
+          if-no-files-found: error
+          retention-days: 7
