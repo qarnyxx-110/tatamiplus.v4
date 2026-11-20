@@ -80,7 +80,7 @@
     };
 
     const getGroupDisplayName = (group) => {
-      const link = group && group.querySelector("caption a.section");
+      const link = group && group.querySelector(".tpa-app-heading-row a.section");
       return safeText(link && (
         link.dataset.tpaAppName ||
         link.querySelector(".tpa-app-label")?.textContent ||
@@ -153,8 +153,10 @@
         table.insertBefore(colgroup, firstSection || null);
       }
 
-      if (appLink) {
-        // Replace only the visible caption text. Keep Django's real href untouched.
+      if (appLink && tbody) {
+        // Preserve the semantic caption but move the visible app link into a
+        // full-width table row. A table caption shrink-wraps its contents in
+        // browsers, so width:100% on caption cannot reliably fill the card.
         appLink.replaceChildren();
         appLink.dataset.tpaAppName = appName;
         appLink.setAttribute("aria-label", appName);
@@ -172,34 +174,56 @@
         appLink.append(icon, label);
         addCommandItem(appLink, appName, appName, "بخش");
 
+        const headingRow = document.createElement("tr");
+        headingRow.className = "tpa-app-heading-row";
+        const headingCell = document.createElement("th");
+        headingCell.colSpan = 3;
+        headingCell.setAttribute("scope", "colgroup");
+        const heading = document.createElement("div");
+        heading.className = "tpa-app-heading";
+
         const count = document.createElement("span");
         count.className = "tpa-app-count";
         count.textContent = String(rows.length);
         count.setAttribute("aria-label", rows.length + " زیرمجموعه");
-        caption.append(count);
+
+        const toggle = document.createElement("button");
+        toggle.type = "button";
+        toggle.className = "tpa-group-toggle";
+        toggle.textContent = "⌄";
+        toggle.setAttribute("aria-label", "جمع کردن بخش " + appName);
+        toggle.setAttribute("aria-expanded", "true");
+        toggle.title = "جمع یا باز کردن زیرمجموعه‌ها";
+
+        heading.append(appLink, count, toggle);
+        headingCell.append(heading);
+        headingRow.append(headingCell);
+        tbody.insertBefore(headingRow, tbody.firstElementChild);
+
+        caption.textContent = appName;
+        caption.classList.add("tpa-visually-hidden-caption");
+
+        groupRecords.push({
+          element: group,
+          appLabel,
+          appName,
+          tbody,
+          rows,
+          toggle,
+          collapsed: false
+        });
+
+        const record = groupRecords[groupRecords.length - 1];
+        // Continue with this record's existing collapse state below.
+        const isCurrent = group.classList.contains("current-app") ||
+          group.querySelector("tr.current-model, a[aria-current='page']");
+        const storedCollapsed = Boolean(collapsedState[appLabel]);
+        record.collapsed = storedCollapsed && !isCurrent;
       }
 
-      const toggle = document.createElement("button");
-      toggle.type = "button";
-      toggle.className = "tpa-group-toggle";
-      toggle.textContent = "⌄";
-      toggle.setAttribute("aria-label", "جمع کردن بخش " + appName);
-      toggle.setAttribute("aria-expanded", "true");
-      toggle.title = "جمع یا باز کردن زیرمجموعه‌ها";
-      caption.append(toggle);
-
-      const isCurrent = group.classList.contains("current-app") ||
-        group.querySelector("tr.current-model, a[aria-current='page']");
-      const storedCollapsed = Boolean(collapsedState[appLabel]);
-      const record = {
-        element: group,
-        appLabel,
-        appName,
-        tbody,
-        rows,
-        toggle,
-        collapsed: storedCollapsed && !isCurrent
-      };
+      const record = groupRecords[groupRecords.length - 1];
+      if (!record || record.element !== group) return;
+      const toggle = record.toggle;
 
       const setCollapsed = (collapsed, persist = true) => {
         record.collapsed = Boolean(collapsed);
@@ -270,7 +294,6 @@
         }
       });
 
-      groupRecords.push(record);
     });
 
     const availableUrls = new Set(commandItems.map((item) => item.href));
