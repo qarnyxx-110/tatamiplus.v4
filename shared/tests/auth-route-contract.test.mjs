@@ -1,13 +1,31 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-const bridge = fs.readFileSync(new URL('../src/js/shared/django-route-bridge.js', import.meta.url), 'utf8');
-const navigation = fs.readFileSync(new URL('../../django/templates/components/platform_navigation.html', import.meta.url), 'utf8');
-assert.match(bridge, /return '\/auth\/login\/' \+ \(suffix \? '\?' \+ suffix : ''\);/);
-assert.doesNotMatch(bridge, /\/auth\/login\/sms\//);
-assert.doesNotMatch(bridge, /\/auth\/password\/(?:reset|set)\//);
 
-// The pinned Django login GET contract reads "next" and initializes the form's
-// hidden "next_url" field from it. Keep the Gem link aligned with that contract.
+const read = path => fs.readFileSync(new URL(path, import.meta.url), 'utf8');
+const bridge = read('../src/js/shared/django-route-bridge.js');
+const navigation = read('../../django/templates/components/platform_navigation.html');
+const login = read('../../django/templates/accounts/login.html');
+const otp = read('../../django/templates/accounts/otp_verify.html');
+const account = read('../../django/templates/pages/account.html');
+
+assert.match(bridge, /const useSmsLogin = route !== 'login' \|\| Boolean\(role\);/);
+assert.match(bridge, /const target = useSmsLogin \? '\/auth\/login\/sms\/' : '\/auth\/login\/';/);
+assert.match(bridge, /if \(route === 'password-reset'\) return '\/auth\/password\/reset\/';/);
+assert.match(bridge, /if \(route === 'set-password'\) return '\/auth\/password\/set\/';/);
+
+assert.match(login, /\{% if mode == 'sms' %\}/);
+assert.match(login, /\{% url 'phone_auth:sms_login' %\}/);
+assert.match(login, /\{% url 'phone_auth:login' %\}/);
+assert.match(login, /\{% url 'phone_auth:password_reset' %\}/);
+assert.match(login, /action="\{% if mode == 'sms' %\}\{% url 'phone_auth:sms_login' %\}\{% else %\}\{% url 'phone_auth:login' %\}\{% endif %\}"/);
+assert.match(otp, /\{% url 'phone_auth:sms_login' %\}/);
+
+assert.match(account, /href="\{% url 'phone_auth:sms_login' %\}\?role=student"/);
+assert.match(account, /href="\{% url 'phone_auth:sms_login' %\}\?role=coach"/);
+assert.doesNotMatch(account, /href="\{% url 'phone_auth:login' %\}\?role=/);
+
+// Password login is the correct destination for the Gem return-path link.
 assert.match(navigation, /href="\/auth\/login\/\?next=\/account\/gems\//);
 assert.doesNotMatch(navigation, /href="\/auth\/login\/\?next_url=/);
-console.log('Stage 1I auth route contract: PASS');
+
+console.log('Django password/SMS auth route contract: PASS');

@@ -24,6 +24,6 @@
 
   <p class="tp-hint">در صورت نرسیدن پیامک، پس از پایان زمان انتظار می‌توانید درخواست ارسال دوباره بدهید. محدودیت نهایی توسط سامانه بررسی می‌شود.</p>
   {% with next_value=request.session.otp_next|default:'' role_value=request.session.otp_role|default:'' %}
-    <p class="tp-auth-alt"><a href="{% url 'phone_auth:login' %}{% if next_value or role_value %}?{% if next_value %}next={{ next_value|urlencode }}{% endif %}{% if next_value and role_value %}&amp;{% endif %}{% if role_value %}role={{ role_value|urlencode }}{% endif %}{% endif %}">بازگشت به ورود پیامکی</a></p>
+    <p class="tp-auth-alt"><a href="{% url 'phone_auth:sms_login' %}{% if next_value or role_value %}?{% if role_value %}role={{ role_value|urlencode }}{% endif %}{% if role_value and next_value %}&amp;{% endif %}{% if next_value %}next={{ next_value|urlencode }}{% endif %}{% endif %}">بازگشت به ورود / ثبت‌نام پیامکی</a></p>
   {% endwith %}
 {% endblock %}
