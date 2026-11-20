@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load persian %}
 {% block title %}مربیان تاتامی پلاس | آکادمی اساتید{% endblock %}
 {% block description %}مربیان تأییدشده تاتامی پلاس و پروفایل‌های عمومی آن‌ها را ببینید.{% endblock %}
 {% block content %}
@@ -6,7 +7,7 @@
   <header class="sh">
     <div>
       <h1>مربیان تاتامی</h1>
-      <p class="mu">مربیان جودو را پیدا کنید و پروفایل عمومی‌شان را ببینید. فقط پروفایل‌های تأییدشده و منتشرشده نمایش داده می‌شوند.</p>
+      <p class="mu">مربیان جودو را پیدا کنید و پروفایل عمومی‌شان را ببینید. فقط پورتفولیوهای تأییدشده‌ای که توسط تیم منتشر شده‌اند نمایش داده می‌شوند.</p>
     </div>
     <a class="btn o" href="/preview/#/academy">آکادمی اساتید</a>
   </header>
@@ -34,6 +35,8 @@
                 <a href="{% url 'coaches:profile_detail' profile.pk %}"><b>{{ profile.display_name }}</b></a>
                 {% if profile.belt %}<div><span class="tag g">{{ profile.belt }}</span></div>{% endif %}
                 {% if profile.headline %}<p class="mu sm">{{ profile.headline }}</p>{% endif %}
+                {% if profile.coaching_level %}<p class="mu sm">سطح مربیگری: {{ profile.coaching_level }}</p>{% endif %}
+                {% if profile.years_experience %}<span class="tag m">{{ profile.years_experience|persian_digits }} سال سابقه</span>{% endif %}
                 {% if profile.club %}<div><span class="tag m">{{ profile.club }}</span></div>{% endif %}
                 {% if profile.biography %}<p class="mu sm tp-clamp">{{ profile.biography|truncatechars:150 }}</p>{% endif %}
                 <a class="btn s" href="{% url 'coaches:profile_detail' profile.pk %}">مشاهده پروفایل</a>
@@ -46,7 +49,7 @@
       <div class="tp-state" aria-live="polite">
         <span class="eyebrow">COACH DIRECTORY</span>
         <b>هنوز پروفایل عمومی‌ای منتشر نشده است</b>
-        <p>پس از تأیید درخواست و انتشار پروفایل توسط تیم، مربیان در این فهرست نمایش داده می‌شوند.</p>
+        <p>پس از تأیید پورتفولیو و فعال‌کردن انتشار توسط تیم، مربیان در این فهرست نمایش داده می‌شوند.</p>
         {% if user.is_authenticated and user.role == 'coach' %}<a class="btn o s" href="{% url 'account' %}">وضعیت درخواست من</a>{% elif not user.is_authenticated %}<a class="btn o s" href="/preview/#/login">ورود یا ثبت‌نام مربی</a>{% endif %}
       </div>
     {% endif %}

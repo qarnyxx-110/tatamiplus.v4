@@ -1,27 +1,50 @@
 {% extends 'base.html' %}
-{% block title %}پروفایل عمومی من | پنل مربی تاتامی پلاس{% endblock %}
+{% load persian %}
+
+{% block title %}ویرایش پورتفولیوی مربی | تاتامی پلاس{% endblock %}
 {% block content %}
 <main class="w tp-coach-panel">
-  <header class="sh"><div><span class="eyebrow">COACH PROFILE</span><h1>پروفایل عمومی من</h1><p class="mu">اطلاعاتی که پس از انتشار در صفحه عمومی مربی نمایش داده می‌شود.</p></div></header>
-  <section class="d-c tp-coach-publish-state" aria-label="وضعیت انتشار پروفایل">
-    <div class="dh"><b>وضعیت انتشار</b>{% if profile.is_published %}<span class="tag ok">منتشر شده</span>{% else %}<span class="tag g">در انتظار انتشار</span>{% endif %}</div>
+  <header class="sh">
+    <div>
+      <span class="eyebrow">COACH PORTFOLIO</span>
+      <h1>ویرایش پورتفولیوی مربی</h1>
+      <p class="mu">این همان پورتفولیویی است که برای بررسی مربیگری ثبت کرده‌اید؛ اطلاعات حرفه‌ای و صفحهٔ عمومی خود را از همین‌جا به‌روز نگه دارید.</p>
+    </div>
+  </header>
+
+  <section class="d-c tp-coach-publish-state" aria-label="وضعیت انتشار پورتفولیو">
+    <div class="dh">
+      <b>وضعیت انتشار</b>
+      {% if profile.is_published %}
+        <span class="tag ok">منتشر شده</span>
+      {% else %}
+        <span class="tag g">تأییدشده، در انتظار انتشار</span>
+      {% endif %}
+    </div>
     {% if profile.is_published %}
-      <p class="mu sm">پروفایل شما برای عموم قابل مشاهده است.</p>
-      <a class="btn o s" href="{% url 'club:coach_detail' profile.pk %}">مشاهده صفحه عمومی</a>
+      <p class="mu sm">صفحهٔ عمومی شما برای بازدیدکنندگان قابل مشاهده است.</p>
+      <a class="btn o s" href="{% url 'coaches:profile_detail' profile.pk %}">مشاهدهٔ صفحهٔ عمومی مربی</a>
     {% else %}
-      <p class="mu sm">ذخیره این فرم پروفایل را منتشر نمی‌کند؛ انتشار آن پس از بررسی تیم تاتامی پلاس انجام می‌شود.</p>
+      <p class="mu sm">ذخیرهٔ این فرم فقط اطلاعات پورتفولیو را به‌روز می‌کند؛ وضعیت بررسی و انتشار در اختیار تیم تاتامی پلاس است.</p>
     {% endif %}
   </section>
+
   <nav class="tp-panel-nav" aria-label="بخش‌های پنل مربی">
     <a class="chip" href="{% url 'coach_panel:course_list' %}">دوره‌های من</a>
     <a class="chip" href="{% url 'coach_students:list' %}">هنرجوها و کدهای دعوت</a>
-    <a class="chip on" href="{% url 'coaches:portfolio' %}">پروفایل مربی</a>
-    <a class="chip" href="{% url 'coaches:application_status' %}">وضعیت درخواست</a>
+    <a class="chip on" href="{% url 'coaches:portfolio' %}">ویرایش پورتفولیو</a>
+    <a class="chip" href="{% url 'coaches:application_status' %}">وضعیت پورتفولیو</a>
   </nav>
+
+  <div class="tp-note">
+    <p>اطلاعات این فرم شامل نام نمایشی، معرفی، تصویر، سطح و تخصص مربیگری، سابقه، کمربند، باشگاه و توضیحات مدارک و افتخارات است. ذخیرهٔ این فرم نه درخواست تازه‌ای می‌سازد و نه وضعیت تأیید یا انتشار را تغییر می‌دهد.</p>
+    <p class="mu sm">فایل مدرک خصوصی است و فقط کارکنان مجاز برای بررسی می‌توانند آن را دریافت کنند. فایل یا نشانی عمومی مدرک در صفحهٔ مربی نمایش داده نمی‌شود.</p>
+  </div>
+
   <form class="d-c tp-editor-form" method="post" enctype="multipart/form-data" novalidate>
     {% csrf_token %}
     {% include 'includes/form_fields.html' %}
-    <div class="tp-editor-actions"><button class="btn" type="submit">ذخیره پروفایل</button></div>
+    <div class="tp-editor-actions"><button class="btn" type="submit">ذخیرهٔ تغییرات پورتفولیو</button></div>
   </form>
 </main>
 {% endblock %}

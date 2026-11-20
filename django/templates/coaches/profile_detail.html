@@ -1,12 +1,13 @@
 {% extends 'base.html' %}
+{% load persian %}
 {% block title %}{{ profile.display_name }} | مربیان تاتامی پلاس{% endblock %}
 {% block description %}{{ profile.display_name }}{% if profile.headline %} — {{ profile.headline }}{% endif %}{% endblock %}
 {% block content %}
 <main class="w tp-coach-profile-page">
   <nav class="tp-crumbs" aria-label="مسیر صفحه">
     <ol>
-      <li><a href="/preview/#/">خانه</a></li>
-      <li><a href="/preview/#/coaches">مربیان تاتامی</a></li>
+      <li><a href="{% url 'home' %}">خانه</a></li>
+      <li><a href="{% url 'coaches:directory' %}">مربیان تاتامی</a></li>
       <li aria-current="page">{{ profile.display_name }}</li>
     </ol>
   </nav>
@@ -28,6 +29,8 @@
       <div class="tp-cluster">
         {% if profile.belt %}<span class="tag">{{ profile.belt }}</span>{% endif %}
         {% if profile.club %}<span class="tag m">{{ profile.club }}</span>{% endif %}
+        {% if profile.coaching_level %}<span class="tag g">{{ profile.coaching_level }}</span>{% endif %}
+        {% if profile.years_experience %}<span class="tag">{{ profile.years_experience|persian_digits }} سال سابقهٔ مربیگری</span>{% endif %}
       </div>
       {% if profile.headline %}
         <h2 style="font-size:var(--tp-font-size-xl);margin-top:var(--tp-space-md)">معرفی حرفه‌ای</h2>
@@ -44,6 +47,20 @@
     <section class="d-s" aria-labelledby="bio-t">
       <h2 id="bio-t">معرفی مربی</h2>
       <div class="mu">{{ profile.biography|linebreaks }}</div>
+    </section>
+  {% endif %}
+
+  {% if profile.specializations %}
+    <section class="d-s" aria-labelledby="specializations-t">
+      <h2 id="specializations-t">تخصص‌های مربی</h2>
+      <div class="mu">{{ profile.specializations|linebreaks }}</div>
+    </section>
+  {% endif %}
+
+  {% if profile.certificate_details %}
+    <section class="d-s" aria-labelledby="credentials-t">
+      <h2 id="credentials-t">مدارک و افتخارات</h2>
+      <div class="mu">{{ profile.certificate_details|linebreaks }}</div>
     </section>
   {% endif %}
 </main>

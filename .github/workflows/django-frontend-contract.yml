@@ -93,6 +93,12 @@ jobs:
           coach_join = Path("django/templates/coaches/join.html").read_text(encoding="utf-8")
           coach_join_entry = Path("django/templates/coaches/join_enter.html").read_text(encoding="utf-8")
           coach_students = Path("django/templates/coaches/coach_students.html").read_text(encoding="utf-8")
+          coach_apply = Path("django/templates/coaches/apply.html").read_text(encoding="utf-8")
+          coach_status = Path("django/templates/coaches/application_status.html").read_text(encoding="utf-8")
+          coach_portfolio = Path("django/templates/coaches/portfolio.html").read_text(encoding="utf-8")
+          coach_directory = Path("django/templates/coaches/directory.html").read_text(encoding="utf-8")
+          coach_public_profile = Path("django/templates/coaches/profile_detail.html").read_text(encoding="utf-8")
+          account_page = Path("django/templates/pages/account.html").read_text(encoding="utf-8")
           bridge = Path("shared/src/js/shared/django-route-bridge.js").read_text(encoding="utf-8")
           module_pages = Path("django/static/js/module-pages.js").read_text(encoding="utf-8")
           reference_catalog = json.loads(Path("django/static/data/reference-store-catalog.json").read_text(encoding="utf-8"))
@@ -153,6 +159,20 @@ jobs:
           assert "جای خالی از" in coach_join
           assert "کد دعوت را وارد کن" in coach_join_entry
           assert "data-copy-target" in coach_students and "کپی لینک" in coach_students
+          assert 'enctype="multipart/form-data"' in coach_apply and "{% csrf_token %}" in coach_apply
+          assert "resubmitting" in coach_apply and "portfolio.rejection_reason" in coach_apply
+          assert "فایل مدرک قبلی حفظ می‌شود" in coach_apply
+          assert "application.status" not in coach_status and "portfolio.get_status_display" in coach_status
+          assert all(f"portfolio.status == '{state}'" in coach_status for state in ("pending_review", "rejected", "draft", "incomplete", "inactive", "approved", "published"))
+          assert "{% url 'coaches:profile_detail' portfolio.pk %}" in coach_status
+          assert "profile.is_published" in coach_portfolio and "{% include 'includes/form_fields.html' %}" in coach_portfolio
+          assert "coaches:profile_detail" in coach_portfolio
+          assert "profile.coaching_level" in coach_directory and "profile.years_experience" in coach_directory
+          assert "profile.specializations" in coach_public_profile and "profile.certificate_details" in coach_public_profile
+          assert "certificate_document.url" not in coach_public_profile
+          assert "coach_portfolio.status" in account_page and "coach_portfolio.rejection_reason" in account_page
+          assert all(f"coach_portfolio.status == '{state}'" in account_page for state in ("pending_review", "rejected", "draft", "incomplete", "inactive", "approved", "published"))
+          assert "{% url 'coaches:profile_detail' coach_portfolio.pk %}" in account_page
           assert "data-copy-target" in bridge and "navigator.clipboard.writeText" in bridge
           assert "data-copy-target" in module_pages and "navigator.clipboard.writeText" in module_pages
           assert "موجودی ثبت نشده" in store_detail_template
@@ -226,7 +246,7 @@ jobs:
         run: |
           set -euo pipefail
           git clone https://github.com/Radinsharifi/Tatami-demo.git backend
-          git -C backend checkout --detach 25fde937def556edc7b81291e5900a9ac84fccb2
+          git -C backend checkout --detach 20e96721cc1a589d625fecd3fffa9ec42b1fc64f
 
       - name: Install backend dependencies
         run: |
@@ -258,11 +278,11 @@ jobs:
       - name: Compile templates and resolve required static assets
         working-directory: backend
         run: |
-          python manage.py shell -c "from django.template.loader import get_template; from django.contrib.staticfiles.finders import find; names=('base.html','layouts/auth.html','components/auth_aside.html','components/store_product_card.html','admin/base_site.html','pages/home.html','pages/account.html','store/product_list.html','store/product_detail.html','store/cart_detail.html','coaches/directory.html','coaches/profile_detail.html','coaches/join.html','coaches/join_enter.html','coaches/coach_students.html','club/course_list.html','club/course_detail.html','club/coach/episode_form.html','gems/history.html','accounts/login.html','accounts/otp_verify.html','accounts/complete_profile.html','accounts/password_reset.html','accounts/password_reset_confirm.html','accounts/set_password.html','coaches/join_enter.html','orders/mock_gateway.html','orders/address.html','orders/review.html','orders/payment_result.html','orders/order_list.html','orders/order_detail.html','includes/form_fields.html'); [get_template(name) for name in names]; assets=('css/tatami.css','css/tatami-admin.css','css/backend-templates.css','css/module-pages.css','css/home-restored.css','css/reference-store.css','js/tatami.js','js/module-pages.js','js/home-restored.js','js/reference-store.js','data/reference-store-catalog.json'); assert all(find(name) for name in assets); print('DJANGO_TEMPLATE_AND_STATIC_CHECK_OK')"
+          python manage.py shell -c "from django.template.loader import get_template; from django.contrib.staticfiles.finders import find; names=('base.html','layouts/auth.html','components/auth_aside.html','components/store_product_card.html','admin/base_site.html','pages/home.html','pages/account.html','store/product_list.html','store/product_detail.html','store/cart_detail.html','coaches/apply.html','coaches/application_status.html','coaches/portfolio.html','coaches/directory.html','coaches/profile_detail.html','coaches/join.html','coaches/join_enter.html','coaches/coach_students.html','club/course_list.html','club/course_detail.html','club/coach/episode_form.html','gems/history.html','accounts/login.html','accounts/otp_verify.html','accounts/complete_profile.html','accounts/password_reset.html','accounts/password_reset_confirm.html','accounts/set_password.html','coaches/join_enter.html','orders/mock_gateway.html','orders/address.html','orders/review.html','orders/payment_result.html','orders/order_list.html','orders/order_detail.html','includes/form_fields.html'); [get_template(name) for name in names]; assets=('css/tatami.css','css/tatami-admin.css','css/backend-templates.css','css/module-pages.css','css/home-restored.css','css/reference-store.css','js/tatami.js','js/module-pages.js','js/home-restored.js','js/reference-store.js','data/reference-store-catalog.json'); assert all(find(name) for name in assets); print('DJANGO_TEMPLATE_AND_STATIC_CHECK_OK')"
 
       - name: Run backend tests with proposed frontend
         working-directory: backend
-        run: python manage.py test accounts.tests.AuthenticationFlowTests accounts.tests.CoachSignupLeadTests accounts.tests.AccountPageTests coaches.tests.CoachInviteTests gems.tests.GemPageTests orders.tests.CheckoutFlowTests --verbosity 1
+        run: python manage.py test accounts.tests.AuthenticationFlowTests accounts.tests.CoachSignupLeadTests accounts.tests.AccountPageTests coaches.tests.CoachWorkflowTests coaches.tests.CoachInviteTests gems.tests.GemPageTests orders.tests.CheckoutFlowTests --verbosity 1
 
       - name: Build separate templates and static cPanel packages
         run: |
