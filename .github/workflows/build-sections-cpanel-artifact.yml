@@ -121,11 +121,12 @@ jobs:
           python3 - <<'PY'
           import hashlib
           import json
+          import os
           import shutil
           import zipfile
           from pathlib import Path
 
-          name = "TatamiPlus-Sections-2026-11-21"
+          name = "TatamiPlus-Sections-2026-11-21-" + os.environ["SOURCE_COMMIT"][:7]
           release = Path("release") / name
           if release.exists():
               shutil.rmtree(release)
@@ -155,6 +156,11 @@ jobs:
 
           shutil.copy2("deploy/install_tatami_sections.py", release / "install.py")
           shutil.copy2("deploy/TatamiPlus-Sections-README.fa.md", release / "README_FA.md")
+          readme_path = release / "README_FA.md"
+          readme_path.write_text(
+              readme_path.read_text(encoding="utf-8").replace("TatamiPlus-Sections-2026-11-21", name),
+              encoding="utf-8",
+          )
 
           entries = []
           for area in ("preview", "templates"):
@@ -194,12 +200,12 @@ jobs:
                   raise SystemExit("Installer entry is missing from ZIP")
           print(f"CPANEL_INSTALLER_OK | files={len(entries)} | preview={sum(x['area']=='preview' for x in entries)} | templates=10")
           PY
-          python3 "release/TatamiPlus-Sections-2026-11-21/install.py" --check
+          python3 "release/$(basename "$(find release -mindepth 1 -maxdepth 1 -type d -name 'TatamiPlus-Sections-2026-11-21-*' -print -quit)")/install.py" --check
 
       - name: Upload cPanel installer ZIP
         uses: actions/upload-artifact@v4
         with:
           name: tatami-plus-sections-cpanel-installer
-          path: TatamiPlus-Sections-2026-11-21.zip
+          path: TatamiPlus-Sections-2026-11-21-*.zip
           if-no-files-found: error
           retention-days: 7
