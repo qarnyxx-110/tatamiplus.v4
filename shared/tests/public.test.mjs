@@ -261,6 +261,37 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
  await go('#/episode/judo-foundations-lesson-1');t=await T();S.ok('قسمت دوره: معرفی نمونه بدون ویدئوی ساختگی',t.includes('پخش ویدئو در پیش‌نمایش فعال نیست')&&await cnt('#app video')===0);
  await go('#/episode/not-a-course-lesson-1');S.ok('قسمت نامعتبر به صفحه ۴۰۴ می‌رود',await nf());
 
+ // --- جستجوی سراسری: هر دو زیرمجموعه محتوای ادغام‌شده
+ await go('#/search?q='+encodeURIComponent('فنون پایه'));
+ const courseSearchGroup=pg.locator('#app .d-s[aria-label="باشگاه مجازی"]');
+ S.ok('جستجوی سراسری: دوره‌ها در گروه باشگاه مجازی جستجو می‌شوند',
+   await courseSearchGroup.locator('a[href="#/courses/judo-foundations"]').count()===1,
+   await T());
+
+ await go('#/search?q='+encodeURIComponent('ا'));
+ const blogSearchGroup=pg.locator('#app .d-s[aria-label="وبلاگ"]');
+ const blogShowAll=blogSearchGroup.locator('button[data-search-expand="blog"]');
+ S.ok('جستجوی وبلاگ: نتیجه‌های اولیه محدود و کنترل نمایش همه حاضر است',
+   await blogSearchGroup.locator('a.rec').count()===5&&await blogShowAll.count()===1);
+ await blogShowAll.click();await wait(80);
+ let blogSearchLinks=await blogSearchGroup.locator('a.rec').evaluateAll(items=>items.map(item=>item.getAttribute('href')||''));
+ S.ok('جستجوی وبلاگ: نمایش همه، هم مقاله‌ها و هم تاتامی‌پدیا را نگه می‌دارد',
+   blogSearchLinks.length>5&&blogSearchLinks.some(href=>href.startsWith('#/blog/'))&&blogSearchLinks.some(href=>href.startsWith('#/tatamipedia/')),
+   'نتایج نمایش‌داده‌شده: '+blogSearchLinks.length);
+ await blogShowAll.click();await wait(80);
+ S.ok('جستجوی وبلاگ: امکان جمع‌کردن دوباره نتایج',
+   await blogSearchGroup.locator('a.rec').count()===5&&await blogSearchGroup.locator('button[data-search-expand="blog"]').getAttribute('aria-expanded')==='false');
+
+ const clubSearchGroup=pg.locator('#app .d-s[aria-label="باشگاه مجازی"]');
+ const clubShowAll=clubSearchGroup.locator('button[data-search-expand="virtual-club"]');
+ S.ok('جستجوی باشگاه مجازی: دوره و ویدیو هر دو در گروه نتایج قابل گسترش‌اند',
+   await clubSearchGroup.locator('a[href^="#/courses/"]').count()>0&&await clubShowAll.count()===1);
+ await clubShowAll.click();await wait(80);
+ const clubSearchLinks=await clubSearchGroup.locator('a.rec').evaluateAll(items=>items.map(item=>item.getAttribute('href')||''));
+ S.ok('جستجوی همه باشگاه مجازی: لینک دوره‌ها و ویدیوها حفظ می‌شود',
+   clubSearchLinks.length>5&&clubSearchLinks.some(href=>href.startsWith('#/courses/'))&&clubSearchLinks.some(href=>href.startsWith('#/video/')),
+   'نتایج نمایش‌داده‌شده: '+clubSearchLinks.length);
+
  // --- وبلاگ
  await go('#/blog');S.ok('بلاگ: صفحه اول ۶ مقاله + صفحه‌بندی',await cnt('#app article')===6&&await cnt('.tp-pager')===1);
  await pg.locator('.tp-pager button[aria-label="صفحه ۲"]').click();await wait(100);S.ok('بلاگ: صفحه ۲ دو مقاله دارد و در آدرس است',await cnt('#app article')===2&&(await pg.evaluate(()=>location.hash)).includes('page=2'));
