@@ -232,6 +232,7 @@
       case 'checkout': return '/checkout/address/';
       case 'store': return '/store/';
       case 'coaches': return '/coaches/';
+      case 'blog': return route[1] ? '/blog/' + encodeURIComponent(route[1]) + '/' : '/blog/';
       case 'courses':
       case 'club':
       case 'episode': return '/club/';
@@ -267,6 +268,9 @@
     if (route === 'password-reset') return '/auth/password/reset/';
     if (route === 'set-password') return '/auth/password/set/';
     if (route === 'coach-invite') return '/coaches/join/';
+    if (route === 'blog') {
+      return parts[1] ? '/blog/' + encodeURIComponent(parts[1]) + '/' : '/blog/';
+    }
 
     if (route === 'academy') return '/coaches/';
     if (route === 'coaches') {
@@ -301,7 +305,7 @@
     try { url = value instanceof URL ? value : new URL(value, location.origin); } catch { return false; }
     if (url.origin !== location.origin) return false;
     return url.pathname === '/' ||
-      /^\/(store|checkout|payment|orders|auth|accounts|account|club|coach|coaches)(\/|$)/.test(url.pathname);
+      /^\/(store|checkout|payment|orders|auth|accounts|account|blog|club|coach|coaches)(\/|$)/.test(url.pathname);
   }
 
   function serverHashForUrl(value) {
