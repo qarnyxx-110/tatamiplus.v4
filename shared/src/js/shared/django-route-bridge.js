@@ -862,7 +862,28 @@
     if (!activeDjangoView && (form.id === 'rg-f' || form.id === 'lg-f')) {
       event.preventDefault();
       event.stopImmediatePropagation();
-      location.hash = '#/login';
+
+      // Legacy Preview auth forms must never create browser-only accounts in production.
+      // Registration now starts the real SMS flow; sign-in uses the real password form.
+      const isRegistrationForm = form.id === 'rg-f';
+      const target = new URL(
+        isRegistrationForm ? '/auth/login/sms/' : '/auth/login/',
+        location.origin
+      );
+      if (isRegistrationForm) {
+        const role = form.querySelector('input[name="role"]:checked')?.value ||
+          (form.elements.role && form.elements.role.value);
+        if (role === 'student' || role === 'coach') target.searchParams.set('role', role);
+      }
+
+      const hashQuery = location.hash.includes('?')
+        ? location.hash.slice(location.hash.indexOf('?') + 1)
+        : '';
+      const hashParams = new URLSearchParams(hashQuery);
+      const next = nextPathFromHash(hashParams.get('next') || hashParams.get('next_url'));
+      if (next) target.searchParams.set('next', next);
+
+      navigateToDjangoUrl(target);
       return;
     }
     const method = String(form.method || 'get').toUpperCase();
