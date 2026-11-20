@@ -260,10 +260,12 @@
       if (next) query.set('next', next);
 
       const suffix = query.toString();
-      return '/auth/login/' + (suffix ? '?' + suffix : '');
+      const target = route === 'login' ? '/auth/login/' : '/auth/login/sms/';
+      return target + (suffix ? '?' + suffix : '');
     }
 
-    if (route === 'password-reset' || route === 'set-password') return '/auth/login/';
+    if (route === 'password-reset') return '/auth/password/reset/';
+    if (route === 'set-password') return '/auth/password/set/';
     if (route === 'coach-invite') return '/coaches/join/';
 
     if (route === 'coaches') {
