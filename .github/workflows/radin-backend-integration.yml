@@ -1,0 +1,186 @@
+name: Radin backend integration and cPanel package
+
+on:
+  push:
+    branches:
+      - feat/radin-backend-integration-20261120
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backend-upgrade:
+    name: Test legacy-to-current Django upgrade and package backend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out Tatami Plus integration
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Clone pinned Radin backend source
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --no-checkout https://github.com/Radinsharifi/Tatami-demo.git backend
+          git -C backend checkout --detach 20e96721cc1a589d625fecd3fffa9ec42b1fc64f
+          git -C backend fetch --depth=1 origin 4c0b8baf1bf31f7a274bd0fa27ebe5826131f0c9
+
+      - name: Restore deployed migration history and add data-preserving upgrade migrations
+        shell: bash
+        run: |
+          set -euo pipefail
+          LEGACY=4c0b8baf1bf31f7a274bd0fa27ebe5826131f0c9
+
+          rm -f backend/coaches/migrations/*.py
+          for path in \
+            coaches/migrations/__init__.py \
+            coaches/migrations/0001_initial.py \
+            coaches/migrations/0002_alter_coachapplication_options_and_more.py \
+            coaches/migrations/0003_alter_coachapplication_reviewed_at_and_more.py \
+            coaches/migrations/0004_coachprofile_avatar_coachprofile_belt_and_more.py \
+            coaches/migrations/0005_coachinvite_coachstudent.py; do
+            mkdir -p "backend/$(dirname "$path")"
+            git -C backend show "$LEGACY:$path" > "backend/$path"
+          done
+
+          rm -f backend/club/migrations/*.py
+          for path in \
+            club/migrations/__init__.py \
+            club/migrations/0001_initial.py \
+            club/migrations/0002_episodecompletion.py; do
+            mkdir -p "backend/$(dirname "$path")"
+            git -C backend show "$LEGACY:$path" > "backend/$path"
+          done
+
+          cp backend/compat_migrations/coaches/0006_unify_coach_portfolio.py backend/coaches/migrations/
+          cp backend/compat_migrations/club/0003_course_coach_portfolio.py backend/club/migrations/
+          cp backend/compat_migrations/coaches/0007_remove_legacy_coach_models.py backend/coaches/migrations/
+          cp backend/compat_tests/coaches/test_portfolio_migration.py backend/coaches/test_portfolio_migration.py
+
+      - name: Overlay the Tatami Plus Django templates and static assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p backend/templates backend/static
+          cp -a django/templates/. backend/templates/
+          cp -a django/static/. backend/static/
+
+      - name: Install backend dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r backend/requirements.txt
+
+      - name: Check migration state and Django configuration
+        working-directory: backend
+        env:
+          DJANGO_DEBUG: "1"
+          DJANGO_SECRET_KEY: "ci-only-secret-key"
+          DJANGO_ALLOWED_HOSTS: "localhost,127.0.0.1,testserver"
+          DB_ENGINE: "sqlite"
+        run: |
+          set -euo pipefail
+          python manage.py check
+          python manage.py makemigrations --check --dry-run
+
+      - name: Apply all migrations to a clean database
+        working-directory: backend
+        env:
+          DJANGO_DEBUG: "1"
+          DJANGO_SECRET_KEY: "ci-only-secret-key"
+          DJANGO_ALLOWED_HOSTS: "localhost,127.0.0.1,testserver"
+          DB_ENGINE: "sqlite"
+        run: python manage.py migrate --noinput
+
+      - name: Run backend unit, admin, and migration-preservation tests
+        working-directory: backend
+        env:
+          DJANGO_DEBUG: "1"
+          DJANGO_SECRET_KEY: "ci-only-secret-key"
+          DJANGO_ALLOWED_HOSTS: "localhost,127.0.0.1,testserver"
+          DB_ENGINE: "sqlite"
+        run: python manage.py test --verbosity 2
+
+      - name: Prepare guarded cPanel installer and deployment notes
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp backend/tools/apply_backend_upgrade.py backend/apply_backend_upgrade.py
+          cp backend/README-FA.md backend/BACKEND-UPGRADE-README-FA.md
+          cat > backend/CPANEL-INSTALL-FA.txt <<'EOF'
+          بستهٔ ارتقای بک‌اند Django تاتامی پلاس
+          =======================================
+
+          مقصد: /home/pvchubir/tatamiplus_app/
+          این بسته برای کد بک‌اند است، نه /preview/ و نه پوشهٔ public_html.
+
+          پیش از نصب:
+          1) از کل دیتابیس یک نسخهٔ پشتیبان مستقل بگیرید.
+          2) از پوشه‌های media و private_uploads و فایل .env پشتیبان بگیرید.
+          3) از پوشه‌های Python app شامل accounts، coaches، club، gems، orders، store، config و blog پشتیبان بگیرید.
+          4) هیچ فایل .env یا config/settings.py موجود را با فایل نمونه جایگزین نکنید.
+
+          نصب فایل‌ها:
+          - محتوای ZIP را مستقیماً در ریشهٔ /home/pvchubir/tatamiplus_app/ استخراج کنید.
+          - فایل config/settings.py و config/urls.py عمداً در ZIP نیستند.
+          - پس از استخراج، ابتدا اجرا کنید:
+              python apply_backend_upgrade.py --plan
+          - اگر گزارش فقط اضافه‌کردن blog app و /blog/ را نشان داد:
+              python apply_backend_upgrade.py --apply --confirm BACKEND-UPGRADE
+          - این اسکریپت از settings.py و urls.py نسخهٔ پشتیبان می‌گیرد و فقط دو ورودی وبلاگ را اضافه می‌کند.
+          - اسکریپت هیچ Migration یا تغییر دیتابیس اجرا نمی‌کند.
+
+          بررسی Migration:
+          - با همان Python برنامه اجرا کنید:
+              python manage.py check
+              python manage.py showmigrations coaches club gems blog
+              python manage.py migrate --plan
+          - فقط پس از اطمینان از نسخهٔ پشتیبان دیتابیس اجرا کنید:
+              python manage.py migrate
+          - سپس برنامهٔ Python را از cPanel Restart کنید.
+
+          کنترل پنل:
+          - /admin/ باید مدل «پورتفولیوهای مربیان» را نشان دهد.
+          - فرم مربی باید فیلدهای حساب مربی، مشخصات عمومی، سوابق، مدارک، وضعیت، دلیل رد و انتشار را داشته باشد.
+          - فایل مدرک خصوصی است؛ از پیوند دریافت محافظت‌شدهٔ کارکنان استفاده کنید.
+          - بخش وبلاگ در ادمین برای ساخت/ویرایش/انتشار پست‌ها اضافه می‌شود.
+
+          مهم:
+          - هیچ‌وقت migrations قدیمی coaches یا club را با نسخهٔ بازنویسی‌شدهٔ رادین جایگزین نکنید.
+          - Migrationهای سازگار در این بسته مسیر تاریخی قبلی را حفظ می‌کنند و داده‌های درخواست/پروفایل را به CoachPortfolio منتقل می‌کنند.
+          - فایل‌های media و private_uploads را حذف یا جابه‌جا نکنید.
+          - درگاه پرداخت و مقادیر .env در این ارتقا تغییر نمی‌کنند.
+          EOF
+
+      - name: Build backend-only cPanel ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd backend
+          zip -qr "$GITHUB_WORKSPACE/TatamiPlus-Radin-Backend-cPanel-2026-11-20.zip" . \
+            -x ".git/*" \
+               "config/settings.py" \
+               "config/urls.py" \
+               "db.sqlite3" \
+               ".env" \
+               "media/*" \
+               "private_uploads/*" \
+               "__pycache__/*" \
+               "*/__pycache__/*" \
+               "*.pyc"
+
+          unzip -t "$GITHUB_WORKSPACE/TatamiPlus-Radin-Backend-cPanel-2026-11-20.zip"
+          sha256sum "$GITHUB_WORKSPACE/TatamiPlus-Radin-Backend-cPanel-2026-11-20.zip"
+
+      - name: Upload backend cPanel package
+        uses: actions/upload-artifact@v4
+        with:
+          name: TatamiPlus-Radin-Backend-cPanel-2026-11-20
+          path: |
+            TatamiPlus-Radin-Backend-cPanel-2026-11-20.zip
+          if-no-files-found: error
+          retention-days: 14
