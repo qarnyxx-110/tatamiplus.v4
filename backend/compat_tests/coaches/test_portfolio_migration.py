@@ -32,12 +32,10 @@ class CoachPortfolioDataMigrationTests(TransactionTestCase):
 
         coach = User.objects.create(
             username="portfolio-migration-coach",
-            phone="09120000981",
             role="coach",
         )
         student = User.objects.create(
             username="portfolio-migration-student",
-            phone="09120000982",
             role="student",
         )
         application = CoachApplication.objects.create(
