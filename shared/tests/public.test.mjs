@@ -288,7 +288,24 @@ export async function runPwa(app,base,browser,altRoot){
  const S=new Suite('PWA-فنی '+app);
  const ctx=await browser.newContext({viewport:{width:390,height:800},serviceWorkers:'allow'});
  const pg=await ctx.newPage();pg.setDefaultTimeout(15000);pg.setDefaultNavigationTimeout(15000);
- const swConsoleErrors=[];pg.on('console',message=>{if(message.type()==='error')swConsoleErrors.push(message.text())});
+ const swConsoleErrors=[];
+  // Only worker-related errors belong in this assertion. Unrelated page assets may
+  // legitimately return 404 in the test harness and must not fail the SW check.
+  pg.on('console',message=>{
+   if(message.type()!=='error')return;
+   const location=message.location();
+   if(message.text().includes('[Tatami SW]')||/\\/sw\\.js(?:$|\\?)/.test(location.url||'')){
+    swConsoleErrors.push(message.text()+(location.url?' @ '+location.url:''));
+   }
+  });
+  pg.on('response',response=>{
+   const url=new URL(response.url());
+   if(url.pathname.endsWith('/sw.js')&&!response.ok())swConsoleErrors.push('Service Worker script HTTP '+response.status()+' at '+url.href);
+  });
+  pg.on('requestfailed',request=>{
+   const url=new URL(request.url());
+   if(url.pathname.endsWith('/sw.js'))swConsoleErrors.push('Service Worker script request failed at '+url.href+': '+(request.failure()?.errorText||'unknown error'));
+  });
  await pg.goto(base+'/index.html');
  const neshanConfig=await pg.evaluate(async()=>{const r=await fetch('assets/neshan-config.js');return{status:r.status,text:await r.text()}});
  S.ok('تنظیمات نشان در خروجی PWA قابل دریافت است',neshanConfig.status===200&&neshanConfig.text.includes('TP_NESHAN_WEB_KEY')&&neshanConfig.text.includes('TP_CLUBS_JSON_URL'),String(neshanConfig.status));
@@ -312,7 +329,7 @@ export async function runPwa(app,base,browser,altRoot){
  S.ok('Service Worker registration exists',registrations.length>0,JSON.stringify(registrations));
  const swReady=await pg.evaluate(()=>Promise.race([navigator.serviceWorker.ready.then(()=>true),new Promise(resolve=>setTimeout(()=>resolve(false),10000))]));
  S.ok('Service Worker registration becomes ready within 10 seconds',swReady,swReady?'ready':'timed out');
- S.ok('Service Worker console has no registration/install error',!swConsoleErrors.length,swConsoleErrors.join(' | '));
+ S.ok('Service Worker script and install have no errors',!swConsoleErrors.length,swConsoleErrors.join(' | '));
  await wait(900);
  await pg.reload();
  await wait(500);
