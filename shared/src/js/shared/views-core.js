@@ -6,16 +6,34 @@ dashboard:()=>{const r=RN[role]?role:'student';return`<div class="d-l"><aside cl
 search:()=>searchView(),
 });
 // جستجوی سراسری: فروشگاه، مربیان، مقاله‌ها، تاتامی‌پدیا، ویدیوها و باشگاه‌ها (فقط بخش‌های مجاز همین اپ)
-let SQ='';
-function searchSet(v){setHashParams({q:v});R('sq')}
-function searchAll(k){if(k==='store'){location.hash='#/store?query='+encodeURIComponent(SQ)}else if(k==='videos'){if(typeof vq!=='undefined')vq=SQ;location.hash='#/videos'}}
+let SQ='',searchExpanded='';
+function searchSet(v){searchExpanded='';setHashParams({q:v});R('sq')}
+function searchAll(k){
+ if(k==='store'){location.hash='#/store?query='+encodeURIComponent(SQ);return}
+ if(k==='blog'||k==='virtual-club'){searchExpanded=searchExpanded===k?'':k;R()}
+}
+function searchExpandButton(key,total){
+ return `<button type="button" class="btn o s" data-search-expand="${key}" aria-expanded="${searchExpanded===key}" onclick="searchAll('${key}')">${searchExpanded===key?'نمایش پنج نتیجه نخست':'نمایش همه '+F(total)+' نتیجه'}</button>`;
+}
 function searchView(){const raw=(hashParams().get('q')||'').slice(0,80),n=nz(raw);SQ=raw;PT={t:'جستجو',d:'جستجو در فروشگاه، مربیان، وبلاگ، باشگاه مجازی و باشگاه‌ها'};
  const has=t=>nz(t).includes(n),eq=encodeURIComponent(raw),G=[];
  if(n){
   if(allowed('store'))G.push(['محصولات',P.filter(p=>has(p.n+' '+p.c)).map(p=>[`#/product/${p.id}`,p.n,p.c]),`<button type="button" class="btn o s" onclick="searchAll('store')">همه در فروشگاه</button>`]);
   if(allowed('coaches'))G.push(['مربیان',COACHES.filter(c=>has([c.firstName,c.lastName,c.level,c.academySpecialty,...(c.specialties||[])].join(' '))).map(c=>[`#/coaches/${encodeURIComponent(c.slug)}`,c.firstName+' '+c.lastName,(c.specialties||[]).join('، ')]),`<a class="btn o s" href="#/coaches?q=${eq}">همه در مربیان</a>`]);
-  if(allowed('blog'))G.push(['وبلاگ',[...BL.filter(b=>has([b.t,b.x,b.c].join(' '))).map(b=>[bLink(b),b.t,b.c||'مقاله']),...TPD.terms.filter(t=>t.status!=='draft'&&has([t.nameFa,t.nameJa,t.romaji,t.meaning].join(' '))).map(t=>[`#/tatamipedia/${encodeURIComponent(t.slug)}`,t.nameFa,[t.romaji,t.meaning].filter(Boolean).join(' · ')])],`<a class="btn o s" href="#/blog?q=${eq}">همه در وبلاگ</a>`]);
-  if(allowed('videos'))G.push(['باشگاه مجازی',V.filter(v=>has(v.t+' '+v.c)).map(v=>[`#/video/${v.id}`,v.t,v.c+' · '+v.l]),`<a class="btn o s" href="#/courses">همه دوره‌ها و ویدیوها</a>`]);
+  if(allowed('blog')){
+   const blogHits=[
+    ...BL.filter(b=>has([b.t,b.x,b.c].join(' '))).map(b=>[bLink(b),b.t,b.c||'مقاله']),
+    ...TPD.terms.filter(t=>t.status!=='draft'&&has([t.nameFa,t.nameJa,t.romaji,t.meaning].join(' '))).map(t=>[`#/tatamipedia/${encodeURIComponent(t.slug)}`,t.nameFa,[t.romaji,t.meaning].filter(Boolean).join(' · ')])
+   ];
+   G.push(['وبلاگ',blogHits,searchExpandButton('blog',blogHits.length),'blog']);
+  }
+  if(allowed('videos')){
+   const courses=typeof TP_DEMO_COURSES!=='undefined'&&Array.isArray(TP_DEMO_COURSES)?TP_DEMO_COURSES:[];
+   const courseHits=courses.filter(c=>has([c.title,c.level,c.description,...(c.lessons||[]).flatMap(x=>[x.title,x.summary])].join(' '))).map(c=>[`#/courses/${encodeURIComponent(c.slug)}`,c.title,c.level+' · دوره نمونه']);
+   const videoHits=V.filter(v=>has(v.t+' '+v.c)).map(v=>[`#/video/${v.id}`,v.t,'ویدیوی نمونه · '+v.c+' · '+v.l]);
+   const clubHits=[...courseHits,...videoHits];
+   G.push(['باشگاه مجازی',clubHits,searchExpandButton('virtual-club',clubHits.length),'virtual-club']);
+  }
   if(allowed('clubs'))G.push(['باشگاه‌ها',CB.map((c,i)=>[`#/club/${i}`,c[0],c[1],c[4]]).filter(c=>has(c.join(' '))).map(c=>c.slice(0,3)),'']);
  }
  const hit=G.filter(g=>g[1].length),total=hit.reduce((a,g)=>a+g[1].length,0);
@@ -25,4 +43,4 @@ function searchView(){const raw=(hashParams().get('q')||'').slice(0,80),n=nz(raw
  <div class="sbar" role="search"><label class="sr" for="sq">جستجو در کل سایت</label><input id="sq" type="search" placeholder="نام فن، محصول، مربی یا مقاله..." value="${esc(raw)}" oninput="searchSet(this.value)" autocomplete="off"></div>
  ${!n?`<p class="mu sm">پیشنهاد جستجو:</p><div class="chips">${sug}</div>`:`<p><b aria-live="polite">${total?F(total)+' نتیجه برای «'+esc(raw)+'»':'نتیجه‌ای برای «'+esc(raw)+'» پیدا نشد'}</b></p>`}
  ${n&&!total?`<div class="tp-state"><b>نتیجه‌ای پیدا نشد</b><p>املای کلمه را بررسی کنید یا عبارت کوتاه‌تری بنویسید. نام فن‌ها را می‌توانید فارسی، ژاپنی یا لاتین جستجو کنید.</p><div class="chips" style="justify-content:center">${sug}</div></div>`:''}
- ${hit.map(g=>`<section class="d-s" aria-label="${g[0]}"><h2>${g[0]} <span class="mu sm">(${F(g[1].length)})</span></h2>${g[1].slice(0,5).map(row).join('')}${g[1].length>5&&g[2]?`<div class="tp-cluster" style="margin-top:var(--tp-space-sm)">${g[2]}</div>`:''}</section>`).join('')}</div>`}
+ ${hit.map(g=>`<section class="d-s" aria-label="${g[0]}"><h2>${g[0]} <span class="mu sm">(${F(g[1].length)})</span></h2>${g[1].slice(0,g[3]&&searchExpanded===g[3]?g[1].length:5).map(row).join('')}${g[1].length>5&&g[2]?`<div class="tp-cluster" style="margin-top:var(--tp-space-sm)">${g[2]}</div>`:''}</section>`).join('')}</div>`}
