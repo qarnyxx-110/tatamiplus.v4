@@ -207,7 +207,8 @@ try {
     ['#/login?next=%23%2Fblog%2Fuchi-mata', '/auth/login/?next=%2Fblog%2Fuchi-mata%2F'],
     ['#/login?next=%23%2Fblog%2F%D8%A7%D9%88%DA%86%DB%8C-%D9%85%D8%A7%D8%AA%D8%A7', '/auth/login/?next=%2Fblog%2F%D8%A7%D9%88%DA%86%DB%8C-%D9%85%D8%A7%D8%AA%D8%A7%2F'],
     ['#/login?next=%23%2Fblog%2F..%2Fauth', '/auth/login/'],
-    ['#/login?next=%23%2Fblog%2Fone%2Ftwo', '/auth/login/']
+    ['#/login?next=%23%2Fblog%2Fone%2Ftwo', '/auth/login/'],
+    ['#/login?next=%23%2Fblog%2Fone%25252Ftwo', '/auth/login/']
   ];
   for (const [hash, expected] of authRoutes) {
     await page.evaluate(value => { location.hash = value; }, hash);
@@ -252,4 +253,4 @@ try {
 }
 
 if (failures.length) throw new Error(failures.join('\n\n'));
-console.log('Django Preview bridge browser checks: existing regression passed; blog routes, live search provenance and sample club details passed; auth routes: 9/9 passed');
+console.log('Django Preview bridge browser checks: existing regression passed; blog routes, live search provenance and sample club details passed; auth routes: 10/10 passed');
