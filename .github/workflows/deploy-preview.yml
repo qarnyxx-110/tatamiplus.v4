@@ -84,6 +84,10 @@ jobs:
         working-directory: shared
         run: node tests/card-layout.test.mjs
 
+      - name: Run Django Admin navigation browser regression tests
+        working-directory: shared
+        run: node tests/admin-navigation.test.mjs
+
       - name: Run Django browser runtime regression tests
         working-directory: shared
         run: node tests/django-ui.test.mjs
