@@ -70,7 +70,7 @@ try {
   const appHeadingRow = accountsGroup.locator("tr.tpa-app-heading-row");
   const appHeading = appHeadingRow.locator(".tpa-app-heading");
   const groupToggle = appHeading.locator(".tpa-group-toggle");
-  assert.equal(await appHeading.locator("a.section").textContent(), "حساب‌های کاربری");
+  assert.equal(await appHeading.locator("a.section .tpa-app-label").textContent(), "حساب‌های کاربری");
   assert.equal(await accountsGroup.locator("caption").textContent(), "حساب‌های کاربری");
   await groupToggle.click();
   await assert.equal(await accountsGroup.evaluate((el) => el.classList.contains("tpa-group-collapsed")), true);
