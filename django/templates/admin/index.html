@@ -1,0 +1,88 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block bodyclass %}{{ block.super }} tp-admin-index{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+  <span aria-current="page">داشبورد مدیریت</span>
+</div>
+{% endblock %}
+
+{% block content_title %}{% endblock %}
+
+{% block content %}
+<div id="content-main" class="tp-admin-dashboard">
+  <section class="tp-admin-welcome" aria-labelledby="tp-admin-page-title">
+    <div class="tp-admin-welcome-copy">
+      <p class="tp-admin-eyebrow">TATAMI PLUS · CONTROL CENTER</p>
+      <h1 id="tp-admin-page-title">مرکز مدیریت تاتامی پلاس</h1>
+      <p>از اینجا می‌توانید بخش‌های مختلف سامانه را مدیریت کنید. گزینه‌های نمایش‌داده‌شده بر اساس سطح دسترسی حساب شما هستند.</p>
+    </div>
+    <div class="tp-admin-welcome-side" aria-label="تعداد بخش‌های در دسترس">
+      <span class="tp-admin-welcome-mark" aria-hidden="true">道</span>
+      <span class="tp-admin-access-count">{{ app_list|length }}</span>
+      <span class="tp-admin-access-label">بخش در دسترس</span>
+    </div>
+  </section>
+
+  {% if app_list %}
+    <div class="tp-admin-section-heading">
+      <div>
+        <p class="tp-admin-eyebrow">WORKSPACE</p>
+        <h2>بخش‌های مدیریتی</h2>
+      </div>
+      <p>برای ورود به هر بخش، گزینه مدیریت را انتخاب کنید.</p>
+    </div>
+
+    <div class="tp-admin-app-grid">
+      {% for app in app_list %}
+        <section class="tp-admin-app-card app-{{ app.app_label }}" aria-label="{{ app.name }}">
+          <header class="tp-admin-app-heading">
+            <div class="tp-admin-app-heading-copy">
+              <span class="tp-admin-app-kicker">بخش مدیریتی</span>
+              <h2>{{ app.name }}</h2>
+            </div>
+            <span class="tp-admin-app-count">{{ app.models|length }} مورد</span>
+          </header>
+
+          <div class="tp-admin-model-list">
+            {% for model in app.models %}
+              <article class="tp-admin-model-row">
+                <div class="tp-admin-model-copy">
+                  {% if model.admin_url %}
+                    <a class="tp-admin-model-title" href="{{ model.admin_url }}">{{ model.name }}</a>
+                  {% else %}
+                    <span class="tp-admin-model-title">{{ model.name }}</span>
+                  {% endif %}
+                  {% if model.view_only %}
+                    <span class="tp-admin-model-hint">دسترسی مشاهده</span>
+                  {% else %}
+                    <span class="tp-admin-model-hint">مدیریت اطلاعات</span>
+                  {% endif %}
+                </div>
+                <div class="tp-admin-model-actions">
+                  {% if model.admin_url %}
+                    <a class="tp-admin-action tp-admin-action-primary" href="{{ model.admin_url }}">
+                      {% if model.view_only %}مشاهده{% else %}مدیریت{% endif %}
+                    </a>
+                  {% endif %}
+                  {% if model.add_url %}
+                    <a class="tp-admin-action tp-admin-action-secondary" href="{{ model.add_url }}">افزودن</a>
+                  {% endif %}
+                </div>
+              </article>
+            {% endfor %}
+          </div>
+        </section>
+      {% endfor %}
+    </div>
+  {% else %}
+    <section class="tp-admin-empty">
+      <span class="tp-admin-empty-mark" aria-hidden="true">!</span>
+      <h2>بخشی برای نمایش وجود ندارد</h2>
+      <p>حساب شما در حال حاضر به هیچ‌یک از بخش‌های مدیریت دسترسی ندارد. برای بررسی دسترسی‌ها با مدیر سامانه تماس بگیرید.</p>
+    </section>
+  {% endif %}
+</div>
+{% endblock %}
