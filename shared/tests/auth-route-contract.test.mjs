@@ -11,7 +11,9 @@ assert.ok(router.includes("'password-reset':0,'set-password':0"), 'Preview route
 assert.ok(router.includes("'password-reset','set-password'"), 'Live Preview interception must include the password routes');
 assert.match(bridge, /if \(route === 'blog'\) \{\s*return parts\[1\] \? '\/blog\/' \+ encodeURIComponent\(parts\[1\]\) \+ '\/' : '\/blog\/';\s*\}/);
 assert.ok(bridge.includes('account|blog|club'), 'Bridge URL allowlist must include the Django blog route');
-assert.ok(bridge.includes("case 'blog': return route[1] ? '/blog/' + encodeURIComponent(route[1]) + '/' : '/blog/';"), 'Safe next paths must preserve blog article routes');
+assert.ok(bridge.includes("case 'blog': {"), 'Safe next paths must handle blog routes explicitly');
+assert.ok(bridge.includes("slug = decodeURIComponent(route[1])"), 'Blog return slugs must be decoded before URLSearchParams encodes the next value');
+assert.ok(bridge.includes("route.length !== 2") && bridge.includes("slug === '..'") && bridge.includes("/[\\\\/\\\\\\\\?#]/.test(slug)"), 'Unsafe or multi-segment blog return paths must be rejected');
 assert.ok(router.includes("'set-password','blog','store'"), 'Live Preview interception must include Django blog pages');
 
 console.log('Django auth route contract: PASS');
