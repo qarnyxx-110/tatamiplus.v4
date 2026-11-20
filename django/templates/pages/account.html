@@ -44,7 +44,7 @@
             <p class="field-error">دلیل رد: {{ coach_portfolio.rejection_reason }}</p>
           {% endif %}
           <p class="field-help">اطلاعات قبلی حفظ شده‌اند و می‌توانید همان پورتفولیو را اصلاح و دوباره ارسال کنید.</p>
-          <p><a class="button button-dark" href="{% url 'coaches:apply' %}">اصلاح و ارسال دوباره</a></p>
+          <p><a class="button button-dark" href="{% url 'coaches:apply' %}">ویرایش و ارسال دوباره</a></p>
 
         {% elif coach_portfolio.status == 'draft' or coach_portfolio.status == 'incomplete' %}
           <p>پورتفولیوی شما هنوز برای بررسی ارسال نشده یا اطلاعات آن کامل نیست.</p>
