@@ -28,7 +28,7 @@
         {% if portfolio.rejection_reason %}<p>دلیل رد: {{ portfolio.rejection_reason }}</p>{% endif %}
         <p>می‌توانید اطلاعات را اصلاح و همان پورتفولیو را دوباره ارسال کنید. فایل مدرک قبلی تا زمان بارگذاری فایل تازه حفظ می‌شود.</p>
       </div>
-      <p class="pa"><a class="btn" href="{% url 'coaches:apply' %}">اصلاح و ارسال دوباره</a></p>
+      <p class="pa"><a class="btn" href="{% url 'coaches:apply' %}">ویرایش و ارسال دوباره</a></p>
 
     {% elif portfolio.status == 'draft' or portfolio.status == 'incomplete' %}
       <div class="tp-note">
