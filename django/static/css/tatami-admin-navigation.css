@@ -451,7 +451,7 @@
   font-weight: 800;
 }
 
-#nav-sidebar .tpa-nav-group.tpa-group-collapsed table tbody {
+#nav-sidebar .tpa-nav-group.tpa-group-collapsed table tbody > tr[class*="model-"] {
   display: none;
 }
 
