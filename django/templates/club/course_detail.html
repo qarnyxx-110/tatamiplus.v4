@@ -82,7 +82,7 @@
         {% if episode.can_watch %}
           <a class="btn s" href="{% url 'club:episode_play' episode.pk %}">تماشا</a>
         {% else %}
-          <span class="tp-episode-locked" aria-label="قفل‌شده">قفل‌شده</span>
+          <span class="tp-episode-locked" aria-label="قفل‌شده">قفل‌شده · با خرید دوره باز می‌شود</span>
         {% endif %}
       </div>
     {% empty %}
