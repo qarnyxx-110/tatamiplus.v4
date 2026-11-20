@@ -9,6 +9,7 @@ function sc(){const c=$('#cine');if(!c||matchMedia('(prefers-reduced-motion:redu
 addEventListener('hashchange',()=>R());addEventListener('scroll',sc,{passive:true});R();
 if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)&&!window.__ARTIFACT__){
  const registerTatamiServiceWorker=()=>navigator.serviceWorker.register(new URL('sw.js',document.baseURI),{scope:'./'}).then(registration=>{
+   if(!registration)return null;
    const requestActivation=worker=>{
     if(worker&&navigator.serviceWorker.controller)worker.postMessage({type:'TP_SKIP_WAITING'});
    };
