@@ -21,7 +21,7 @@ function searchView(){const raw=(hashParams().get('q')||'').slice(0,80),n=nz(raw
   if(allowed('store'))G.push(['محصولات',P.filter(p=>has(p.n+' '+p.c)).map(p=>[`#/product/${p.id}`,p.n,p.c]),`<button type="button" class="btn o s" onclick="searchAll('store')">همه در فروشگاه</button>`]);
   if(allowed('coaches'))G.push(['مربیان',COACHES.filter(c=>has([c.firstName,c.lastName,c.level,c.academySpecialty,...(c.specialties||[])].join(' '))).map(c=>[`#/coaches/${encodeURIComponent(c.slug)}`,c.firstName+' '+c.lastName,(c.specialties||[]).join('، ')]),`<a class="btn o s" href="#/coaches?q=${eq}">همه در مربیان</a>`]);
   if(allowed('blog')){
-   const isLiveDjangoPreview=['tatamiplus.ir','www.tatamiplus.ir'].includes(location.hostname.toLowerCase())&&/^\\/preview\\/?$/.test(location.pathname);
+   const isLiveDjangoPreview=['tatamiplus.ir','www.tatamiplus.ir'].includes(location.hostname.toLowerCase())&&(location.pathname==='/preview/'||location.pathname==='/preview');
    const articleHits=isLiveDjangoPreview?[]:BL.filter(b=>has([b.t,b.x,b.c].join(' '))).map(b=>[bLink(b),b.t,b.c||'مقاله']);
    const blogHits=[
     ...articleHits,
@@ -41,7 +41,7 @@ function searchView(){const raw=(hashParams().get('q')||'').slice(0,80),n=nz(raw
  const hit=G.filter(g=>g[1].length),total=hit.reduce((a,g)=>a+g[1].length,0);
  const sug=['اوچی‌ماتا','کیمونو','کمربند','ایپون','سارا احمدی','تهران'].map(t=>`<button type="button" class="chip" onclick="searchSet('${t}')">${t}</button>`).join('');
  const row=r=>`<a class="rec" href="${r[0]}"><b>${esc(r[1])}</b>${r[2]?`<span>${esc(r[2])}</span>`:''}</a>`;
- return`<div class="w"><h1>جستجو</h1><p class="mu">در فروشگاه، مربیان، وبلاگ، باشگاه مجازی${allowed('clubs')?' و باشگاه‌ها':''}.</p>${['tatamiplus.ir','www.tatamiplus.ir'].includes(location.hostname.toLowerCase())&&/^\\/preview\\/?$/.test(location.pathname)?'<p class="mu sm">مقاله‌های منتشرشدهٔ وبلاگ مستقیماً از Django دریافت می‌شوند؛ این جستجو فقط دانشنامهٔ محلی را بررسی می‌کند.</p>':''}
+ return`<div class="w"><h1>جستجو</h1><p class="mu">در فروشگاه، مربیان، وبلاگ، باشگاه مجازی${allowed('clubs')?' و باشگاه‌ها':''}.</p>${['tatamiplus.ir','www.tatamiplus.ir'].includes(location.hostname.toLowerCase())&&(location.pathname==='/preview/'||location.pathname==='/preview')?'<p class="mu sm">مقاله‌های منتشرشدهٔ وبلاگ مستقیماً از Django دریافت می‌شوند؛ این جستجو فقط دانشنامهٔ محلی را بررسی می‌کند.</p>':''}
  <div class="sbar" role="search"><label class="sr" for="sq">جستجو در کل سایت</label><input id="sq" type="search" placeholder="نام فن، محصول، مربی یا مقاله..." value="${esc(raw)}" oninput="searchSet(this.value)" autocomplete="off"></div>
  ${!n?`<p class="mu sm">پیشنهاد جستجو:</p><div class="chips">${sug}</div>`:`<p><b aria-live="polite">${total?F(total)+' نتیجه برای «'+esc(raw)+'»':'نتیجه‌ای برای «'+esc(raw)+'» پیدا نشد'}</b></p>`}
  ${n&&!total?`<div class="tp-state"><b>نتیجه‌ای پیدا نشد</b><p>املای کلمه را بررسی کنید یا عبارت کوتاه‌تری بنویسید. نام فن‌ها را می‌توانید فارسی، ژاپنی یا لاتین جستجو کنید.</p><div class="chips" style="justify-content:center">${sug}</div></div>`:''}
