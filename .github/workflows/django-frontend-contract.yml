@@ -240,7 +240,10 @@ jobs:
           blog_urls = Path("backend/blog/urls.py").read_text(encoding="utf-8")
           blog_views = Path("backend/blog/views.py").read_text(encoding="utf-8")
           bridge = Path("shared/src/js/shared/django-route-bridge.js").read_text(encoding="utf-8")
+          router = Path("shared/src/js/shared/router.js").read_text(encoding="utf-8")
           handoff = Path("django/STORE_CHECKOUT_FRONTEND_HANDOFF.md").read_text(encoding="utf-8")
+          blog_list = Path("django/templates/blog/post_list.html").read_text(encoding="utf-8")
+          blog_detail = Path("django/templates/blog/post_detail.html").read_text(encoding="utf-8")
 
           assert "path('login/', views.password_login, name='login')" in auth_urls
           assert "path('login/sms/', views.phone_login, name='sms_login')" in auth_urls
@@ -255,6 +258,13 @@ jobs:
           assert "const target = route === 'login' ? '/auth/login/' : '/auth/login/sms/';" in bridge
           assert "if (route === 'password-reset') return '/auth/password/reset/';" in bridge
           assert "if (route === 'set-password') return '/auth/password/set/';" in bridge
+          assert "if (route === 'blog') {" in bridge
+          assert "account|blog|club" in bridge
+          assert "'set-password','blog','store'" in router
+          assert "blog:detail" in blog_list and "tp-section-tabs" in blog_list
+          assert "tp-article" in blog_detail and "blog:list" in blog_detail
+          assert "coach-row" not in blog_list and "page-main" not in blog_list
+          assert "| #/blog و #/blog/<slug> | /blog/ و /blog/<str:slug>/؛ متصل به پل Preview |" in handoff
           assert "| #/login | /auth/login/؛ ورود با رمز |" in handoff
           assert "| #/register و #/role | /auth/login/sms/" in handoff
           print("DJANGO_FRONTEND_ROUTE_CONTRACT_OK")
@@ -290,7 +300,7 @@ jobs:
       - name: Compile templates and resolve required static assets
         working-directory: backend
         run: |
-          python manage.py shell -c "from django.template.loader import get_template; from django.contrib.staticfiles.finders import find; names=('base.html','layouts/auth.html','components/auth_aside.html','components/store_product_card.html','admin/base_site.html','pages/home.html','pages/account.html','store/product_list.html','store/product_detail.html','store/cart_detail.html','coaches/directory.html','coaches/profile_detail.html','coaches/join.html','coaches/join_enter.html','coaches/coach_students.html','club/course_list.html','club/course_detail.html','club/coach/episode_form.html','gems/history.html','accounts/login.html','accounts/otp_verify.html','accounts/complete_profile.html','accounts/password_reset.html','accounts/password_reset_confirm.html','accounts/set_password.html','coaches/join_enter.html','orders/mock_gateway.html','orders/address.html','orders/review.html','orders/payment_result.html','orders/order_list.html','orders/order_detail.html','includes/form_fields.html'); [get_template(name) for name in names]; assets=('css/tatami.css','css/tatami-admin.css','css/backend-templates.css','css/module-pages.css','css/home-restored.css','css/reference-store.css','js/tatami.js','js/module-pages.js','js/home-restored.js','js/reference-store.js','data/reference-store-catalog.json'); assert all(find(name) for name in assets); print('DJANGO_TEMPLATE_AND_STATIC_CHECK_OK')"
+          python manage.py shell -c "from django.template.loader import get_template; from django.contrib.staticfiles.finders import find; names=('base.html','layouts/auth.html','components/auth_aside.html','components/store_product_card.html','admin/base_site.html','blog/post_list.html','blog/post_detail.html','pages/home.html','pages/account.html','store/product_list.html','store/product_detail.html','store/cart_detail.html','coaches/directory.html','coaches/profile_detail.html','coaches/join.html','coaches/join_enter.html','coaches/coach_students.html','club/course_list.html','club/course_detail.html','club/coach/episode_form.html','gems/history.html','accounts/login.html','accounts/otp_verify.html','accounts/complete_profile.html','accounts/password_reset.html','accounts/password_reset_confirm.html','accounts/set_password.html','coaches/join_enter.html','orders/mock_gateway.html','orders/address.html','orders/review.html','orders/payment_result.html','orders/order_list.html','orders/order_detail.html','includes/form_fields.html'); [get_template(name) for name in names]; assets=('css/tatami.css','css/tatami-admin.css','css/backend-templates.css','css/module-pages.css','css/home-restored.css','css/reference-store.css','js/tatami.js','js/module-pages.js','js/home-restored.js','js/reference-store.js','data/reference-store-catalog.json'); assert all(find(name) for name in assets); print('DJANGO_TEMPLATE_AND_STATIC_CHECK_OK')"
 
       - name: Run backend tests with proposed frontend
         working-directory: backend
