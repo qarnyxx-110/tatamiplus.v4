@@ -16,25 +16,19 @@ const [script, ...styles] = await Promise.all([
   readFile(resolve(root, "css/tatami-admin-navigation-text.css"), "utf8")
 ]);
 
-const djangoSidebarCss = String.raw'
-.sticky { position: sticky; top: 0; max-height: 100vh; }
-.toggle-nav-sidebar {
-  z-index: 20; display: flex; align-items: center; justify-content: center;
-  flex: 0 0 23px; width: 23px; border: 0; padding: 0;
-}
-#nav-sidebar { z-index: 15; flex: 0 0 275px; overflow: auto; }
-[dir="rtl"] #nav-sidebar { right: -276px; margin-right: -276px; }
-.main > #nav-sidebar { visibility: hidden; }
-.main.shifted > #nav-sidebar { margin-right: 0; visibility: visible; }
-[dir="rtl"] .main.shifted > #nav-sidebar { margin-right: 0; }
-#nav-sidebar .module th { width: 100%; overflow-wrap: anywhere; }
-#nav-sidebar .module td { white-space: nowrap; }
-#nav-sidebar table { width: 100%; }
-@media (max-width: 767px) {
-  #nav-sidebar, #toggle-nav-sidebar { display: none; }
-  .main > #nav-sidebar + .content,
-  .main.shifted > #nav-sidebar + .content { max-width: 100%; }
-}';
+const djangoSidebarCss = [
+  ".sticky { position: sticky; top: 0; max-height: 100vh; }",
+  ".toggle-nav-sidebar { z-index: 20; display: flex; align-items: center; justify-content: center; flex: 0 0 23px; width: 23px; border: 0; padding: 0; }",
+  "#nav-sidebar { z-index: 15; flex: 0 0 275px; overflow: auto; }",
+  "[dir=\"rtl\"] #nav-sidebar { right: -276px; margin-right: -276px; }",
+  ".main > #nav-sidebar { visibility: hidden; }",
+  ".main.shifted > #nav-sidebar { margin-right: 0; visibility: visible; }",
+  "[dir=\"rtl\"] .main.shifted > #nav-sidebar { margin-right: 0; }",
+  "#nav-sidebar .module th { width: 100%; overflow-wrap: anywhere; }",
+  "#nav-sidebar .module td { white-space: nowrap; }",
+  "#nav-sidebar table { width: 100%; }",
+  "@media (max-width: 767px) { #nav-sidebar, #toggle-nav-sidebar { display: none; } .main > #nav-sidebar + .content, .main.shifted > #nav-sidebar + .content { max-width: 100%; } }"
+].join("\\n");
 
 const fixture = [
 '<!doctype html>',
