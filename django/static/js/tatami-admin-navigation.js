@@ -359,6 +359,13 @@
     collapseButton.textContent = areAllCollapsibleGroupsClosed()
       ? "بازکردن همه"
       : "جمع‌کردن همه";
+    groupRecords.forEach((record) => {
+      record.toggle.addEventListener("click", () => {
+        collapseButton.textContent = areAllCollapsibleGroupsClosed()
+          ? "بازکردن همه"
+          : "جمع‌کردن همه";
+      });
+    });
 
     // Command palette entries are sourced from actual permission-rendered anchors.
     const overlay = document.createElement("div");
@@ -469,7 +476,10 @@
           if (index === activeIndex) link.scrollIntoView({ block: "nearest" });
         });
       } else if (event.key === "Enter" && visibleItems[activeIndex]) {
-        window.location.href = visibleItems[activeIndex].href;
+        const selected = visibleItems[activeIndex];
+        recent = [selected, ...recent.filter((item) => item.href !== selected.href)].slice(0, 8);
+        writeStore(KEYS.recent, recent);
+        window.location.href = selected.href;
       } else if (event.key === "Escape") {
         event.preventDefault();
         closeCommand();
