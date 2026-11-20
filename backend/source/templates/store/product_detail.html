@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% load store_format %}
+
+{% block title %}{{ product.name }} | فروشگاه تاتامی پلاس{% endblock %}
+{% block content %}
+<main class="page-main product-detail">
+  <p class="eyebrow">{{ product.category.name }}</p>
+  <div class="product-detail-grid">
+    <section class="product-gallery" aria-label="تصاویر محصول">
+      {% for image in product.images.all %}
+        <img src="{{ image.image.url }}" alt="{{ image.alt_text|default:product.name }}">
+      {% empty %}
+        <div class="product-image product-image-large">تصویر محصول</div>
+      {% endfor %}
+    </section>
+    <section class="product-purchase">
+      <h1 class="page-title">{{ product.name }}</h1>
+      {% if product.training_level %}<p class="product-level">سطح تمرین: {{ product.training_level }}</p>{% endif %}
+      {% if product.description %}<div class="product-description">{{ product.description|linebreaks }}</div>{% endif %}
+      {% if starting_price %}<p class="product-price">از {{ starting_price|price_fa }}</p>{% endif %}
+      <form class="auth-form" method="post">
+        {% csrf_token %}
+        {% if form.non_field_errors %}<div class="form-errors">{{ form.non_field_errors }}</div>{% endif %}
+        {% for field in form %}
+          <div class="form-field">
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% for error in field.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+          </div>
+        {% endfor %}
+        <button class="button button-dark" type="submit">افزودن به سبد خرید</button>
+      </form>
+      <p class="currency-note">واحد پول قیمت‌ها هنوز نهایی نشده است.</p>
+    </section>
+  </div>
+</main>
+{% endblock %}

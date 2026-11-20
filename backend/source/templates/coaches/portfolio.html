@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% load persian %}
+
+{% block title %}پورتفولیوی عمومی من | تاتامی پلاس{% endblock %}
+{% block content %}
+<main class="page-main shop-main">
+  <p class="eyebrow">پنل مربی</p>
+  <h1 class="page-title">پورتفولیوی عمومی من</h1>
+  <p class="page-copy">
+    این اطلاعات در صفحهٔ عمومی شما به هنرجوها نمایش داده می‌شود.
+    ذخیره‌کردن فرم، پورتفولیو را منتشر نمی‌کند؛ انتشار را تیم تاتامی پلاس انجام می‌دهد.
+  </p>
+
+  <section class="coach-status" aria-label="وضعیت انتشار">
+    <div class="status-head">
+      <h2>وضعیت انتشار</h2>
+      {% if profile.is_published %}
+        <span class="status-chip status-approved">منتشر شده</span>
+      {% else %}
+        <span class="status-chip status-pending_review">در انتظار انتشار</span>
+      {% endif %}
+    </div>
+    {% if profile.is_published %}
+      <p class="field-help">
+        صفحهٔ شما برای همه قابل دیدن است.
+        <a class="text-link" href="{% url 'club:coach_detail' profile.pk %}">دیدن صفحهٔ عمومی</a>
+      </p>
+    {% else %}
+        <p class="field-help">
+        پورتفولیوی شما ذخیره می‌شود اما تا زمان انتشار توسط تیم در فهرست مربیان دیده نمی‌شود.
+      </p>
+    {% endif %}
+  </section>
+
+  <nav class="panel-links" aria-label="بخش‌های پنل مربی">
+    <a class="text-link" href="{% url 'coach_panel:course_list' %}">دوره‌های من</a>
+    <a class="text-link" href="{% url 'coach_students:list' %}">هنرجوها و کدهای دعوت</a>
+    <a class="text-link" href="{% url 'coaches:application_status' %}">وضعیت درخواست</a>
+  </nav>
+
+  <form class="auth-form" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {% if form.non_field_errors %}<div class="form-errors">{{ form.non_field_errors }}</div>{% endif %}
+    {% for field in form %}
+      <div class="form-field">
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% if field.help_text %}<div class="field-help">{{ field.help_text }}</div>{% endif %}
+        {% for error in field.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+      </div>
+    {% endfor %}
+    <button class="button button-dark" type="submit">ذخیرهٔ پورتفولیو</button>
+  </form>
+</main>
+{% endblock %}

@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% load store_format %}
+
+{% block title %}فروشگاه | تاتامی پلاس{% endblock %}
+{% block content %}
+<main class="page-main shop-main">
+  <p class="eyebrow">تجهیزات مسیر تمرین</p>
+  <h1 class="page-title">فروشگاه تاتامی</h1>
+  <p class="page-copy">محصول موردنظرت را جست‌وجو و بر اساس ویژگی‌های موجود فیلتر کن.</p>
+
+  <form class="shop-filters" method="get">
+    <div class="filter-search">
+      <label for="id_query">جست‌وجوی محصول</label>
+      {{ form.query }}
+    </div>
+    <div class="filter-grid">
+      <div class="form-field"><label for="id_category">دسته‌بندی</label>{{ form.category }}</div>
+      <div class="form-field"><label for="id_size">سایز</label>{{ form.size }}</div>
+      <div class="form-field"><label for="id_color">رنگ</label>{{ form.color }}</div>
+      <div class="form-field"><label for="id_training_level">سطح</label>{{ form.training_level }}</div>
+      <div class="form-field"><label for="id_min_price">حداقل قیمت</label>{{ form.min_price }}</div>
+      <div class="form-field"><label for="id_max_price">حداکثر قیمت</label>{{ form.max_price }}</div>
+      <div class="form-field"><label for="id_sort">مرتب‌سازی</label>{{ form.sort }}</div>
+    </div>
+    {% if form.errors %}<p class="field-error">مقادیر فیلتر را بررسی کن.</p>{% endif %}
+    <div class="filter-actions">
+      <button class="button button-dark" type="submit">اعمال فیلتر</button>
+      <a class="text-link" href="{% url 'store:product_list' %}">پاک‌کردن فیلترها</a>
+    </div>
+  </form>
+
+  {% if page.object_list %}
+    <section class="product-grid" aria-label="محصولات فروشگاه">
+      {% for product in page %}
+        <article class="product-item">
+          <a class="product-image" href="{% url 'store:product_detail' product.slug %}">
+            {% with image=product.images.all|first %}
+              {% if image %}<img src="{{ image.image.url }}" alt="{{ image.alt_text|default:product.name }}">
+              {% else %}<span>تصویر محصول</span>{% endif %}
+            {% endwith %}
+          </a>
+          <div class="product-info">
+            <p class="product-category">{{ product.category.name }}</p>
+            <h2><a href="{% url 'store:product_detail' product.slug %}">{{ product.name }}</a></h2>
+            {% if product.training_level %}<p class="product-level">سطح: {{ product.training_level }}</p>{% endif %}
+            <p class="product-price">از {{ product.starting_price|price_fa }}</p>
+          </div>
+        </article>
+      {% endfor %}
+    </section>
+    <p class="currency-note">واحد پول قیمت‌ها پیش از ورود اطلاعات نهایی فروشگاه باید مشخص شود.</p>
+    {% if page.has_other_pages %}
+      <nav class="pagination" aria-label="صفحه‌بندی محصولات">
+        {% if page.has_previous %}<a href="?{{ request.GET.urlencode }}&page={{ page.previous_page_number }}">قبلی</a>{% endif %}
+        <span>صفحهٔ {{ page.number|price_fa }} از {{ page.paginator.num_pages|price_fa }}</span>
+        {% if page.has_next %}<a href="?{{ request.GET.urlencode }}&page={{ page.next_page_number }}">بعدی</a>{% endif %}
+      </nav>
+    {% endif %}
+  {% else %}
+    <section class="empty-state" aria-live="polite">
+      <span class="empty-index">فهرست محصولات</span>
+      <h2>محصولی برای نمایش وجود ندارد</h2>
+      <p>پس از ثبت اطلاعات واقعی محصولات و موجودی آن‌ها، فهرست فروشگاه اینجا نمایش داده می‌شود.</p>
+    </section>
+  {% endif %}
+</main>
+{% endblock %}

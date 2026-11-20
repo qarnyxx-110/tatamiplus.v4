@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ profile.display_name }} | تاتامی پلاس{% endblock %}
+{% block content %}
+<main class="page-main">
+  <p class="eyebrow">مربی</p>
+  <h1 class="page-title">{{ profile.display_name }}</h1>
+  <p class="page-copy">{{ profile.headline }}</p>
+
+  <section class="cart-summary">
+    {% if profile.belt %}<p>درجه: {{ profile.belt }}</p>{% endif %}
+    {% if profile.club %}<p>باشگاه: {{ profile.club }}</p>{% endif %}
+    <p>{{ profile.biography|linebreaks }}</p>
+    <a class="text-link" href="{% url 'coaches:profile_detail' profile.pk %}">صفحهٔ پروفایل کامل</a>
+  </section>
+
+  <h2>دوره‌های {{ profile.display_name }}</h2>
+  {% if courses %}
+    <section class="coach-list" aria-label="دوره‌های مربی">
+      {% for course in courses %}
+        <a class="coach-row" href="{% url 'club:course_detail' course.slug %}">
+          <span><strong>{{ course.title }}</strong><small>{{ course.get_level_display }}</small></span>
+          <span class="arrow" aria-hidden="true">&larr;</span>
+        </a>
+      {% endfor %}
+    </section>
+  {% else %}
+    <p>این مربی هنوز دورهٔ منتشرشده‌ای ندارد.</p>
+  {% endif %}
+</main>
+{% endblock %}

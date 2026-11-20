@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}ورود | تاتامی پلاس{% endblock %}
+{% block content %}
+<main class="page-main auth-main">
+  <p class="eyebrow">ورود به تاتامی پلاس</p>
+  <h1 class="page-title">{% if mode == 'sms' %}ورود یا ثبت‌نام با پیامک{% else %}ورود با رمز عبور{% endif %}</h1>
+  <p class="page-copy">
+    {% if mode == 'sms' %}
+      اگر حساب نداری یا هنوز رمز نساخته‌ای، شماره‌ات را وارد کن تا یک کد یک‌بارمصرف بفرستیم.
+    {% else %}
+      با شمارهٔ همراه و رمز عبورت وارد شو. پیامک فقط برای ثبت‌نام و بازیابی رمز استفاده می‌شود.
+    {% endif %}
+  </p>
+
+  <nav class="auth-tabs" aria-label="روش ورود">
+    <a class="auth-tab {% if mode != 'sms' %}is-active{% endif %}" href="{% url 'phone_auth:login' %}">ورود با رمز</a>
+    <a class="auth-tab {% if mode == 'sms' %}is-active{% endif %}" href="{% url 'phone_auth:sms_login' %}">ورود / ثبت‌نام با پیامک</a>
+  </nav>
+
+  <form class="auth-form" method="post">
+    {% csrf_token %}
+    {% if form.non_field_errors %}<div class="form-errors">{{ form.non_field_errors }}</div>{% endif %}
+    {% for field in form %}
+      {% if field.is_hidden %}
+        {{ field }}
+      {% else %}
+        <div class="form-field">
+          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+          {% if field.help_text %}<div class="field-help">{{ field.help_text }}</div>{% endif %}
+          {% for error in field.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
+      {% endif %}
+    {% endfor %}
+    <button class="button button-dark" type="submit">
+      {% if mode == 'sms' %}دریافت کد{% else %}ورود{% endif %}
+    </button>
+  </form>
+
+  {% if mode == 'sms' %}
+    <p class="account-login">
+      اگر قبلاً رمز ساخته‌ای، <a href="{% url 'phone_auth:login' %}">با رمز وارد شو</a>.
+    </p>
+  {% else %}
+    <p class="account-login">
+      <a href="{% url 'phone_auth:password_reset' %}">رمز عبورم را فراموش کرده‌ام</a>
+    </p>
+  {% endif %}
+</main>
+{% endblock %}

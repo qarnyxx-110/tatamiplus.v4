@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}نشانی ارسال | تاتامی پلاس{% endblock %}
+{% block content %}
+<main class="page-main shop-main">
+  <p class="eyebrow">تسویه‌حساب</p>
+  <h1 class="page-title">نشانی ارسال</h1>
+  <p class="page-copy">یک نشانی از فهرست انتخاب کنید یا نشانی تازه ثبت کنید. بدون نشانی، سفارش ثبت نمی‌شود.</p>
+
+  {% if addresses %}
+    <section class="cart-list" aria-label="نشانی‌های ذخیره‌شده">
+      {% for address in addresses %}
+        <form class="cart-row" method="post">
+          {% csrf_token %}
+          <div class="cart-item-name">
+            <h2>{{ address.province }}، {{ address.city }}</h2>
+            <p>{{ address.full_address }}</p>
+            <p>کد پستی: {{ address.postal_code }}{% if address.receiver_name %} — گیرنده: {{ address.receiver_name }}{% endif %}</p>
+            {% if address.is_default %}<p class="field-help">نشانی پیش‌فرض</p>{% endif %}
+          </div>
+          <input type="hidden" name="address_id" value="{{ address.pk }}">
+          <button class="button button-dark" type="submit">ارسال به این نشانی</button>
+        </form>
+      {% endfor %}
+    </section>
+  {% endif %}
+
+  <section>
+    <h2>{% if addresses %}ثبت نشانی تازه{% else %}نشانی تازه{% endif %}</h2>
+    <form class="auth-form" method="post">
+      {% csrf_token %}
+      {% if form.non_field_errors %}<div class="form-errors">{{ form.non_field_errors }}</div>{% endif %}
+      {% for field in form %}
+        <div class="form-field">
+          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+          {% for error in field.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+          {% if field.help_text %}<small class="field-help">{{ field.help_text }}</small>{% endif %}
+        </div>
+      {% endfor %}
+      <button class="button button-dark" type="submit">ذخیره و ادامه</button>
+    </form>
+  </section>
+</main>
+{% endblock %}

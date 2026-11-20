@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block title %}تأیید شمارهٔ همراه | تاتامی پلاس{% endblock %}
+{% block content %}
+<main class="page-main auth-main">
+  <p class="eyebrow">تأیید شمارهٔ همراه</p>
+  <h1 class="page-title">کد را وارد کن</h1>
+  <p class="page-copy">کد پنج‌رقمی برای شمارهٔ {{ phone_hint }} ارسال شد و تا دو دقیقه معتبر است.</p>
+  {% if error %}<p class="field-error">{{ error }}</p>{% endif %}
+  <form class="auth-form" method="post" action="{% url 'phone_auth:verify_otp' %}">
+    {% csrf_token %}
+    <div class="form-field">
+      <label for="id_code">کد یک‌بارمصرف</label>
+      {{ form.code }}
+      {% for field_error in form.code.errors %}<p class="field-error">{{ field_error }}</p>{% endfor %}
+    </div>
+    <button class="button button-dark" type="submit">تأیید و ادامه</button>
+  </form>
+  <form class="resend-form" method="post" action="{% url 'phone_auth:send_otp' %}">
+    {% csrf_token %}
+    <button class="text-link" type="submit">ارسال دوبارهٔ کد</button>
+  </form>
+</main>
+{% endblock %}

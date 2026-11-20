@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% load store_format %}
+
+{% block title %}بازبینی سفارش | تاتامی پلاس{% endblock %}
+{% block content %}
+<main class="page-main shop-main">
+  <p class="eyebrow">تسویه‌حساب</p>
+  <h1 class="page-title">بازبینی سفارش</h1>
+
+  <section class="cart-list" aria-label="اقلام سفارش">
+    {% for item in items %}
+      <article class="cart-row">
+        <div class="cart-item-name">
+          <h2>{{ item.variant.product.name }}</h2>
+          <p>{{ item.variant.size }}{% if item.variant.color %}، {{ item.variant.color }}{% endif %}</p>
+          <p>{{ item.variant.price|price_fa }} × {{ item.quantity|price_fa }} = {{ item.subtotal|price_fa }}</p>
+        </div>
+      </article>
+    {% endfor %}
+  </section>
+
+  <section class="cart-summary">
+    <h2>نشانی ارسال</h2>
+    <p>{{ address.province }}، {{ address.city }}</p>
+    <p>{{ address.full_address }}</p>
+    <p>کد پستی: {{ address.postal_code }}{% if address.receiver_name %} — گیرنده: {{ address.receiver_name }}{% endif %}</p>
+    <a class="text-link" href="{% url 'orders:address' %}">تغییر نشانی</a>
+  </section>
+
+  <section class="cart-summary">
+    <p>جمع اقلام: <strong>{{ subtotal|price_fa }}</strong> تومان</p>
+    <p>هزینهٔ ارسال: <strong>{{ shipping|price_fa }}</strong> تومان</p>
+    <p>مبلغ قابل پرداخت: <strong>{{ total|price_fa }}</strong> تومان</p>
+  </section>
+
+  {% if problems %}
+    <section class="form-errors" role="alert">
+      <p>پیش از پرداخت، این موارد را اصلاح کنید:</p>
+      {% for item, reason in problems %}
+        <p>{{ item.variant.product.name }}: {{ reason }}</p>
+      {% endfor %}
+    </section>
+    <a class="button button-dark" href="{% url 'store:cart' %}">بازگشت به سبد خرید</a>
+  {% else %}
+    <form method="post" action="{% url 'orders:pay' %}">
+      {% csrf_token %}
+      <button class="button button-dark" type="submit">پرداخت و ثبت سفارش</button>
+    </form>
+  {% endif %}
+</main>
+{% endblock %}

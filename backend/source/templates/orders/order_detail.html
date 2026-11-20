@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% load store_format %}
+{% load persian %}
+{% load jformat %}
+
+{% block title %}سفارش {{ order.number }} | تاتامی پلاس{% endblock %}
+{% block content %}
+<main class="page-main shop-main">
+  <p class="eyebrow">سفارش</p>
+  <h1 class="page-title">{{ order.number }}</h1>
+  <p class="page-copy">
+    وضعیت: {{ order.get_status_display }} —
+    ثبت در {{ order.created_at|jformat:'%Y/%m/%d %H:%M'|persian_digits }}
+  </p>
+
+  <section class="cart-list" aria-label="اقلام سفارش">
+    {% for item in order.items.all %}
+      <article class="cart-row">
+        <div class="cart-item-name">
+          <h2>{{ item.product_name }}</h2>
+          <p>{{ item.size }}{% if item.color %}، {{ item.color }}{% endif %}</p>
+          <p>{{ item.unit_price|price_fa }} × {{ item.quantity|price_fa }} = {{ item.subtotal|price_fa }}</p>
+        </div>
+      </article>
+    {% endfor %}
+  </section>
+
+  <section class="cart-summary">
+    <p>جمع اقلام: <strong>{{ order.subtotal|price_fa }}</strong> تومان</p>
+    <p>هزینهٔ ارسال: <strong>{{ order.shipping_cost|price_fa }}</strong> تومان</p>
+    <p>مبلغ کل: <strong>{{ order.total|price_fa }}</strong> تومان</p>
+    {% if order.payment %}
+      <p>کد پیگیری: {{ order.payment.ref_id|default:'—' }}</p>
+    {% endif %}
+  </section>
+
+  <section class="cart-summary">
+    <h2>نشانی ارسال</h2>
+    <p>{{ order.province }}، {{ order.city }}</p>
+    <p>{{ order.full_address }}</p>
+    <p>کد پستی: {{ order.postal_code }}{% if order.receiver_name %} — گیرنده: {{ order.receiver_name }}{% endif %}</p>
+    {% if order.receiver_phone %}<p>همراه گیرنده: {{ order.receiver_phone }}</p>{% endif %}
+  </section>
+
+  <p><a class="text-link" href="{% url 'orders:list' %}">بازگشت به فهرست سفارش‌ها</a></p>
+</main>
+{% endblock %}

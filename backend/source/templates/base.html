@@ -1,0 +1,46 @@
+{% load static %}
+{% load persian %}
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f6f5f0">
+  <title>{% block title %}Tatami Plus{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+  <header class="site-header">
+    <a class="wordmark" href="{% url 'home' %}" aria-label="تاتامی پلاس، صفحهٔ اصلی">TATAMI<span>+</span></a>
+    <nav class="site-nav" aria-label="منوی اصلی">
+      <a href="{% url 'home' %}">صفحهٔ اصلی</a>
+      <a href="{% url 'coaches:directory' %}">مربیان</a>
+      <a href="{% url 'store:product_list' %}">فروشگاه</a>
+      <a href="{% url 'club:course_list' %}">باشگاه مجازی</a>
+      <a href="{% url 'blog:list' %}">وبلاگ</a>
+      <a href="{% url 'store:cart' %}">سبد خرید</a>
+      <a href="{% url 'account' %}">حساب کاربری</a>
+      {% if user.is_authenticated %}
+      <a class="gem-chip" href="{% url 'gems:history' %}" title="جم‌های من">{{ gem_balance|persian_digits }} جم</a>
+      <a href="{% url 'orders:list' %}">سفارش‌ها</a>
+      <form class="nav-form" method="post" action="{% url 'accounts:logout' %}">
+        {% csrf_token %}
+        <button class="nav-button" type="submit">خروج</button>
+      </form>
+      {% else %}
+      <a href="{% url 'phone_auth:login' %}">ورود</a>
+      {% endif %}
+    </nav>
+  </header>
+  {% if messages %}
+    <div class="messages" role="status">
+      {% for message in messages %}<p class="message {{ message.tags }}">{{ message }}</p>{% endfor %}
+    </div>
+  {% endif %}
+  {% block content %}{% endblock %}
+  <footer class="site-footer">
+    <span>TATAMI PLUS</span>
+    <span>{% block footer_note %}نسخهٔ آزمایشی{% endblock %}</span>
+  </footer>
+</body>
+</html>

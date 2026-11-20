@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% load persian %}
+
+{% block title %}عضویت در فهرست هنرجویان {{ invite.coach.display_name }} | تاتامی پلاس{% endblock %}
+{% block content %}
+<main class="page-main">
+  <p class="eyebrow">دعوت مربی</p>
+
+  <section class="join-coach" aria-label="مشخصات مربی">
+    {% if invite.coach.avatar %}
+      <img class="join-avatar" src="{{ invite.coach.avatar.url }}" alt="{{ invite.coach.display_name }}">
+    {% else %}
+      <span class="join-avatar join-avatar-empty" aria-hidden="true">{{ invite.coach.display_name|slice:':1' }}</span>
+    {% endif %}
+    <div>
+      <h1 class="page-title">{{ invite.coach.display_name }}</h1>
+      {% if invite.coach.headline %}<p class="page-copy">{{ invite.coach.headline }}</p>{% endif %}
+      {% if invite.coach.belt or invite.coach.club %}
+        <p class="field-help">
+          {% if invite.coach.belt %}{{ invite.coach.belt }}{% endif %}
+          {% if invite.coach.belt and invite.coach.club %} — {% endif %}
+          {% if invite.coach.club %}{{ invite.coach.club }}{% endif %}
+        </p>
+      {% endif %}
+    </div>
+  </section>
+
+  <section class="cart-summary">
+    <p>
+      با کد <strong>{{ invite.code }}</strong>
+      {% if invite.label %}({{ invite.label }}){% endif %}
+      به فهرست هنرجویان این مربی اضافه می‌شوید.
+    </p>
+    <p class="field-help">
+      {% if invite.max_uses %}
+        {{ invite.remaining_uses|persian_digits }} جای خالی از {{ invite.max_uses|persian_digits }} باقی مانده است.
+      {% else %}
+        این کد محدودیت تعداد ندارد.
+      {% endif %}
+    </p>
+
+    {% if already %}
+      <p class="field-help">شما از قبل در فهرست هنرجویان این مربی هستید.</p>
+      <p><a class="button button-dark" href="{% url 'club:coach_detail' invite.coach_id %}">دیدن صفحهٔ مربی</a></p>
+    {% elif not invite.is_usable %}
+      <p class="field-error">این کد دیگر قابل استفاده نیست. از مربی یک کد تازه بگیرید.</p>
+      <p><a class="text-link" href="{% url 'coaches:enter_code' %}">وارد کردن کد تازه</a></p>
+    {% else %}
+      <form method="post">
+        {% csrf_token %}
+        <button class="button button-dark" type="submit">عضویت در فهرست هنرجویان</button>
+      </form>
+    {% endif %}
+  </section>
+
+  <p><a class="text-link" href="{% url 'coaches:directory' %}">بازگشت به فهرست مربیان</a></p>
+</main>
+{% endblock %}

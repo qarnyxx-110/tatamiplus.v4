@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block title %}مربیان | تاتامی پلاس{% endblock %}
+{% block content %}
+<main class="page-main">
+  <p class="eyebrow">همراهان مسیر تمرین</p>
+  <h1 class="page-title">مربیان را بشناس</h1>
+  <p class="page-copy">فقط مربیانی که تأیید شده‌اند و تیم تاتامی پلاس برایشان پروفایل عمومی ساخته است، در این فهرست دیده می‌شوند.</p>
+  {% if profiles %}
+    <section class="coach-list" aria-label="مربیان تأییدشده">
+      {% for profile in profiles %}
+        <a class="coach-row" href="{% url 'coaches:profile_detail' profile.pk %}">
+          <span class="coach-index">{{ forloop.counter|stringformat:'02d' }}</span>
+          <span><strong>{{ profile.display_name }}</strong><small>{{ profile.headline }}</small></span>
+          <span class="arrow" aria-hidden="true">&larr;</span>
+        </a>
+      {% endfor %}
+    </section>
+  {% else %}
+    <section class="empty-state" aria-live="polite">
+      <span class="empty-index">فهرست مربیان</span>
+      <h2>پورتفولیوهای مربیان اینجا نمایش داده می‌شود</h2>
+      <p>هنوز پروفایل عمومیِ تأییدشده‌ای وجود ندارد.</p>
+    </section>
+  {% endif %}
+
+  <p class="account-login">
+    کد دعوت یک مربی را دارید؟
+    <a href="{% url 'coaches:enter_code' %}">کد را وارد کنید</a>
+  </p>
+</main>
+{% endblock %}

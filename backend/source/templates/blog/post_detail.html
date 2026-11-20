@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% load jformat %}
+{% load persian %}
+
+{% block title %}{{ post.title }} | وبلاگ تاتامی پلاس{% endblock %}
+{% block content %}
+<main class="page-main">
+  <p class="eyebrow"><a class="text-link" href="{% url 'blog:list' %}">وبلاگ</a></p>
+  <h1 class="page-title">{{ post.title }}</h1>
+  <p class="page-copy">
+    {% if post.published_at %}{{ post.published_at|jformat:'%Y/%m/%d'|persian_digits }}{% endif %}
+    {% if post.author %} — نوشتهٔ {{ post.author.first_name|default:post.author.phone }}{% endif %}
+  </p>
+
+  {% if post.cover %}
+    <img class="course-cover" src="{{ post.cover.url }}" alt="{{ post.title }}">
+  {% endif %}
+
+  {% if post.excerpt %}
+    <p class="page-copy"><strong>{{ post.excerpt }}</strong></p>
+  {% endif %}
+  <article class="page-copy">{{ post.body|linebreaks }}</article>
+
+  <p class="account-login">
+    <a href="{% url 'blog:list' %}">بازگشت به فهرست مطالب</a>
+  </p>
+</main>
+{% endblock %}

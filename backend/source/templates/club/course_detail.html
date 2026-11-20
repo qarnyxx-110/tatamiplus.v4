@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% load store_format %}
+{% load persian %}
+{% load club_format %}
+
+{% block title %}{{ course.title }} | تاتامی پلاس{% endblock %}
+{% block content %}
+<main class="page-main shop-main">
+  <p class="eyebrow">باشگاه مجازی</p>
+  <h1 class="page-title">{{ course.title }}</h1>
+  <p class="page-copy">
+    <a class="text-link" href="{% url 'club:coach_detail' course.coach.pk %}">{{ course.coach.display_name }}</a>
+    — {{ course.get_level_display }}
+    — {% if course.price > 0 %}{{ course.price|price_fa }} تومان{% else %}رایگان{% endif %}
+  </p>
+
+  {% if course.cover %}
+    <img class="course-cover" src="{{ course.cover.url }}" alt="{{ course.title }}">
+  {% endif %}
+
+  <p>{{ course.description|linebreaks }}</p>
+
+  <section class="cart-list" aria-label="قسمت‌های دوره">
+    {% for episode in episodes %}
+      <article class="cart-row">
+        <div class="cart-item-name">
+          <h2>{{ episode.order }}. {{ episode.title }}</h2>
+          <p>
+            {{ episode.duration|duration_mmss|persian_digits }} دقیقه{% if episode.is_free %} — رایگان{% endif %}
+            {% if episode.completed %} — <span class="lesson-done">تمام‌شده</span>{% endif %}
+          </p>
+        </div>
+        {% if episode.can_watch %}
+          <a class="text-link" href="{% url 'club:episode_play' episode.pk %}">تماشا</a>
+        {% else %}
+          <span class="field-help">با خرید دوره باز می‌شود</span>
+        {% endif %}
+      </article>
+    {% empty %}
+      <p>هنوز قسمتی برای این دوره ثبت نشده است.</p>
+    {% endfor %}
+  </section>
+
+  <section class="cart-summary">
+    {% if owner %}
+      <p>شما مربی این دوره هستید و به همهٔ قسمت‌ها دسترسی دارید.</p>
+      <a class="text-link" href="{% url 'coach_panel:course_edit' course.pk %}">ویرایش دوره در پنل مربی</a>
+    {% elif enrolled %}
+      <p>شما این دوره را تهیه کرده‌اید و به همهٔ قسمت‌ها دسترسی دارید.</p>
+    {% elif course.price > 0 %}
+      <p>برای دسترسی به همهٔ قسمت‌ها، دوره را تهیه کنید.</p>
+      <form method="post" action="{% url 'club:buy_course' course.slug %}">
+        {% csrf_token %}
+        <button class="button button-dark" type="submit">خرید دوره — {{ course.price|price_fa }} تومان</button>
+      </form>
+    {% else %}
+      <form method="post" action="{% url 'club:buy_course' course.slug %}">
+        {% csrf_token %}
+        <button class="button button-dark" type="submit">فعال‌سازی دسترسی رایگان</button>
+      </form>
+    {% endif %}
+  </section>
+</main>
+{% endblock %}

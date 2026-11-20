@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% load store_format %}
+
+{% block title %}باشگاه مجازی | تاتامی پلاس{% endblock %}
+{% block content %}
+<main class="page-main shop-main">
+  <p class="eyebrow">باشگاه مجازی</p>
+  <h1 class="page-title">دوره‌های تمرین</h1>
+  <p class="page-copy">قسمت اول هر دوره رایگان است؛ برای دیدن بقیهٔ قسمت‌ها، دوره را تهیه کنید.</p>
+
+  <form class="cart-summary" method="get">
+    <div class="form-field">
+      <label for="{{ form.coach.id_for_label }}">{{ form.coach.label }}</label>
+      {{ form.coach }}
+    </div>
+    <div class="form-field">
+      <label for="{{ form.level.id_for_label }}">{{ form.level.label }}</label>
+      {{ form.level }}
+    </div>
+    <div class="form-field">
+      <label for="{{ form.q.id_for_label }}">{{ form.q.label }}</label>
+      {{ form.q }}
+    </div>
+    <button class="button button-dark" type="submit">فیلتر</button>
+  </form>
+
+  {% if page.object_list %}
+    <section class="coach-list" aria-label="دوره‌ها">
+      {% for course in page.object_list %}
+        <a class="coach-row" href="{% url 'club:course_detail' course.slug %}">
+          <span><strong>{{ course.title }}</strong><small>{{ course.coach.display_name }} — {{ course.get_level_display }}</small></span>
+          <span>{% if course.price > 0 %}{{ course.price|price_fa }} تومان{% else %}رایگان{% endif %}</span>
+        </a>
+      {% endfor %}
+    </section>
+
+    {% if page.has_other_pages %}
+      <nav class="cart-summary" aria-label="صفحه‌بندی">
+        {% if page.has_previous %}<a class="text-link" href="?page={{ page.previous_page_number }}">قبلی</a>{% endif %}
+        <span>صفحهٔ {{ page.number }} از {{ page.paginator.num_pages }}</span>
+        {% if page.has_next %}<a class="text-link" href="?page={{ page.next_page_number }}">بعدی</a>{% endif %}
+      </nav>
+    {% endif %}
+  {% else %}
+    <section class="empty-state">
+      <span class="empty-index">باشگاه مجازی</span>
+      <h2>هنوز دورهٔ منتشرشده‌ای وجود ندارد</h2>
+      <p>دوره‌های مربیان پس از تأیید تیم تاتامی پلاس در این بخش نمایش داده می‌شوند.</p>
+      <a class="button button-dark" href="{% url 'coaches:directory' %}">دیدن مربیان</a>
+    </section>
+  {% endif %}
+</main>
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends 'admin/base.html' %}
+{% load i18n %}
+
+{% block branding %}
+  {{ block.super }}
+  {% if new_coach_leads_count %}
+    <a class="call-center-lead-count" href="{% url 'admin:accounts_signuplead_changelist' %}">
+      سرنخ‌های جدید مربی: {{ new_coach_leads_count }}
+    </a>
+  {% endif %}
+{% endblock %}

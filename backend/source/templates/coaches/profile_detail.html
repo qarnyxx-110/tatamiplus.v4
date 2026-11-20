@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ profile.display_name }} | مربیان تاتامی پلاس{% endblock %}
+{% block content %}
+<main class="page-main">
+  <p class="eyebrow">مربی تأییدشدهٔ تاتامی پلاس</p>
+  <h1 class="page-title">{{ profile.display_name }}</h1>
+  {% if profile.headline %}<p class="page-copy">{{ profile.headline }}</p>{% endif %}
+  <section class="empty-state coach-bio">
+    <span class="empty-index">پورتفولیوی مربی</span>
+    <p>{{ profile.biography|linebreaks }}</p>
+  </section>
+  <p class="account-login"><a href="{% url 'coaches:directory' %}">بازگشت به فهرست مربیان</a></p>
+</main>
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block title %}ساخت حساب کاربری | تاتامی پلاس{% endblock %}
+{% block content %}
+<main class="page-main auth-main">
+  <p class="eyebrow">حساب کاربری تاتامی پلاس</p>
+  <h1 class="page-title">ساخت حساب کاربری</h1>
+  <p class="page-copy">هنرجو یا مربی را انتخاب کن. پروفایل مربی پس از بررسی تیم منتشر می‌شود.</p>
+  <form class="auth-form" method="post">
+    {% csrf_token %}
+    {% if form.non_field_errors %}<div class="form-errors">{{ form.non_field_errors }}</div>{% endif %}
+    {% for field in form %}
+      <div class="form-field">
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% if field.help_text %}<div class="field-help">{{ field.help_text|safe }}</div>{% endif %}
+        {% for error in field.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+      </div>
+    {% endfor %}
+    <button class="button button-dark" type="submit">ثبت‌نام</button>
+  </form>
+  <p class="account-login">قبلاً ثبت‌نام کرده‌ای؟ <a href="{% url 'accounts:login' %}">وارد شو</a></p>
+</main>
+{% endblock %}

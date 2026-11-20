@@ -1,0 +1,11 @@
+Pinned backend source snapshot
+Repository: https://github.com/Radinsharifi/Tatami-demo
+Revision: 20e96721cc1a589d625fecd3fffa9ec42b1fc64f
+Legacy migration snapshot: 4c0b8baf1bf31f7a274bd0fa27ebe5826131f0c9
+
+All files under backend/source/ are the pinned Radin Django backend snapshot.
+They are backend application code, Django Admin, server-rendered templates,
+and backend static assets, not a frontend SPA.
+Legacy migrations required for safe upgrades live under backend/legacy_migrations/.
+The cPanel workflow overlays the approved Tatami Plus Django templates/static and
+combines the pinned source with compatibility migrations before testing and packaging.

@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% load store_format %}
+
+{% block title %}درگاه آزمایشی | تاتامی پلاس{% endblock %}
+{% block content %}
+<main class="page-main shop-main">
+  <p class="eyebrow">درگاه آزمایشی</p>
+  <h1 class="page-title">پرداخت آزمایشی</h1>
+  <p class="page-copy">
+    این صفحه جایگزین درگاه واقعی است و هیچ پولی جابه‌جا نمی‌شود.
+    یکی از دو دکمه را بزنید تا مسیر موفق یا ناموفق را ببینید.
+  </p>
+
+  <section class="cart-summary">
+    <p>شناسهٔ تراکنش: <code>{{ payment.authority }}</code></p>
+    <p>مبلغ: <strong>{{ payment.amount|price_fa }}</strong> تومان</p>
+  </section>
+
+  <div class="cart-summary">
+    <a class="button button-dark" href="{{ ok_url }}">پرداخت موفق (آزمایشی)</a>
+    <a class="text-link" href="{{ fail_url }}">پرداخت ناموفق (آزمایشی)</a>
+  </div>
+</main>
+{% endblock %}
