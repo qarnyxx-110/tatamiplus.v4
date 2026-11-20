@@ -262,6 +262,8 @@ jobs:
           assert "return parts[1] ? '/blog/' + encodeURIComponent(parts[1]) + '/' : '/blog/';" in bridge
           assert "case 'blog': {" in bridge and "slug = decodeURIComponent(route[1])" in bridge
           assert "^[\\\\p{L}\\\\p{M}\\\\p{N}_-]+$" in bridge
+          assert "function isSafeBlogSlug(value)" in bridge
+          assert "parts.length !== 2 || !isSafeBlogSlug(parts[1])" in bridge
           assert "account|blog|club" in bridge
           assert "'set-password','blog','store'" in router
           assert "blog:detail" in blog_list and "tp-section-tabs" in blog_list
