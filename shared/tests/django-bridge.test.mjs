@@ -15,6 +15,7 @@ let browser = null;
 let postMode = 'success';
 let logoutPostCount = 0;
 let logoutCsrfSeen = '';
+const legacyAuthRequests = [];
 
 const serverNavItems = [
   ['/', 'خانه'], ['/store/', 'فروشگاه'], ['/preview/#/online-coach', 'مربی آنلاین'],
@@ -238,6 +239,16 @@ try {
     });
   });
 
+  await page.route('**/auth/login/**', async route => {
+    const url = new URL(route.request().url());
+    legacyAuthRequests.push({ pathname: url.pathname, search: url.search });
+    await route.fulfill({
+      status: 200,
+      contentType: 'text/html; charset=utf-8',
+      body: documentHtml('<h1 id="legacy-auth-target">' + url.pathname + url.search + '</h1>', 'ورود واقعی', false)
+    });
+  });
+
 
   await page.goto(`${base}/preview/#/store`, { waitUntil: 'load' });
   await initialHydrationStarted;
@@ -443,6 +454,44 @@ try {
   assert.equal(await page.locator('#nv a[href="#/store"]').count(), 1);
   assert.equal(await page.locator('footer a[href="#/store"]').count(), 1);
   assert.equal(await page.locator('#mndf a[href="#/login"]').count(), 1);
+
+  // Legacy Preview registration is redirected to Django SMS signup with role and checkout return path.
+  await page.evaluate(() => { location.hash = '#/online-coach?next=%23%2Fcheckout'; });
+  await page.waitForFunction(() =>
+    location.hash === '#/online-coach?next=%23%2Fcheckout' &&
+    !document.getElementById('app')?.hasAttribute('data-django-view')
+  );
+  await page.evaluate(() => {
+    const form = document.createElement('form');
+    form.id = 'rg-f';
+    form.innerHTML = '<input type="radio" name="role" value="student"><input type="radio" name="role" value="coach" checked><button type="submit">ثبت‌نام</button>';
+    document.getElementById('app').append(form);
+  });
+  await page.locator('#rg-f button[type="submit"]').click();
+  await page.locator('#legacy-auth-target').waitFor({ state: 'visible' });
+  assert.deepEqual(legacyAuthRequests.at(-1), {
+    pathname: '/auth/login/sms/',
+    search: '?role=coach&next=%2Fcheckout%2Faddress%2F'
+  }, 'legacy registration must use the Django SMS route, preserve the chosen role, and retain checkout return path');
+
+  // Legacy password login must use the real Django login page rather than the SMS signup page.
+  await page.evaluate(() => { location.hash = '#/online-coach?next=%23%2Fcheckout'; });
+  await page.waitForFunction(() =>
+    location.hash === '#/online-coach?next=%23%2Fcheckout' &&
+    !document.getElementById('app')?.hasAttribute('data-django-view')
+  );
+  await page.evaluate(() => {
+    const form = document.createElement('form');
+    form.id = 'lg-f';
+    form.innerHTML = '<button type="submit">ورود</button>';
+    document.getElementById('app').append(form);
+  });
+  await page.locator('#lg-f button[type="submit"]').click();
+  await page.locator('#legacy-auth-target').waitFor({ state: 'visible' });
+  assert.deepEqual(legacyAuthRequests.at(-1), {
+    pathname: '/auth/login/',
+    search: '?next=%2Fcheckout%2Faddress%2F'
+  }, 'legacy password login must use the Django password route and preserve checkout return path');
 
   assert.deepEqual(failures, [], 'Preview and Django route transitions must not produce browser runtime errors');
   await page.close();
