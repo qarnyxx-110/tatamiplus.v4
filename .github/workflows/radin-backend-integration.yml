@@ -26,9 +26,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          git clone --no-checkout https://github.com/Radinsharifi/Tatami-demo.git backend
-          git -C backend checkout --detach 20e96721cc1a589d625fecd3fffa9ec42b1fc64f
-          git -C backend fetch --depth=1 origin 4c0b8baf1bf31f7a274bd0fa27ebe5826131f0c9
+          git clone --no-checkout https://github.com/Radinsharifi/Tatami-demo.git radin-backend
+          git -C radin-backend checkout --detach 20e96721cc1a589d625fecd3fffa9ec42b1fc64f
+          git -C radin-backend fetch --depth=1 origin 4c0b8baf1bf31f7a274bd0fa27ebe5826131f0c9
 
       - name: Restore deployed migration history and add data-preserving upgrade migrations
         shell: bash
@@ -36,7 +36,7 @@ jobs:
           set -euo pipefail
           LEGACY=4c0b8baf1bf31f7a274bd0fa27ebe5826131f0c9
 
-          rm -f backend/coaches/migrations/*.py
+          rm -f radin-backend/coaches/migrations/*.py
           for path in \
             coaches/migrations/__init__.py \
             coaches/migrations/0001_initial.py \
@@ -44,39 +44,39 @@ jobs:
             coaches/migrations/0003_alter_coachapplication_reviewed_at_and_more.py \
             coaches/migrations/0004_coachprofile_avatar_coachprofile_belt_and_more.py \
             coaches/migrations/0005_coachinvite_coachstudent.py; do
-            mkdir -p "backend/$(dirname "$path")"
-            git -C backend show "$LEGACY:$path" > "backend/$path"
+            mkdir -p "radin-backend/$(dirname "$path")"
+            git -C radin-backend show "$LEGACY:$path" > "radin-backend/$path"
           done
 
-          rm -f backend/club/migrations/*.py
+          rm -f radin-backend/club/migrations/*.py
           for path in \
             club/migrations/__init__.py \
             club/migrations/0001_initial.py \
             club/migrations/0002_episodecompletion.py; do
-            mkdir -p "backend/$(dirname "$path")"
-            git -C backend show "$LEGACY:$path" > "backend/$path"
+            mkdir -p "radin-backend/$(dirname "$path")"
+            git -C radin-backend show "$LEGACY:$path" > "radin-backend/$path"
           done
 
-          cp backend/compat_migrations/coaches/0006_unify_coach_portfolio.py backend/coaches/migrations/
-          cp backend/compat_migrations/club/0003_course_coach_portfolio.py backend/club/migrations/
-          cp backend/compat_migrations/coaches/0007_remove_legacy_coach_models.py backend/coaches/migrations/
-          cp backend/compat_tests/coaches/test_portfolio_migration.py backend/coaches/test_portfolio_migration.py
+          cp backend/compat_migrations/coaches/0006_unify_coach_portfolio.py radin-backend/coaches/migrations/
+          cp backend/compat_migrations/club/0003_course_coach_portfolio.py radin-backend/club/migrations/
+          cp backend/compat_migrations/coaches/0007_remove_legacy_coach_models.py radin-backend/coaches/migrations/
+          cp backend/compat_tests/coaches/test_portfolio_migration.py radin-backend/coaches/test_portfolio_migration.py
 
       - name: Overlay the Tatami Plus Django templates and static assets
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p backend/templates backend/static
-          cp -a django/templates/. backend/templates/
-          cp -a django/static/. backend/static/
+          mkdir -p radin-backend/templates radin-backend/static
+          cp -a django/templates/. radin-backend/templates/
+          cp -a django/static/. radin-backend/static/
 
       - name: Install backend dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install -r backend/requirements.txt
+          python -m pip install -r radin-backend/requirements.txt
 
       - name: Check migration state and Django configuration
-        working-directory: backend
+        working-directory: radin-backend
         env:
           DJANGO_DEBUG: "1"
           DJANGO_SECRET_KEY: "ci-only-secret-key"
@@ -88,7 +88,7 @@ jobs:
           python manage.py makemigrations --check --dry-run
 
       - name: Apply all migrations to a clean database
-        working-directory: backend
+        working-directory: radin-backend
         env:
           DJANGO_DEBUG: "1"
           DJANGO_SECRET_KEY: "ci-only-secret-key"
@@ -97,7 +97,7 @@ jobs:
         run: python manage.py migrate --noinput
 
       - name: Run backend unit, admin, and migration-preservation tests
-        working-directory: backend
+        working-directory: radin-backend
         env:
           DJANGO_DEBUG: "1"
           DJANGO_SECRET_KEY: "ci-only-secret-key"
@@ -109,9 +109,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          cp backend/tools/apply_backend_upgrade.py backend/apply_backend_upgrade.py
-          cp backend/README-FA.md backend/BACKEND-UPGRADE-README-FA.md
-          cat > backend/CPANEL-INSTALL-FA.txt <<'EOF'
+          cp backend/tools/apply_backend_upgrade.py radin-backend/apply_backend_upgrade.py
+          cp backend/README-FA.md radin-backend/BACKEND-UPGRADE-README-FA.md
+          cat > radin-backend/CPANEL-INSTALL-FA.txt <<'EOF'
           بستهٔ ارتقای بک‌اند Django تاتامی پلاس
           =======================================
 
@@ -160,7 +160,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          cd backend
+          cd radin-backend
           zip -qr "$GITHUB_WORKSPACE/TatamiPlus-Radin-Backend-cPanel-2026-11-20.zip" . \
             -x ".git/*" \
                "config/settings.py" \
