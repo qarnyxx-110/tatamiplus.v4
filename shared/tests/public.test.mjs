@@ -378,7 +378,21 @@ export async function runPwa(app,base,browser,altRoot){
   const updateState=await pg.evaluate(async()=>{
    const registration=await navigator.serviceWorker.getRegistration();
    if(!registration)return{registration:false,controllerChanged:false,error:'no registration'};
-   let timer=0;
+   let timer=0,ackTimer=0;
+   const activationAck=new Promise(resolve=>{
+    const onMessage=event=>{
+     if(event.data&&event.data.type==='TP_SKIP_WAITING_ACK'){
+      navigator.serviceWorker.removeEventListener('message',onMessage);
+      if(ackTimer)clearTimeout(ackTimer);
+      resolve({received:true,state:event.data.state||null});
+     }
+    };
+    navigator.serviceWorker.addEventListener('message',onMessage);
+    ackTimer=setTimeout(()=>{
+     navigator.serviceWorker.removeEventListener('message',onMessage);
+     resolve({received:false,state:null});
+    },4000);
+   });
    const controllerChanged=new Promise(resolve=>{
     const onChange=()=>{if(timer)clearTimeout(timer);resolve(true)};
     navigator.serviceWorker.addEventListener('controllerchange',onChange,{once:true});
@@ -389,9 +403,11 @@ export async function runPwa(app,base,browser,altRoot){
     return{registration:true,controllerChanged:false,error:String(error)};
    }
    const changed=await controllerChanged;
+   const ack=await activationAck;
    const latest=await navigator.serviceWorker.getRegistration();
    return{
     registration:true,
+    activationAck:ack,
     controllerChanged:changed,
     active:latest?.active?.state||null,
     installing:latest?.installing?.state||null,

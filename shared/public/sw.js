@@ -7,7 +7,13 @@ self.addEventListener('install',e=>{e.waitUntil((async()=>{
  results.forEach((result,index)=>{if(result.status==='rejected')console.warn('[Tatami SW] optional route was not precached:',routes[index],result.reason)});
  })().catch(error=>{console.error('[Tatami SW] install failed',error);throw error}))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==V).map(x=>caches.delete(x)))).then(()=>self.clients.claim()))});
-self.addEventListener('message',e=>{if(e.data&&e.data.type==='TP_SKIP_WAITING')e.waitUntil(self.skipWaiting())});
+self.addEventListener('message',e=>{
+ if(!e.data||e.data.type!=='TP_SKIP_WAITING')return;
+ const source=e.source;
+ e.waitUntil(self.skipWaiting().then(()=>{
+  if(source)source.postMessage({type:'TP_SKIP_WAITING_ACK',state:self.state});
+ }));
+});
 self.addEventListener('fetch',e=>{const r=e.request;if(r.method!=='GET')return;
 if(r.mode==='navigate'){e.respondWith(fetch(r).then(x=>{const u=new URL(r.url),root=new URL('./',self.registration.scope).pathname;if(x.ok&&(u.pathname===root||u.pathname===root+'index.html')){const c=x.clone();caches.open(V).then(h=>h.put('index.html',c))}return x}).catch(()=>caches.match(r).then(cached=>cached||caches.match('index.html').then(x=>x||caches.match('offline.html')))));return}
 e.respondWith(caches.match(r).then(c=>c||fetch(r).then(x=>{if(x.ok&&(new URL(r.url).origin===location.origin||/fonts\.(googleapis|gstatic)\.com/.test(r.url))){const y=x.clone();caches.open(V).then(h=>h.put(r,y))}return x}).catch(()=>c)))});
