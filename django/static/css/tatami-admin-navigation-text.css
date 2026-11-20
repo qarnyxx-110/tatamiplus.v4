@@ -23,8 +23,10 @@
   grid-template-columns: minmax(0, 1fr) 28px 34px;
   grid-template-rows: minmax(54px, auto);
   align-items: stretch;
-  width: 100%;
-  min-width: 0;
+  box-sizing: border-box;
+  width: 100% !important;
+  min-width: 100%;
+  max-width: 100%;
   gap: 0;
   padding: 0;
   direction: rtl;
