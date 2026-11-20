@@ -205,7 +205,9 @@ try {
     ['#/password-reset', '/auth/password/reset/'],
     ['#/set-password', '/auth/password/set/'],
     ['#/login?next=%23%2Fblog%2Fuchi-mata', '/auth/login/?next=%2Fblog%2Fuchi-mata%2F'],
-    ['#/login?next=%23%2Fblog%2F%D8%A7%D9%88%DA%86%DB%8C-%D9%85%D8%A7%D8%AA%D8%A7', '/auth/login/?next=%2Fblog%2F%D8%A7%D9%88%DA%86%DB%8C-%D9%85%D8%A7%D8%AA%D8%A7%2F']
+    ['#/login?next=%23%2Fblog%2F%D8%A7%D9%88%DA%86%DB%8C-%D9%85%D8%A7%D8%AA%D8%A7', '/auth/login/?next=%2Fblog%2F%D8%A7%D9%88%DA%86%DB%8C-%D9%85%D8%A7%D8%AA%D8%A7%2F'],
+    ['#/login?next=%23%2Fblog%2F..%2Fauth', '/auth/login/'],
+    ['#/login?next=%23%2Fblog%2Fone%2Ftwo', '/auth/login/']
   ];
   for (const [hash, expected] of authRoutes) {
     await page.evaluate(value => { location.hash = value; }, hash);
@@ -226,4 +228,4 @@ try {
 }
 
 if (failures.length) throw new Error(failures.join('\n\n'));
-console.log('Django Preview bridge browser checks: existing regression passed; blog routes: list/detail/Persian slug passed; auth routes: 7/7 passed');
+console.log('Django Preview bridge browser checks: existing regression passed; blog routes: list/detail/Persian slug passed; auth routes: 9/9 passed');
