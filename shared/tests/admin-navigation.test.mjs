@@ -67,12 +67,19 @@ try {
 
   // Group collapse opens and closes without changing the native links.
   const accountsGroup = nav.locator(".app-accounts");
-  const groupToggle = accountsGroup.locator(".tpa-group-toggle");
+  const appHeadingRow = accountsGroup.locator("tr.tpa-app-heading-row");
+  const appHeading = appHeadingRow.locator(".tpa-app-heading");
+  const groupToggle = appHeading.locator(".tpa-group-toggle");
+  assert.equal(await appHeading.locator("a.section").textContent(), "حساب‌های کاربری");
+  assert.equal(await accountsGroup.locator("caption").textContent(), "حساب‌های کاربری");
   await groupToggle.click();
   await assert.equal(await accountsGroup.evaluate((el) => el.classList.contains("tpa-group-collapsed")), true);
   await assert.equal(await groupToggle.getAttribute("aria-expanded"), "false");
+  await assert.equal(await appHeadingRow.isVisible(), true);
+  await assert.equal(await accountsGroup.locator("tr.model-user").isVisible(), false);
   await groupToggle.click();
   await assert.equal(await accountsGroup.evaluate((el) => el.classList.contains("tpa-group-collapsed")), false);
+  await assert.equal(await accountsGroup.locator("tr.model-user").isVisible(), true);
 
   // Bulk collapse respects the current group and communicates its next action.
   const collapseAll = page.locator(".tpa-collapse-all");
