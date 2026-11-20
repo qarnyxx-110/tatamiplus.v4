@@ -1,0 +1,47 @@
+name: Django Admin navigation browser validation
+
+'on':
+  push:
+    branches:
+      - main
+      - "feat/**"
+    paths:
+      - "django/static/js/tatami-admin-navigation.js"
+      - "django/static/css/tatami-admin-navigation.css"
+      - "shared/tests/admin-navigation.test.mjs"
+      - ".github/workflows/admin-navigation-validation.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "django/static/js/tatami-admin-navigation.js"
+      - "django/static/css/tatami-admin-navigation.css"
+      - "shared/tests/admin-navigation.test.mjs"
+      - ".github/workflows/admin-navigation-validation.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  browser:
+    name: Verify Django Admin navigation interactions
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install browser-test dependencies
+        working-directory: shared
+        run: |
+          npm install --no-package-lock --no-audit --no-fund
+          npx playwright install --with-deps chromium
+
+      - name: Run Admin navigation browser regression
+        working-directory: shared
+        run: node tests/admin-navigation.test.mjs
