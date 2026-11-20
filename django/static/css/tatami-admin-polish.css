@@ -1,0 +1,848 @@
+/* Package builder revision: 2026-11-20.2 */
+/* Tatami Plus Admin Visual Polish — consistent spacing, sizing and interaction states.
+   Presentation only. Django forms, actions, URLs, data and permissions are unchanged. */
+:root {
+  --tpa-space-1: 4px;
+  --tpa-space-2: 8px;
+  --tpa-space-3: 12px;
+  --tpa-space-4: 16px;
+  --tpa-space-5: 20px;
+  --tpa-space-6: 24px;
+  --tpa-space-7: 32px;
+  --tpa-space-8: 40px;
+  --tpa-radius-sm: 8px;
+  --tpa-radius-md: 11px;
+  --tpa-radius-lg: 15px;
+  --tpa-radius-xl: 19px;
+  --tpa-control-height: 42px;
+  --tpa-button-height: 40px;
+  --tpa-text-xs: 11px;
+  --tpa-text-sm: 12px;
+  --tpa-text-md: 13px;
+  --tpa-text-base: 14px;
+  --tpa-text-lg: 16px;
+  --tpa-text-xl: 21px;
+  --tpa-line: 1px solid var(--tp-admin-border);
+  --tpa-shadow-soft: 0 5px 18px rgb(0 0 0 / 10%);
+  --tpa-shadow-raised: 0 10px 26px rgb(0 0 0 / 16%);
+  --tpa-transition: 150ms ease;
+}
+
+/* Rhythm and typography */
+body {
+  font-size: var(--tpa-text-base);
+  line-height: 1.75;
+  letter-spacing: 0;
+}
+
+#content,
+#content-main,
+#changelist,
+#changelist-form,
+#changelist-form .results,
+#content-related {
+  min-width: 0;
+}
+
+#content h1,
+#content-main h1 {
+  margin-block: 0 var(--tpa-space-6);
+  font-size: clamp(21px, 2vw, 27px);
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+#content h2,
+#content-main h2 {
+  font-size: var(--tpa-text-lg);
+  font-weight: 800;
+  line-height: 1.5;
+}
+
+#content h3,
+#content-main h3 {
+  font-size: var(--tpa-text-base);
+  font-weight: 700;
+}
+
+#content p,
+#content li {
+  line-height: 1.85;
+}
+
+a,
+button,
+input,
+select,
+textarea {
+  transition:
+    color var(--tpa-transition),
+    background-color var(--tpa-transition),
+    border-color var(--tpa-transition),
+    box-shadow var(--tpa-transition),
+    transform var(--tpa-transition);
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--tp-admin-brand-text);
+  outline-offset: 3px;
+}
+
+/* Header, account tools and breadcrumbs */
+#header {
+  min-height: 78px;
+  padding: 12px clamp(18px, 2.5vw, 36px);
+  gap: var(--tpa-space-6);
+}
+
+.tp-admin-brand a {
+  gap: var(--tpa-space-3);
+}
+
+.tp-admin-brand-mark {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--tpa-radius-md);
+}
+
+.tp-admin-brand-copy {
+  gap: 3px;
+}
+
+.tp-admin-brand-copy strong {
+  font-size: 17px;
+  line-height: 1.4;
+}
+
+#user-tools {
+  font-size: var(--tpa-text-sm);
+  line-height: 1.8;
+}
+
+#user-tools a {
+  display: inline-block;
+  padding: 2px 3px;
+  text-underline-offset: 3px;
+}
+
+.tp-admin-lead-notice {
+  min-height: 36px;
+  padding: 6px 11px;
+  border-radius: 999px;
+  gap: var(--tpa-space-2);
+}
+
+div.breadcrumbs {
+  min-height: 42px;
+  padding: 10px clamp(18px, 2.5vw, 36px);
+  font-size: var(--tpa-text-sm);
+}
+
+/* Navigation: calm density, consistent clickable targets and current state. */
+#nav-sidebar {
+  padding: var(--tpa-space-4) 12px var(--tpa-space-7);
+}
+
+#nav-sidebar #nav-filter {
+  min-height: var(--tpa-control-height);
+  margin-bottom: var(--tpa-space-4);
+  padding-inline: 13px;
+  border-radius: var(--tpa-radius-md);
+}
+
+#nav-sidebar .module,
+#nav-sidebar .app-list,
+#nav-sidebar .app-accounts,
+#nav-sidebar .app-auth,
+#nav-sidebar .app-club,
+#nav-sidebar .app-coaches,
+#nav-sidebar .app-gems,
+#nav-sidebar .app-orders,
+#nav-sidebar .app-store,
+#nav-sidebar .app-blog {
+  margin-bottom: var(--tpa-space-3);
+  padding: 5px;
+  border-radius: var(--tpa-radius-md);
+  box-shadow: none;
+}
+
+#nav-sidebar .app-list a,
+#nav-sidebar .current-app .section,
+#nav-sidebar .current-model {
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: var(--tpa-radius-sm);
+  font-size: var(--tpa-text-sm);
+  line-height: 1.65;
+}
+
+#nav-sidebar .app-list li {
+  margin: 2px 0;
+}
+
+#nav-sidebar .current-app > a,
+#nav-sidebar .current-app > a.section {
+  font-weight: 800;
+}
+
+#nav-sidebar .current-model {
+  margin-block: 2px;
+  border-inline-start-width: 3px;
+  font-weight: 700;
+}
+
+#nav-sidebar .toggle-nav-sidebar,
+.toggle-nav-sidebar {
+  width: 38px;
+  min-width: 38px;
+  height: 38px;
+  min-height: 38px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: var(--tpa-radius-sm);
+}
+
+/* Dashboard cards: aligned headers, controlled padding and balanced density. */
+.tp-admin-dashboard {
+  gap: var(--tpa-space-7);
+}
+
+.tp-admin-welcome {
+  min-height: 176px;
+  padding: clamp(24px, 3vw, 36px);
+  border-radius: var(--tpa-radius-xl);
+  box-shadow: var(--tpa-shadow-raised);
+}
+
+.tp-admin-welcome h1 {
+  margin: 0 0 var(--tpa-space-2);
+  font-size: clamp(23px, 2.5vw, 30px);
+  line-height: 1.5;
+}
+
+.tp-admin-welcome-copy > p:last-child {
+  font-size: var(--tpa-text-md);
+  line-height: 1.9;
+}
+
+.tp-admin-welcome-side {
+  gap: 3px;
+}
+
+.tp-admin-section-heading {
+  margin-bottom: calc(var(--tpa-space-2) * -1);
+}
+
+.tp-admin-section-heading h2 {
+  font-size: 19px;
+  line-height: 1.5;
+}
+
+.tp-admin-section-heading > p {
+  font-size: var(--tpa-text-sm);
+}
+
+.tp-admin-app-grid {
+  gap: var(--tpa-space-4);
+}
+
+.tp-admin-app-card {
+  border-radius: var(--tpa-radius-lg);
+  box-shadow: var(--tpa-shadow-soft);
+  transition:
+    border-color var(--tpa-transition),
+    box-shadow var(--tpa-transition),
+    transform var(--tpa-transition);
+}
+
+.tp-admin-app-card:hover {
+  box-shadow: var(--tpa-shadow-raised);
+  transform: translateY(-1px);
+}
+
+.tp-admin-app-heading {
+  min-height: 68px;
+  padding: 14px 18px;
+  gap: var(--tpa-space-3);
+}
+
+.tp-admin-app-heading h2 {
+  font-size: var(--tpa-text-base);
+  line-height: 1.5;
+}
+
+.tp-admin-app-kicker {
+  margin-bottom: 4px;
+  font-size: 10px;
+}
+
+.tp-admin-app-count {
+  min-height: 27px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.tp-admin-model-list {
+  padding-inline: 16px;
+}
+
+.tp-admin-model-row {
+  min-height: 64px;
+  padding-block: 11px;
+  gap: var(--tpa-space-4);
+}
+
+.tp-admin-model-copy {
+  gap: 4px;
+}
+
+.tp-admin-model-title {
+  font-size: var(--tpa-text-md);
+  line-height: 1.65;
+}
+
+.tp-admin-model-hint {
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.tp-admin-model-actions {
+  gap: var(--tpa-space-2);
+}
+
+.tp-admin-action {
+  min-width: 72px;
+  min-height: 36px;
+  padding: 7px 12px;
+  border-radius: var(--tpa-radius-sm);
+  font-size: var(--tpa-text-sm);
+}
+
+/* All general-purpose surfaces use one border, radius and shadow language. */
+.module,
+.inline-group,
+#changelist,
+#changelist-filter,
+#toolbar,
+#changelist-form .results,
+fieldset,
+.submit-row,
+.paginator {
+  border-radius: var(--tpa-radius-md) !important;
+  box-shadow: var(--tpa-shadow-soft);
+}
+
+.module h2,
+.module caption,
+.inline-group h2,
+#changelist-filter h2,
+.selector .selector-available h2,
+.selector .selector-chosen h2 {
+  min-height: 46px;
+  display: flex;
+  align-items: center;
+  padding: 11px 15px;
+  font-size: var(--tpa-text-md);
+  line-height: 1.55;
+}
+
+.module table,
+#changelist table {
+  width: 100%;
+}
+
+.module table th,
+.module table td,
+#changelist table th,
+#changelist table td {
+  padding: 11px 13px;
+  font-size: var(--tpa-text-sm);
+  line-height: 1.7;
+}
+
+#changelist table thead th {
+  height: 46px;
+  font-size: var(--tpa-text-xs);
+  letter-spacing: .1px;
+}
+
+#changelist table tbody tr {
+  min-height: 48px;
+}
+
+#changelist table tbody tr td:first-child {
+  border-inline-start: 0;
+}
+
+#changelist table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+#changelist .actions {
+  min-height: 48px;
+  padding: 8px 11px;
+  border-radius: var(--tpa-radius-md);
+  gap: var(--tpa-space-2);
+}
+
+#changelist .actions label,
+#changelist .actions select,
+#changelist .actions button,
+#changelist .actions .button {
+  margin: 0;
+}
+
+/* Search bars and filters */
+#toolbar {
+  padding: 12px;
+  border-radius: var(--tpa-radius-md);
+}
+
+#toolbar form,
+#changelist-search form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--tpa-space-2);
+}
+
+#changelist-search {
+  margin-bottom: var(--tpa-space-3);
+}
+
+#changelist-search input[type="text"],
+#changelist-search input[type="search"],
+#toolbar input[type="text"],
+#toolbar input[type="search"] {
+  min-width: min(260px, 100%);
+}
+
+#changelist-filter {
+  padding: 0 0 var(--tpa-space-3);
+  border-radius: var(--tpa-radius-md);
+}
+
+#changelist-filter h2 {
+  margin: 0;
+  border-radius: var(--tpa-radius-md) var(--tpa-radius-md) 0 0;
+}
+
+#changelist-filter h3 {
+  margin: var(--tpa-space-3) 13px var(--tpa-space-1);
+  font-size: var(--tpa-text-xs);
+  font-weight: 800;
+}
+
+#changelist-filter li {
+  padding: 5px 13px;
+  font-size: var(--tpa-text-sm);
+}
+
+#changelist-filter a {
+  display: inline-block;
+  padding-block: 2px;
+  line-height: 1.7;
+}
+
+#changelist-filter li.selected {
+  margin-inline: 5px;
+  border-radius: var(--tpa-radius-sm);
+}
+
+/* Forms: measured vertical rhythm, clear labels and consistent control sizing. */
+fieldset {
+  margin-bottom: var(--tpa-space-4);
+  padding: 15px 17px;
+}
+
+fieldset h2 {
+  margin: -15px -17px var(--tpa-space-3);
+  padding: 12px 16px;
+}
+
+.form-row,
+fieldset .form-row {
+  min-height: 54px;
+  padding: 12px 0;
+}
+
+.aligned label,
+.form-row label,
+label {
+  font-size: var(--tpa-text-sm);
+  line-height: 1.7;
+}
+
+.form-row .help,
+.help,
+p.help,
+div.help,
+.helptext {
+  margin-top: 5px;
+  font-size: var(--tpa-text-xs);
+  line-height: 1.8;
+}
+
+input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="file"]),
+textarea,
+select,
+.vTextField,
+.vLargeTextField,
+.related-widget-wrapper select {
+  min-height: var(--tpa-control-height);
+  padding: 8px 11px;
+  border-radius: var(--tpa-radius-sm) !important;
+  font-size: var(--tpa-text-sm);
+  line-height: 1.5;
+}
+
+textarea,
+.vLargeTextField {
+  min-height: 116px;
+  padding-block: 10px;
+  line-height: 1.8;
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+  width: 16px;
+  height: 16px;
+  vertical-align: middle;
+}
+
+input[type="file"] {
+  min-height: 40px;
+  padding: 7px 9px;
+  border-radius: var(--tpa-radius-sm);
+  font-size: var(--tpa-text-xs);
+}
+
+.selector {
+  gap: var(--tpa-space-3);
+}
+
+.selector select {
+  min-height: 190px;
+  padding: 7px;
+  border-radius: var(--tpa-radius-sm) !important;
+}
+
+.related-widget-wrapper {
+  display: inline-flex;
+  max-width: 100%;
+  align-items: center;
+  gap: var(--tpa-space-2);
+}
+
+.related-widget-wrapper a {
+  display: inline-flex;
+  min-width: 30px;
+  min-height: 30px;
+  align-items: center;
+  justify-content: center;
+  border: var(--tpa-line);
+  border-radius: var(--tpa-radius-sm);
+  background: var(--tp-admin-surface-raised);
+  text-decoration: none;
+}
+
+/* Buttons: explicit hierarchy and identical geometry across admin screens. */
+.button,
+input[type="submit"],
+input[type="button"],
+.submit-row input,
+a.button,
+.object-tools a,
+.object-tools a:link,
+.object-tools a:visited {
+  min-height: var(--tpa-button-height);
+  padding: 8px 15px;
+  border-radius: var(--tpa-radius-sm) !important;
+  font-size: var(--tpa-text-sm);
+  font-weight: 700;
+  line-height: 1.4;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 12%) !important;
+}
+
+.button:active,
+input[type="submit"]:active,
+input[type="button"]:active,
+.submit-row input:active,
+.object-tools a:active {
+  transform: translateY(1px);
+}
+
+.button:disabled,
+input:disabled,
+select:disabled,
+textarea:disabled,
+.button.disabled {
+  opacity: .55;
+  cursor: not-allowed;
+  box-shadow: none !important;
+}
+
+.button.default,
+input[type="submit"].default,
+.submit-row input.default,
+.submit-row input[type="submit"],
+.object-tools li a.addlink {
+  box-shadow: 0 3px 9px rgb(47 98 214 / 20%) !important;
+}
+
+.object-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--tpa-space-2);
+  margin: 0 0 var(--tpa-space-4);
+}
+
+.object-tools li {
+  margin: 0;
+}
+
+.submit-row {
+  min-height: 60px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--tpa-space-2);
+  padding: 11px 13px;
+}
+
+.submit-row input,
+.submit-row a {
+  margin: 0;
+}
+
+.deletelink,
+.deletelink:link,
+.deletelink:visited,
+.submit-row a.deletelink {
+  border-radius: var(--tpa-radius-sm) !important;
+}
+
+/* Links: unobtrusive at rest, clear on hover, never mistaken for buttons. */
+#content a:not(.button):not(.deletelink):not(.tp-admin-action),
+#content a:link:not(.button):not(.deletelink):not(.tp-admin-action) {
+  text-underline-offset: 3px;
+}
+
+#content a:not(.button):not(.deletelink):not(.tp-admin-action):hover {
+  text-decoration: underline;
+}
+
+.paginator {
+  min-height: 48px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--tpa-space-2);
+  padding: 10px 13px;
+}
+
+.paginator a,
+.paginator span {
+  display: inline-flex;
+  min-width: 30px;
+  min-height: 30px;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 8px;
+  border-radius: var(--tpa-radius-sm);
+}
+
+/* Messages, errors and state indicators. */
+ul.messagelist {
+  display: grid;
+  gap: var(--tpa-space-2);
+  margin-bottom: var(--tpa-space-4);
+}
+
+ul.messagelist li,
+.errornote {
+  min-height: 46px;
+  display: flex;
+  align-items: center;
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: var(--tpa-radius-md);
+  font-size: var(--tpa-text-sm);
+  line-height: 1.8;
+}
+
+ul.errorlist {
+  margin: 6px 0;
+  padding: 7px 10px;
+  border-radius: var(--tpa-radius-sm);
+  font-size: var(--tpa-text-xs);
+}
+
+#footer {
+  padding: var(--tpa-space-5) clamp(18px, 2.5vw, 36px);
+  font-size: var(--tpa-text-xs);
+}
+
+/* Inline formsets and widgets should feel part of the same system. */
+.inline-group {
+  margin-bottom: var(--tpa-space-4);
+  overflow: hidden;
+}
+
+.inline-group .tabular {
+  overflow-x: auto;
+}
+
+.inline-group .tabular table {
+  min-width: 700px;
+}
+
+.inline-group .add-row,
+.inline-group .delete {
+  padding: 10px 14px;
+}
+
+.calendarbox,
+.clockbox {
+  border-radius: var(--tpa-radius-md);
+  box-shadow: var(--tpa-shadow-raised);
+}
+
+.calendar td,
+.calendar th {
+  padding: 5px;
+}
+
+.calendar td a,
+.timelist a {
+  display: inline-flex;
+  min-width: 29px;
+  min-height: 29px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 7px;
+}
+
+.login #content {
+  padding: 28px !important;
+  border-radius: var(--tpa-radius-xl);
+}
+
+.login .submit-row {
+  justify-content: flex-start;
+}
+
+/* Responsive finishing: preserve spacing and usable targets on smaller screens. */
+@media (max-width: 1100px) {
+  #content-start {
+    padding: 20px;
+  }
+
+  .tp-admin-app-grid {
+    gap: var(--tpa-space-3);
+  }
+}
+
+@media (max-width: 767px) {
+  #header {
+    min-height: 0;
+    gap: var(--tpa-space-2);
+    padding: 12px 15px;
+  }
+
+  .tp-admin-brand-mark {
+    width: 40px;
+    height: 40px;
+  }
+
+  .tp-admin-brand-copy strong {
+    font-size: 15px;
+  }
+
+  #user-tools {
+    font-size: var(--tpa-text-xs);
+  }
+
+  #content-start {
+    padding: 15px;
+  }
+
+  .tp-admin-dashboard {
+    gap: var(--tpa-space-5);
+  }
+
+  .tp-admin-welcome {
+    gap: var(--tpa-space-3);
+    padding: 20px 17px;
+  }
+
+  .tp-admin-welcome h1 {
+    font-size: 22px;
+  }
+
+  .tp-admin-app-heading {
+    padding: 12px 14px;
+  }
+
+  .tp-admin-model-list {
+    padding-inline: 13px;
+  }
+
+  .tp-admin-model-row {
+    gap: var(--tpa-space-2);
+    padding-block: 12px;
+  }
+
+  .tp-admin-model-actions {
+    gap: var(--tpa-space-2);
+  }
+
+  .tp-admin-action {
+    min-height: 38px;
+  }
+
+  fieldset {
+    padding: 12px 13px;
+  }
+
+  fieldset h2 {
+    margin: -12px -13px var(--tpa-space-3);
+  }
+
+  .submit-row {
+    gap: 7px;
+    padding: 9px;
+  }
+
+  .submit-row input,
+  .submit-row a {
+    flex: 1 1 auto;
+  }
+
+  .login #content {
+    margin: 24px auto !important;
+    padding: 19px !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  a,
+  button,
+  input,
+  select,
+  textarea,
+  .tp-admin-app-card {
+    transition: none !important;
+  }
+}

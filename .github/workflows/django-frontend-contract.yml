@@ -53,6 +53,7 @@ jobs:
           node --check django/static/js/module-pages.js
           node --check django/static/js/home-restored.js
           node --check django/static/js/reference-store.js
+          node --check django/static/js/tatami-admin-navigation.js
           node --check shared/src/js/shared/django-route-bridge.js
 
       - name: Verify shared design system output
@@ -86,6 +87,7 @@ jobs:
           shared_css = Path("django/static/css/tatami.css").read_text(encoding="utf-8")
           frontend_manifest = json.loads(Path("deploy/frontend-manifest.json").read_text(encoding="utf-8"))
           admin = Path("django/templates/admin/base_site.html").read_text(encoding="utf-8")
+          admin_index = Path("django/templates/admin/index.html").read_text(encoding="utf-8")
           store_template = Path("django/templates/store/product_list.html").read_text(encoding="utf-8")
           store_detail_template = Path("django/templates/store/product_detail.html").read_text(encoding="utf-8")
           store_card_template = Path("django/templates/components/store_product_card.html").read_text(encoding="utf-8")
@@ -100,6 +102,23 @@ jobs:
           episode = Path("django/templates/club/coach/episode_form.html").read_text(encoding="utf-8")
           js = Path("django/static/js/tatami.js").read_text(encoding="utf-8")
           admin_css = Path("django/static/css/tatami-admin.css").read_text(encoding="utf-8")
+          admin_navigation_css = Path("django/static/css/tatami-admin-navigation.css").read_text(encoding="utf-8")
+          admin_workspace_css = Path("django/static/css/tatami-admin-workspace.css").read_text(encoding="utf-8")
+          admin_navigation_text_css = Path("django/static/css/tatami-admin-navigation-text.css").read_text(encoding="utf-8")
+          for selector in (".tpa-visually-hidden-caption", ".tpa-app-heading-row", ".tpa-app-heading", "grid-template-columns: minmax(0, 1fr) 28px 34px", ".tpa-app-label", ".tpa-model-heading", "width: 68px", "@media (max-width: 1100px) and (min-width: 768px)", "@media (max-width: 767px)"):
+              assert selector in admin_navigation_text_css, f"Missing measured Persian navigation rule: {selector}"
+          for selector in ("body.change-form #content-main form fieldset.aligned .form-row", ".submit-row input.default", ".submit-row a.deletelink", "#nav-sidebar > .tpa-nav-group > table > caption", "@media (max-width: 767px)"):
+              assert selector in admin_workspace_css, f"Missing Admin workspace styling: {selector}"
+          admin_navigation_js = Path("django/static/js/tatami-admin-navigation.js").read_text(encoding="utf-8")
+          for app_name in ("حساب‌های کاربری", "کاربران و دسترسی‌ها", "باشگاه", "مربیان", "جم", "سفارش‌ها", "فروشگاه", "وبلاگ"):
+              assert app_name in admin_navigation_js, f"Missing Persian app display name: {app_name}"
+          assert "dataset.tpaAppName" in admin_navigation_js and "modelHeading.append(star)" in admin_navigation_js
+          assert "tpa-app-heading-row" in admin_navigation_js and "headingCell.colSpan = 3" in admin_navigation_js
+          assert 'group.querySelector(".tpa-app-heading-row a.section")' in admin_navigation_js
+          for selector in ("#nav-sidebar > .tpa-nav-group", ".tpa-group-toggle", ".tpa-favorite-toggle", ".tpa-command-overlay", ".tpa-nav-compact", "@media (max-width: 767px)"):
+              assert selector in admin_navigation_css, f"Missing navigation UI rule: {selector}"
+          for feature in ("nav-sidebar", "tpa-command-trigger", "tpa-favorite-toggle", "tpa-group-collapsed", "KEYS.recent", "model-"):
+              assert feature in admin_navigation_js, f"Missing navigation behavior: {feature}"
           module_css = Path("django/static/css/module-pages.css").read_text(encoding="utf-8")
           backend_css = Path("django/static/css/backend-templates.css").read_text(encoding="utf-8")
           manifest = json.loads(Path("deploy/frontend-manifest.json").read_text(encoding="utf-8"))
@@ -181,6 +200,22 @@ jobs:
           assert 'css/tatami.css' in base, "Shared Tatami Plus design system must be loaded"
           assert "new_coach_leads_count" in admin
           assert "admin:accounts_signuplead_changelist" in admin
+          assert 'href="/static/css/tatami-admin.css?v=20261120.1"' in admin
+          assert 'href="/static/css/tatami-admin-ux.css?v=20261121.1"' in admin
+          assert 'href="/static/css/tatami-admin-polish.css?v=20261120.1"' in admin
+          assert 'href="/static/css/tatami-admin-navigation.css?v=20261120.1"' in admin
+          assert 'href="/static/css/tatami-admin-workspace.css?v=20261121.1"' in admin
+          assert 'href="/static/css/tatami-admin-navigation-text.css?v=20261121.1"' in admin
+          assert 'src="/static/js/tatami-admin-navigation.js?v=20261120.1"' in admin
+          admin_polish = Path("django/static/css/tatami-admin-polish.css").read_text(encoding="utf-8")
+          for selector in ("--tpa-space-1", ".tp-admin-app-card", ".tp-admin-action", "#changelist-filter", ".submit-row", "@media (max-width: 767px)"):
+              assert selector in admin_polish, f"Missing visual polish rule: {selector}"
+          admin_ux = Path("django/static/css/tatami-admin-ux.css").read_text(encoding="utf-8")
+          for selector in ("#nav-sidebar", "#content-start", "#changelist-filter", ".submit-row", "@media (max-width: 767px)"):
+              assert selector in admin_ux, f"Missing Admin UX coverage: {selector}"
+          assert '{% extends "admin/base_site.html" %}' in admin_index
+          assert "app_list" in admin_index and "model.admin_url" in admin_index and "model.add_url" in admin_index
+          assert "model.view_only" in admin_index
           assert "data-video-upload-form" in episode
           assert "tp-otp-resend-until:" in js
           assert "request.upload.addEventListener('progress'" in js
@@ -258,7 +293,7 @@ jobs:
       - name: Compile templates and resolve required static assets
         working-directory: backend
         run: |
-          python manage.py shell -c "from django.template.loader import get_template; from django.contrib.staticfiles.finders import find; names=('base.html','layouts/auth.html','components/auth_aside.html','components/store_product_card.html','admin/base_site.html','pages/home.html','pages/account.html','store/product_list.html','store/product_detail.html','store/cart_detail.html','coaches/directory.html','coaches/profile_detail.html','coaches/join.html','coaches/join_enter.html','coaches/coach_students.html','club/course_list.html','club/course_detail.html','club/coach/episode_form.html','gems/history.html','accounts/login.html','accounts/otp_verify.html','accounts/complete_profile.html','accounts/password_reset.html','accounts/password_reset_confirm.html','accounts/set_password.html','coaches/join_enter.html','orders/mock_gateway.html','orders/address.html','orders/review.html','orders/payment_result.html','orders/order_list.html','orders/order_detail.html','includes/form_fields.html'); [get_template(name) for name in names]; assets=('css/tatami.css','css/tatami-admin.css','css/backend-templates.css','css/module-pages.css','css/home-restored.css','css/reference-store.css','js/tatami.js','js/module-pages.js','js/home-restored.js','js/reference-store.js','data/reference-store-catalog.json'); assert all(find(name) for name in assets); print('DJANGO_TEMPLATE_AND_STATIC_CHECK_OK')"
+          python manage.py shell -c "from django.template.loader import get_template; from django.contrib.staticfiles.finders import find; names=('base.html','layouts/auth.html','components/auth_aside.html','components/store_product_card.html','admin/base_site.html','admin/index.html','pages/home.html','pages/account.html','store/product_list.html','store/product_detail.html','store/cart_detail.html','coaches/directory.html','coaches/profile_detail.html','coaches/join.html','coaches/join_enter.html','coaches/coach_students.html','club/course_list.html','club/course_detail.html','club/coach/episode_form.html','gems/history.html','accounts/login.html','accounts/otp_verify.html','accounts/complete_profile.html','accounts/password_reset.html','accounts/password_reset_confirm.html','accounts/set_password.html','coaches/join_enter.html','orders/mock_gateway.html','orders/address.html','orders/review.html','orders/payment_result.html','orders/order_list.html','orders/order_detail.html','includes/form_fields.html'); [get_template(name) for name in names]; assets=('css/tatami.css','css/tatami-admin.css','css/tatami-admin-ux.css','css/tatami-admin-polish.css','css/tatami-admin-navigation.css','css/tatami-admin-workspace.css','css/tatami-admin-navigation-text.css','css/backend-templates.css','css/module-pages.css','css/home-restored.css','css/reference-store.css','js/tatami.js','js/module-pages.js','js/home-restored.js','js/reference-store.js','js/tatami-admin-navigation.js','data/reference-store-catalog.json'); assert all(find(name) for name in assets); print('DJANGO_TEMPLATE_AND_STATIC_CHECK_OK')"
 
       - name: Run backend tests with proposed frontend
         working-directory: backend
@@ -347,6 +382,50 @@ jobs:
         with:
           name: tatami-static
           path: static.zip
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Build Admin visual polish cPanel installer
+        run: python deploy/build-admin-visual-polish-package.py
+
+      - name: Upload Admin visual polish installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: tatami-admin-visual-polish-cpanel
+          path: tatami-admin-visual-polish-cpanel.zip
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Build Admin navigation cPanel installer
+        run: python deploy/build-admin-navigation-package.py
+
+      - name: Upload Admin navigation installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: tatami-admin-navigation-cpanel
+          path: tatami-admin-navigation-cpanel.zip
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Build Admin workspace cPanel installer
+        run: python deploy/build-admin-workspace-package.py
+
+      - name: Upload Admin workspace installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: tatami-admin-workspace-cpanel
+          path: tatami-admin-workspace-cpanel.zip
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Build Admin navigation text cPanel installer
+        run: python deploy/build-admin-navigation-text-package.py
+
+      - name: Upload Admin navigation text installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: tatami-admin-navigation-text-cpanel
+          path: tatami-admin-navigation-text-cpanel.zip
           if-no-files-found: error
           retention-days: 14
 
