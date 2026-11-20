@@ -7,9 +7,13 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#121418">
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <title>{% block title %}تاتامی پلاس{% endblock %}</title>
   <meta name="description" content="{% block description %}تاتامی پلاس؛ پلتفرم فارسی جودو، مربیان، دوره‌ها و فروشگاه تجهیزات.{% endblock %}">
   <link rel="stylesheet" href="{% static 'css/tatami.css' %}">
+  <link rel="stylesheet" href="{% static 'css/tatami-brand.css' %}">
   <link rel="stylesheet" href="{% static 'css/backend-templates.css' %}">
   <link rel="stylesheet" href="{% static 'css/module-pages.css' %}">
   <script src="{% static 'js/tatami.js' %}" defer></script>
@@ -20,7 +24,10 @@
 <a class="tp-skip" href="#app">رفتن به محتوای اصلی</a>
 
 <header>
-  <a class="logo" href="{% url 'home' %}" aria-label="تاتامی پلاس، صفحه اصلی">تاتامی پلاس</a>
+  <a class="logo tp-brand-link" href="{% url 'home' %}" aria-label="تاتامی پلاس، صفحه اصلی">
+    <img class="tp-brand-mark" src="{% static 'img/tatami-plus-mark.png' %}" alt="" width="40" height="40" decoding="async">
+    <span>تاتامی پلاس</span>
+  </a>
   {% include "components/platform_navigation.html" with nav_id="nv" nav_class="tp-main-nav" nav_label="منوی اصلی" %}
   <div class="hb">
     {% if user.is_authenticated %}
@@ -54,7 +61,10 @@
 
 <dialog id="mnd" class="tp-drawer" aria-labelledby="mnd-t">
   <div class="tp-drawer-h">
-    <b class="logo" id="mnd-t">تاتامی پلاس</b>
+    <b class="logo tp-brand-drawer" id="mnd-t">
+      <img class="tp-brand-mark" src="{% static 'img/tatami-plus-mark.png' %}" alt="" width="40" height="40" decoding="async">
+      <span>تاتامی پلاس</span>
+    </b>
     <button type="button" class="ib" id="mnx" aria-label="بستن منو">
       <svg class="tp-ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6L6 18"/></svg>
     </button>
@@ -85,7 +95,10 @@
 <footer class="ft">
   <div class="ftg">
     <div>
-      <b class="gold">تاتامی پلاس</b>
+      <b class="gold tp-brand-footer">
+        <img class="tp-brand-mark" src="{% static 'img/tatami-plus-mark.png' %}" alt="" width="44" height="44" loading="lazy" decoding="async">
+        <span>تاتامی پلاس</span>
+      </b>
       <p class="mu sm">پلتفرم فارسی جودو؛ آموزش، مسابقه، مربیان و تجهیزات تمرین.</p>
       <a referrerpolicy="origin" target="_blank" rel="noopener" aria-label="استعلام نشان اعتماد الکترونیکی تاتامی پلاس" href="https://trustseal.enamad.ir/?id=8392201&amp;Code=bcO99xBDrDWrsIjkuamgeOrAHLD7hvM5">
         <img referrerpolicy="origin" src="https://trustseal.enamad.ir/logo.aspx?id=8392201&amp;Code=bcO99xBDrDWrsIjkuamgeOrAHLD7hvM5" alt="نشان اعتماد الکترونیکی تاتامی پلاس" loading="lazy" decoding="async" style="cursor:pointer;display:block;width:auto;max-width:100%;height:auto;max-height:80px">

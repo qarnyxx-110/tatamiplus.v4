@@ -227,7 +227,12 @@ jobs:
           static_mapping = next(item for item in frontend_manifest["mappings"] if item["destination"] == "static")
           assert "css/tatami.css" not in static_mapping.get("exclude", [])
           assert '<header>' in base
-          assert '<a class="logo"' in base
+          assert '<a class="logo tp-brand-link"' in base
+          assert 'class="tp-brand-drawer" id="mnd-t"' in base
+          assert 'class="gold tp-brand-footer"' in base
+          assert base.count("tatami-plus-mark.png") == 3
+          assert "css/tatami-brand.css" in base
+          assert "/favicon.ico" in base and "/favicon-32x32.png" in base and "/apple-touch-icon.png" in base
           assert 'components/platform_navigation.html' in base and 'nav_id="nv"' in base
           assert 'nav_id="nvd"' in base and 'nav_class="tp-drawer-n"' in base
           assert 'id="{{ nav_id }}"' in navigation and 'class="{{ nav_class }}"' in navigation
@@ -365,7 +370,7 @@ jobs:
       - name: Compile templates and resolve required static assets
         working-directory: backend
         run: |
-          python manage.py shell -c "from django.template.loader import get_template; from django.contrib.staticfiles.finders import find; names=('base.html','layouts/auth.html','components/auth_aside.html','components/store_product_card.html','admin/base_site.html','admin/index.html','pages/home.html','pages/account.html','store/product_list.html','store/product_detail.html','store/cart_detail.html','coaches/directory.html','coaches/profile_detail.html','coaches/join.html','coaches/join_enter.html','coaches/coach_students.html','club/course_list.html','club/course_detail.html','club/coach/episode_form.html','gems/history.html','accounts/login.html','accounts/otp_verify.html','accounts/complete_profile.html','accounts/password_reset.html','accounts/password_reset_confirm.html','accounts/set_password.html','coaches/join_enter.html','orders/mock_gateway.html','orders/address.html','orders/review.html','orders/payment_result.html','orders/order_list.html','orders/order_detail.html','includes/form_fields.html'); [get_template(name) for name in names]; assets=('css/tatami.css','css/django-bridge.css','css/tatami-admin-tokens.css','css/tatami-admin.css','css/backend-templates.css','css/module-pages.css','css/home-restored.css','css/reference-store.css','js/tatami.js','js/module-pages.js','js/home-restored.js','js/reference-store.js','js/admin-dashboard.js','data/reference-store-catalog.json'); assert all(find(name) for name in assets); print('DJANGO_TEMPLATE_AND_STATIC_CHECK_OK')"
+          python manage.py shell -c "from django.template.loader import get_template; from django.contrib.staticfiles.finders import find; names=('base.html','layouts/auth.html','components/auth_aside.html','components/store_product_card.html','admin/base_site.html','admin/index.html','pages/home.html','pages/account.html','store/product_list.html','store/product_detail.html','store/cart_detail.html','coaches/directory.html','coaches/profile_detail.html','coaches/join.html','coaches/join_enter.html','coaches/coach_students.html','club/course_list.html','club/course_detail.html','club/coach/episode_form.html','gems/history.html','accounts/login.html','accounts/otp_verify.html','accounts/complete_profile.html','accounts/password_reset.html','accounts/password_reset_confirm.html','accounts/set_password.html','coaches/join_enter.html','orders/mock_gateway.html','orders/address.html','orders/review.html','orders/payment_result.html','orders/order_list.html','orders/order_detail.html','includes/form_fields.html'); [get_template(name) for name in names]; assets=('css/tatami.css','css/tatami-brand.css','img/tatami-plus-mark.png','css/django-bridge.css','css/tatami-admin-tokens.css','css/tatami-admin.css','css/backend-templates.css','css/module-pages.css','css/home-restored.css','css/reference-store.css','js/tatami.js','js/module-pages.js','js/home-restored.js','js/reference-store.js','js/admin-dashboard.js','data/reference-store-catalog.json'); assert all(find(name) for name in assets); print('DJANGO_TEMPLATE_AND_STATIC_CHECK_OK')"
 
       - name: Run backend tests with proposed frontend
         working-directory: backend
