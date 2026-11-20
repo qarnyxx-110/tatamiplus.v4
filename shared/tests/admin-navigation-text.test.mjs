@@ -147,6 +147,8 @@ try {
 
     const add = row.locator("td .addlink");
     const addRect = await add.boundingBox();
+    console.log("ADD_ACTION_MEASURE", JSON.stringify({ viewport: width, rect: addRect, td: await row.locator("td").boundingBox(), css: await add.evaluate((el) => ({ width: getComputedStyle(el).width, minHeight: getComputedStyle(el).minHeight, padding: getComputedStyle(el).padding, boxSizing: getComputedStyle(el).boxSizing, scrollWidth: el.scrollWidth, clientWidth: el.clientWidth })) }));
+    await page.screenshot({ path: resolve(artifactDir, "sidebar-debug-" + width + ".png"), fullPage: true });
     assert.ok(addRect && addRect.width <= 65 && addRect.height >= 28,
       "Add action dimensions incorrect at " + width + "px");
     assert.ok(await add.evaluate((el) => el.scrollWidth <= el.clientWidth + 2),
