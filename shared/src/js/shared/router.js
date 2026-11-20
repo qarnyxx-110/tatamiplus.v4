@@ -10,26 +10,27 @@ addEventListener('hashchange',()=>R());addEventListener('scroll',sc,{passive:tru
 if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)&&!window.__ARTIFACT__){
  const registerTatamiServiceWorker=()=>navigator.serviceWorker.register(new URL('sw.js',document.baseURI),{scope:'./'}).then(registration=>{
    if(!registration)return null;
-   const requestActivation=worker=>{
+   const requestActivation=()=>{
     const send=()=>{
-     const target=registration.waiting||worker;
-     if(target&&target.state==='installed'&&navigator.serviceWorker.controller){
-      target.postMessage({type:'TP_SKIP_WAITING'});
+     const waiting=registration.waiting;
+     if(waiting&&waiting.state==='installed'){
+      waiting.postMessage({type:'TP_SKIP_WAITING'});
      }
     };
     send();
-    // Retry briefly after the installed transition so registration.waiting is populated.
+    // The registration may publish .waiting just after the worker's installed transition.
     setTimeout(send,100);
     setTimeout(send,500);
+    setTimeout(send,1500);
    };
    // Handle a waiting update that existed before this page loaded.
-   requestActivation(registration.waiting);
+   requestActivation();
    // If an updated worker stays in waiting, explicitly request activation.
    registration.addEventListener('updatefound',()=>{
     const worker=registration.installing;
     if(!worker)return;
     const activateIfInstalled=()=>{
-     if(worker.state==='installed'&&navigator.serviceWorker.controller)requestActivation(worker);
+     if(worker.state==='installed')requestActivation();
     };
     worker.addEventListener('statechange',activateIfInstalled);
     // The worker may finish installing before updatefound handlers attach.
