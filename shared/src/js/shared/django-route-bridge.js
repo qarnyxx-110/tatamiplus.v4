@@ -237,7 +237,7 @@
         if (route.length !== 2) return '';
         let slug = '';
         try { slug = decodeURIComponent(route[1]); } catch { return ''; }
-        if (!slug || slug === '.' || slug === '..' || /[\\/\\\\?#]/.test(slug)) return '';
+        if (!/^[\\p{L}\\p{M}\\p{N}_-]+$/u.test(slug)) return '';
         return '/blog/' + slug + '/';
       }
       case 'courses':
