@@ -24,79 +24,90 @@
     </nav>
 
     {% if user.role == 'coach' %}
+      {% with portfolio=coach_portfolio %}
       <section class="d-c tp-coach-next" aria-labelledby="coach-journey-title">
         <div class="dh">
           <h2 id="coach-journey-title">مسیر مربیگری</h2>
-          {% if coach_application %}
-            {% if coach_application.status == 'approved' %}
-              <span class="tag ok">درخواست تأیید شده</span>
-            {% elif coach_application.status == 'rejected' %}
-              <span class="tag danger">نیازمند اصلاح</span>
-            {% else %}
-              <span class="tag g">در انتظار بررسی</span>
-            {% endif %}
+          {% if portfolio %}
+            <span class="tag {% if portfolio.status == 'approved' or portfolio.status == 'published' %}ok{% elif portfolio.status == 'rejected' or portfolio.status == 'inactive' %}danger{% else %}g{% endif %}">{{ portfolio.get_status_display }}</span>
           {% else %}
-            <span class="tag m">ثبت نشده</span>
+            <span class="tag m">هنوز ثبت نشده</span>
           {% endif %}
         </div>
 
-        {% if not coach_application %}
+        {% if not portfolio %}
           <ol class="tp-steps" aria-label="مراحل مربی شدن">
             <li class="done"><span>✓</span>ساخت حساب مربی</li>
-            <li class="on" aria-current="step"><span>۲</span>ثبت درخواست مربیگری</li>
+            <li class="on" aria-current="step"><span>۲</span>ثبت پورتفولیو</li>
             <li><span>۳</span>بررسی تیم</li>
-            <li><span>۴</span>آماده‌سازی و انتشار پروفایل</li>
+            <li><span>۴</span>انتشار پروفایل</li>
           </ol>
-          <p class="mu">برای بررسی صلاحیت مربیگری، اطلاعات و مدرک خود را ثبت کنید.</p>
-          <a class="btn" href="{% url 'coaches:apply' %}">ثبت درخواست مربیگری</a>
+          <p class="mu">برای ورود به پنل مربی و معرفی عمومی، ابتدا اطلاعات و مدرک مربیگری خود را ثبت کنید.</p>
+          <a class="btn" href="{% url 'coaches:apply' %}">شروع ثبت پورتفولیو</a>
 
-        {% elif coach_application.status == 'pending_review' %}
+        {% elif portfolio.status == 'pending_review' %}
           <ol class="tp-steps" aria-label="مراحل مربی شدن">
             <li class="done"><span>✓</span>ساخت حساب مربی</li>
-            <li class="done"><span>✓</span>ثبت درخواست مربیگری</li>
+            <li class="done"><span>✓</span>ثبت پورتفولیو</li>
             <li class="on" aria-current="step"><span>۳</span>بررسی تیم</li>
-            <li><span>۴</span>آماده‌سازی و انتشار پروفایل</li>
+            <li><span>۴</span>انتشار پروفایل</li>
           </ol>
-          <p class="mu">درخواست شما{% if coach_application.submitted_at %} در {{ coach_application.submitted_at|jformat:'%Y/%m/%d'|persian_digits }}{% endif %} ثبت شده و در انتظار بررسی تیم تاتامی پلاس است. تا پایان بررسی نیازی به ارسال دوباره نیست.</p>
+          <p class="mu">پورتفولیوی شما{% if portfolio.submitted_at %} در {{ portfolio.submitted_at|jformat:'%Y/%m/%d'|persian_digits }}{% endif %} ثبت شده و در انتظار بررسی تیم تاتامی پلاس است. تا پایان بررسی نیازی به ارسال دوباره نیست.</p>
           <a class="btn o" href="{% url 'coaches:application_status' %}">مشاهده وضعیت و جزئیات</a>
 
-        {% elif coach_application.status == 'rejected' %}
+        {% elif portfolio.status == 'rejected' %}
           <ol class="tp-steps" aria-label="مراحل مربی شدن">
             <li class="done"><span>✓</span>ساخت حساب مربی</li>
-            <li class="on" aria-current="step"><span>۲</span>اصلاح درخواست</li>
+            <li class="on" aria-current="step"><span>۲</span>اصلاح پورتفولیو</li>
             <li><span>۳</span>بررسی دوباره</li>
-            <li><span>۴</span>آماده‌سازی و انتشار پروفایل</li>
+            <li><span>۴</span>انتشار پروفایل</li>
           </ol>
-          <p class="tp-error-text">درخواست مربیگری شما نیاز به اصلاح دارد.</p>
-          {% if coach_application.rejection_reason %}<p class="tp-note">دلیل اعلام‌شده از سوی تیم: {{ coach_application.rejection_reason }}</p>{% endif %}
-          <p class="mu sm">اطلاعات قبلی در فرم باقی می‌ماند؛ فقط موارد لازم را اصلاح و دوباره ارسال کنید.</p>
+          <p class="tp-error-text">پورتفولیوی شما نیاز به اصلاح دارد.</p>
+          {% if portfolio.rejection_reason %}<p class="tp-note">دلیل اعلام‌شده از سوی تیم: {{ portfolio.rejection_reason }}</p>{% endif %}
+          <p class="mu sm">اطلاعات قبلی در فرم باقی می‌ماند؛ برای ارسال دوباره فقط موارد لازم را اصلاح کنید.</p>
           <a class="btn" href="{% url 'coaches:apply' %}">ویرایش و ارسال دوباره</a>
           <a class="btn o s" href="{% url 'coaches:application_status' %}">جزئیات بررسی</a>
 
-        {% elif coach_application.status == 'approved' %}
+        {% elif portfolio.status == 'draft' or portfolio.status == 'incomplete' %}
           <ol class="tp-steps" aria-label="مراحل مربی شدن">
             <li class="done"><span>✓</span>ساخت حساب مربی</li>
-            <li class="done"><span>✓</span>ثبت درخواست مربیگری</li>
-            <li class="done"><span>✓</span>تأیید تیم</li>
-            <li class="{% if coach_profile and coach_profile.is_published %}done{% else %}on{% endif %}"{% if not coach_profile or not coach_profile.is_published %} aria-current="step"{% endif %}>
-              <span>{% if coach_profile and coach_profile.is_published %}✓{% else %}۴{% endif %}</span>انتشار پروفایل
-            </li>
+            <li class="on" aria-current="step"><span>۲</span>تکمیل پورتفولیو</li>
+            <li><span>۳</span>بررسی تیم</li>
+            <li><span>۴</span>انتشار پروفایل</li>
           </ol>
-          {% if coach_profile and coach_profile.is_published %}
+          <p class="mu">برای ارسال پورتفولیو به تیم بررسی، اطلاعات ناقص را تکمیل کنید.</p>
+          <a class="btn" href="{% url 'coaches:apply' %}">تکمیل پورتفولیو</a>
+
+        {% elif portfolio.status == 'approved' or portfolio.status == 'published' %}
+          <ol class="tp-steps" aria-label="مراحل مربی شدن">
+            <li class="done"><span>✓</span>ساخت حساب مربی</li>
+            <li class="done"><span>✓</span>ثبت پورتفولیو</li>
+            <li class="done"><span>✓</span>تأیید تیم</li>
+            <li class="{% if portfolio.is_published %}done{% else %}on{% endif %}"{% if not portfolio.is_published %} aria-current="step"{% endif %}><span>{% if portfolio.is_published %}✓{% else %}۴{% endif %}</span>انتشار پروفایل</li>
+          </ol>
+          {% if portfolio.is_published %}
             <p class="mu">پروفایل عمومی شما منتشر شده و برای بازدیدکنندگان قابل مشاهده است.</p>
-            <a class="btn o" href="{% url 'coaches:profile_detail' coach_profile.pk %}">مشاهده پروفایل عمومی</a>
+            <a class="btn o" href="{% url 'coaches:profile_detail' portfolio.pk %}">مشاهده پروفایل عمومی</a>
           {% else %}
-            <p class="mu">درخواست شما تأیید شده است. پروفایل را تکمیل کنید؛ انتشار عمومی آن پس از بررسی تیم انجام می‌شود.</p>
+            <p class="mu">پورتفولیوی شما تأیید شده است و پس از انتشار توسط تیم در فهرست عمومی مربیان دیده می‌شود.</p>
           {% endif %}
           <nav class="tp-panel-nav" aria-label="پنل مربی">
             <a class="chip" href="{% url 'coach_panel:course_list' %}">دوره‌های من</a>
             <a class="chip" href="{% url 'coach_students:list' %}">هنرجوها و کدهای دعوت</a>
-            <a class="chip" href="{% url 'coaches:portfolio' %}">ویرایش پروفایل</a>
+            <a class="chip" href="{% url 'coaches:portfolio' %}">ویرایش پورتفولیو</a>
           </nav>
+
+        {% elif portfolio.status == 'inactive' %}
+          <p class="tp-note">پورتفولیوی مربیگری شما در حال حاضر غیرفعال است. برای پیگیری، با تیم تاتامی پلاس هماهنگ کنید.</p>
+          <a class="btn o" href="{% url 'coaches:application_status' %}">مشاهده وضعیت</a>
+        {% else %}
+          <p class="mu">وضعیت پورتفولیوی شما نیازمند بررسی است.</p>
+          <a class="btn o" href="{% url 'coaches:application_status' %}">مشاهده وضعیت</a>
         {% endif %}
       </section>
+      {% endwith %}
     {% endif %}
-      {% else %}
+  {% else %}
     <div class="d-c tp-acct-out">
       <h2>مسیرت را انتخاب کن</h2>
       <p class="mu">برای ادامه، حساب هنرجو یا مربی بسازید یا وارد حساب خود شوید.</p>
