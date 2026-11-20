@@ -133,6 +133,28 @@ try {
   assert.equal(await page.locator('#club-target').count(), 1);
   assert.equal(await page.locator('#post-result').count(), 0);
 
+  await page.route('**/auth/**', async route => {
+    const url = new URL(route.request().url());
+    await route.fulfill({
+      status: 200,
+      contentType: 'text/html; charset=utf-8',
+      body: documentHtml('<h1 id="auth-target">' + url.pathname + url.search + '</h1>', 'احراز هویت آزمایشی')
+    });
+  });
+
+  const authRoutes = [
+    ['#/login', '/auth/login/'],
+    ['#/register?role=coach', '/auth/login/sms/?role=coach'],
+    ['#/role?role=student', '/auth/login/sms/?role=student'],
+    ['#/password-reset', '/auth/password/reset/'],
+    ['#/set-password', '/auth/password/set/']
+  ];
+  for (const [hash, expected] of authRoutes) {
+    await page.evaluate(value => { location.hash = value; }, hash);
+    await page.locator('#auth-target').waitFor({ state: 'visible', timeout: 15000 });
+    assert.equal((await page.locator('#auth-target').textContent()).trim(), expected);
+  }
+
   await page.close();
 } catch (error) {
   failures.push(error?.stack || String(error));
