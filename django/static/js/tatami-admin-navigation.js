@@ -129,6 +129,30 @@
         Array.from(row.classList).some((className) => className.startsWith("model-"))
       );
 
+      // Django's sidebar table has a hidden three-cell header, while its body
+      // usually renders only Model + Add. Explicit columns prevent the browser
+      // from splitting the table into equal-width columns and stretching Add.
+      if (!table.querySelector(":scope > colgroup.tpa-menu-columns")) {
+        const actionCells = rows.reduce(
+          (maximum, row) => Math.max(maximum, row.querySelectorAll("td").length),
+          0
+        );
+        const colgroup = document.createElement("colgroup");
+        colgroup.className = "tpa-menu-columns";
+
+        const modelColumn = document.createElement("col");
+        modelColumn.className = "tpa-menu-model-column";
+        const addColumn = document.createElement("col");
+        addColumn.className = "tpa-menu-add-column";
+        const extraColumn = document.createElement("col");
+        extraColumn.className = "tpa-menu-extra-column";
+        if (actionCells < 2) extraColumn.classList.add("is-unused");
+
+        colgroup.append(modelColumn, addColumn, extraColumn);
+        const firstSection = table.querySelector(":scope > thead, :scope > tbody, :scope > tr");
+        table.insertBefore(colgroup, firstSection || null);
+      }
+
       if (appLink) {
         // Replace only the visible caption text. Keep Django's real href untouched.
         appLink.replaceChildren();
