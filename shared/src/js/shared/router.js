@@ -10,19 +10,31 @@ addEventListener('hashchange',()=>R());addEventListener('scroll',sc,{passive:tru
 if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)&&!window.__ARTIFACT__){
  const registerTatamiServiceWorker=()=>navigator.serviceWorker.register(new URL('sw.js',document.baseURI),{scope:'./'}).then(registration=>{
    if(!registration)return null;
+   let activationTimer=null;
    const requestActivation=()=>{
     const send=()=>{
      const waiting=registration.waiting;
-     if(waiting&&waiting.state==='installed'){
+     if(waiting&&waiting.state==='installed'&&navigator.serviceWorker.controller){
       waiting.postMessage({type:'TP_SKIP_WAITING'});
      }
     };
     send();
-    // The registration may publish .waiting just after the worker's installed transition.
-    setTimeout(send,100);
-    setTimeout(send,500);
-    setTimeout(send,1500);
+    if(!activationTimer&&document.visibilityState!=='hidden'){
+     activationTimer=setInterval(send,1000);
+    }
    };
+   document.addEventListener('visibilitychange',()=>{
+    if(document.visibilityState==='hidden'){
+     if(activationTimer)clearInterval(activationTimer);
+     activationTimer=null;
+    }else{
+     requestActivation();
+    }
+   });
+   window.addEventListener('pagehide',()=>{
+    if(activationTimer)clearInterval(activationTimer);
+    activationTimer=null;
+   },{once:true});
    // Handle a waiting update that existed before this page loaded.
    requestActivation();
    // If an updated worker stays in waiting, explicitly request activation.
