@@ -378,20 +378,17 @@ export async function runPwa(app,base,browser,altRoot){
   const updateState=await pg.evaluate(async()=>{
    const registration=await navigator.serviceWorker.getRegistration();
    if(!registration)return{registration:false,controllerChanged:false,error:'no registration'};
-   let timer=0,ackTimer=0;
+   let timer=0,skipWaitingRequested=false;
+   let resolveActivationAck;
    const activationAck=new Promise(resolve=>{
+    resolveActivationAck=resolve;
     const onMessage=event=>{
      if(event.data&&event.data.type==='TP_SKIP_WAITING_ACK'){
       navigator.serviceWorker.removeEventListener('message',onMessage);
-      if(ackTimer)clearTimeout(ackTimer);
       resolve({received:true,state:event.data.state||null});
      }
     };
     navigator.serviceWorker.addEventListener('message',onMessage);
-    ackTimer=setTimeout(()=>{
-     navigator.serviceWorker.removeEventListener('message',onMessage);
-     resolve({received:false,state:null});
-    },4000);
    });
    const controllerChanged=new Promise(resolve=>{
     const onChange=()=>{if(timer)clearTimeout(timer);resolve(true)};
@@ -402,8 +399,35 @@ export async function runPwa(app,base,browser,altRoot){
     if(timer)clearTimeout(timer);
     return{registration:true,controllerChanged:false,error:String(error)};
    }
+
+   // Wait for an updated worker to finish installation. If it is waiting,
+   // exercise the same explicit skip-waiting message supported by sw.js.
+   let candidate=registration.waiting||registration.installing;
+   if(candidate&&candidate.state!=='installed'){
+    await Promise.race([
+     new Promise(resolve=>{
+      const onState=()=>{
+       if(candidate.state==='installed'||candidate.state==='activated'||candidate.state==='redundant'){
+        candidate.removeEventListener('statechange',onState);
+        resolve();
+       }
+      };
+      candidate.addEventListener('statechange',onState);
+      onState();
+     }),
+     new Promise(resolve=>setTimeout(resolve,8000))
+    ]);
+   }
+   candidate=registration.waiting||(candidate&&candidate.state==='installed'?candidate:null);
+   if(candidate&&candidate.state==='installed'){
+    skipWaitingRequested=true;
+    candidate.postMessage({type:'TP_SKIP_WAITING'});
+   }
+
    const changed=await controllerChanged;
-   const ack=await activationAck;
+   const ack=skipWaitingRequested
+    ? await Promise.race([activationAck,new Promise(resolve=>setTimeout(()=>resolve({received:false,state:null}),4000))])
+    : {received:false,state:null};
    const latest=await navigator.serviceWorker.getRegistration();
    return{
     registration:true,
