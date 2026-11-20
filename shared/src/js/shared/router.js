@@ -19,9 +19,12 @@ if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)&&!window.__
    registration.addEventListener('updatefound',()=>{
     const worker=registration.installing;
     if(!worker)return;
-    worker.addEventListener('statechange',()=>{
+    const activateIfInstalled=()=>{
      if(worker.state==='installed'&&navigator.serviceWorker.controller)requestActivation(worker);
-    });
+    };
+    worker.addEventListener('statechange',activateIfInstalled);
+    // The worker may finish installing before updatefound handlers attach.
+    activateIfInstalled();
    });
    return registration;
   }).catch(error=>{
