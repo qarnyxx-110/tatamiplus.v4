@@ -200,7 +200,9 @@ jobs:
                   raise SystemExit("Installer entry is missing from ZIP")
           print(f"CPANEL_INSTALLER_OK | files={len(entries)} | preview={sum(x['area']=='preview' for x in entries)} | templates=10")
           PY
-          python3 "release/$(basename "$(find release -mindepth 1 -maxdepth 1 -type d -name 'TatamiPlus-Sections-2026-11-21-*' -print -quit)")/install.py" --check
+          INSTALLER_DIR="$(find release -mindepth 1 -maxdepth 1 -type d -name 'TatamiPlus-Sections-2026-11-21-*' -print -quit)"
+          test -n "$INSTALLER_DIR"
+          python3 "$INSTALLER_DIR/install.py" --check
 
       - name: Upload cPanel installer ZIP
         uses: actions/upload-artifact@v4
