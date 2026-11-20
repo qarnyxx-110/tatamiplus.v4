@@ -307,7 +307,22 @@ jobs:
           assert not re.search(r"(^|\\})\\s*#app\\s*\\{", backend_css)
           assert '<body class="tp-django-shell">' in base
           account = Path("django/templates/pages/account.html").read_text(encoding="utf-8")
+          coach_apply = Path("django/templates/coaches/apply.html").read_text(encoding="utf-8")
+          coach_status = Path("django/templates/coaches/application_status.html").read_text(encoding="utf-8")
           assert "{% url 'orders:list' %}" in account
+          # Coach lifecycle is one CoachPortfolio record; these templates must
+          # use the current context contract and never reference the removed application model.
+          assert "{% with portfolio=coach_portfolio %}" in account
+          assert "coach_application" not in account and "coach_profile" not in account
+          assert "{% url 'coach_panel:course_list' %}" in account
+          assert "{% url 'coach_students:list' %}" in account
+          assert "portfolio.rejection_reason" in account
+          assert "resubmitting" in coach_apply and "portfolio.rejection_reason" in coach_apply
+          assert 'enctype="multipart/form-data"' in coach_apply
+          assert "application.get_status_display" not in coach_status
+          assert "portfolio.get_status_display" in coach_status
+          assert "portfolio.rejection_reason" in coach_status
+          assert "portfolio.club" in coach_status and "application.club_name" not in coach_status
           assert "{% url 'gems:history' %}" in account
           assert "{% url 'club:course_list' %}" in account
           for episode_template in ("django/templates/club/course_detail.html", "django/templates/club/episode_play.html"):
@@ -338,7 +353,7 @@ jobs:
         run: |
           set -euo pipefail
           git clone https://github.com/Radinsharifi/Tatami-demo.git backend
-          git -C backend checkout --detach 25fde937def556edc7b81291e5900a9ac84fccb2
+          git -C backend checkout --detach 20e96721cc1a589d625fecd3fffa9ec42b1fc64f
 
       - name: Install backend dependencies
         run: |
@@ -370,7 +385,7 @@ jobs:
       - name: Compile templates and resolve required static assets
         working-directory: backend
         run: |
-          python manage.py shell -c "from django.template.loader import get_template; from django.contrib.staticfiles.finders import find; names=('base.html','layouts/auth.html','components/auth_aside.html','components/store_product_card.html','admin/base_site.html','admin/index.html','pages/home.html','pages/account.html','store/product_list.html','store/product_detail.html','store/cart_detail.html','coaches/directory.html','coaches/profile_detail.html','coaches/join.html','coaches/join_enter.html','coaches/coach_students.html','club/course_list.html','club/course_detail.html','club/coach/episode_form.html','gems/history.html','accounts/login.html','accounts/otp_verify.html','accounts/complete_profile.html','accounts/password_reset.html','accounts/password_reset_confirm.html','accounts/set_password.html','coaches/join_enter.html','orders/mock_gateway.html','orders/address.html','orders/review.html','orders/payment_result.html','orders/order_list.html','orders/order_detail.html','includes/form_fields.html'); [get_template(name) for name in names]; assets=('css/tatami.css','css/tatami-brand.css','img/tatami-plus-mark.png','css/django-bridge.css','css/tatami-admin-tokens.css','css/tatami-admin.css','css/backend-templates.css','css/module-pages.css','css/home-restored.css','css/reference-store.css','js/tatami.js','js/module-pages.js','js/home-restored.js','js/reference-store.js','js/admin-dashboard.js','data/reference-store-catalog.json'); assert all(find(name) for name in assets); print('DJANGO_TEMPLATE_AND_STATIC_CHECK_OK')"
+          python manage.py shell -c "from django.template.loader import get_template; from django.contrib.staticfiles.finders import find; names=('base.html','layouts/auth.html','components/auth_aside.html','components/store_product_card.html','admin/base_site.html','admin/index.html','pages/home.html','pages/account.html','store/product_list.html','store/product_detail.html','store/cart_detail.html','coaches/directory.html','coaches/profile_detail.html','coaches/join.html','coaches/join_enter.html','coaches/coach_students.html','club/course_list.html','club/course_detail.html','club/coach/episode_form.html','gems/history.html','accounts/login.html','accounts/otp_verify.html','accounts/complete_profile.html','accounts/password_reset.html','accounts/password_reset_confirm.html','accounts/set_password.html','coaches/join_enter.html','orders/mock_gateway.html','orders/address.html','orders/review.html','orders/payment_result.html','orders/order_list.html','orders/order_detail.html','includes/form_fields.html'); [get_template(name) for name in names]; assets=('css/tatami.css','css/tatami-brand.css','css/django-bridge.css','css/tatami-admin-tokens.css','css/tatami-admin.css','css/backend-templates.css','css/module-pages.css','css/home-restored.css','css/reference-store.css','js/tatami.js','js/module-pages.js','js/home-restored.js','js/reference-store.js','js/admin-dashboard.js','data/reference-store-catalog.json'); assert all(find(name) for name in assets); print('DJANGO_TEMPLATE_AND_STATIC_CHECK_OK')"
 
       - name: Run backend tests with proposed frontend
         working-directory: backend

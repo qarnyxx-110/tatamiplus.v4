@@ -1,24 +1,48 @@
 {% extends 'base.html' %}
 
-{% block title %}درخواست مربیگری | تاتامی پلاس{% endblock %}
+{% block title %}{% if resubmitting %}اصلاح و ارسال دوبارهٔ پورتفولیو{% else %}ثبت پورتفولیوی مربی{% endif %} | تاتامی پلاس{% endblock %}
 {% block content %}
 <div class="w tp-auth tp-apply">
   <div class="tp-auth-card">
     <p class="pf-kick">حساب مربی</p>
-    <h1>درخواست همکاری</h1>
+    {% if resubmitting %}
+      <h1>اصلاح و ارسال دوبارهٔ پورتفولیو</h1>
+      <p class="mu">درخواست پیشین شما تأیید نشده است. اطلاعات قبلی در فرم باقی مانده؛ موارد لازم را اصلاح کنید و همان پورتفولیو را دوباره برای بررسی بفرستید.</p>
+      {% if portfolio.rejection_reason %}
+        <div class="tp-note" role="status">
+          <b>دلیل اعلام‌شده از سوی تیم</b>
+          <p>{{ portfolio.rejection_reason }}</p>
+        </div>
+      {% endif %}
+    {% else %}
+      <h1>ثبت پورتفولیوی مربی</h1>
+      <p class="mu">اطلاعات حرفه‌ای و مدرک مربیگری شما در یک پورتفولیو ثبت می‌شود. پس از ارسال، تیم تاتامی پلاس آن را بررسی می‌کند. ثبت یا ذخیرهٔ اطلاعات به‌معنای انتشار خودکار پروفایل عمومی نیست.</p>
+    {% endif %}
+
     <ol class="tp-steps" aria-label="مراحل مربی شدن">
       <li class="done"><span>✓</span>ساخت حساب مربی</li>
-      <li class="on" aria-current="step"><span>۲</span>ثبت درخواست مربیگری</li>
+      {% if resubmitting %}
+        <li class="on" aria-current="step"><span>۲</span>اصلاح و ارسال دوباره</li>
+      {% else %}
+        <li class="on" aria-current="step"><span>۲</span>ثبت پورتفولیو</li>
+      {% endif %}
       <li><span>۳</span>بررسی تیم</li>
       <li><span>۴</span>انتشار پروفایل</li>
     </ol>
-    <p class="mu">درخواست شما توسط تیم تاتامی پلاس بررسی می‌شود. ثبت درخواست، پروفایل عمومی را به‌طور خودکار منتشر نمی‌کند. هر مربی فقط یک درخواست ثبت می‌کند.</p>
-    <form method="post" enctype="multipart/form-data" novalidate>
+
+    <form method="post" enctype="multipart/form-data" novalidate data-coach-portfolio-form>
       {% csrf_token %}
       {% include 'includes/form_fields.html' %}
-      <p class="tp-hint">فایل مدرک: PDF، JPG یا PNG، حداکثر ۱۰ مگابایت. این فایل خصوصی است و فقط تیم بررسی آن را می‌بیند.</p>
-      <button class="btn tp-auth-btn" type="submit">ثبت درخواست</button>
+      <p class="tp-hint">فایل مدرک فقط برای تیم بررسی قابل دسترسی است. فرمت مجاز PDF، JPG، JPEG یا PNG و حداکثر حجم ۱۰ مگابایت است.</p>
+      {% if resubmitting %}
+        <p class="mu sm">اگر فایل مدرک تازه‌ای انتخاب نکنید، فایل قبلی حفظ می‌شود.</p>
+      {% endif %}
+      <button class="btn tp-auth-btn" type="submit">{% if resubmitting %}ارسال دوباره برای بررسی{% else %}ثبت و ارسال پورتفولیو{% endif %}</button>
     </form>
+
+    {% if resubmitting %}
+      <p class="tp-auth-alt"><a href="{% url 'coaches:application_status' %}">بازگشت به وضعیت پورتفولیو</a></p>
+    {% endif %}
   </div>
 </div>
 {% endblock %}
