@@ -205,9 +205,14 @@
         const addLink = row.querySelector("a.addlink");
         const modelName = safeText(modelLink && modelLink.textContent) ||
           safeText(heading && heading.textContent);
+        const modelHeading = document.createElement("span");
+        modelHeading.className = "tpa-model-heading";
 
         if (modelLink) {
           addCommandItem(modelLink, modelName, appName, "مدیریت");
+          modelHeading.append(modelLink);
+          heading.replaceChildren(modelHeading);
+
           const star = document.createElement("button");
           star.type = "button";
           star.className = "tpa-favorite-toggle";
@@ -215,7 +220,15 @@
           star.setAttribute("aria-label", "افزودن " + modelName + " به دسترسی‌های منتخب");
           star.title = "افزودن به دسترسی‌های منتخب";
           star.textContent = "☆";
-          heading.append(star);
+          modelHeading.append(star);
+        } else if (heading) {
+          // A model may expose only Add permission. Preserve its native text,
+          // but don't invent a change/list URL for it.
+          const label = document.createElement("span");
+          label.className = "tpa-model-label";
+          label.textContent = modelName;
+          modelHeading.append(label);
+          heading.replaceChildren(modelHeading);
         }
 
         if (addLink) {
