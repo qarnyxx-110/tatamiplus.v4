@@ -170,7 +170,7 @@ jobs:
           assert 'nav_id="nvd"' in base and 'nav_class="tp-drawer-n"' in base
           assert 'id="{{ nav_id }}"' in navigation and 'class="{{ nav_class }}"' in navigation
           assert navigation.count('href="/preview/#/') == 11
-assert all(label in navigation for label in ('باشگاه مجازی', 'مربیان', 'وبلاگ', 'مربی آنلاین'))
+          assert all(label in navigation for label in ('باشگاه مجازی', 'مربیان', 'وبلاگ', 'مربی آنلاین'))
           assert 'id="hcart"' in base
           assert 'id="hgem"' in base
           assert 'id="mnb"' in base and 'id="mnd"' in base and 'id="mnx"' in base
