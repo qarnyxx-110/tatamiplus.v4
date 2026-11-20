@@ -232,7 +232,14 @@
       case 'checkout': return '/checkout/address/';
       case 'store': return '/store/';
       case 'coaches': return '/coaches/';
-      case 'blog': return route[1] ? '/blog/' + encodeURIComponent(route[1]) + '/' : '/blog/';
+      case 'blog': {
+        if (route.length === 1) return '/blog/';
+        if (route.length !== 2) return '';
+        let slug = '';
+        try { slug = decodeURIComponent(route[1]); } catch { return ''; }
+        if (!slug || slug === '.' || slug === '..' || /[\\/\\\\?#]/.test(slug)) return '';
+        return '/blog/' + slug + '/';
+      }
       case 'courses':
       case 'club':
       case 'episode': return '/club/';
