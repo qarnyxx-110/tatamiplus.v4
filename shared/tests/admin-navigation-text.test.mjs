@@ -147,6 +147,8 @@ try {
     const groupRect = await nav.locator(".app-accounts").boundingBox();
     const captionRect = await accountsCaption.boundingBox();
     assert.ok(tableRect && groupRect && captionRect);
+    console.log("CARD_TABLE_CAPTION_MEASURE", JSON.stringify({ viewport: width, group: groupRect, table: tableRect, caption: captionRect, captionCss: await accountsCaption.evaluate((el) => ({ width: getComputedStyle(el).width, minWidth: getComputedStyle(el).minWidth, maxWidth: getComputedStyle(el).maxWidth, display: getComputedStyle(el).display, boxSizing: getComputedStyle(el).boxSizing })) }));
+    await page.screenshot({ path: resolve(artifactDir, "caption-debug-" + width + ".png"), fullPage: true });
     assert.ok(await table.evaluate((el) => el.scrollWidth <= el.clientWidth + 1),
       "Menu table horizontally overflows at " + width + "px");
     assert.ok(tableRect.width >= groupRect.width - 20,
