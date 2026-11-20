@@ -76,6 +76,7 @@ jobs:
           navigation = Path("django/templates/components/platform_navigation.html").read_text(encoding="utf-8")
           login = Path("django/templates/accounts/login.html").read_text(encoding="utf-8")
           otp = Path("django/templates/accounts/otp_verify.html").read_text(encoding="utf-8")
+          account = Path("django/templates/pages/account.html").read_text(encoding="utf-8")
           profile = Path("django/templates/accounts/complete_profile.html").read_text(encoding="utf-8")
           auth_layout = Path("django/templates/layouts/auth.html").read_text(encoding="utf-8")
           auth_aside = Path("django/templates/components/auth_aside.html").read_text(encoding="utf-8")
@@ -313,7 +314,6 @@ jobs:
           assert not re.search(r"(^|\\})\\s*body\\s*\\{", backend_css)
           assert not re.search(r"(^|\\})\\s*#app\\s*\\{", backend_css)
           assert '<body class="tp-django-shell">' in base
-          account = Path("django/templates/pages/account.html").read_text(encoding="utf-8")
           coach_apply = Path("django/templates/coaches/apply.html").read_text(encoding="utf-8")
           coach_status = Path("django/templates/coaches/application_status.html").read_text(encoding="utf-8")
           assert "{% url 'orders:list' %}" in account
