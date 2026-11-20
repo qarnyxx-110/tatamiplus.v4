@@ -105,7 +105,7 @@ jobs:
           admin_navigation_css = Path("django/static/css/tatami-admin-navigation.css").read_text(encoding="utf-8")
           admin_workspace_css = Path("django/static/css/tatami-admin-workspace.css").read_text(encoding="utf-8")
           admin_navigation_text_css = Path("django/static/css/tatami-admin-navigation-text.css").read_text(encoding="utf-8")
-          for selector in ("grid-template-columns: minmax(0, 1fr) 30px 36px", ".tpa-app-label", ".tpa-model-heading", "text-transform: none !important", "@media (max-width: 767px)"):
+          for selector in ("grid-template-columns: minmax(0, 1fr) 28px 34px", ".tpa-app-label", ".tpa-model-heading", "width: 64px", "@media (max-width: 1100px) and (min-width: 768px)", "@media (max-width: 767px)"):
               assert selector in admin_navigation_text_css, f"Missing Persian navigation text rule: {selector}"
           for selector in ("body.change-form #content-main form fieldset.aligned .form-row", ".submit-row input.default", ".submit-row a.deletelink", "#nav-sidebar > .tpa-nav-group > table > caption", "@media (max-width: 767px)"):
               assert selector in admin_workspace_css, f"Missing Admin workspace styling: {selector}"
