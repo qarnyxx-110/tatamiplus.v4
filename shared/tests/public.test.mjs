@@ -604,6 +604,7 @@ export async function runPreview(base,browser){
   S.ok('فوتر: لینک مقالات و دانشنامه وجود دارد',await pg.locator('footer a[href="#/blog"]').count()===1);
   S.ok('منو دیگر مقصدهای تکراری دوره، ویدئو، هوش مصنوعی و تاتامی‌پدیا ندارد',
     await pg.locator('#nv a[href="#/courses"],#nv a[href="#/videos"],#nv a[href="#/ai"],#nv a[href="#/tatamipedia"]').count()===0);
+  S.ok('کارت مستقل آنالیز نمایشی از صفحه اصلی حذف شده است',await pg.locator('#app a[href="#/ai"]').count()===0);
   await go('#/learning?tab=courses');
   S.ok('آموزش‌ها: تب دوره‌ها محتوای دوره‌ها را نشان می‌دهد',(await T()).includes('دوره‌های آموزشی')&&await pg.locator('#app .tp-course-card').count()>0);
   await go('#/learning?tab=videos');

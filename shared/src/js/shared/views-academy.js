@@ -64,7 +64,7 @@ function tpLearningHub(){
  const tab=hashParams().get('tab')==='videos'?'videos':'courses';
  const content=tab==='videos'?views.videos():tpCourseList();
  PT={t:'آموزش‌ها | تاتامی پلاس',d:'دوره‌های آموزشی و ویدیوهای ضبط‌شده جودو در یک بخش.'};
- return '<div class="w tp-learning-head"><h1>آموزش‌ها</h1><p class="mu">دوره‌های آموزشی و ویدیوهای ضبط‌شده را از یک بخش دنبال کن.</p><nav class="cn" aria-label="نوع محتوای آموزشی"><a class="chip '+(tab==='courses'?'on':'')+'" href="#/learning?tab=courses"'+(tab==='courses'?' aria-current="page"':'')+'>دوره‌ها</a><a class="chip '+(tab==='videos'?'on':'')+'" href="#/learning?tab=videos"'+(tab==='videos'?' aria-current="page"':'')+'>ویدیوهای ضبط‌شده</a></nav></div><div class="tp-learning-content">'+content+'</div>';
+ return '<div class="w tp-learning-head"><h1>آموزش‌ها</h1><p class="mu">دوره‌های آموزشی و ویدیوهای ضبط‌شده را از یک بخش دنبال کن.</p><nav class="cn" aria-label="نوع محتوای آموزشی"><a class="chip '+(tab==='courses'?'on':'')+'" href="#/learning?tab=courses"'+(tab==='courses'?' aria-current="page"':'')+'>دوره‌ها</a><a class="chip '+(tab==='videos'?'on':'')+'" href="#/learning?tab=videos"'+(tab==='videos'?' aria-current="page"':'')+'>ویدیوهای ضبط‌شده</a></nav></div>'+content;
 }
 
 Object.assign(views,{
