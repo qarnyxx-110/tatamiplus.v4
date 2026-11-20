@@ -305,7 +305,7 @@ jobs:
 
       - name: Run backend tests with proposed frontend
         working-directory: backend
-        run: python manage.py test accounts.tests.AuthenticationFlowTests accounts.tests.CoachSignupLeadTests accounts.tests.AccountPageTests coaches.tests.CoachInviteTests gems.tests.GemPageTests orders.tests.CheckoutFlowTests blog.tests.BlogViewTests --verbosity 1
+        run: python manage.py test accounts.tests.AuthenticationFlowTests accounts.tests.CoachSignupLeadTests accounts.tests.AccountPageTests coaches.tests.CoachInviteTests gems.tests.GemPageTests orders.tests.CheckoutFlowTests blog.tests.BlogViewTests.test_list_renders_and_shows_only_published_posts blog.tests.BlogViewTests.test_detail_renders_a_published_post blog.tests.BlogViewTests.test_drafts_and_unknown_slugs_are_404 blog.tests.BlogViewTests.test_a_persian_slug_round_trips_through_the_url --verbosity 1
 
       - name: Build separate templates and static cPanel packages
         run: |
