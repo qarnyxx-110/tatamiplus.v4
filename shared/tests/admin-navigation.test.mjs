@@ -30,6 +30,10 @@ const fixture = String.raw`<!doctype html>
             <th scope="row"><a href="/admin/accounts/signuplead/">سرنخ‌های ثبت‌نام</a></th>
             <td></td>
           </tr>
+          <tr class="model-bulkimport">
+            <th scope="row">ورود گروهی</th>
+            <td><a class="addlink" href="/admin/accounts/bulkimport/add/">افزودن</a></td>
+          </tr>
         </tbody>
       </table>
     </div>
@@ -107,8 +111,8 @@ try {
 
   // Add-only models are not discarded: their actual Add destination is searchable.
   await page.locator(".tpa-command-trigger").click();
-  await page.locator(".tpa-command-input").fill("افزودن محصولات");
-  await assert.equal(await page.locator(".tpa-command-result").first().getAttribute("href"), "https://tatamiplus.ir/admin/store/product/add/");
+  await page.locator(".tpa-command-input").fill("افزودن ورود گروهی");
+  await assert.equal(await page.locator(".tpa-command-result").first().getAttribute("href"), "https://tatamiplus.ir/admin/accounts/bulkimport/add/");
 
   console.log("ADMIN_NAVIGATION_BROWSER_TEST_OK");
 } finally {
