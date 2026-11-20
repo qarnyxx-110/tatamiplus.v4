@@ -88,7 +88,7 @@ try {
   };
 
   for (const [app, label] of Object.entries(expectedLabels)) {
-    const anchor = nav.locator(".app-" + app + " caption a.section");
+    const anchor = nav.locator(".app-" + app + " .tpa-app-heading-row a.section");
     assert.equal(await anchor.locator(".tpa-app-label").textContent(), label, app + " label");
     const rawHref = await anchor.getAttribute("href");
     assert.ok(rawHref.startsWith("/admin/"), app + " raw href");
@@ -117,10 +117,11 @@ try {
     assert.ok(navRect.x >= 0 && navRect.x + navRect.width <= width + 1, "Sidebar outside viewport");
     assert.ok(contentRect.x >= 0 && contentRect.x + contentRect.width <= width + 1, "Content outside viewport");
 
-    const accountsCaption = nav.locator(".app-accounts caption");
-    const title = accountsCaption.locator("a.section");
-    const count = accountsCaption.locator(".tpa-app-count");
-    const disclosure = accountsCaption.locator(".tpa-group-toggle");
+    const accountsHeadingRow = nav.locator(".app-accounts tr.tpa-app-heading-row");
+    const appHeading = accountsHeadingRow.locator(".tpa-app-heading");
+    const title = appHeading.locator("a.section");
+    const count = appHeading.locator(".tpa-app-count");
+    const disclosure = appHeading.locator(".tpa-group-toggle");
     const titleRect = await title.boundingBox();
     const countRect = await count.boundingBox();
     const disclosureRect = await disclosure.boundingBox();
@@ -145,16 +146,20 @@ try {
     const table = nav.locator(".app-accounts table");
     const tableRect = await table.boundingBox();
     const groupRect = await nav.locator(".app-accounts").boundingBox();
-    const captionRect = await accountsCaption.boundingBox();
-    assert.ok(tableRect && groupRect && captionRect);
-    console.log("CARD_TABLE_CAPTION_MEASURE", JSON.stringify({ viewport: width, group: groupRect, table: tableRect, caption: captionRect, captionCss: await accountsCaption.evaluate((el) => ({ width: getComputedStyle(el).width, minWidth: getComputedStyle(el).minWidth, maxWidth: getComputedStyle(el).maxWidth, display: getComputedStyle(el).display, boxSizing: getComputedStyle(el).boxSizing })) }));
-    await page.screenshot({ path: resolve(artifactDir, "caption-debug-" + width + ".png"), fullPage: true });
+    const headingRowRect = await accountsHeadingRow.boundingBox();
+    const headingRect = await appHeading.boundingBox();
+    assert.ok(tableRect && groupRect && headingRowRect && headingRect);
     assert.ok(await table.evaluate((el) => el.scrollWidth <= el.clientWidth + 1),
       "Menu table horizontally overflows at " + width + "px");
     assert.ok(tableRect.width >= groupRect.width - 20,
       "Menu table does not fill the group card at " + width + "px");
-    assert.ok(captionRect.width >= tableRect.width - 2,
-      "Group caption is narrower than its table at " + width + "px");
+    assert.ok(headingRowRect.width >= tableRect.width - 2,
+      "App heading row is narrower than its table at " + width + "px");
+    assert.ok(headingRect.width >= tableRect.width - 2,
+      "Visible app heading is narrower than its table at " + width + "px");
+    assert.ok(Math.abs(headingRect.height - 54) <= 1 ||
+      (width <= 1100 && headingRect.height >= 52 && headingRect.height <= 56),
+      "App heading height is not controlled at " + width + "px");
 
     const add = row.locator("td .addlink");
     const addRect = await add.boundingBox();
@@ -184,7 +189,7 @@ try {
       content: contentRect.width,
       group: Math.round(groupRect.width * 10) / 10,
       table: Math.round(tableRect.width * 10) / 10,
-      caption: Math.round(captionRect.width * 10) / 10,
+      heading: Math.round(headingRect.width * 10) / 10,
       title: Math.round(titleRect.width * 10) / 10,
       count: Math.round(countRect.width * 10) / 10,
       disclosure: Math.round(disclosureRect.width * 10) / 10,
