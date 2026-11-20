@@ -25,7 +25,7 @@ if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)&&!window.__
    });
    return registration;
   }).catch(error=>{
-   console.error('[Tatami SW] registration failed',error);
+   console.warn('[Tatami SW] registration unavailable',error);
    return null;
   });
  if(document.readyState==='complete')registerTatamiServiceWorker();
