@@ -7,10 +7,15 @@ class CoachPortfolioDataMigrationTests(TransactionTestCase):
     """Prove the upgrade preserves the data that old FK rows depend on."""
 
     migrate_from = [
+        # The deployed account schema already includes phone, city, SignupLead,
+        # and gem_balance. Keep that app at the exact live migration state while
+        # moving only the coach/course relations forward.
+        ("accounts", "0006_user_gem_balance"),
         ("coaches", "0005_coachinvite_coachstudent"),
         ("club", "0002_episodecompletion"),
     ]
     migrate_to = [
+        ("accounts", "0006_user_gem_balance"),
         ("coaches", "0007_remove_legacy_coach_models"),
         ("club", "0003_course_coach_portfolio"),
     ]
@@ -32,11 +37,13 @@ class CoachPortfolioDataMigrationTests(TransactionTestCase):
 
         coach = User.objects.create(
             username="portfolio-migration-coach",
+            phone="09120000981",
             city="",
             role="coach",
         )
         student = User.objects.create(
             username="portfolio-migration-student",
+            phone="09120000982",
             city="",
             role="student",
         )
