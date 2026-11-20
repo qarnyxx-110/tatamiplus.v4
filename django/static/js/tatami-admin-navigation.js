@@ -1,4 +1,4 @@
-/* Tatami Plus Admin Navigation · Persian labels */
+/* Tatami Plus Admin Navigation · Persian labels
  * Uses only links rendered by Django's permission-aware available_apps context.
  * No endpoints, permissions, counters, or backend behavior are invented here.
  */
