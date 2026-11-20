@@ -62,6 +62,10 @@ jobs:
           npm install --no-package-lock --no-audit --no-fund
           npx playwright install --with-deps chromium
 
+      - name: Run Django Admin navigation browser regression tests
+        working-directory: shared
+        run: node tests/admin-navigation.test.mjs
+
       - name: Run Student PWA browser regression suite
         working-directory: shared
         env:
@@ -83,10 +87,6 @@ jobs:
       - name: Run global card alignment regression tests
         working-directory: shared
         run: node tests/card-layout.test.mjs
-
-      - name: Run Django Admin navigation browser regression tests
-        working-directory: shared
-        run: node tests/admin-navigation.test.mjs
 
       - name: Run Django browser runtime regression tests
         working-directory: shared
