@@ -1,11 +1,10 @@
 const V='tatami-v2',SHELL=['./','index.html','offline.html','manifest.webmanifest','icons/icon-192.png','icons/icon-512.png'];
-self.addEventListener('install',e=>{e.waitUntil((async()=>{
+self.addEventListener('install',e=>{e.waitUntil(self.skipWaiting());e.waitUntil((async()=>{
  const c=await caches.open(V),core=SHELL.slice(0,7),routes=SHELL.slice(7);
  await c.addAll(core);
  const results=await Promise.allSettled(routes.map(url=>c.add(url)));
  results.forEach((result,index)=>{if(result.status==='rejected')console.warn('[Tatami SW] optional route was not precached:',routes[index],result.reason)});
- await self.skipWaiting();
-})().catch(error=>{console.error('[Tatami SW] install failed',error);throw error}))});
+ })().catch(error=>{console.error('[Tatami SW] install failed',error);throw error}))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==V).map(x=>caches.delete(x)))).then(()=>self.clients.claim()))});
 self.addEventListener('message',e=>{if(e.data&&e.data.type==='TP_SKIP_WAITING')e.waitUntil(self.skipWaiting())});
 self.addEventListener('fetch',e=>{const r=e.request;if(r.method!=='GET')return;

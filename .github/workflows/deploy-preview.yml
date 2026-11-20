@@ -74,7 +74,6 @@ jobs:
 
       - name: Run Student PWA technical update regression suite
         id: student_pwa
-        continue-on-error: true
         working-directory: shared
         env:
           ONLY: student-pwa
@@ -88,7 +87,6 @@ jobs:
 
       - name: Run Coach PWA technical update regression suite
         id: coach_pwa
-        continue-on-error: true
         working-directory: shared
         env:
           ONLY: coach-pwa
@@ -102,7 +100,6 @@ jobs:
 
       - name: Run Club PWA technical update regression suite
         id: club_pwa
-        continue-on-error: true
         working-directory: shared
         env:
           ONLY: club-pwa
