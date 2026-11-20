@@ -20,8 +20,10 @@ name: Django Admin navigation and workspace browser validation
     paths:
       - "django/static/js/tatami-admin-navigation.js"
       - "django/static/css/tatami-admin-navigation.css"
+      - "django/static/css/tatami-admin-navigation-text.css"
       - "django/static/css/tatami-admin-workspace.css"
       - "shared/tests/admin-navigation.test.mjs"
+      - "shared/tests/admin-navigation-text.test.mjs"
       - "shared/tests/admin-workspace-ui.test.mjs"
       - ".github/workflows/admin-navigation-validation.yml"
 
