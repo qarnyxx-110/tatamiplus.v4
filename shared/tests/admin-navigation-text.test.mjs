@@ -163,15 +163,6 @@ try {
 
     const add = row.locator("td .addlink");
     const addRect = await add.boundingBox();
-    console.log("ADD_ACTION_MEASURE", JSON.stringify({
-      viewport: width,
-      rect: addRect,
-      table: await table.evaluate((el) => ({ width: getComputedStyle(el).width, tableLayout: getComputedStyle(el).tableLayout, scrollWidth: el.scrollWidth, clientWidth: el.clientWidth })),
-      th: await row.locator("th").evaluate((el) => ({ width: getComputedStyle(el).width, boxSizing: getComputedStyle(el).boxSizing })),
-      td: await row.locator("td").evaluate((el) => ({ width: getComputedStyle(el).width, minWidth: getComputedStyle(el).minWidth, maxWidth: getComputedStyle(el).maxWidth, boxSizing: getComputedStyle(el).boxSizing })),
-      add: await add.evaluate((el) => ({ width: getComputedStyle(el).width, minWidth: getComputedStyle(el).minWidth, minHeight: getComputedStyle(el).minHeight, padding: getComputedStyle(el).padding, boxSizing: getComputedStyle(el).boxSizing, scrollWidth: el.scrollWidth, clientWidth: el.clientWidth }))
-    }));
-    await page.screenshot({ path: resolve(artifactDir, "sidebar-debug-" + width + ".png"), fullPage: true });
     assert.ok(addRect && addRect.width <= 65 && addRect.height >= 28,
       "Add action dimensions incorrect at " + width + "px");
     assert.ok(await add.evaluate((el) => el.scrollWidth <= el.clientWidth + 2),
