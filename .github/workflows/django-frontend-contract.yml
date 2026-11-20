@@ -247,27 +247,27 @@ jobs:
       - name: Check out the pinned backend contract revision
         run: |
           set -euo pipefail
-          git clone https://github.com/Radinsharifi/Tatami-demo.git backend
-          git -C backend checkout --detach 20e96721cc1a589d625fecd3fffa9ec42b1fc64f
+          git clone https://github.com/Radinsharifi/Tatami-demo.git backend-contract
+          git -C backend-contract checkout --detach 20e96721cc1a589d625fecd3fffa9ec42b1fc64f
 
       - name: Install backend dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install -r backend/requirements.txt
+          python -m pip install -r backend-contract/requirements.txt
 
       - name: Install proposed frontend templates and static files into isolated backend checkout
         run: |
           set -euo pipefail
-          mkdir -p backend/templates backend/static
-          cp -a django/templates/. backend/templates/
-          cp -a django/static/. backend/static/
+          mkdir -p backend-contract/templates backend-contract/static
+          cp -a django/templates/. backend-contract/templates/
+          cp -a django/static/. backend-contract/static/
 
       - name: Validate Django settings
-        working-directory: backend
+        working-directory: backend-contract
         run: python manage.py check
 
       - name: Verify the store-card stock fallback precondition
-        working-directory: backend
+        working-directory: backend-contract
         run: |
           python - <<'PY'
           from pathlib import Path
@@ -278,12 +278,12 @@ jobs:
           PY
 
       - name: Compile templates and resolve required static assets
-        working-directory: backend
+        working-directory: backend-contract
         run: |
           python manage.py shell -c "from django.template.loader import get_template; from django.contrib.staticfiles.finders import find; names=('base.html','layouts/auth.html','components/auth_aside.html','components/store_product_card.html','admin/base_site.html','pages/home.html','pages/account.html','store/product_list.html','store/product_detail.html','store/cart_detail.html','coaches/apply.html','coaches/application_status.html','coaches/portfolio.html','coaches/directory.html','coaches/profile_detail.html','coaches/join.html','coaches/join_enter.html','coaches/coach_students.html','club/course_list.html','club/course_detail.html','club/coach/episode_form.html','gems/history.html','accounts/login.html','accounts/otp_verify.html','accounts/complete_profile.html','accounts/password_reset.html','accounts/password_reset_confirm.html','accounts/set_password.html','coaches/join_enter.html','orders/mock_gateway.html','orders/address.html','orders/review.html','orders/payment_result.html','orders/order_list.html','orders/order_detail.html','includes/form_fields.html'); [get_template(name) for name in names]; assets=('css/tatami.css','css/tatami-admin.css','css/backend-templates.css','css/module-pages.css','css/home-restored.css','css/reference-store.css','js/tatami.js','js/module-pages.js','js/home-restored.js','js/reference-store.js','data/reference-store-catalog.json'); assert all(find(name) for name in assets); print('DJANGO_TEMPLATE_AND_STATIC_CHECK_OK')"
 
       - name: Run backend tests with proposed frontend
-        working-directory: backend
+        working-directory: backend-contract
         run: python manage.py test accounts.tests.AuthenticationFlowTests accounts.tests.CoachSignupLeadTests accounts.tests.AccountPageTests coaches.tests.CoachWorkflowTests coaches.tests.CoachInviteTests gems.tests.GemPageTests orders.tests.CheckoutFlowTests --verbosity 1
 
       - name: Build separate templates and static cPanel packages
