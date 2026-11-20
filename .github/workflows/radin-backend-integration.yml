@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   backend-upgrade:
@@ -29,6 +29,59 @@ jobs:
           git clone --no-checkout https://github.com/Radinsharifi/Tatami-demo.git radin-backend
           git -C radin-backend checkout --detach 20e96721cc1a589d625fecd3fffa9ec42b1fc64f
           git -C radin-backend fetch --depth=1 origin 4c0b8baf1bf31f7a274bd0fa27ebe5826131f0c9
+
+      - name: Preserve pinned Radin backend source in this project branch
+        shell: bash
+        env:
+          LEGACY: 4c0b8baf1bf31f7a274bd0fa27ebe5826131f0c9
+        run: |
+          set -euo pipefail
+          if [ -f backend/source/manage.py ]; then
+            echo "PINNED_BACKEND_SOURCE_ALREADY_COMMITTED"
+            exit 0
+          fi
+
+          mkdir -p backend/source backend/legacy_migrations
+          rsync -a --delete --exclude='.git' --exclude='.env' radin-backend/ backend/source/
+
+          for path in \
+            coaches/migrations/__init__.py \
+            coaches/migrations/0001_initial.py \
+            coaches/migrations/0002_alter_coachapplication_options_and_more.py \
+            coaches/migrations/0003_alter_coachapplication_reviewed_at_and_more.py \
+            coaches/migrations/0004_coachprofile_avatar_coachprofile_belt_and_more.py \
+            coaches/migrations/0005_coachinvite_coachstudent.py \
+            club/migrations/__init__.py \
+            club/migrations/0001_initial.py \
+            club/migrations/0002_episodecompletion.py; do
+            mkdir -p "backend/legacy_migrations/$(dirname "$path")"
+            git -C radin-backend show "$LEGACY:$path" > "backend/legacy_migrations/$path"
+          done
+
+          cat > backend/SOURCE-REVISION.txt <<'EOF'
+          Pinned backend source snapshot
+          Repository: https://github.com/Radinsharifi/Tatami-demo
+          Revision: 20e96721cc1a589d625fecd3fffa9ec42b1fc64f
+          Legacy migration snapshot: 4c0b8baf1bf31f7a274bd0fa27ebe5826131f0c9
+
+          All files under backend/source/ are the pinned Radin Django backend snapshot.
+          They are backend application code, Django Admin, server-rendered templates,
+          and backend static assets, not a frontend SPA.
+          Legacy migrations required for safe upgrades live under backend/legacy_migrations/.
+          The cPanel workflow overlays the approved Tatami Plus Django templates/static and
+          combines the pinned source with compatibility migrations before testing and packaging.
+          EOF
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add backend/source backend/legacy_migrations backend/SOURCE-REVISION.txt
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(backend): vendor pinned Radin Django source snapshot"
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+            echo "RADIN_BACKEND_SOURCE_COMMITTED"
+          else
+            echo "RADIN_BACKEND_SOURCE_ALREADY_UP_TO_DATE"
+          fi
 
       - name: Restore deployed migration history and add data-preserving upgrade migrations
         shell: bash
