@@ -189,6 +189,10 @@ try {
     '/blog/' + encodeURIComponent('اوچی-ماتا') + '/'
   );
 
+  await page.evaluate(() => { location.hash = '#/blog/one%252Ftwo'; });
+  await page.locator('#blog-list-target').waitFor({ state: 'visible', timeout: 15000 });
+  assert.equal(await page.locator('#app').getAttribute('data-django-view'), '/blog/');
+
   await page.route('**/auth/**', async route => {
     const url = new URL(route.request().url());
     await route.fulfill({
