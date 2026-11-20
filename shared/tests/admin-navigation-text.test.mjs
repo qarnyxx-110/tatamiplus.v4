@@ -143,8 +143,16 @@ try {
       "Model name overflows at " + width + "px");
 
     const table = nav.locator(".app-accounts table");
+    const tableRect = await table.boundingBox();
+    const groupRect = await nav.locator(".app-accounts").boundingBox();
+    const captionRect = await accountsCaption.boundingBox();
+    assert.ok(tableRect && groupRect && captionRect);
     assert.ok(await table.evaluate((el) => el.scrollWidth <= el.clientWidth + 1),
       "Menu table horizontally overflows at " + width + "px");
+    assert.ok(tableRect.width >= groupRect.width - 20,
+      "Menu table does not fill the group card at " + width + "px");
+    assert.ok(captionRect.width >= tableRect.width - 2,
+      "Group caption is narrower than its table at " + width + "px");
 
     const add = row.locator("td .addlink");
     const addRect = await add.boundingBox();
@@ -172,6 +180,9 @@ try {
       viewport: width,
       sidebar: navRect.width,
       content: contentRect.width,
+      group: Math.round(groupRect.width * 10) / 10,
+      table: Math.round(tableRect.width * 10) / 10,
+      caption: Math.round(captionRect.width * 10) / 10,
       title: Math.round(titleRect.width * 10) / 10,
       count: Math.round(countRect.width * 10) / 10,
       disclosure: Math.round(disclosureRect.width * 10) / 10,
