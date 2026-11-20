@@ -124,6 +124,11 @@ jobs:
           assert "تاتامی‌پدیا" not in navigation
           assert "دوره‌های آموزشی" in courses and "ویدیوهای ضبط‌شده" in courses
           assert "<h1>مربیان</h1>" in coaches
+          blog_list = Path("django/templates/blog/post_list.html").read_text(encoding="utf-8")
+          blog_detail = Path("django/templates/blog/post_detail.html").read_text(encoding="utf-8")
+          assert "blog:detail" in blog_list and "tp-blog-list-title" in blog_list
+          assert "tp-article" in blog_detail and "blog:list" in blog_detail
+          assert "coach-row" not in blog_list and "page-main" not in blog_list
           print("DJANGO_SECTION_TEMPLATES_OK")
           PY
 
@@ -155,6 +160,8 @@ jobs:
               "club/course_list.html",
               "club/course_detail.html",
               "coaches/directory.html",
+              "blog/post_list.html",
+              "blog/post_detail.html",
           ]
           (release / "payload" / "templates").mkdir(parents=True, exist_ok=True)
           for relative in template_paths:
@@ -204,7 +211,7 @@ jobs:
                   raise SystemExit(f"ZIP integrity failure: {bad}")
               if f"{name}/install.py" not in bundle.namelist():
                   raise SystemExit("Installer entry is missing from ZIP")
-          print(f"CPANEL_INSTALLER_OK | files={len(entries)} | preview={sum(x['area']=='preview' for x in entries)} | templates=8")
+          print(f"CPANEL_INSTALLER_OK | files={len(entries)} | preview={sum(x['area']=='preview' for x in entries)} | templates=10")
           PY
           python3 "release/TatamiPlus-Sections-2026-11-21/install.py" --check
 
