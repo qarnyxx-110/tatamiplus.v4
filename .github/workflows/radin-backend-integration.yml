@@ -169,6 +169,7 @@ jobs:
                ".env" \
                "media/*" \
                "private_uploads/*" \
+               "coaches/test_portfolio_migration.py" \
                "__pycache__/*" \
                "*/__pycache__/*" \
                "*.pyc"
