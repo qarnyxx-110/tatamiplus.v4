@@ -1,0 +1,389 @@
+/* Tatami Plus Admin Sidebar Typography & Alignment Fix
+ * Persian-first text treatment and measured columns for Django's native app list.
+ * No link destinations, actions or permissions are changed.
+ */
+
+#nav-sidebar {
+  direction: rtl;
+  text-align: right;
+  width: 316px !important;
+  min-width: 316px !important;
+  max-width: 316px !important;
+  flex: 0 0 316px !important;
+  padding-inline: 12px !important;
+  overflow-x: hidden;
+  unicode-bidi: isolate;
+}
+
+/* App heading: title, actual accessible-model count and collapse button
+   each have their own non-overlapping grid track. */
+#nav-sidebar > .tpa-nav-group > table {
+  width: 100%;
+  min-width: 0;
+  table-layout: fixed;
+  direction: rtl;
+}
+
+#nav-sidebar > .tpa-nav-group > table > caption {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) 30px 36px;
+  grid-template-rows: minmax(58px, auto);
+  align-items: stretch;
+  width: 100%;
+  min-width: 0;
+  gap: 0;
+  direction: rtl;
+  text-align: right;
+  overflow: hidden;
+}
+
+#nav-sidebar .tpa-nav-group caption a.section {
+  grid-column: 1;
+  grid-row: 1;
+  width: 100%;
+  min-width: 0;
+  min-height: 58px;
+  display: grid !important;
+  grid-template-columns: 30px minmax(0, 1fr);
+  align-items: center;
+  justify-content: stretch;
+  gap: 9px;
+  padding: 9px 12px;
+  direction: rtl;
+  text-align: right;
+  text-transform: none !important;
+  white-space: normal;
+  overflow: hidden;
+  line-height: 1.65;
+}
+
+#nav-sidebar .tpa-nav-group caption a.section .tpa-app-icon {
+  grid-column: 1;
+  grid-row: 1;
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  margin: 0;
+  border-radius: 9px;
+  font-size: 14px;
+  line-height: 1;
+}
+
+#nav-sidebar .tpa-nav-group caption a.section .tpa-app-label {
+  grid-column: 2;
+  grid-row: 1;
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  direction: rtl;
+  text-align: right;
+  unicode-bidi: plaintext;
+  color: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.7;
+  letter-spacing: 0;
+  text-transform: none !important;
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: normal;
+}
+
+#nav-sidebar .tpa-nav-group caption .tpa-app-count {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: center;
+  justify-self: center;
+  min-width: 23px;
+  width: 23px;
+  height: 23px;
+  margin: 0;
+  padding: 0 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  direction: ltr;
+  unicode-bidi: isolate;
+  font-size: 10px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+#nav-sidebar .tpa-nav-group caption .tpa-group-toggle {
+  grid-column: 3;
+  grid-row: 1;
+  width: 36px;
+  min-width: 36px;
+  min-height: 58px;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  display: inline-grid;
+  place-items: center;
+  direction: ltr;
+  font-size: 17px;
+  line-height: 1;
+}
+
+/* Model names use a flexible text track; favorite star never competes with text. */
+#nav-sidebar .tpa-nav-group table tbody tr {
+  display: table-row;
+  width: 100%;
+  min-width: 0;
+}
+
+#nav-sidebar .tpa-nav-group table tbody tr th {
+  width: auto;
+  min-width: 0;
+  padding: 9px 10px 9px 5px;
+  direction: rtl;
+  text-align: right;
+  unicode-bidi: plaintext;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.8;
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: normal;
+}
+
+#nav-sidebar .tpa-nav-group table tbody tr th a:not(.tpa-favorite-toggle) {
+  display: block;
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  padding: 2px 0;
+  direction: rtl;
+  text-align: right;
+  unicode-bidi: plaintext;
+  color: #d5e2f4 !important;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.85;
+  text-decoration: none;
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: normal;
+}
+
+#nav-sidebar .tpa-nav-group table tbody tr th a:not(.tpa-favorite-toggle):hover {
+  color: #fff !important;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+#nav-sidebar .tpa-nav-group table tbody tr th .tpa-favorite-toggle {
+  width: 26px;
+  min-width: 26px;
+  max-width: 26px;
+  height: 28px;
+  min-height: 28px;
+  flex: 0 0 26px;
+  display: inline-grid;
+  place-items: center;
+  margin: 0;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: transparent;
+  color: #8ea4c4;
+  font-family: Tahoma, sans-serif;
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+#nav-sidebar .tpa-nav-group table tbody tr th .tpa-favorite-toggle:hover,
+#nav-sidebar .tpa-nav-group table tbody tr th .tpa-favorite-toggle.is-active {
+  border-color: #65552e;
+  background: #342d20;
+  color: #ffda82;
+}
+
+#nav-sidebar .tpa-nav-group table tbody tr td {
+  width: 62px;
+  min-width: 62px;
+  max-width: 62px;
+  padding: 7px 3px;
+  text-align: center;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+#nav-sidebar .tpa-nav-group table tbody tr td:nth-of-type(2) {
+  width: 58px;
+  min-width: 58px;
+  max-width: 58px;
+}
+
+#nav-sidebar .tpa-nav-group table tbody tr td:empty {
+  display: table-cell;
+  padding: 0;
+  border-top-color: transparent;
+}
+
+#nav-sidebar .tpa-nav-group table tbody tr td .addlink,
+#nav-sidebar .tpa-nav-group table tbody tr td .changelink,
+#nav-sidebar .tpa-nav-group table tbody tr td .viewlink {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 5px 3px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  direction: rtl;
+  text-align: center;
+  unicode-bidi: plaintext;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.45;
+  white-space: nowrap;
+  text-decoration: none !important;
+}
+
+#nav-sidebar .tpa-nav-group table tbody tr td .addlink::before {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
+  font-size: 12px;
+}
+
+#nav-sidebar .tpa-nav-group table tbody tr td .changelink,
+#nav-sidebar .tpa-nav-group table tbody tr td .viewlink {
+  color: #b8cbea !important;
+}
+
+#nav-sidebar .tpa-nav-group table tbody tr td .addlink:hover,
+#nav-sidebar .tpa-nav-group table tbody tr td .changelink:hover,
+#nav-sidebar .tpa-nav-group table tbody tr td .viewlink:hover {
+  text-decoration: none !important;
+}
+
+/* Avoid all-caps inheritance from generic theme rules. */
+#nav-sidebar .tpa-nav-group,
+#nav-sidebar .tpa-nav-group caption,
+#nav-sidebar .tpa-nav-group caption a,
+#nav-sidebar .tpa-nav-group th,
+#nav-sidebar .tpa-nav-group td,
+#nav-sidebar .tpa-nav-group td a {
+  text-transform: none !important;
+  letter-spacing: 0;
+}
+
+/* Keep Persian labels readable in the quick-access panels and command palette. */
+#nav-sidebar .tpa-quick-section,
+#nav-sidebar .tpa-quick-section *,
+.tpa-command-dialog,
+.tpa-command-dialog * {
+  direction: rtl;
+}
+
+#nav-sidebar .tpa-quick-link,
+.tpa-command-result,
+.tpa-command-result-copy strong,
+.tpa-command-result-copy small {
+  text-align: right;
+  unicode-bidi: plaintext;
+  overflow-wrap: break-word;
+  word-break: normal;
+}
+
+/* Width balance for medium desktop screens. */
+@media (max-width: 1100px) and (min-width: 768px) {
+  #nav-sidebar {
+    width: 292px !important;
+    min-width: 292px !important;
+    max-width: 292px !important;
+    flex-basis: 292px !important;
+  }
+
+  #nav-sidebar .tpa-nav-group table tbody tr td {
+    width: 58px;
+    min-width: 58px;
+    max-width: 58px;
+  }
+
+  #nav-sidebar .tpa-nav-group table tbody tr td:nth-of-type(2) {
+    width: 54px;
+    min-width: 54px;
+    max-width: 54px;
+  }
+}
+
+/* Mobile: sidebar stays within viewport and labels wrap at word boundaries. */
+@media (max-width: 767px) {
+  #nav-sidebar {
+    width: min(84vw, 320px) !important;
+    min-width: min(84vw, 320px) !important;
+    max-width: min(84vw, 320px) !important;
+    flex: 0 0 min(84vw, 320px) !important;
+    padding-inline: 10px !important;
+  }
+
+  #nav-sidebar > .tpa-nav-group > table > caption {
+    grid-template-columns: minmax(0, 1fr) 27px 33px;
+  }
+
+  #nav-sidebar .tpa-nav-group caption a.section {
+    grid-template-columns: 27px minmax(0, 1fr);
+    gap: 7px;
+    padding-inline: 9px;
+  }
+
+  #nav-sidebar .tpa-nav-group caption a.section .tpa-app-icon {
+    width: 25px;
+    height: 25px;
+    min-width: 25px;
+  }
+
+  #nav-sidebar .tpa-nav-group caption .tpa-group-toggle {
+    width: 33px;
+    min-width: 33px;
+  }
+
+  #nav-sidebar .tpa-nav-group table tbody tr th {
+    padding-inline: 7px 4px;
+    font-size: 11px;
+  }
+
+  #nav-sidebar .tpa-nav-group table tbody tr th a:not(.tpa-favorite-toggle) {
+    font-size: 11px;
+  }
+
+  #nav-sidebar .tpa-nav-group table tbody tr td {
+    width: 56px;
+    min-width: 56px;
+    max-width: 56px;
+    padding-inline: 2px;
+  }
+
+  #nav-sidebar .tpa-nav-group table tbody tr td:nth-of-type(2) {
+    width: 50px;
+    min-width: 50px;
+    max-width: 50px;
+  }
+
+  #nav-sidebar .tpa-nav-group table tbody tr td .addlink,
+  #nav-sidebar .tpa-nav-group table tbody tr td .changelink,
+  #nav-sidebar .tpa-nav-group table tbody tr td .viewlink {
+    font-size: 9px;
+    padding-inline: 2px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #nav-sidebar .tpa-nav-group *,
+  #nav-sidebar .tpa-quick-section *,
+  .tpa-command-dialog * {
+    transition: none !important;
+  }
+}
