@@ -260,6 +260,8 @@ jobs:
           assert "if (route === 'set-password') return '/auth/password/set/';" in bridge
           assert "if (route === 'blog') {" in bridge
           assert "return parts[1] ? '/blog/' + encodeURIComponent(parts[1]) + '/' : '/blog/';" in bridge
+          assert "case 'blog': {" in bridge and "slug = decodeURIComponent(route[1])" in bridge
+          assert "route.length !== 2" in bridge and "slug === '..'" in bridge
           assert "account|blog|club" in bridge
           assert "'set-password','blog','store'" in router
           assert "blog:detail" in blog_list and "tp-section-tabs" in blog_list
