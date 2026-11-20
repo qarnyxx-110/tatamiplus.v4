@@ -112,12 +112,12 @@ try {
   await page.addStyleTag({ content: navigationTextCss });
   await page.addScriptTag({ content: navigationScript });
 
-  // Navigation group caption uses distinct grid tracks; count and collapse arrow do not overlap.
-  const caption = page.locator("#nav-sidebar .tpa-nav-group caption");
-  assert.equal(await caption.evaluate((el) => getComputedStyle(el).display), "grid");
-  const titleBox = await caption.locator("a.section").boundingBox();
-  const countBox = await caption.locator(".tpa-app-count").boundingBox();
-  const toggleBox = await caption.locator(".tpa-group-toggle").boundingBox();
+  // Full-width app heading row uses three measured tracks without caption shrink-wrapping.
+  const appHeading = page.locator("#nav-sidebar .tpa-app-heading-row .tpa-app-heading");
+  assert.equal(await appHeading.evaluate((el) => getComputedStyle(el).display), "grid");
+  const titleBox = await appHeading.locator("a.section").boundingBox();
+  const countBox = await appHeading.locator(".tpa-app-count").boundingBox();
+  const toggleBox = await appHeading.locator(".tpa-group-toggle").boundingBox();
   assert.ok(titleBox && countBox && toggleBox);
   assert.ok(titleBox.x + titleBox.width <= countBox.x + 1 || countBox.x + countBox.width <= titleBox.x + 1);
   assert.ok(toggleBox.x + toggleBox.width <= countBox.x + 1 || countBox.x + countBox.width <= toggleBox.x + 1);
