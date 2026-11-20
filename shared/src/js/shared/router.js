@@ -11,7 +11,16 @@ if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)&&!window.__
  const registerTatamiServiceWorker=()=>navigator.serviceWorker.register(new URL('sw.js',document.baseURI),{scope:'./'}).then(registration=>{
    if(!registration)return null;
    const requestActivation=worker=>{
-    if(worker)worker.postMessage({type:'TP_SKIP_WAITING'});
+    const send=()=>{
+     const target=registration.waiting||worker;
+     if(target&&target.state==='installed'&&navigator.serviceWorker.controller){
+      target.postMessage({type:'TP_SKIP_WAITING'});
+     }
+    };
+    send();
+    // Retry briefly after the installed transition so registration.waiting is populated.
+    setTimeout(send,100);
+    setTimeout(send,500);
    };
    // Handle a waiting update that existed before this page loaded.
    requestActivation(registration.waiting);
