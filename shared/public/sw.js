@@ -1,10 +1,11 @@
 const V='tatami-v2',SHELL=['./','index.html','offline.html','manifest.webmanifest','icons/icon-192.png','icons/icon-512.png'];
 self.addEventListener('install',e=>{e.waitUntil((async()=>{
- await self.skipWaiting();
  const c=await caches.open(V),core=SHELL.slice(0,7),routes=SHELL.slice(7);
  await c.addAll(core);
  const results=await Promise.allSettled(routes.map(url=>c.add(url)));
  results.forEach((result,index)=>{if(result.status==='rejected')console.warn('[Tatami SW] optional route was not precached:',routes[index],result.reason)});
+ // Request activation only after the required app shell has been cached successfully.
+ await self.skipWaiting();
  })().catch(error=>{console.error('[Tatami SW] install failed',error);throw error}))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==V).map(x=>caches.delete(x)))).then(()=>self.clients.claim()))});
 self.addEventListener('message',e=>{
