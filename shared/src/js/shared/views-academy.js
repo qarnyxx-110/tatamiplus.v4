@@ -59,8 +59,17 @@ function tpEpisodeDetail(raw){
  <p class="mu sm" style="margin-top:var(--tp-space-sm)">این صفحه فقط برای نمایش ساختار صفحه قسمت ساخته شده است؛ فایل ویدئو، خرید دوره و مجوز مشاهده به بک‌اند نیاز دارند.</p></div>
  <div class="tp-cluster" style="margin-top:var(--tp-space-md)"><a class="btn o" href="#/courses/${c.slug}">بازگشت به فهرست قسمت‌ها</a><a class="btn" href="#/courses">همه دوره‌ها</a></div></div>`;
 }
+
+function tpLearningHub(){
+ const tab=hashParams().get('tab')==='videos'?'videos':'courses';
+ const content=tab==='videos'?views.videos():tpCourseList();
+ PT={t:'آموزش‌ها | تاتامی پلاس',d:'دوره‌های آموزشی و ویدیوهای ضبط‌شده جودو در یک بخش.'};
+ return '<div class="w tp-learning-head"><h1>آموزش‌ها</h1><p class="mu">دوره‌های آموزشی و ویدیوهای ضبط‌شده را از یک بخش دنبال کن.</p><nav class="cn" aria-label="نوع محتوای آموزشی"><a class="chip '+(tab==='courses'?'on':'')+'" href="#/learning?tab=courses"'+(tab==='courses'?' aria-current="page"':'')+'>دوره‌ها</a><a class="chip '+(tab==='videos'?'on':'')+'" href="#/learning?tab=videos"'+(tab==='videos'?' aria-current="page"':'')+'>ویدیوهای ضبط‌شده</a></nav></div><div class="tp-learning-content">'+content+'</div>';
+}
+
 Object.assign(views,{
 academy:()=>`<div class="w"><h1>آکادمی اساتید</h1><p class="mu">مربیان و پروفایل‌ها فرضی و نمایشی هستند.</p><div class="grid">${I.map(ic).join('')}</div></div>`,
+ learning:()=>tpLearningHub(),
  courses:(n,raw)=>raw===undefined?tpCourseList():tpCourseDetail(raw),
  episode:(n,raw)=>tpEpisodeDetail(raw),
 });

@@ -598,9 +598,48 @@ export async function runPreview(base,browser){
   S.ok('صفحه اصلی Preview: دکمه و کارت مربی آنلاین در دسترس‌اند',await pg.locator('#app a[href="#/online-coach"]').count()>=2);
   S.ok('منوی اصلی Preview: مربی آنلاین مسیر مستقل دارد',await pg.locator('#nv a[href="#/online-coach"]').count()===1);
   S.ok('فوتر Preview: مربی آنلاین به مسیر مستقل می‌رود',await pg.locator('footer a[href="#/online-coach"]').count()===1);
-  S.ok('دکمه مربی آنلاین در ابتدای صفحه اصلی قابل مشاهده است',await pg.locator('#app a[href="#/online-coach"]').first().isVisible());
+  S.ok('دکمه تحلیل هوشمند در ابتدای صفحه اصلی قابل مشاهده است',await pg.locator('#app a[href="#/online-coach"]').first().isVisible());
+  S.ok('فوتر: لینک آموزش‌های یکپارچه وجود دارد',await pg.locator('footer a[href="#/learning"]').count()===1);
+  S.ok('فوتر: لینک تحلیل هوشمند حرکت وجود دارد',await pg.locator('footer a[href="#/online-coach"]').count()===1);
+  S.ok('فوتر: لینک مقالات و دانشنامه وجود دارد',await pg.locator('footer a[href="#/blog"]').count()===1);
+  S.ok('منو دیگر مقصدهای تکراری دوره، ویدئو، هوش مصنوعی و تاتامی‌پدیا ندارد',
+    await pg.locator('#nv a[href="#/courses"],#nv a[href="#/videos"],#nv a[href="#/ai"],#nv a[href="#/tatamipedia"]').count()===0);
+  await go('#/learning?tab=courses');
+  S.ok('آموزش‌ها: تب دوره‌ها محتوای دوره‌ها را نشان می‌دهد',(await T()).includes('دوره‌های آموزشی')&&await pg.locator('#app .tp-course-card').count()>0);
+  await go('#/learning?tab=videos');
+  S.ok('آموزش‌ها: تب ویدیوها فهرست ویدیوهای ضبط‌شده را نشان می‌دهد',(await T()).includes('ویدیوهای ضبط‌شده')&&await pg.locator('#app .vg .vcd').count()>0);
+  await go('#/courses');
+  S.ok('مسیر قدیمی فهرست دوره‌ها به تب دوره‌های آموزش‌ها هدایت می‌شود',
+    (await pg.evaluate(()=>location.hash)).startsWith('#/learning?')&&(await pg.evaluate(()=>location.hash)).includes('tab=courses'));
+  await go('#/videos');
+  S.ok('مسیر قدیمی فهرست ویدیوها به تب ویدیوهای آموزش‌ها هدایت می‌شود',
+    (await pg.evaluate(()=>location.hash)).startsWith('#/learning?')&&(await pg.evaluate(()=>location.hash)).includes('tab=videos'));
   await go('#/online-coach');
-  S.ok('صفحه مربی آنلاین در Preview باز می‌شود',(await T()).includes('روشن کردن دوربین')&&await pg.locator('#tp-oc-video').count()===1);
+  S.ok('صفحه یکپارچه تحلیل هوشمند هر دو روش ورودی را دارد',
+    (await T()).includes('موتور تحلیل هوشمند')&&await pg.locator('#tp-oc-mode-live').count()===1&&await pg.locator('#tp-oc-mode-file').count()===1);
+  S.ok('شروع تحلیل تا اتصال سرویس واقعی غیرفعال است',await pg.locator('#tp-oc-analysis-start').isDisabled());
+  await pg.locator('#tp-oc-mode-file').click();
+  await pg.locator('#tp-oc-file').setInputFiles({name:'sample.mp4',mimeType:'video/mp4',buffer:Buffer.alloc(256,0)});
+  await pg.waitForFunction(()=>document.querySelector('#tp-oc-video')?.src.startsWith('blob:'),null,{timeout:5000});
+  S.ok('فایل ویدئویی فقط به‌صورت محلی پیش‌نمایش می‌شود',
+    await pg.locator('#tp-oc-file-details').innerText().then(t=>t.includes('sample.mp4'))&&await pg.locator('#tp-oc-video').isVisible()&&(await pg.locator('#tp-oc-camera-message').innerText()).includes('به سرور ارسال یا تحلیل نمی‌شود'));
+  await pg.locator('#tp-oc-mode-live').click();
+  const clearedFile=await pg.locator('#tp-oc-video').evaluate(v=>({src:v.getAttribute('src'),controls:v.controls,hidden:v.hidden}));
+  S.ok('با تغییر روش، URL موقت فایل پاک و کنترل‌های فایل بسته می‌شوند',!clearedFile.src&&!clearedFile.controls&&clearedFile.hidden);
+  await go('#/ai');
+  S.ok('مسیر قدیمی آنالیز هوش مصنوعی به صفحه یکپارچه هدایت می‌شود',
+    (await pg.evaluate(()=>location.hash)).startsWith('#/online-coach')&&(await T()).includes('موتور تحلیل هوشمند'));
+  await go('#/blog');
+  S.ok('بخش مقالات و دانشنامه، تب مقاله‌های آموزشی را نمایش می‌دهد',
+    (await T()).includes('مقالات و دانشنامه جودو')&&await pg.locator('#app a[href="#/blog?section=encyclopedia"]').count()===1);
+  await go('#/blog?section=encyclopedia');
+  S.ok('تب دانشنامه، اصطلاحات تاتامی‌پدیا را در همان بخش نمایش می‌دهد',
+    (await T()).includes('فهرست اصطلاحات')&&await pg.locator('#app a[href="#/blog"]').count()>=1);
+  await go('#/tatamipedia');
+  S.ok('مسیر قدیمی فهرست تاتامی‌پدیا به تب دانشنامه هدایت می‌شود',
+    (await pg.evaluate(()=>location.hash)).startsWith('#/blog?')&&(await pg.evaluate(()=>location.hash)).includes('section=encyclopedia'));
+  await go('#/tatamipedia/ippon');
+  S.ok('پیوند مستقیم اصطلاحات قدیمی همچنان صفحه جزئیات را باز می‌کند',(await T()).includes('معنی'));
   await go('#/');
  S.ok('لینک سیستم طراحی از فوتر حذف شده است',await pg.locator('footer a[href="#/design-system"]').count()===0);
  S.ok('لینک انتخاب نوع حساب از فوتر حذف شده است',await pg.locator('footer a[href="#/role"]').count()===0);
@@ -659,7 +698,7 @@ export async function runPreview(base,browser){
  await pg.reload();await wait(300);
  S.ok('مخفی‌ماندن پیام پس از بارگذاری مجدد پایدار است',!(await T()).includes('آماده شروع هستید؟'));
  
- const previewMobileRoutes=['#/','#/login','#/register','#/coaches','#/coaches/sara-ahmadi','#/sponsors','#/tatamipedia','#/tatamipedia/ippon','#/blog','#/blog/uchi-mata-basics','#/store','#/product/0','#/cart','#/tournaments','#/tournament/1','#/videos','#/video/3','#/academy','#/instructor/0','#/dashboard','#/profile','#/ai','#/clubs','#/club/0','#/gems','#/search','#/courses','#/courses/judo-foundations','#/episode/judo-foundations-lesson-1'];
+ const previewMobileRoutes=['#/','#/login','#/register','#/coaches','#/coaches/sara-ahmadi','#/sponsors','#/tatamipedia','#/tatamipedia/ippon','#/blog','#/blog?section=encyclopedia','#/blog/uchi-mata-basics','#/store','#/product/0','#/cart','#/tournaments','#/tournament/1','#/learning','#/learning?tab=videos','#/videos','#/video/3','#/academy','#/instructor/0','#/dashboard','#/profile','#/ai','#/clubs','#/club/0','#/gems','#/search','#/courses','#/courses/judo-foundations','#/episode/judo-foundations-lesson-1'];
  const mobileOverflow=[];
  for(const width of [320,360,390]){
   await pg.setViewportSize({width,height:850});
@@ -670,7 +709,7 @@ export async function runPreview(base,browser){
    if(state.overflow)mobileOverflow.push(width+route+' ('+state.viewport+'/'+state.document+')');
   }
  }
- S.ok('واکنش‌گرایی Preview در ۲۹ مسیر و سه عرض موبایل',mobileOverflow.length===0,mobileOverflow.slice(0,8).join(' | '));
+ S.ok('واکنش‌گرایی Preview در ۳۲ مسیر و سه عرض موبایل',mobileOverflow.length===0,mobileOverflow.slice(0,8).join(' | '));
 S.ok('بدون خطای JavaScript در سناریوی Preview',errors.length===0,errors.join(' | '));
  await ctx.close();return S;
 }

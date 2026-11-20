@@ -291,8 +291,8 @@ try {
   assert.equal((await page.locator('#hbu .hb-t').textContent()).trim(), 'کاربر آزمایشی');
   assert.equal(await page.locator('#hgem').isVisible(), true);
   assert.equal((await page.locator('#hgem .tp-gem-header-value').textContent()).trim(), '۱۲');
-  assert.equal(await page.locator('#nv a').count(), 15);
-  assert.equal(await page.locator('#nvd a').count(), 15);
+  assert.equal(await page.locator('#nv a').count(), 12);
+  assert.equal(await page.locator('#nvd a').count(), 12);
   assert.equal(await page.locator('#nv a[href="/store/"]').count(), 0, 'server navigation must not replace Preview navigation');
   assert.equal(await page.locator('#nv a[href="#/store"]').count(), 1);
   assert.equal(await page.locator('#server-footer-marker').count(), 0, 'server footer must not replace Preview footer');
@@ -314,7 +314,7 @@ try {
   assert.equal(await page.locator('#nv a:nth-child(9)').isVisible(), false);
   await page.locator('#mnb').click();
   await page.locator('#mnd[open]').waitFor({ state: 'visible' });
-  assert.equal(await page.locator('#nvd a').count(), 15);
+  assert.equal(await page.locator('#nvd a').count(), 12);
   await page.keyboard.press('Escape');
 
 
