@@ -103,7 +103,7 @@
       group.classList.add("tpa-nav-group");
       const tbody = table.tBodies && table.tBodies[0];
       const rows = Array.from(table.querySelectorAll("tr")).filter((row) =>
-        row.querySelector("th a[href]")
+        Array.from(row.classList).some((className) => className.startsWith("model-"))
       );
 
       if (appLink) {
@@ -347,12 +347,16 @@
       writeStore(KEYS.collapsed, collapsedState);
       collapseButton.textContent = collapsed ? "بازکردن همه" : "جمع‌کردن همه";
     };
+    const collapsibleGroups = groupRecords.filter((record) =>
+      !record.element.classList.contains("current-app") &&
+      !record.element.querySelector("tr.current-model, a[aria-current='page']")
+    );
+    const areAllCollapsibleGroupsClosed = () =>
+      collapsibleGroups.length > 0 && collapsibleGroups.every((record) => record.collapsed);
     collapseButton.addEventListener("click", () => {
-      const allCollapsed = groupRecords.every((record) => record.collapsed);
-      setAllGroups(!allCollapsed);
+      setAllGroups(!areAllCollapsibleGroupsClosed());
     });
-    collapseButton.textContent = groupRecords.length &&
-      groupRecords.every((record) => record.collapsed)
+    collapseButton.textContent = areAllCollapsibleGroupsClosed()
       ? "بازکردن همه"
       : "جمع‌کردن همه";
 
@@ -428,7 +432,31 @@
     commandInput.addEventListener("input", renderCommandResults);
     commandResults.addEventListener("click", (event) => {
       const link = event.target.closest("a[href]");
-      if (link) closeCommand();
+      if (link) {
+        const item = visibleItems.find((candidate) => candidate.href === link.href);
+        if (item) {
+          recent = [item, ...recent.filter((candidate) => candidate.href !== item.href)].slice(0, 8);
+          writeStore(KEYS.recent, recent);
+        }
+        closeCommand();
+      }
+    });
+
+    overlay.addEventListener("keydown", (event) => {
+      if (event.key !== "Tab") return;
+      const focusables = Array.from(
+        overlay.querySelectorAll("button:not([disabled]), input:not([disabled]), a[href]")
+      ).filter((element) => !element.hidden);
+      if (!focusables.length) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     });
 
     commandInput.addEventListener("keydown", (event) => {
@@ -438,6 +466,7 @@
         activeIndex = (activeIndex + (event.key === "ArrowDown" ? 1 : -1) + visibleItems.length) % visibleItems.length;
         commandResults.querySelectorAll(".tpa-command-result").forEach((link, index) => {
           link.setAttribute("aria-selected", index === activeIndex ? "true" : "false");
+          if (index === activeIndex) link.scrollIntoView({ block: "nearest" });
         });
       } else if (event.key === "Enter" && visibleItems[activeIndex]) {
         window.location.href = visibleItems[activeIndex].href;
