@@ -5,8 +5,8 @@
 {% block title %}وبلاگ | تاتامی پلاس{% endblock %}
 {% block description %}خبرها، نکته‌های تمرینی و یادداشت‌های منتشرشدهٔ تیم تاتامی پلاس.{% endblock %}
 {% block content %}
-<main class="w tp-blog-page">
-  <header class="sh tp-blog-heading">
+<main class="w">
+  <header class="sh">
     <div>
       <span class="eyebrow">TATAMI PLUS · BLOG</span>
       <h1>وبلاگ</h1>
@@ -26,27 +26,19 @@
     </div>
 
     {% if posts %}
-      <div class="tp-blog-list">
-        {% for post in posts %}
-          <a class="tp-blog-row" href="{% url 'blog:detail' post.slug %}">
-            <span class="tp-blog-row-main">
-              <strong>{{ post.title }}</strong>
-              {% if post.excerpt or post.body %}
-                <span class="mu sm">{{ post.excerpt|default:post.body|truncatechars:150 }}</span>
-              {% endif %}
-            </span>
-            <span class="tp-blog-row-meta">
-              {% if post.published_at %}
-                <time datetime="{{ post.published_at|date:'c' }}">{{ post.published_at|jformat:'%Y/%m/%d'|persian_digits }}</time>
-              {% endif %}
-              <span class="tp-blog-row-arrow" aria-hidden="true">←</span>
-            </span>
-          </a>
-        {% endfor %}
-      </div>
+      {% for post in posts %}
+        <a class="rec" href="{% url 'blog:detail' post.slug %}">
+          <b>{{ post.title }}</b>
+          {% if post.excerpt or post.body %}
+            <span class="mu sm">{{ post.excerpt|default:post.body|truncatechars:150 }}</span>
+          {% endif %}
+          {% if post.published_at %}
+            <span class="mu sm">{{ post.published_at|jformat:'%Y/%m/%d'|persian_digits }}</span>
+          {% endif %}
+        </a>
+      {% endfor %}
     {% else %}
       <div class="tp-state" aria-live="polite">
-        <span class="eyebrow">BLOG</span>
         <b>هنوز مطلبی منتشر نشده است</b>
         <p>مطالب تاتامی پلاس پس از انتشار در این بخش نمایش داده می‌شوند.</p>
       </div>
