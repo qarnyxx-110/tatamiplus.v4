@@ -43,7 +43,7 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
  await go('#/online-coach');const oc=await T();
  S.ok('مربی آنلاین: صفحه مستقل و ابزار دوربین',oc.includes('مربی آنلاین')&&oc.includes('روشن کردن دوربین')&&await pg.locator('#tp-oc-video').count()===1);
  S.ok('تحلیل هوشمند: تا اتصال موتور واقعی، تحلیل غیرفعال است',oc.includes('موتور تحلیل متصل نیست')&&oc.includes('متصل نشده است')&&await pg.locator('#tp-oc-analysis-start').isDisabled()&&await pg.locator('#tp-oc-count').count()===0);
- S.ok('تحلیل هوشمند: دوربین زنده و انتخاب فایل هر دو در دسترس‌اند',oc.includes('هیچ داده‌ای به سرور ارسال نمی‌شود')&&await pg.locator('#tp-oc-video').count()===1&&await pg.locator('#tp-oc input[type=file]').count()===1&&await pg.locator('#tp-oc-mode-file').count()===1);
+ S.ok('تحلیل هوشمند: دوربین زنده و انتخاب فایل هر دو در دسترس‌اند',oc.includes('هیچ داده‌ای به سرور ارسال نمی‌شود')&&await pg.locator('#tp-oc-video').count()===1&&await pg.locator('.tp-oc input[type=file]').count()===1&&await pg.locator('#tp-oc-mode-file').count()===1);
  const ocWidths=[];for(const width of [320,360,390]){await pg.setViewportSize({width,height:800});await go('#/online-coach');ocWidths.push(await pg.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1&&document.body.scrollWidth<=innerWidth+1));}
  S.ok('مربی آنلاین: بدون اسکرول افقی در موبایل ۳۲۰/۳۶۰/۳۹۰',ocWidths.every(Boolean),ocWidths.join(','));
  await pg.setViewportSize({width:390,height:800});await go('#/');
