@@ -8,8 +8,10 @@ name: Django Admin navigation and workspace browser validation
     paths:
       - "django/static/js/tatami-admin-navigation.js"
       - "django/static/css/tatami-admin-navigation.css"
+      - "django/static/css/tatami-admin-navigation-text.css"
       - "django/static/css/tatami-admin-workspace.css"
       - "shared/tests/admin-navigation.test.mjs"
+      - "shared/tests/admin-navigation-text.test.mjs"
       - "shared/tests/admin-workspace-ui.test.mjs"
       - ".github/workflows/admin-navigation-validation.yml"
   pull_request:
@@ -49,6 +51,10 @@ jobs:
       - name: Run Admin navigation browser regression
         working-directory: shared
         run: node tests/admin-navigation.test.mjs
+
+      - name: Run Persian Admin sidebar text and layout regression
+        working-directory: shared
+        run: node tests/admin-navigation-text.test.mjs
 
       - name: Run Admin form and submit-footer browser regression
         working-directory: shared
