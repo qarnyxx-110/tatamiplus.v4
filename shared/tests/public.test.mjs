@@ -400,9 +400,28 @@ export async function runPwa(app,base,browser,altRoot){
     return{registration:true,controllerChanged:false,error:String(error)};
    }
 
-   // Wait for an updated worker to finish installation. If it is waiting,
-   // exercise the same explicit skip-waiting message supported by sw.js.
+   // update() may resolve before the browser exposes registration.installing.
+   // Observe updatefound as well as the current state before looking for a waiting worker.
    let candidate=registration.waiting||registration.installing;
+   if(!candidate){
+    candidate=await Promise.race([
+     new Promise(resolve=>{
+      const onFound=()=>{
+       registration.removeEventListener('updatefound',onFound);
+       resolve(registration.installing||registration.waiting||null);
+      };
+      registration.addEventListener('updatefound',onFound,{once:true});
+      if(registration.installing||registration.waiting){
+       registration.removeEventListener('updatefound',onFound);
+       resolve(registration.installing||registration.waiting);
+      }
+     }),
+     new Promise(resolve=>setTimeout(()=>resolve(registration.waiting||registration.installing||null),10000))
+    ]);
+   }
+
+   // Wait for installation to finish. An installed worker should either activate
+   // itself or receive the supported explicit skip-waiting message below.
    if(candidate&&candidate.state!=='installed'){
     await Promise.race([
      new Promise(resolve=>{
