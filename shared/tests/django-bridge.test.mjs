@@ -195,7 +195,8 @@ try {
     ['#/register?role=coach&next=%23%2Fcart', '/auth/login/sms/?role=coach&next=%2Fstore%2Fcart%2F'],
     ['#/role?role=student', '/auth/login/sms/?role=student'],
     ['#/password-reset', '/auth/password/reset/'],
-    ['#/set-password', '/auth/password/set/']
+    ['#/set-password', '/auth/password/set/'],
+    ['#/login?next=%23%2Fblog%2Fuchi-mata', '/auth/login/?next=%2Fblog%2Fuchi-mata%2F']
   ];
   for (const [hash, expected] of authRoutes) {
     await page.evaluate(value => { location.hash = value; }, hash);
@@ -216,4 +217,4 @@ try {
 }
 
 if (failures.length) throw new Error(failures.join('\n\n'));
-console.log('Django Preview bridge browser checks: existing regression passed; blog routes: list/detail/Persian slug passed; auth routes: 5/5 passed');
+console.log('Django Preview bridge browser checks: existing regression passed; blog routes: list/detail/Persian slug passed; auth routes: 6/6 passed');
