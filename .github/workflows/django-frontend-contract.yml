@@ -105,14 +105,16 @@ jobs:
           admin_navigation_css = Path("django/static/css/tatami-admin-navigation.css").read_text(encoding="utf-8")
           admin_workspace_css = Path("django/static/css/tatami-admin-workspace.css").read_text(encoding="utf-8")
           admin_navigation_text_css = Path("django/static/css/tatami-admin-navigation-text.css").read_text(encoding="utf-8")
-          for selector in ("grid-template-columns: minmax(0, 1fr) 28px 34px", ".tpa-app-label", ".tpa-model-heading", "width: 64px", "@media (max-width: 1100px) and (min-width: 768px)", "@media (max-width: 767px)"):
-              assert selector in admin_navigation_text_css, f"Missing Persian navigation text rule: {selector}"
+          for selector in (".tpa-visually-hidden-caption", ".tpa-app-heading-row", ".tpa-app-heading", "grid-template-columns: minmax(0, 1fr) 28px 34px", ".tpa-app-label", ".tpa-model-heading", "width: 68px", "@media (max-width: 1100px) and (min-width: 768px)", "@media (max-width: 767px)"):
+              assert selector in admin_navigation_text_css, f"Missing measured Persian navigation rule: {selector}"
           for selector in ("body.change-form #content-main form fieldset.aligned .form-row", ".submit-row input.default", ".submit-row a.deletelink", "#nav-sidebar > .tpa-nav-group > table > caption", "@media (max-width: 767px)"):
               assert selector in admin_workspace_css, f"Missing Admin workspace styling: {selector}"
           admin_navigation_js = Path("django/static/js/tatami-admin-navigation.js").read_text(encoding="utf-8")
           for app_name in ("حساب‌های کاربری", "کاربران و دسترسی‌ها", "باشگاه", "مربیان", "جم", "سفارش‌ها", "فروشگاه", "وبلاگ"):
               assert app_name in admin_navigation_js, f"Missing Persian app display name: {app_name}"
           assert "dataset.tpaAppName" in admin_navigation_js and "modelHeading.append(star)" in admin_navigation_js
+          assert "tpa-app-heading-row" in admin_navigation_js and "headingCell.colSpan = 3" in admin_navigation_js
+          assert 'group.querySelector(".tpa-app-heading-row a.section")' in admin_navigation_js
           for selector in ("#nav-sidebar > .tpa-nav-group", ".tpa-group-toggle", ".tpa-favorite-toggle", ".tpa-command-overlay", ".tpa-nav-compact", "@media (max-width: 767px)"):
               assert selector in admin_navigation_css, f"Missing navigation UI rule: {selector}"
           for feature in ("nav-sidebar", "tpa-command-trigger", "tpa-favorite-toggle", "tpa-group-collapsed", "KEYS.recent", "model-"):
