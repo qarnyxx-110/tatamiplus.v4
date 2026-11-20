@@ -387,3 +387,61 @@
     transition: none !important;
   }
 }
+
+/* Model title and favorite control share a dedicated flex row.
+   This keeps long Persian names wrapped naturally without pushing the star
+   onto a separate line or disturbing Django's native table-cell layout. */
+#nav-sidebar .tpa-nav-group table tbody tr th .tpa-model-heading {
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  direction: rtl;
+  text-align: right;
+}
+
+#nav-sidebar .tpa-nav-group table tbody tr th .tpa-model-heading > a {
+  min-width: 0;
+  flex: 1 1 auto;
+  display: block;
+  padding: 2px 0;
+  direction: rtl;
+  text-align: right;
+  unicode-bidi: plaintext;
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: normal;
+}
+
+#nav-sidebar .tpa-nav-group table tbody tr th .tpa-model-label {
+  min-width: 0;
+  flex: 1 1 auto;
+  direction: rtl;
+  text-align: right;
+  unicode-bidi: plaintext;
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: normal;
+}
+
+#nav-sidebar .tpa-nav-group table tbody tr th .tpa-model-heading > .tpa-favorite-toggle {
+  position: static;
+  inset: auto;
+  flex: 0 0 26px;
+  align-self: center;
+}
+
+@media (max-width: 767px) {
+  #nav-sidebar .tpa-nav-group table tbody tr th .tpa-model-heading {
+    gap: 4px;
+  }
+
+  #nav-sidebar .tpa-nav-group table tbody tr th .tpa-model-heading > .tpa-favorite-toggle {
+    flex-basis: 24px;
+    width: 24px;
+    min-width: 24px;
+    max-width: 24px;
+  }
+}
