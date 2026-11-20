@@ -68,13 +68,15 @@ try {
   const nav = page.locator("#nav-sidebar");
   const accountsLink = nav.locator(".app-accounts caption a.section");
   assert.equal(await accountsLink.locator(".tpa-app-label").textContent(), "حساب‌های کاربری");
-  assert.equal(await accountsLink.getAttribute("href"), "https://tatamiplus.ir/admin/accounts/");
+  assert.equal(await accountsLink.getAttribute("href"), "/admin/accounts/");
+  assert.equal(await accountsLink.evaluate((link) => link.href), "https://tatamiplus.ir/admin/accounts/");
   assert.equal(await accountsLink.getAttribute("aria-label"), "حساب‌های کاربری");
   assert.equal(await accountsLink.locator(".tpa-app-label").evaluate((el) => getComputedStyle(el).textTransform), "none");
 
   const clubLink = nav.locator(".app-club caption a.section");
   assert.equal(await clubLink.locator(".tpa-app-label").textContent(), "باشگاه");
-  assert.equal(await clubLink.getAttribute("href"), "https://tatamiplus.ir/admin/club/");
+  assert.equal(await clubLink.getAttribute("href"), "/admin/club/");
+  assert.equal(await clubLink.evaluate((link) => link.href), "https://tatamiplus.ir/admin/club/");
 
   const caption = nav.locator(".app-accounts caption");
   const titleRect = await accountsLink.boundingBox();
