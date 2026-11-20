@@ -1,25 +1,41 @@
 {% extends "admin/base.html" %}
 {% load static %}
 
-{% block title %}{{ title }} | مدیریت تاتامی پلاس{% endblock %}
+{% block title %}{{ title }} | تاتامی پلاس{% endblock %}
+{% block bodyclass %}tp-admin-root{% endblock %}
 
 {% block branding %}
-<h1 id="site-name">
-  <a href="{% url 'admin:index' %}">تاتامی پلاس</a>
-  <span class="tp-admin-brand-caption">مدیریت سامانه</span>
-</h1>
+  <h1 id="site-name" class="tp-admin-wordmark">
+    <a href="{% url 'admin:index' %}">تاتامی پلاس</a>
+    <span>مدیریت سامانه</span>
+  </h1>
 {% endblock %}
 
 {% block nav-global %}
-{% if new_coach_leads_count %}
-  <a class="tp-admin-lead-notice" href="{% url 'admin:accounts_signuplead_changelist' %}" aria-label="سرنخ‌های جدید مربی: {{ new_coach_leads_count }}">
-    <span>درخواست‌های مربیگری جدید</span>
-    <strong class="tp-admin-lead-count">{{ new_coach_leads_count }}</strong>
-  </a>
-{% endif %}
+  <nav class="tp-admin-global-nav" aria-label="پیوندهای سریع">
+    <a class="tp-admin-nav-link" href="/" target="_blank" rel="noopener noreferrer">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1V10Z"/></svg>
+      <span>مشاهده سایت</span>
+    </a>
+    <a class="tp-admin-nav-link" href="/preview/#/" target="_blank" rel="noopener noreferrer">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.4-6 9.5-6 9.5 6 9.5 6-3.4 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.5"/></svg>
+      <span>پیش‌نمایش</span>
+    </a>
+    {% if new_coach_leads_count %}
+      <a class="tp-admin-lead-link" href="{% url 'admin:accounts_signuplead_changelist' %}" aria-label="سرنخ‌های جدید مربی: {{ new_coach_leads_count }}">
+        <span class="tp-admin-lead-dot" aria-hidden="true"></span>
+        <span>درخواست مربیگری</span>
+        <strong>{{ new_coach_leads_count }}</strong>
+      </a>
+    {% endif %}
+  </nav>
 {% endblock %}
 
 {% block extrastyle %}
   {{ block.super }}
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lalezar&family=Vazirmatn:wght@400;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/tatami-admin-tokens.css' %}">
   <link rel="stylesheet" href="{% static 'css/tatami-admin.css' %}">
 {% endblock %}

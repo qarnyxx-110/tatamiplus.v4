@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load persian %}
+{% load jformat %}
 
 {% block title %}حساب کاربری | تاتامی پلاس{% endblock %}
 {% block content %}
@@ -23,31 +24,87 @@
     </nav>
 
     {% if user.role == 'coach' %}
-      {% with application=coach_application %}
-      <div class="d-c tp-coach-next">
-        <ol class="tp-steps" aria-label="مراحل مربی شدن">
-          <li class="done"><span>✓</span>ساخت حساب مربی</li>
-          {% if application %}
-            <li class="done"><span>✓</span>ثبت درخواست مربیگری</li>
-            <li class="{% if application.status == 'pending_review' %}on{% else %}done{% endif %}"{% if application.status == 'pending_review' %} aria-current="step"{% endif %}><span>{% if application.status == 'pending_review' %}۳{% else %}✓{% endif %}</span>بررسی تیم</li>
-            <li class="{% if application.status != 'pending_review' %}on{% endif %}"{% if application.status != 'pending_review' %} aria-current="step"{% endif %}><span>۴</span>انتشار پروفایل</li>
+      {% with portfolio=coach_portfolio %}
+      <section class="d-c tp-coach-next" aria-labelledby="coach-journey-title">
+        <div class="dh">
+          <h2 id="coach-journey-title">مسیر مربیگری</h2>
+          {% if portfolio %}
+            <span class="tag {% if portfolio.status == 'approved' or portfolio.status == 'published' %}ok{% elif portfolio.status == 'rejected' or portfolio.status == 'inactive' %}danger{% else %}g{% endif %}">{{ portfolio.get_status_display }}</span>
           {% else %}
-            <li class="on" aria-current="step"><span>۲</span>ثبت درخواست مربیگری</li>
+            <span class="tag m">هنوز ثبت نشده</span>
+          {% endif %}
+        </div>
+
+        {% if not portfolio %}
+          <ol class="tp-steps" aria-label="مراحل مربی شدن">
+            <li class="done"><span>✓</span>ساخت حساب مربی</li>
+            <li class="on" aria-current="step"><span>۲</span>ثبت پورتفولیو</li>
             <li><span>۳</span>بررسی تیم</li>
             <li><span>۴</span>انتشار پروفایل</li>
+          </ol>
+          <p class="mu">برای ورود به پنل مربی و معرفی عمومی، ابتدا اطلاعات و مدرک مربیگری خود را ثبت کنید.</p>
+          <a class="btn" href="{% url 'coaches:apply' %}">ثبت پورتفولیوی مربیگری</a>
+
+        {% elif portfolio.status == 'pending_review' %}
+          <ol class="tp-steps" aria-label="مراحل مربی شدن">
+            <li class="done"><span>✓</span>ساخت حساب مربی</li>
+            <li class="done"><span>✓</span>ثبت پورتفولیو</li>
+            <li class="on" aria-current="step"><span>۳</span>بررسی تیم</li>
+            <li><span>۴</span>انتشار پروفایل</li>
+          </ol>
+          <p class="mu">پورتفولیوی شما{% if portfolio.submitted_at %} در {{ portfolio.submitted_at|jformat:'%Y/%m/%d'|persian_digits }}{% endif %} ثبت شده و در انتظار بررسی تیم تاتامی پلاس است. تا پایان بررسی نیازی به ارسال دوباره نیست.</p>
+          <a class="btn o" href="{% url 'coaches:application_status' %}">مشاهده وضعیت و جزئیات</a>
+
+        {% elif portfolio.status == 'rejected' %}
+          <ol class="tp-steps" aria-label="مراحل مربی شدن">
+            <li class="done"><span>✓</span>ساخت حساب مربی</li>
+            <li class="on" aria-current="step"><span>۲</span>اصلاح پورتفولیو</li>
+            <li><span>۳</span>بررسی دوباره</li>
+            <li><span>۴</span>انتشار پروفایل</li>
+          </ol>
+          <p class="tp-error-text">پورتفولیوی شما نیاز به اصلاح دارد.</p>
+          {% if portfolio.rejection_reason %}<p class="tp-note">دلیل اعلام‌شده از سوی تیم: {{ portfolio.rejection_reason }}</p>{% endif %}
+          <p class="mu sm">اطلاعات قبلی در فرم باقی می‌ماند؛ برای ارسال دوباره فقط موارد لازم را اصلاح کنید.</p>
+          <a class="btn" href="{% url 'coaches:apply' %}">ویرایش و ارسال دوباره</a>
+          <a class="btn o s" href="{% url 'coaches:application_status' %}">جزئیات بررسی</a>
+
+        {% elif portfolio.status == 'draft' or portfolio.status == 'incomplete' %}
+          <ol class="tp-steps" aria-label="مراحل مربی شدن">
+            <li class="done"><span>✓</span>ساخت حساب مربی</li>
+            <li class="on" aria-current="step"><span>۲</span>تکمیل پورتفولیو</li>
+            <li><span>۳</span>بررسی تیم</li>
+            <li><span>۴</span>انتشار پروفایل</li>
+          </ol>
+          <p class="mu">برای ارسال پورتفولیو به تیم بررسی، اطلاعات ناقص را تکمیل کنید.</p>
+          <a class="btn" href="{% url 'coaches:apply' %}">تکمیل پورتفولیو</a>
+
+        {% elif portfolio.status == 'approved' or portfolio.status == 'published' %}
+          <ol class="tp-steps" aria-label="مراحل مربی شدن">
+            <li class="done"><span>✓</span>ساخت حساب مربی</li>
+            <li class="done"><span>✓</span>ثبت پورتفولیو</li>
+            <li class="done"><span>✓</span>تأیید تیم</li>
+            <li class="{% if portfolio.is_published %}done{% else %}on{% endif %}"{% if not portfolio.is_published %} aria-current="step"{% endif %}><span>{% if portfolio.is_published %}✓{% else %}۴{% endif %}</span>انتشار پروفایل</li>
+          </ol>
+          {% if portfolio.is_published %}
+            <p class="mu">پروفایل عمومی شما منتشر شده و برای بازدیدکنندگان قابل مشاهده است.</p>
+            <a class="btn o" href="{% url 'coaches:profile_detail' portfolio.pk %}">مشاهده پروفایل عمومی</a>
+          {% else %}
+            <p class="mu">پورتفولیوی شما تأیید شده است و پس از انتشار توسط تیم در فهرست عمومی مربیان دیده می‌شود.</p>
           {% endif %}
-        </ol>
-        {% if application %}
-          <p>وضعیت درخواست مربیگری: <span class="tag {% if application.status == 'approved' %}ok{% elif application.status == 'rejected' %}danger{% else %}g{% endif %}">{{ application.get_status_display }}</span></p>
-          {% if coach_profile %}
-            <a class="btn o" href="{% url 'coaches:profile_detail' coach_profile.pk %}">مشاهده پروفایل مربی</a>
-          {% endif %}
-          <a class="btn o" href="{% url 'coaches:application_status' %}">مشاهدهٔ وضعیت درخواست</a>
+          <nav class="tp-panel-nav" aria-label="پنل مربی">
+            <a class="chip" href="{% url 'coach_panel:course_list' %}">دوره‌های من</a>
+            <a class="chip" href="{% url 'coach_students:list' %}">هنرجوها و کدهای دعوت</a>
+            <a class="chip" href="{% url 'coaches:portfolio' %}">ویرایش پورتفولیو</a>
+          </nav>
+
+        {% elif portfolio.status == 'inactive' %}
+          <p class="tp-note">پورتفولیوی مربیگری شما در حال حاضر غیرفعال است. برای پیگیری، با تیم تاتامی پلاس هماهنگ کنید.</p>
+          <a class="btn o" href="{% url 'coaches:application_status' %}">مشاهده وضعیت</a>
         {% else %}
-          <p>برای نمایش در فهرست مربیان، درخواست مربیگری و مدرک خود را ثبت کنید.</p>
-          <a class="btn" href="{% url 'coaches:apply' %}">ثبت درخواست مربیگری</a>
+          <p class="mu">وضعیت پورتفولیوی شما نیازمند بررسی است.</p>
+          <a class="btn o" href="{% url 'coaches:application_status' %}">مشاهده وضعیت</a>
         {% endif %}
-      </div>
+      </section>
       {% endwith %}
     {% endif %}
   {% else %}
@@ -55,8 +112,8 @@
       <h2>مسیرت را انتخاب کن</h2>
       <p class="mu">برای ادامه، حساب هنرجو یا مربی بسازید یا وارد حساب خود شوید.</p>
       <ul class="tp-roles-l" aria-label="نوع حساب کاربری">
-        <li><span class="tp-role-n" aria-hidden="true">۰۱</span><div><b>هنرجو</b><div class="mu sm">مربیان را ببینید و سبد خریدتان را در حساب خود نگه دارید.</div></div><a class="btn s" href="{% url 'phone_auth:login' %}?role=student">ثبت‌نام هنرجو</a></li>
-        <li><span class="tp-role-n" aria-hidden="true">۰۲</span><div><b>مربی</b><div class="mu sm">حساب بسازید و درخواست مربیگری خود را برای بررسی ثبت کنید.</div></div><a class="btn s" href="{% url 'phone_auth:login' %}?role=coach">ثبت‌نام مربی</a></li>
+        <li><span class="tp-role-n" aria-hidden="true">۰۱</span><div><b>هنرجو</b><div class="mu sm">مربیان را ببینید و سبد خریدتان را در حساب خود نگه دارید.</div></div><a class="btn s" href="{% url 'phone_auth:sms_login' %}?role=student">ثبت‌نام هنرجو</a></li>
+        <li><span class="tp-role-n" aria-hidden="true">۰۲</span><div><b>مربی</b><div class="mu sm">حساب بسازید و پورتفولیوی مربیگری خود را برای بررسی ثبت کنید.</div></div><a class="btn s" href="{% url 'phone_auth:sms_login' %}?role=coach">ثبت‌نام مربی</a></li>
         <li><span class="tp-role-n" aria-hidden="true">۰۳</span><div><b>باشگاه</b><div class="mu sm">در حال حاضر امکان ساخت حساب باشگاه از این صفحه وجود ندارد.</div></div></li>
       </ul>
       <p class="tp-auth-alt">قبلاً ثبت‌نام کرده‌اید؟ <a href="{% url 'phone_auth:login' %}">وارد شوید</a></p>

@@ -260,10 +260,13 @@
       if (next) query.set('next', next);
 
       const suffix = query.toString();
-      return '/auth/login/' + (suffix ? '?' + suffix : '');
+      const useSmsLogin = route !== 'login' || Boolean(role);
+      const target = useSmsLogin ? '/auth/login/sms/' : '/auth/login/';
+      return target + (suffix ? '?' + suffix : '');
     }
 
-    if (route === 'password-reset' || route === 'set-password') return '/auth/login/';
+    if (route === 'password-reset') return '/auth/password/reset/';
+    if (route === 'set-password') return '/auth/password/set/';
     if (route === 'coach-invite') return '/coaches/join/';
 
     if (route === 'coaches') {
@@ -307,18 +310,189 @@
   }
 
   function ensureDjangoStyles() {
-    [
-      '/static/css/tatami.css',
+    const files = [
+      '/static/css/django-bridge.css',
       '/static/css/backend-templates.css',
       '/static/css/module-pages.css',
       '/static/css/reference-store.css'
-    ].forEach((href) => {
-      if (document.querySelector('link[data-tp-django-style="' + href + '"]')) return;
-      const link = document.createElement('link');
-      link.rel = 'stylesheet';
-      link.href = href;
-      link.dataset.tpDjangoStyle = href;
+    ];
+
+    return Promise.all(files.map((href) => new Promise((resolve) => {
+      let link = document.querySelector('link[data-tp-django-style="' + href + '"]');
+      if (link && link.sheet) {
+        resolve(true);
+        return;
+      }
+      if (link && !link.sheet) {
+        link.remove();
+        link = null;
+      }
+      if (!link) {
+        link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = href;
+        link.dataset.tpDjangoStyle = href;
+      }
+      let settled = false;
+      const finish = (ok) => {
+        if (settled) return;
+        settled = true;
+        window.clearTimeout(timer);
+        resolve(ok);
+      };
+      const timer = window.setTimeout(() => finish(false), 7000);
+      link.addEventListener('load', () => finish(true), { once: true });
+      link.addEventListener('error', () => finish(false), { once: true });
       document.head.append(link);
+    })));
+  }
+
+  function clearDjangoStyles() {
+    document.querySelectorAll('link[data-tp-django-style]').forEach((link) => link.remove());
+  }
+
+  function setPreviewNavigation(route) {
+    ['#nv a', '#nvd a'].forEach((selector) => {
+      document.querySelectorAll(selector).forEach((link) => {
+        const href = link.getAttribute('href') || '';
+        const itemRoute = href.startsWith('#/') ? href.slice(2).split(/[/?]/)[0] : '';
+        const active = Boolean(route) && itemRoute === route;
+        link.classList.toggle('on', active);
+        if (active) link.setAttribute('aria-current', 'page');
+        else link.removeAttribute('aria-current');
+      });
+    });
+  }
+
+  function previewRouteForServerPath(path) {
+    if (/^\/store(?:\/|$)/.test(path)) return 'store';
+    if (/^\/(?:club|checkout)(?:\/|$)/.test(path)) return 'courses';
+    if (/^\/coaches(?:\/|$)/.test(path)) return 'coaches';
+    if (/^\/account\/gems(?:\/|$)/.test(path)) return 'gems';
+    return '';
+  }
+
+  function syncPreviewAccountState(remoteDocument) {
+    if (!remoteDocument) return;
+    const remoteHeader = remoteDocument.querySelector('body>header');
+    if (!remoteHeader) return;
+
+    const syncIcon = (local, remote) => {
+      const remoteIcon = remote && remote.querySelector('svg.tp-ico');
+      const localIcon = local && local.querySelector('svg.tp-ico');
+      if (!local) return;
+      if (remoteIcon && localIcon) localIcon.replaceWith(remoteIcon.cloneNode(true));
+      else if (remoteIcon) local.insertBefore(remoteIcon.cloneNode(true), local.firstChild);
+      else if (localIcon) localIcon.remove();
+    };
+    const syncLabel = (local, remote) => {
+      if (!local || !remote) return;
+      const remoteLabel = remote.querySelector('.hb-t');
+      const localLabel = local.querySelector('.hb-t');
+      const value = (remoteLabel ? remoteLabel.textContent : remote.textContent).trim();
+      if (localLabel) localLabel.textContent = value;
+      else {
+        const label = document.createElement('span');
+        label.className = 'hb-t';
+        label.textContent = value;
+        local.append(label);
+      }
+      if (remote.hasAttribute('aria-label')) local.setAttribute('aria-label', remote.getAttribute('aria-label'));
+    };
+
+    const remoteAccount = remoteHeader.querySelector('#hbu');
+    const localAccount = document.getElementById('hbu');
+    if (remoteAccount && localAccount) {
+      syncIcon(localAccount, remoteAccount);
+      syncLabel(localAccount, remoteAccount);
+      const accountPath = remoteAccount.getAttribute('href') || '';
+      localAccount.href = /\/account(?:\/|$)/.test(accountPath) ? '#/profile' : '#/login';
+    }
+
+    const remoteCart = remoteHeader.querySelector('#hcart');
+    const localCart = document.getElementById('hcart');
+    if (remoteCart && localCart) {
+      syncIcon(localCart, remoteCart);
+      syncLabel(localCart, remoteCart);
+      localCart.href = '#/cart';
+      const count = localCart.querySelector('#cc');
+      if (count && activeDjangoView) {
+        count.textContent = '';
+        count.hidden = true;
+      } else if (count) {
+        count.hidden = false;
+      }
+    }
+
+    const remoteGems = remoteHeader.querySelector('#hgem');
+    const localGems = document.getElementById('hgem');
+    if (localGems) {
+      localGems.hidden = !remoteGems;
+      localGems.style.display = remoteGems ? '' : 'none';
+      if (remoteGems) {
+        syncIcon(localGems, remoteGems);
+        syncLabel(localGems, remoteGems);
+        localGems.href = '#/gems';
+        const value = remoteGems.querySelector('.tp-gem-header-value');
+        const localValue = localGems.querySelector('.tp-gem-header-value');
+        if (value && localValue) localValue.textContent = value.textContent.trim();
+        const demo = localGems.querySelector('.tp-gem-demo');
+        if (demo) demo.hidden = true;
+        if (remoteGems.hasAttribute('aria-label')) localGems.setAttribute('aria-label', remoteGems.getAttribute('aria-label'));
+      }
+    }
+
+    const remoteDrawerFooter = remoteDocument.querySelector('#mnd .tp-drawer-f');
+    const localDrawerFooter = document.getElementById('mndf');
+    if (remoteDrawerFooter && localDrawerFooter) {
+      localDrawerFooter.replaceChildren(...Array.from(remoteDrawerFooter.childNodes).map(node => node.cloneNode(true)));
+      localDrawerFooter.querySelectorAll('a[href]').forEach((link) => {
+        const href = link.getAttribute('href') || '';
+        if (/^\/auth\/login\//.test(href)) link.setAttribute('href', '#/login');
+        else if (/^\/account\//.test(href)) link.setAttribute('href', '#/profile');
+      });
+    }
+  }
+
+  let lastServerDocument = null;
+  let shellStateRevision = 0;
+
+  function resetPreviewBridgeState() {
+    activeDjangoView = false;
+    currentServerUrl = new URL('/', location.origin);
+    abortActivePostRequest();
+    clearDjangoStyles();
+
+    document.querySelectorAll('script[data-tp-django-page-script]').forEach((script) => script.remove());
+    document.querySelectorAll('.tp-msgs[data-tp-server-messages]').forEach((message) => message.remove());
+
+    const app = document.querySelector('#app');
+    if (app) {
+      app.className = '';
+      app.removeAttribute('aria-label');
+      app.removeAttribute('aria-labelledby');
+      app.removeAttribute('style');
+      app.removeAttribute('data-django-view');
+      app.removeAttribute('aria-busy');
+      app.removeAttribute('data-loading');
+      app.setAttribute('role', 'main');
+    }
+  }
+
+  function syncPageNavigation(path) {
+    setPreviewNavigation(previewRouteForServerPath(path));
+  }
+
+  function hydratePreviewAccountState() {
+    const hydrationRevision = shellStateRevision;
+    fetchDjangoPage('/').then((remoteDocument) => {
+      if (hydrationRevision !== shellStateRevision) return;
+      if (location.pathname === '/preview/' || location.pathname === '/preview') {
+        lastServerDocument = remoteDocument;
+        syncPreviewAccountState(remoteDocument);
+      }
+    }).catch(() => {
+      // The Preview remains usable when the Django session endpoint is unavailable.
     });
   }
 
@@ -428,20 +602,45 @@
     });
 
     root.querySelectorAll('form[data-quantity-form]').forEach((form) => {
-      if (form.dataset.tpBound === 'true') return;
-      form.dataset.tpBound = 'true';
+      if (form.dataset.tpQuantityBound === 'true') return;
       const input = form.querySelector('input[name="quantity"]');
       if (!input) return;
-      form.querySelectorAll('[data-qty-step]').forEach((button) => {
-        button.hidden = false;
+      form.dataset.tpQuantityBound = 'true';
+      const buttons = Array.from(form.querySelectorAll('[data-qty-step]'));
+      const getLimits = () => {
+        const minValue = Number.parseInt(input.min || '1', 10);
+        const min = Number.isFinite(minValue) ? minValue : 1;
+        const maxValue = input.max === '' ? Number.POSITIVE_INFINITY : Number.parseInt(input.max, 10);
+        const max = Number.isFinite(maxValue) ? maxValue : Number.POSITIVE_INFINITY;
+        return { min, max, valid: max >= min };
+      };
+      const updateQuantityButtons = () => {
+        const { min, max, valid } = getLimits();
+        const current = Number.parseInt(input.value, 10);
+        buttons.forEach((button) => {
+          const step = Number.parseInt(button.dataset.qtyStep || '0', 10);
+          button.hidden = !valid || (step !== -1 && step !== 1);
+          button.disabled = !valid || !Number.isFinite(current) ||
+            (step < 0 && current <= min) || (step > 0 && current >= max);
+        });
+      };
+      buttons.forEach((button) => {
         button.addEventListener('click', () => {
-          const min = Number(input.min || 1);
-          const max = input.max ? Number(input.max) : Infinity;
-          const current = Number(input.value || min);
-          const step = Number(button.dataset.qtyStep || 0);
-          input.value = String(Math.max(min, Math.min(max, current + step)));
+          const { min, max, valid } = getLimits();
+          if (!valid) return;
+          const step = Number.parseInt(button.dataset.qtyStep || '0', 10);
+          if (step !== -1 && step !== 1) return;
+          const current = Number.parseInt(input.value, 10);
+          const safeCurrent = Number.isFinite(current) ? current : min;
+          input.value = String(Math.min(max, Math.max(min, safeCurrent + step)));
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+          input.dispatchEvent(new Event('change', { bubbles: true }));
+          updateQuantityButtons();
         });
       });
+      input.addEventListener('input', updateQuantityButtons);
+      input.addEventListener('change', updateQuantityButtons);
+      updateQuantityButtons();
     });
 
     const otp = root.querySelector('#id_code');
@@ -468,34 +667,61 @@
       throw new Error('The server response did not contain a Django content area.');
     }
 
-    const clonedApp = remoteApp.cloneNode(true);
+    // A rendered Django response carries newer session state than the initial shell snapshot.
+    shellStateRevision += 1;
+
+    const remoteChildren = Array.from(remoteApp.children);
+    const pageMain = remoteChildren.length === 1 && remoteChildren[0].tagName === 'MAIN'
+      ? remoteChildren[0]
+      : null;
+    const contentRoot = pageMain || remoteApp;
+
+    ['class', 'aria-label', 'aria-labelledby', 'style'].forEach((attribute) => {
+      localApp.removeAttribute(attribute);
+      if (contentRoot !== remoteApp && contentRoot.hasAttribute(attribute)) {
+        localApp.setAttribute(attribute, contentRoot.getAttribute(attribute));
+      }
+    });
+    localApp.replaceChildren(...Array.from(contentRoot.childNodes).map(node => node.cloneNode(true)));
+
     const messages = documentFromServer.querySelector('.tp-msgs');
-    if (messages) clonedApp.insertBefore(messages.cloneNode(true), clonedApp.firstChild);
-    localApp.replaceWith(clonedApp);
+    document.querySelectorAll('.tp-msgs[data-tp-server-messages]').forEach((message) => message.remove());
+    if (messages) {
+      const clonedMessages = messages.cloneNode(true);
+      clonedMessages.dataset.tpServerMessages = 'true';
+      localApp.parentNode.insertBefore(clonedMessages, localApp);
+    }
 
     currentServerUrl = finalUrl instanceof URL ? finalUrl : new URL(finalUrl, location.origin);
     activeDjangoView = true;
-    clonedApp.dataset.djangoView = currentServerUrl.pathname;
+    localApp.dataset.djangoView = currentServerUrl.pathname;
+    localApp.setAttribute('aria-busy', 'true');
+    localApp.setAttribute('data-enter', '');
+    lastServerDocument = documentFromServer;
     document.title = documentFromServer.title || 'تاتامی پلاس';
     const description = documentFromServer.querySelector('meta[name="description"]');
     const localDescription = document.querySelector('meta[name="description"]');
     if (description && localDescription) localDescription.content = description.content;
 
-    ensureDjangoStyles();
-    enhanceDjangoPage(clonedApp);
-    if (clonedApp.querySelector('[data-reference-store]')) {
+    syncPageNavigation(currentServerUrl.pathname);
+    syncPreviewAccountState(documentFromServer);
+    enhanceDjangoPage(localApp);
+
+    const loadPageScript = (name, src) => {
+      document.querySelectorAll('script[data-tp-django-page-script="' + name + '"]').forEach((script) => script.remove());
       const script = document.createElement('script');
-      script.src = '/static/js/reference-store.js';
+      script.src = src;
       script.async = false;
-      document.head.append(script);
+      script.dataset.tpDjangoPageScript = name;
+      document.body.append(script);
+    };
+    if (localApp.querySelector('[data-reference-store]')) {
+      loadPageScript('reference-store', '/static/js/reference-store.js');
     }
-    if (clonedApp.querySelector('[data-home-feed]')) {
-      const script = document.createElement('script');
-      script.src = '/static/js/home-restored.js';
-      script.async = false;
-      document.head.append(script);
+    if (localApp.querySelector('[data-home-feed]')) {
+      loadPageScript('home-restored', '/static/js/home-restored.js');
     }
-    clonedApp.setAttribute('aria-busy', 'false');
+    localApp.setAttribute('aria-busy', 'false');
   }
 
   async function loadDjangoPath(path, version, expectedHash) {
@@ -527,11 +753,13 @@
       }
       const markup = await response.text();
       if (version !== requestVersion || expectedHash !== location.hash) return;
+      await ensureDjangoStyles();
+      if (version !== requestVersion || expectedHash !== location.hash) return;
       renderDjangoDocument(markup, finalUrl, expectedHash);
       if (app) delete app.dataset.loading;
     } catch (error) {
       if (version !== requestVersion || expectedHash !== location.hash) return;
-      activeDjangoView = true;
+      resetPreviewBridgeState();
       if (app) {
         delete app.dataset.loading;
         app.setAttribute('aria-busy', 'false');
@@ -561,8 +789,8 @@
     const hash = location.hash;
     if (!hash.startsWith('#/')) {
       ++requestVersion;
-      abortActivePostRequest();
-      activeDjangoView = false;
+      resetPreviewBridgeState();
+      if (lastServerDocument) syncPreviewAccountState(lastServerDocument);
       return;
     }
 
@@ -588,14 +816,17 @@
     if (target && typeof target.then === 'function') target = await target;
 
     if (!target || version !== requestVersion || hash !== location.hash) {
-      if (!target) activeDjangoView = false;
+      if (!target && version === requestVersion && hash === location.hash) {
+        resetPreviewBridgeState();
+        if (lastServerDocument) syncPreviewAccountState(lastServerDocument);
+      }
       return;
     }
     await loadDjangoPath(target, version, hash);
   }
 
-  // Keep the Preview shell and its original navigation visible. Django supplies
-  // the real page content, forms, session, CSRF and business data in-place.
+  // Keep the Preview shell, navigation and footer intact. Django supplies only
+  // real page content, forms, session, CSRF and business data.
   document.addEventListener('click', (event) => {
     if (!activeDjangoView || event.defaultPrevented || event.button !== 0 ||
         event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
@@ -631,18 +862,46 @@
     if (!activeDjangoView && (form.id === 'rg-f' || form.id === 'lg-f')) {
       event.preventDefault();
       event.stopImmediatePropagation();
-      location.hash = '#/login';
+
+      // Legacy Preview auth forms must never create browser-only accounts in production.
+      // Registration now starts the real SMS flow; sign-in uses the real password form.
+      const isRegistrationForm = form.id === 'rg-f';
+      const target = new URL(
+        isRegistrationForm ? '/auth/login/sms/' : '/auth/login/',
+        location.origin
+      );
+      if (isRegistrationForm) {
+        const role = form.querySelector('input[name="role"]:checked')?.value ||
+          (form.elements.role && form.elements.role.value);
+        if (role === 'student' || role === 'coach') target.searchParams.set('role', role);
+      }
+
+      const hashQuery = location.hash.includes('?')
+        ? location.hash.slice(location.hash.indexOf('?') + 1)
+        : '';
+      const hashParams = new URLSearchParams(hashQuery);
+      const next = nextPathFromHash(hashParams.get('next') || hashParams.get('next_url'));
+      if (next) target.searchParams.set('next', next);
+
+      navigateToDjangoUrl(target);
       return;
     }
-    if (!activeDjangoView || !document.querySelector('#app')?.contains(form) ||
-        (form.target && form.target.toLowerCase() !== '_self')) return;
-
     const method = String(form.method || 'get').toUpperCase();
     let action;
     try {
       action = new URL(form.getAttribute('action') || currentServerUrl.href, currentServerUrl);
     } catch { return; }
-    if (!isAllowedDjangoUrl(action)) return;
+
+    const app = document.querySelector('#app');
+    const inApp = Boolean(app && app.contains(form));
+    const drawer = document.getElementById('mnd');
+    const inDrawer = Boolean(drawer && drawer.contains(form));
+    const isSessionLogout = inDrawer && method === 'POST' &&
+      (action.pathname === '/accounts/logout/' || action.pathname === '/accounts/logout');
+    if ((!activeDjangoView && !isSessionLogout) ||
+        (!inApp && !isSessionLogout) ||
+        (form.target && form.target.toLowerCase() !== '_self') ||
+        !isAllowedDjangoUrl(action)) return;
 
     event.preventDefault();
     event.stopImmediatePropagation();
@@ -737,7 +996,18 @@
         releaseControls(true);
         return;
       }
-      const finalUrl = new URL(request.responseURL || action.href, action.href);
+      let finalUrl = new URL(request.responseURL || action.href, action.href);
+      const redirectLocation = request.status >= 300 && request.status < 400
+        ? request.getResponseHeader('Location')
+        : null;
+      if (redirectLocation) {
+        try {
+          finalUrl = new URL(redirectLocation, finalUrl);
+        } catch {
+          showInlineFailure('نشانی مقصد پس از خروج معتبر نیست. صفحه را تازه کنید.');
+          return;
+        }
+      }
       if (finalUrl.origin !== location.origin || !isAllowedDjangoUrl(finalUrl)) {
         showInlineFailure('سرور درخواست را به نشانی پشتیبانی‌نشده هدایت کرد. صفحه را تازه کنید.');
         return;
@@ -750,6 +1020,10 @@
       const finalHash = serverHashForUrl(finalUrl);
       const samePath = finalUrl.pathname === action.pathname && finalUrl.search === action.search;
       if (!samePath && location.hash !== finalHash) {
+        if (isSessionLogout) {
+          const drawer = form.closest('dialog');
+          if (drawer && drawer.open) drawer.close();
+        }
         releaseControls(true);
         location.hash = finalHash;
         return;
@@ -786,5 +1060,6 @@
   }, true);
 
   window.addEventListener('hashchange', handlePreviewRoute);
+  hydratePreviewAccountState();
   handlePreviewRoute();
 })();

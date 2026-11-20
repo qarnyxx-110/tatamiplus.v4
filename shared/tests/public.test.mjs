@@ -37,13 +37,13 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
   await go('#/');
  }
  const nav=await pg.evaluate(()=>[...document.querySelectorAll('#nv a')].map(a=>a.textContent.trim()));
- S.ok('منو: بلاگ، تاتامی‌پدیا، مربیان، حامیان',['بلاگ','تاتامی‌پدیا','مربیان تاتامی','حامیان تاتامی پلاس'].every(x=>nav.includes(x)),nav.join('|'));S.ok('منو: دوره‌های آموزشی',nav.includes('دوره‌ها'),nav.join('|'));
+ S.ok('منو: مقالات و دانشنامه، مربیان، حامیان',['مقالات و دانشنامه','مربیان تاتامی','حامیان تاتامی پلاس'].every(x=>nav.includes(x)),nav.join('|'));S.ok('منو: آموزش‌ها',nav.includes('آموزش‌ها'),nav.join('|'));
  S.ok('منو: تاریخچه جم',nav.includes('جم'),nav.join('|'));
- S.ok('منو: مربی آنلاین برای هنرجو',app!=='student'||nav.includes('مربی آنلاین'),nav.join('|'));
+ S.ok('منو: تحلیل هوشمند حرکت برای هنرجو',app!=='student'||nav.includes('تحلیل هوشمند حرکت'),nav.join('|'));
  await go('#/online-coach');const oc=await T();
  S.ok('مربی آنلاین: صفحه مستقل و ابزار دوربین',oc.includes('مربی آنلاین')&&oc.includes('روشن کردن دوربین')&&await pg.locator('#tp-oc-video').count()===1);
- S.ok('مربی آنلاین: شمارش واقعی جعل نمی‌شود',await pg.locator('#tp-oc-count').innerText()==='—'&&oc.includes('ربات هنوز متصل نشده است')&&await pg.locator('#tp-oc-count-start').isDisabled());
- S.ok('مربی آنلاین: فعلاً فقط پیش‌نمایش محلی و بدون ورودی فایل',oc.includes('تصویر به سرور ارسال نمی‌شود')&&await pg.locator('#tp-oc-video').count()===1&&await pg.locator('#tp-oc input[type=file]').count()===0);
+ S.ok('تحلیل هوشمند: تا اتصال موتور واقعی، تحلیل غیرفعال است',oc.includes('موتور تحلیل متصل نیست')&&oc.includes('متصل نشده است')&&await pg.locator('#tp-oc-analysis-start').isDisabled()&&await pg.locator('#tp-oc-count').count()===0);
+ S.ok('تحلیل هوشمند: دوربین زنده و انتخاب فایل هر دو در دسترس‌اند',oc.includes('هیچ داده‌ای به سرور ارسال نمی‌شود')&&await pg.locator('#tp-oc-video').count()===1&&await pg.locator('.tp-oc input[type=file]').count()===1&&await pg.locator('#tp-oc-mode-file').count()===1);
  const ocWidths=[];for(const width of [320,360,390]){await pg.setViewportSize({width,height:800});await go('#/online-coach');ocWidths.push(await pg.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1&&document.body.scrollWidth<=innerWidth+1));}
  S.ok('مربی آنلاین: بدون اسکرول افقی در موبایل ۳۲۰/۳۶۰/۳۹۰',ocWidths.every(Boolean),ocWidths.join(','));
  await pg.setViewportSize({width:390,height:800});await go('#/');
@@ -111,7 +111,7 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
 
  S.ok('جم: نشان موجودی در هدر',await pg.locator('#hgem[href="#/gems"]').count()===1);
  S.ok('منو: «باشگاه‌ها» فقط برای هنرجو/باشگاه',(app==='coach')?!nav.includes('باشگاه‌ها'):nav.includes('باشگاه‌ها'));
- const foot=await pg.evaluate(()=>[...document.querySelectorAll('footer a')].map(a=>({text:a.textContent.trim(),href:a.getAttribute('href')})));S.ok('فوتر: لینک مربی آنلاین به صفحه مستقل مربی آنلاین متصل است',foot.some(a=>a.text==='مربی آنلاین'&&a.href==='#/online-coach')&&foot.some(a=>a.text==='تاتامی‌پدیا')&&foot.some(a=>a.text==='حامیان تاتامی پلاس')&&!foot.some(a=>a.text==='سیستم طراحی'),JSON.stringify(foot));
+ const foot=await pg.evaluate(()=>[...document.querySelectorAll('footer a')].map(a=>({text:a.textContent.trim(),href:a.getAttribute('href')})));S.ok('فوتر: سه بخش یکپارچه آموزش، تحلیل و دانشنامه لینک دارند',foot.some(a=>a.text==='آموزش‌ها'&&a.href==='#/learning')&&foot.some(a=>a.text==='تحلیل هوشمند حرکت'&&a.href==='#/online-coach')&&foot.some(a=>a.text==='مقالات و دانشنامه'&&a.href==='#/blog')&&foot.some(a=>a.text==='حامیان تاتامی پلاس')&&!foot.some(a=>a.text==='سیستم طراحی'),JSON.stringify(foot));
  await go('#/gems');const gems=await T();S.ok('جم: صفحه تاریخچه و وضعیت عدم اتصال',gems.includes('تاریخچه تراکنش‌ها')&&gems.includes('موجودی واقعی هنوز به این نسخه متصل نشده است'));S.ok('جم: عدم نمایش تراکنش ساختگی',gems.includes('تراکنشی برای نمایش وجود ندارد'));
  await go('#/my-profile');S.ok('«پروفایل من» فقط در PWA مربی',(app==='coach')?!await nf():await nf());
  if(app==='coach'){
@@ -288,7 +288,25 @@ export async function runPwa(app,base,browser,altRoot){
  const S=new Suite('PWA-فنی '+app);
  const ctx=await browser.newContext({viewport:{width:390,height:800},serviceWorkers:'allow'});
  const pg=await ctx.newPage();pg.setDefaultTimeout(15000);pg.setDefaultNavigationTimeout(15000);
- const swConsoleErrors=[];pg.on('console',message=>{if(message.type()==='error')swConsoleErrors.push(message.text())});
+ const swConsoleErrors=[];
+  // Only worker-related errors belong in this assertion. Unrelated page assets may
+  // legitimately return 404 in the test harness and must not fail the SW check.
+  pg.on('console',message=>{
+   if(message.type()!=='error')return;
+   const location=message.location();
+   const sourceUrl=String(location.url||'').split('?')[0];
+   if(message.text().includes('[Tatami SW]')||sourceUrl.endsWith('/sw.js')){
+    swConsoleErrors.push(message.text()+(location.url?' @ '+location.url:''));
+   }
+  });
+  pg.on('response',response=>{
+   const url=new URL(response.url());
+   if(url.pathname.endsWith('/sw.js')&&!response.ok())swConsoleErrors.push('Service Worker script HTTP '+response.status()+' at '+url.href);
+  });
+  pg.on('requestfailed',request=>{
+   const url=new URL(request.url());
+   if(url.pathname.endsWith('/sw.js'))swConsoleErrors.push('Service Worker script request failed at '+url.href+': '+(request.failure()?.errorText||'unknown error'));
+  });
  await pg.goto(base+'/index.html');
  const neshanConfig=await pg.evaluate(async()=>{const r=await fetch('assets/neshan-config.js');return{status:r.status,text:await r.text()}});
  S.ok('تنظیمات نشان در خروجی PWA قابل دریافت است',neshanConfig.status===200&&neshanConfig.text.includes('TP_NESHAN_WEB_KEY')&&neshanConfig.text.includes('TP_CLUBS_JSON_URL'),String(neshanConfig.status));
@@ -312,7 +330,7 @@ export async function runPwa(app,base,browser,altRoot){
  S.ok('Service Worker registration exists',registrations.length>0,JSON.stringify(registrations));
  const swReady=await pg.evaluate(()=>Promise.race([navigator.serviceWorker.ready.then(()=>true),new Promise(resolve=>setTimeout(()=>resolve(false),10000))]));
  S.ok('Service Worker registration becomes ready within 10 seconds',swReady,swReady?'ready':'timed out');
- S.ok('Service Worker console has no registration/install error',!swConsoleErrors.length,swConsoleErrors.join(' | '));
+ S.ok('Service Worker script and install have no errors',!swConsoleErrors.length,swConsoleErrors.join(' | '));
  await wait(900);
  await pg.reload();
  await wait(500);
@@ -360,7 +378,18 @@ export async function runPwa(app,base,browser,altRoot){
   const updateState=await pg.evaluate(async()=>{
    const registration=await navigator.serviceWorker.getRegistration();
    if(!registration)return{registration:false,controllerChanged:false,error:'no registration'};
-   let timer=0;
+   let timer=0,skipWaitingRequested=false;
+   let resolveActivationAck;
+   const activationAck=new Promise(resolve=>{
+    resolveActivationAck=resolve;
+    const onMessage=event=>{
+     if(event.data&&event.data.type==='TP_SKIP_WAITING_ACK'){
+      navigator.serviceWorker.removeEventListener('message',onMessage);
+      resolve({received:true,state:event.data.state||null});
+     }
+    };
+    navigator.serviceWorker.addEventListener('message',onMessage);
+   });
    const controllerChanged=new Promise(resolve=>{
     const onChange=()=>{if(timer)clearTimeout(timer);resolve(true)};
     navigator.serviceWorker.addEventListener('controllerchange',onChange,{once:true});
@@ -370,10 +399,58 @@ export async function runPwa(app,base,browser,altRoot){
     if(timer)clearTimeout(timer);
     return{registration:true,controllerChanged:false,error:String(error)};
    }
+
+   // update() may resolve before the browser exposes registration.installing.
+   // Observe updatefound as well as the current state before looking for a waiting worker.
+   let candidate=registration.waiting||registration.installing;
+   if(!candidate){
+    candidate=await Promise.race([
+     new Promise(resolve=>{
+      const onFound=()=>{
+       registration.removeEventListener('updatefound',onFound);
+       resolve(registration.installing||registration.waiting||null);
+      };
+      registration.addEventListener('updatefound',onFound,{once:true});
+      if(registration.installing||registration.waiting){
+       registration.removeEventListener('updatefound',onFound);
+       resolve(registration.installing||registration.waiting);
+      }
+     }),
+     new Promise(resolve=>setTimeout(()=>resolve(registration.waiting||registration.installing||null),10000))
+    ]);
+   }
+
+   // Wait for installation to finish. An installed worker should either activate
+   // itself or receive the supported explicit skip-waiting message below.
+   if(candidate&&candidate.state!=='installed'){
+    await Promise.race([
+     new Promise(resolve=>{
+      const onState=()=>{
+       if(candidate.state==='installed'||candidate.state==='activated'||candidate.state==='redundant'){
+        candidate.removeEventListener('statechange',onState);
+        resolve();
+       }
+      };
+      candidate.addEventListener('statechange',onState);
+      onState();
+     }),
+     new Promise(resolve=>setTimeout(resolve,8000))
+    ]);
+   }
+   candidate=registration.waiting||(candidate&&candidate.state==='installed'?candidate:null);
+   if(candidate&&candidate.state==='installed'){
+    skipWaitingRequested=true;
+    candidate.postMessage({type:'TP_SKIP_WAITING'});
+   }
+
    const changed=await controllerChanged;
+   const ack=skipWaitingRequested
+    ? await Promise.race([activationAck,new Promise(resolve=>setTimeout(()=>resolve({received:false,state:null}),4000))])
+    : {received:false,state:null};
    const latest=await navigator.serviceWorker.getRegistration();
    return{
     registration:true,
+    activationAck:ack,
     controllerChanged:changed,
     active:latest?.active?.state||null,
     installing:latest?.installing?.state||null,
@@ -485,12 +562,27 @@ export async function runClubs(app,base,browser){
 }
 
 export async function runPreview(base,browser){
- const S=new Suite('Preview: access, account CTA, and 24-product pagination');
+ const S=new Suite('Preview: access, live homepage store feed, account CTA, and product pagination');
  const ctx=await browser.newContext({viewport:{width:1280,height:900},serviceWorkers:'block'});
  const pg=await ctx.newPage();pg.setDefaultTimeout(15000);pg.setDefaultNavigationTimeout(15000);const errors=[];
  pg.on('pageerror',e=>errors.push(String(e).slice(0,140)));
  await pg.addInitScript(()=>localStorage.setItem('role',JSON.stringify('student')));
+ let homeStoreFeedMode='mock-live';
+ const liveStoreHtml='<!doctype html><html><body><main class="tp-store-page"><div class="pg tp-product-grid"><article class="card pcd tp-product-card"><div class="b"><a href="/store/registered-product/"><b>محصول ثبت‌شده واقعی</b></a><div class="pa"><a class="btn s" href="/store/registered-product/">مشاهده و انتخاب محصول</a></div></div></article></div><section class="tp-reference-store" hidden><div class="pg tp-product-grid"><article class="card pcd tp-product-card"><div class="b"><b>نمونه مرجع مخفی</b></div></article></div></section></main></body></html>';
+ await pg.route('**/store/',route=>homeStoreFeedMode==='mock-live'?route.fulfill({status:200,contentType:'text/html',body:liveStoreHtml}):route.continue());
  await pg.goto(base+'/index.html');await wait(350);
+ await pg.waitForFunction(()=>document.querySelector('[data-preview-store-products]')?.dataset.state==='ready',null,{timeout:10000});
+ const liveHomeFeed=pg.locator('[data-preview-store-products]');
+ S.ok('خانه Preview: کارت محصول از فهرست آنلاین فروشگاه می‌آید',await liveHomeFeed.locator('.tp-product-card').count()===1&&await liveHomeFeed.getByText('محصول ثبت‌شده واقعی').count()===1);
+ S.ok('خانه Preview: کاتالوگ مرجع مخفی یا محصول نمونه نمایش داده نمی‌شود',await liveHomeFeed.getByText('نمونه مرجع مخفی').count()===0);
+ homeStoreFeedMode='pass';
+ const emptyPage=await ctx.newPage();
+ emptyPage.setDefaultTimeout(15000);
+ await emptyPage.route('**/store/',route=>route.fulfill({status:200,contentType:'text/html',body:'<!doctype html><html><body><main class="tp-store-page"><div class="tp-state"><b>فروشگاه در حال حاضر محصول فعال ندارد</b><p>بعد از ثبت محصول، اینجا نمایش داده می‌شود.</p></div></main></body></html>'}));
+ await emptyPage.goto(base+'/index.html');
+ await emptyPage.waitForFunction(()=>document.querySelector('[data-preview-store-products]')?.dataset.state==='empty',null,{timeout:10000});
+ S.ok('خانه Preview: فروشگاه خالی بدون محصول جعلی و با پیام وضعیت نمایش داده می‌شود',await emptyPage.locator('[data-preview-store-products] .tp-product-card').count()===0&&/محصول فعال ندارد/.test(await emptyPage.locator('[data-preview-store-products]').innerText()));
+ await emptyPage.close();
  const freshCtx=await browser.newContext({viewport:{width:1280,height:900},serviceWorkers:'block'});
  const fresh=await freshCtx.newPage();await fresh.goto(base+'/index.html');await wait(250);
  S.ok('بازدیدکننده بدون نقش در صفحه اصلی می‌ماند',await fresh.evaluate(()=>!location.hash||location.hash==='#/'));
@@ -506,9 +598,49 @@ export async function runPreview(base,browser){
   S.ok('صفحه اصلی Preview: دکمه و کارت مربی آنلاین در دسترس‌اند',await pg.locator('#app a[href="#/online-coach"]').count()>=2);
   S.ok('منوی اصلی Preview: مربی آنلاین مسیر مستقل دارد',await pg.locator('#nv a[href="#/online-coach"]').count()===1);
   S.ok('فوتر Preview: مربی آنلاین به مسیر مستقل می‌رود',await pg.locator('footer a[href="#/online-coach"]').count()===1);
-  S.ok('دکمه مربی آنلاین در ابتدای صفحه اصلی قابل مشاهده است',await pg.locator('#app a[href="#/online-coach"]').first().isVisible());
+  S.ok('دکمه تحلیل هوشمند در ابتدای صفحه اصلی قابل مشاهده است',await pg.locator('#app a[href="#/online-coach"]').first().isVisible());
+  S.ok('فوتر: لینک آموزش‌های یکپارچه وجود دارد',await pg.locator('footer a[href="#/learning"]').count()===1);
+  S.ok('فوتر: لینک تحلیل هوشمند حرکت وجود دارد',await pg.locator('footer a[href="#/online-coach"]').count()===1);
+  S.ok('فوتر: لینک مقالات و دانشنامه وجود دارد',await pg.locator('footer a[href="#/blog"]').count()===1);
+  S.ok('منو دیگر مقصدهای تکراری دوره، ویدئو، هوش مصنوعی و تاتامی‌پدیا ندارد',
+    await pg.locator('#nv a[href="#/courses"],#nv a[href="#/videos"],#nv a[href="#/ai"],#nv a[href="#/tatamipedia"]').count()===0);
+  S.ok('کارت مستقل آنالیز نمایشی از صفحه اصلی حذف شده است',await pg.locator('#app a[href="#/ai"]').count()===0);
+  await go('#/learning?tab=courses');
+  S.ok('آموزش‌ها: تب دوره‌ها محتوای دوره‌ها را نشان می‌دهد',(await T()).includes('دوره‌های آموزشی')&&await pg.locator('#app .tp-course-card').count()>0);
+  await go('#/learning?tab=videos');
+  S.ok('آموزش‌ها: تب ویدیوها فهرست ویدیوهای ضبط‌شده را نشان می‌دهد',(await T()).includes('ویدیوهای ضبط‌شده')&&await pg.locator('#app .vg a[href^="#/video/"]').count()>0);
+  await go('#/courses');
+  S.ok('مسیر قدیمی فهرست دوره‌ها به تب دوره‌های آموزش‌ها هدایت می‌شود',
+    (await pg.evaluate(()=>location.hash)).startsWith('#/learning?')&&(await pg.evaluate(()=>location.hash)).includes('tab=courses'));
+  await go('#/videos');
+  S.ok('مسیر قدیمی فهرست ویدیوها به تب ویدیوهای آموزش‌ها هدایت می‌شود',
+    (await pg.evaluate(()=>location.hash)).startsWith('#/learning?')&&(await pg.evaluate(()=>location.hash)).includes('tab=videos'));
   await go('#/online-coach');
-  S.ok('صفحه مربی آنلاین در Preview باز می‌شود',(await T()).includes('روشن کردن دوربین')&&await pg.locator('#tp-oc-video').count()===1);
+  S.ok('صفحه یکپارچه تحلیل هوشمند هر دو روش ورودی را دارد',
+    (await T()).includes('موتور تحلیل هوشمند')&&await pg.locator('#tp-oc-mode-live').count()===1&&await pg.locator('#tp-oc-mode-file').count()===1);
+  S.ok('شروع تحلیل تا اتصال سرویس واقعی غیرفعال است',await pg.locator('#tp-oc-analysis-start').isDisabled());
+  await pg.locator('#tp-oc-mode-file').click();
+  await pg.locator('#tp-oc-file').setInputFiles({name:'sample.mp4',mimeType:'video/mp4',buffer:Buffer.alloc(256,0)});
+  await pg.waitForFunction(()=>document.querySelector('#tp-oc-video')?.src.startsWith('blob:'),null,{timeout:5000});
+  S.ok('فایل ویدئویی فقط به‌صورت محلی پیش‌نمایش می‌شود',
+    await pg.locator('#tp-oc-file-details').innerText().then(t=>t.includes('sample.mp4'))&&await pg.locator('#tp-oc-video').isVisible()&&(await pg.locator('#tp-oc-camera-message').innerText()).includes('به سرور ارسال یا تحلیل نمی‌شود'));
+  await pg.locator('#tp-oc-mode-live').click();
+  const clearedFile=await pg.locator('#tp-oc-video').evaluate(v=>({src:v.getAttribute('src'),controls:v.controls,hidden:v.hidden}));
+  S.ok('با تغییر روش، URL موقت فایل پاک و کنترل‌های فایل بسته می‌شوند',!clearedFile.src&&!clearedFile.controls&&clearedFile.hidden);
+  await go('#/ai');
+  S.ok('مسیر قدیمی آنالیز هوش مصنوعی به صفحه یکپارچه هدایت می‌شود',
+    (await pg.evaluate(()=>location.hash)).startsWith('#/online-coach')&&(await T()).includes('موتور تحلیل هوشمند'));
+  await go('#/blog');
+  S.ok('بخش مقالات و دانشنامه، تب مقاله‌های آموزشی را نمایش می‌دهد',
+    (await T()).includes('مقالات و دانشنامه جودو')&&await pg.locator('#app a[href="#/blog?section=encyclopedia"]').count()===1);
+  await go('#/blog?section=encyclopedia');
+  S.ok('تب دانشنامه، اصطلاحات تاتامی‌پدیا را در همان بخش نمایش می‌دهد',
+    (await T()).includes('فهرست اصطلاحات')&&await pg.locator('#app a[href="#/blog"]').count()>=1);
+  await go('#/tatamipedia');
+  S.ok('مسیر قدیمی فهرست تاتامی‌پدیا به تب دانشنامه هدایت می‌شود',
+    (await pg.evaluate(()=>location.hash)).startsWith('#/blog?')&&(await pg.evaluate(()=>location.hash)).includes('section=encyclopedia'));
+  await go('#/tatamipedia/ippon');
+  S.ok('پیوند مستقیم اصطلاحات قدیمی همچنان صفحه جزئیات را باز می‌کند',(await T()).includes('معنی'));
   await go('#/');
  S.ok('لینک سیستم طراحی از فوتر حذف شده است',await pg.locator('footer a[href="#/design-system"]').count()===0);
  S.ok('لینک انتخاب نوع حساب از فوتر حذف شده است',await pg.locator('footer a[href="#/role"]').count()===0);
@@ -567,7 +699,7 @@ export async function runPreview(base,browser){
  await pg.reload();await wait(300);
  S.ok('مخفی‌ماندن پیام پس از بارگذاری مجدد پایدار است',!(await T()).includes('آماده شروع هستید؟'));
  
- const previewMobileRoutes=['#/','#/login','#/register','#/coaches','#/coaches/sara-ahmadi','#/sponsors','#/tatamipedia','#/tatamipedia/ippon','#/blog','#/blog/uchi-mata-basics','#/store','#/product/0','#/cart','#/tournaments','#/tournament/1','#/videos','#/video/3','#/academy','#/instructor/0','#/dashboard','#/profile','#/ai','#/clubs','#/club/0','#/gems','#/search','#/courses','#/courses/judo-foundations','#/episode/judo-foundations-lesson-1'];
+ const previewMobileRoutes=['#/','#/login','#/register','#/coaches','#/coaches/sara-ahmadi','#/sponsors','#/tatamipedia','#/tatamipedia/ippon','#/blog','#/blog?section=encyclopedia','#/blog/uchi-mata-basics','#/store','#/product/0','#/cart','#/tournaments','#/tournament/1','#/learning','#/learning?tab=videos','#/videos','#/video/3','#/academy','#/instructor/0','#/dashboard','#/profile','#/ai','#/clubs','#/club/0','#/gems','#/search','#/courses','#/courses/judo-foundations','#/episode/judo-foundations-lesson-1'];
  const mobileOverflow=[];
  for(const width of [320,360,390]){
   await pg.setViewportSize({width,height:850});
@@ -578,7 +710,7 @@ export async function runPreview(base,browser){
    if(state.overflow)mobileOverflow.push(width+route+' ('+state.viewport+'/'+state.document+')');
   }
  }
- S.ok('واکنش‌گرایی Preview در ۲۹ مسیر و سه عرض موبایل',mobileOverflow.length===0,mobileOverflow.slice(0,8).join(' | '));
+ S.ok('واکنش‌گرایی Preview در ۳۲ مسیر و سه عرض موبایل',mobileOverflow.length===0,mobileOverflow.slice(0,8).join(' | '));
 S.ok('بدون خطای JavaScript در سناریوی Preview',errors.length===0,errors.join(' | '));
  await ctx.close();return S;
 }

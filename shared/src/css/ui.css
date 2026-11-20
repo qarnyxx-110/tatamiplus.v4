@@ -637,7 +637,7 @@ input[aria-invalid=true],select[aria-invalid=true],textarea[aria-invalid=true]{b
 
 /* Mobile usability refinements: preserve content width, form legibility and touch targets. */
 @media(max-width:767px){
- #app .w{padding-inline:var(--tp-space-sm)}
+ #app.w,#app .w{padding-inline:var(--tp-space-sm)}
  #app :is(.d-s,.d-c,.card,.tp-note,.tp-article,.tp-checkout,.tp-profile,.tp-auth-card){min-width:0;max-width:100%}
  #app :is(input,select,textarea){min-width:0;max-width:100%;min-height:44px;font-size:16px}
  #app table{display:block;max-width:100%;overflow-x:auto;overscroll-behavior-inline:contain;-webkit-overflow-scrolling:touch}

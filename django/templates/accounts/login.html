@@ -1,19 +1,33 @@
 {% extends "layouts/auth.html" %}
 
-{% block title %}ورود و ثبت‌نام پیامکی | تاتامی پلاس{% endblock %}
+{% block title %}{% if mode == 'sms' %}ورود و ثبت‌نام پیامکی{% else %}ورود با رمز عبور{% endif %} | تاتامی پلاس{% endblock %}
 
 {% block auth_content %}
-  <p class="tp-auth-kicker">TATAMI PLUS · حساب کاربری</p>
-  <h1 id="auth-page-title">ورود یا ثبت‌نام با پیامک</h1>
-  <p class="mu">شمارهٔ همراه و نوع حساب را وارد کنید. برای تأیید شماره، کد یک‌بارمصرف ارسال می‌شود.</p>
+  {% with next_value=form.next_url.value|default:'' %}
+    <p class="tp-auth-kicker">TATAMI PLUS · حساب کاربری</p>
+    <h1 id="auth-page-title">{% if mode == 'sms' %}ورود یا ثبت‌نام با پیامک{% else %}ورود با رمز عبور{% endif %}</h1>
+    {% if mode == 'sms' %}
+      <p class="mu">شمارهٔ همراه و نوع حساب را وارد کنید. برای تأیید شماره، کد یک‌بارمصرف ارسال می‌شود.</p>
+    {% else %}
+      <p class="mu">با شمارهٔ همراه و رمز عبورتان وارد شوید. برای ساخت حساب یا ورود بدون رمز از روش پیامکی استفاده کنید.</p>
+    {% endif %}
 
-  <form id="tp-login-form" method="post" action="{% url 'phone_auth:login' %}" novalidate data-auth-form="login" aria-labelledby="auth-page-title">
-    {% csrf_token %}
-    {% include 'includes/form_fields.html' %}
-    <button class="btn tp-auth-btn" type="submit">دریافت کد یک‌بارمصرف</button>
-  </form>
-{% endblock %}
+    <nav class="tp-panel-nav" aria-label="روش ورود">
+      <a class="chip{% if mode != 'sms' %} on{% endif %}" href="{% url 'phone_auth:login' %}{% if next_value %}?next={{ next_value|urlencode }}{% endif %}">ورود با رمز</a>
+      <a class="chip{% if mode == 'sms' %} on{% endif %}" href="{% url 'phone_auth:sms_login' %}{% if next_value %}?next={{ next_value|urlencode }}{% endif %}">ورود / ثبت‌نام با پیامک</a>
+    </nav>
 
-{% block auth_after_card %}
-  <p class="tp-auth-alt">پس از تأیید شماره، حساب شما وارد مرحلهٔ بعدی ثبت‌نام یا ورود می‌شود.</p>
+    <form id="tp-login-form" method="post" action="{% if mode == 'sms' %}{% url 'phone_auth:sms_login' %}{% else %}{% url 'phone_auth:login' %}{% endif %}" novalidate data-auth-form="login" aria-labelledby="auth-page-title">
+      {% csrf_token %}
+      {% include 'includes/form_fields.html' %}
+      <button class="btn tp-auth-btn" type="submit">{% if mode == 'sms' %}دریافت کد یک‌بارمصرف{% else %}ورود به حساب{% endif %}</button>
+    </form>
+
+    {% if mode == 'sms' %}
+      <p class="tp-auth-alt">اگر قبلاً برای حساب خود رمز ساخته‌اید، <a href="{% url 'phone_auth:login' %}{% if next_value %}?next={{ next_value|urlencode }}{% endif %}">با رمز وارد شوید</a>.</p>
+    {% else %}
+      <p class="tp-auth-alt"><a href="{% url 'phone_auth:password_reset' %}">رمز عبورم را فراموش کرده‌ام</a></p>
+      <p class="tp-auth-alt">حساب ندارید یا هنوز رمز نساخته‌اید؟ <a href="{% url 'phone_auth:sms_login' %}{% if next_value %}?next={{ next_value|urlencode }}{% endif %}">ورود / ثبت‌نام با پیامک</a></p>
+    {% endif %}
+  {% endwith %}
 {% endblock %}

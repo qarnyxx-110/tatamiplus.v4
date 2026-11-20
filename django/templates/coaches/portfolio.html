@@ -1,8 +1,8 @@
 {% extends 'base.html' %}
-{% block title %}پروفایل عمومی من | پنل مربی تاتامی پلاس{% endblock %}
+{% block title %}پورتفولیوی عمومی من | پنل مربی تاتامی پلاس{% endblock %}
 {% block content %}
 <main class="w tp-coach-panel">
-  <header class="sh"><div><span class="eyebrow">COACH PROFILE</span><h1>پروفایل عمومی من</h1><p class="mu">اطلاعاتی که پس از انتشار در صفحه عمومی مربی نمایش داده می‌شود.</p></div></header>
+  <header class="sh"><div><span class="eyebrow">COACH PROFILE</span><h1>پورتفولیوی عمومی من</h1><p class="mu">اطلاعاتی که پس از انتشار در صفحه عمومی مربی نمایش داده می‌شود.</p></div></header>
   <section class="d-c tp-coach-publish-state" aria-label="وضعیت انتشار پروفایل">
     <div class="dh"><b>وضعیت انتشار</b>{% if profile.is_published %}<span class="tag ok">منتشر شده</span>{% else %}<span class="tag g">در انتظار انتشار</span>{% endif %}</div>
     {% if profile.is_published %}

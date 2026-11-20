@@ -9,6 +9,7 @@ name: Django frontend checks and cPanel handoff
       - "django/templates/**"
       - "django/static/**"
       - "shared/build.js"
+      - "shared/tests/admin-dashboard.test.mjs"
       - "shared/src/css/**"
       - "shared/src/js/shared/django-route-bridge.js"
       - "shared/src/data/store-products.json"
@@ -22,6 +23,7 @@ name: Django frontend checks and cPanel handoff
       - "django/templates/**"
       - "django/static/**"
       - "shared/build.js"
+      - "shared/tests/admin-dashboard.test.mjs"
       - "shared/src/css/**"
       - "shared/src/js/shared/django-route-bridge.js"
       - "shared/src/data/store-products.json"
@@ -53,13 +55,16 @@ jobs:
           node --check django/static/js/module-pages.js
           node --check django/static/js/home-restored.js
           node --check django/static/js/reference-store.js
+          node --check django/static/js/admin-dashboard.js
+          node --check shared/build.js
           node --check shared/src/js/shared/django-route-bridge.js
+          node shared/tests/admin-dashboard.test.mjs
 
       - name: Verify shared design system output
         run: |
           set -euo pipefail
           node shared/build.js
-          git diff --exit-code -- django/static/css/tatami.css
+          git diff --exit-code -- django/static/css/tatami.css django/static/css/tatami-admin-tokens.css
 
       - name: Check frontend patch contracts
         run: |
@@ -71,6 +76,7 @@ jobs:
           navigation = Path("django/templates/components/platform_navigation.html").read_text(encoding="utf-8")
           login = Path("django/templates/accounts/login.html").read_text(encoding="utf-8")
           otp = Path("django/templates/accounts/otp_verify.html").read_text(encoding="utf-8")
+          account = Path("django/templates/pages/account.html").read_text(encoding="utf-8")
           profile = Path("django/templates/accounts/complete_profile.html").read_text(encoding="utf-8")
           auth_layout = Path("django/templates/layouts/auth.html").read_text(encoding="utf-8")
           auth_aside = Path("django/templates/components/auth_aside.html").read_text(encoding="utf-8")
@@ -86,6 +92,15 @@ jobs:
           shared_css = Path("django/static/css/tatami.css").read_text(encoding="utf-8")
           frontend_manifest = json.loads(Path("deploy/frontend-manifest.json").read_text(encoding="utf-8"))
           admin = Path("django/templates/admin/base_site.html").read_text(encoding="utf-8")
+          admin_tokens = Path("django/static/css/tatami-admin-tokens.css").read_text(encoding="utf-8")
+          admin_dashboard = Path("django/templates/admin/index.html").read_text(encoding="utf-8")
+          admin_dashboard_js = Path("django/static/js/admin-dashboard.js").read_text(encoding="utf-8")
+          cart_template = Path("django/templates/store/cart_detail.html").read_text(encoding="utf-8")
+          home_template = Path("django/templates/pages/home.html").read_text(encoding="utf-8")
+          live_feed_template = Path("django/templates/pages/home/partials/live_feed.html").read_text(encoding="utf-8")
+          home_js = Path("django/static/js/home-restored.js").read_text(encoding="utf-8")
+          preview_content = Path("shared/src/js/shared/content.js").read_text(encoding="utf-8")
+          preview_router = Path("shared/src/js/shared/router.js").read_text(encoding="utf-8")
           store_template = Path("django/templates/store/product_list.html").read_text(encoding="utf-8")
           store_detail_template = Path("django/templates/store/product_detail.html").read_text(encoding="utf-8")
           store_card_template = Path("django/templates/components/store_product_card.html").read_text(encoding="utf-8")
@@ -105,10 +120,15 @@ jobs:
           manifest = json.loads(Path("deploy/frontend-manifest.json").read_text(encoding="utf-8"))
 
           assert 'data-auth-form="login"' in login
-          assert '{% if mode == \'sms\' %}' not in login
-          assert "phone_auth:sms_login" not in login and "phone_auth:password_reset" not in login
+          # The current backend separates password login from SMS signup/OTP login.
+          assert "{% if mode == 'sms' %}" in login
+          assert "{% url 'phone_auth:sms_login' %}" in login
           assert "{% url 'phone_auth:login' %}" in login
-          assert "دریافت کد یک‌بارمصرف" in login
+          assert "{% url 'phone_auth:password_reset' %}" in login
+          assert "{% url 'phone_auth:sms_login' %}" in otp
+          assert "{% url 'phone_auth:sms_login' %}?role=student" in account
+          assert "{% url 'phone_auth:sms_login' %}?role=coach" in account
+          assert "دریافت کد یک‌بارمصرف" in login and "ورود به حساب" in login
           assert all('{% extends "layouts/auth.html" %}' in source for source in auth_pages)
           assert '{% include "components/auth_aside.html" %}' in auth_layout
           assert 'class="w tp-auth-layout" data-page-layout="auth"' in auth_layout
@@ -127,6 +147,7 @@ jobs:
           assert all("page-main" not in source and "button-dark" not in source for source in order_sources)
           assert all("{% csrf_token %}" in source for source in order_sources if "method=\"post\"" in source)
           assert ".tp-auth-layout{" in shared_css and ".tp-auth-aside{" in shared_css
+          assert '#app.w,#app .w{padding-inline:var(--tp-space-sm)}' in shared_css
           assert ".tp-gem-table{" in shared_css
           assert "accounts/login.html" not in next(item for item in frontend_manifest["mappings"] if item["destination"] == "templates").get("exclude", [])
           assert "data-reference-store" in store_template and "صرفاً جهت مشاهده، بدون امکان خرید" in store_template
@@ -159,43 +180,156 @@ jobs:
           assert "if starting_price or starting_price == 0" in store_card_template
           assert all(token in store_card for token in ("in_stock", "out_of_stock", "inventory_unregistered"))
           assert 'data-availability="{{ availability_status|default:' in store_card
+          # The Django storefront must preserve the established Preview card and detail layout.
+          assert 'class="card pcd tp-product-card"' in store_card
+          assert '<figure class="ph r43' in store_card and '<div class="b">' in store_card
+          assert '<h3>' not in store_card, "Store product card title must retain the shared bold-title structure"
+          assert 'class="pg tp-product-grid"' in store_template
+          assert 'repeat(auto-fill, minmax(min(100%, 200px), 1fr))' in module_css
+          assert '.tp-store-page .tp-product-card { display: block;' in module_css
+          assert '.tp-store-page .tp-product-card .b { display: block; }' in module_css
+          assert 'margin-top: auto' not in module_css.split('.tp-store-page .tp-product-card', 1)[1].split('/* ---------------- Online academy', 1)[0]
+          assert 'class="pd tp-product-detail"' in store_detail_template
+          assert 'class="pm"' in store_detail_template and 'class="pt"' in store_detail_template
+          assert 'class="tp-product-purchase"' not in store_detail_template
+          assert 'class="tp-product-form"' in store_detail_template and 'class="pa"' in store_detail_template
+          assert 'padding: 0;\n  border: 0;' in module_css
+          assert 'grid-template-columns: repeat(2, minmax(0, 1fr));' in module_css
           assert "stock_quantity" not in store_card
           assert "ProductVariant.price" not in store_card
           assert all("sourceUrl" not in product and "shop" not in product for product in reference_catalog["products"])
+          # Homepage store feed is sourced only from the live Django product-list HTML.
+          assert 'selector=".tp-product-grid > .tp-product-card"' in home_template
+          assert 'layout="products"' in home_template
+          assert "data-home-feed" in live_feed_template and "data-source=" in live_feed_template
+          assert "data-reference-catalog-url" not in live_feed_template
+          assert "referenceCatalogUrl" not in home_js
+          assert "renderReferenceProducts" not in home_js
+          assert "credentials: 'same-origin'" in home_js and "Accept: 'text/html'" in home_js
+          # Cart controls retain the real CSRF-protected Django endpoints and are never auto-submitted.
+          assert "data-quantity-form" in cart_template and "data-qty-step" in cart_template
+          assert "{% csrf_token %}" in cart_template
+          assert "{% url 'store:update_cart_item' item.pk %}" in cart_template
+          assert "{% url 'store:remove_cart_item' item.pk %}" in cart_template
+          assert "store-cart.js" not in cart_template and "store-cart.js" not in bridge
+          bridge_qty = bridge.split("root.querySelectorAll('form[data-quantity-form]')", 1)[1].split("const otp =", 1)[0]
+          django_js = Path("django/static/js/tatami.js").read_text(encoding="utf-8")
+          django_qty = django_js.split("// ۲-هـ. کنترل تعداد سبد", 1)[1].split("// ۳. فیلترهای فروشگاه", 1)[0]
+          assert "document.querySelectorAll('form[data-quantity-form]')" in django_js
+          assert "requestSubmit" not in bridge_qty and "form.submit(" not in bridge_qty
+          assert "requestSubmit" not in django_qty and "form.submit(" not in django_qty
+          assert "button.disabled" in bridge_qty and "button.disabled" in django_qty
+          assert "dispatchEvent(new Event('change'" in bridge_qty and "dispatchEvent(new Event('change'" in django_qty
+          assert ".tp-store-page .tp-qty-step" in module_css
+          assert ".tp-store-page .tp-cart-actions" in module_css
+          # The Preview SPA homepage uses live Django store records, never the local demo catalog.
+          assert "data-preview-store-products" in preview_content
+          assert "loadPreviewStoreProducts" in preview_content and "loadPreviewStoreProducts();" in preview_router
+          assert ".tp-product-grid > .tp-product-card" in preview_content
+          assert "P.filter(p=>p.st>0)" not in preview_content.split("function homeMore", 1)[1].split("const BLOG_SLUGS", 1)[0]
+          assert "فروشگاه آنلاین" in preview_content
+
+
           static_mapping = next(item for item in frontend_manifest["mappings"] if item["destination"] == "static")
           assert "css/tatami.css" not in static_mapping.get("exclude", [])
           assert '<header>' in base
-          assert '<a class="logo"' in base
+          assert '<a class="logo tp-brand-link"' in base
+          assert 'class="logo tp-brand-drawer" id="mnd-t"' in base
+          assert 'class="gold tp-brand-footer"' in base
+          assert base.count("tatami-plus-mark.png") == 3
+          assert "css/tatami-brand.css" in base
+          assert "/favicon.ico" in base and "/favicon-32x32.png" in base and "/apple-touch-icon.png" in base
           assert 'components/platform_navigation.html' in base and 'nav_id="nv"' in base
           assert 'nav_id="nvd"' in base and 'nav_class="tp-drawer-n"' in base
           assert 'id="{{ nav_id }}"' in navigation and 'class="{{ nav_class }}"' in navigation
-          assert navigation.count('href="/preview/#/') == 15
+          assert navigation.count('href="/preview/#/') == 10
           assert 'id="hcart"' in base
           assert 'id="hgem"' in base
           assert 'id="mnb"' in base and 'id="mnd"' in base and 'id="mnx"' in base
+          assert '<div id="app" data-enter>' in base
+          assert 'href="/store/cart/"' in base and 'href="/account/"' in base
+          assert '@media(min-width:1024px){body>header .mnb{display:none!important}}' not in shared_css
+          assert 'function syncPreviewShell' not in bridge
+          assert 'function hydratePreviewShell' not in bridge
+          assert 'syncPreviewAccountState' in bridge and 'django-bridge.css' in bridge
+          assert 'clearDjangoStyles' in bridge
+          assert 'localApp.replaceChildren' in bridge
+          assert 'localApp.replaceWith' not in bridge
+          assert 'renderPreviewNavigation(route)' in Path("shared/src/js/shared/router.js").read_text(encoding="utf-8")
           assert 'css/styles.css' not in base, "Legacy backend theme must not be loaded by the Django shell"
           assert 'class="site-header"' not in base and 'class="site-nav"' not in base and 'class="wordmark"' not in base
           assert 'class="site-footer"' not in base
           assert 'class="ib tp-gem-header gem-chip" id="hgem"' in base
           assert 'nav_class="tp-drawer-n"' in base
           assert 'css/tatami.css' in base, "Shared Tatami Plus design system must be loaded"
-          assert "new_coach_leads_count" in admin
-          assert "admin:accounts_signuplead_changelist" in admin
+          assert "new_coach_leads_count" in admin_dashboard
+          assert "admin:accounts_signuplead_changelist" in admin_dashboard
+          # Dashboard uses Django's real, permission-filtered module and model list.
+          assert '{% extends "admin/base_site.html" %}' in admin_dashboard
+          assert '{% for app in app_list %}' in admin_dashboard
+          assert '{% for model in app.models %}' in admin_dashboard
+          assert "model.admin_url" in admin_dashboard and "model.add_url" in admin_dashboard
+          assert "new_coach_leads_count" in admin_dashboard
+          assert "admin:accounts_signuplead_changelist" in admin_dashboard
+          assert "admin:password_change" in admin_dashboard
+          assert 'data-admin-search' in admin_dashboard and 'data-admin-module' in admin_dashboard
+          assert "data-admin-clear" in admin_dashboard and "data-admin-no-results" in admin_dashboard
+          assert "toLocaleLowerCase" in admin_dashboard_js and "addEventListener('input'" in admin_dashboard_js
+          assert "data-admin-model" in admin_dashboard_js and "aria-live" in admin_dashboard
+          assert ".tp-admin-page" in admin_css and ".tp-admin-module-grid" in admin_css
+          assert "@media (max-width: 767px)" in admin_css and "prefers-reduced-motion" in admin_css
+          assert "document.querySelectorAll" in admin_dashboard_js
+          assert "body.tp-admin-root" in admin_css
+          assert "var(--tp-color-bg)" in admin_css and "var(--tp-color-surface)" in admin_css
+          assert "color-scheme" not in admin_css
+          assert "body.tp-admin-index #nav-sidebar" in admin_css
+          assert "--tp-color-bg:" in admin_tokens and "--tp-font-family:" in admin_tokens
+          assert "app_list|length" in admin_dashboard and "new_coach_leads_count" in admin_dashboard
+          assert 'aria-controls="tp-admin-module-list"' in admin_dashboard
+          assert "data-admin-result-count" in admin_dashboard and "data-admin-no-results" in admin_dashboard
           assert "data-video-upload-form" in episode
+          # The upload limit is server-configured; do not hard-code a default in the template.
+          assert "data-max-upload-bytes" not in episode
           assert "tp-otp-resend-until:" in js
           assert "request.upload.addEventListener('progress'" in js
           assert "uploadRequest.abort()" in js
           assert "X-CSRFToken" in js
           assert ".tp-video-upload-progress" in module_css
-          assert ".tp-admin-lead-notice" in admin_css
+          assert ".tp-admin-lead-link" in admin_css and ".tp-admin-overview-attention" in admin_css
+          assert "tp-admin-nav-link" in admin
+          assert 'data-admin-app="{{ app.app_label }}"' in admin_dashboard
+          assert "tp-admin-module-mark svg" in admin_css
+          assert "position: sticky" in admin_css and "--tp-z-header" in admin_css
+          assert "#changelist-search" in admin_css and "fieldset" in admin_css
+          assert "ul.messagelist li.success" in admin_css and "ul.messagelist li.warning" in admin_css
+          assert "prefers-reduced-motion" in admin_css and "@media (hover: none)" in admin_css
           assert ".site-header" not in backend_css and ".site-nav" not in backend_css
           assert ".wordmark" not in backend_css and ".site-footer" not in backend_css
           assert ".page-main" not in backend_css and ".button-dark" not in backend_css
           assert ".product-grid" not in backend_css and ".cart-row" not in backend_css
           assert len(backend_css) < 1000
           assert "#app" in backend_css and ".tp-msgs" in backend_css
-          account = Path("django/templates/pages/account.html").read_text(encoding="utf-8")
+          assert "body.tp-django-shell" in backend_css
+          import re
+          assert not re.search(r"(^|\\})\\s*body\\s*\\{", backend_css)
+          assert not re.search(r"(^|\\})\\s*#app\\s*\\{", backend_css)
+          assert '<body class="tp-django-shell">' in base
+          coach_apply = Path("django/templates/coaches/apply.html").read_text(encoding="utf-8")
+          coach_status = Path("django/templates/coaches/application_status.html").read_text(encoding="utf-8")
           assert "{% url 'orders:list' %}" in account
+          # Coach lifecycle is one CoachPortfolio record; these templates must
+          # use the current context contract and never reference the removed application model.
+          assert "{% with portfolio=coach_portfolio %}" in account
+          assert "coach_application" not in account and "coach_profile" not in account
+          assert "{% url 'coach_panel:course_list' %}" in account
+          assert "{% url 'coach_students:list' %}" in account
+          assert "portfolio.rejection_reason" in account
+          assert "resubmitting" in coach_apply and "portfolio.rejection_reason" in coach_apply
+          assert 'enctype="multipart/form-data"' in coach_apply
+          assert "application.get_status_display" not in coach_status
+          assert "portfolio.get_status_display" in coach_status
+          assert "portfolio.rejection_reason" in coach_status
+          assert "portfolio.club" in coach_status and "application.club_name" not in coach_status
           assert "{% url 'gems:history' %}" in account
           assert "{% url 'club:course_list' %}" in account
           for episode_template in ("django/templates/club/course_detail.html", "django/templates/club/episode_play.html"):
@@ -226,7 +360,7 @@ jobs:
         run: |
           set -euo pipefail
           git clone https://github.com/Radinsharifi/Tatami-demo.git backend
-          git -C backend checkout --detach 25fde937def556edc7b81291e5900a9ac84fccb2
+          git -C backend checkout --detach 20e96721cc1a589d625fecd3fffa9ec42b1fc64f
 
       - name: Install backend dependencies
         run: |
@@ -258,11 +392,11 @@ jobs:
       - name: Compile templates and resolve required static assets
         working-directory: backend
         run: |
-          python manage.py shell -c "from django.template.loader import get_template; from django.contrib.staticfiles.finders import find; names=('base.html','layouts/auth.html','components/auth_aside.html','components/store_product_card.html','admin/base_site.html','pages/home.html','pages/account.html','store/product_list.html','store/product_detail.html','store/cart_detail.html','coaches/directory.html','coaches/profile_detail.html','coaches/join.html','coaches/join_enter.html','coaches/coach_students.html','club/course_list.html','club/course_detail.html','club/coach/episode_form.html','gems/history.html','accounts/login.html','accounts/otp_verify.html','accounts/complete_profile.html','accounts/password_reset.html','accounts/password_reset_confirm.html','accounts/set_password.html','coaches/join_enter.html','orders/mock_gateway.html','orders/address.html','orders/review.html','orders/payment_result.html','orders/order_list.html','orders/order_detail.html','includes/form_fields.html'); [get_template(name) for name in names]; assets=('css/tatami.css','css/tatami-admin.css','css/backend-templates.css','css/module-pages.css','css/home-restored.css','css/reference-store.css','js/tatami.js','js/module-pages.js','js/home-restored.js','js/reference-store.js','data/reference-store-catalog.json'); assert all(find(name) for name in assets); print('DJANGO_TEMPLATE_AND_STATIC_CHECK_OK')"
+          python manage.py shell -c "from django.template.loader import get_template; from django.contrib.staticfiles.finders import find; names=('base.html','layouts/auth.html','components/auth_aside.html','components/store_product_card.html','admin/base_site.html','admin/index.html','pages/home.html','pages/account.html','store/product_list.html','store/product_detail.html','store/cart_detail.html','coaches/directory.html','coaches/profile_detail.html','coaches/join.html','coaches/join_enter.html','coaches/coach_students.html','club/course_list.html','club/course_detail.html','club/coach/episode_form.html','gems/history.html','accounts/login.html','accounts/otp_verify.html','accounts/complete_profile.html','accounts/password_reset.html','accounts/password_reset_confirm.html','accounts/set_password.html','coaches/join_enter.html','orders/mock_gateway.html','orders/address.html','orders/review.html','orders/payment_result.html','orders/order_list.html','orders/order_detail.html','includes/form_fields.html'); [get_template(name) for name in names]; assets=('css/tatami.css','css/tatami-brand.css','img/tatami-plus-mark.png','css/django-bridge.css','css/tatami-admin-tokens.css','css/tatami-admin.css','css/backend-templates.css','css/module-pages.css','css/home-restored.css','css/reference-store.css','js/tatami.js','js/module-pages.js','js/home-restored.js','js/reference-store.js','js/admin-dashboard.js','data/reference-store-catalog.json'); assert all(find(name) for name in assets); print('DJANGO_TEMPLATE_AND_STATIC_CHECK_OK')"
 
       - name: Run backend tests with proposed frontend
         working-directory: backend
-        run: python manage.py test accounts.tests.AuthenticationFlowTests accounts.tests.CoachSignupLeadTests accounts.tests.AccountPageTests coaches.tests.CoachInviteTests gems.tests.GemPageTests orders.tests.CheckoutFlowTests --verbosity 1
+        run: python manage.py test accounts.tests.AuthenticationFlowTests accounts.tests.CoachSignupLeadTests accounts.tests.AccountPageTests coaches.tests.CoachInviteTests coaches.tests.CoachHubTests gems.tests.GemPageTests orders.tests.CheckoutFlowTests --verbosity 1
 
       - name: Build separate templates and static cPanel packages
         run: |

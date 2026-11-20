@@ -13,49 +13,25 @@
 .tp-store-page .tp-store-filter .sbar .btn { flex: 0 0 auto; }
 .tp-store-page .tp-store-results { min-width: 0; }
 .tp-store-page .tp-product-grid {
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr));
   align-items: stretch;
 }
-.tp-store-page .tp-product-card {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  overflow: hidden;
-}
+.tp-store-page .tp-product-card { display: block; min-width: 0; overflow: hidden; }
 .tp-store-page .tp-product-card > a { display: block; }
 .tp-store-page .tp-product-card .ph { aspect-ratio: 4 / 3; border-radius: 0; }
-.tp-store-page .tp-product-card .b {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  gap: var(--tp-space-2xs);
-}
-.tp-store-page .tp-product-card h3 { overflow-wrap: anywhere; line-height: 1.75; }
-.tp-store-page .tp-product-card .tp-price { margin-top: auto; padding-top: var(--tp-space-sm); }
-.tp-store-page .tp-product-card .pa { margin-top: var(--tp-space-sm); }
+.tp-store-page .tp-product-card .b { display: block; }
+.tp-store-page .tp-product-card .pa { margin-top: var(--tp-space-xs); }
 .tp-store-page .tp-pagination { display: flex; justify-content: center; margin-top: var(--tp-space-lg); }
-.tp-store-page .tp-product-detail { align-items: start; }
-.tp-store-page .tp-product-gallery { min-width: 0; }
-.tp-store-page .tp-product-gallery .pm {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--tp-space-sm);
-}
-.tp-store-page .tp-product-gallery .pm .ph:first-child { grid-column: 1 / -1; }
-.tp-store-page .tp-product-gallery .ph { width: 100%; }
-.tp-store-page .tp-product-gallery .ph img { border-radius: inherit; }
-.tp-store-page .tp-product-purchase { min-width: 0; }
-.tp-store-page .tp-product-purchase h1 { font-size: clamp(1.7rem, 3.8vw, 2.7rem); line-height: 1.5; }
-.tp-store-page .tp-product-description { margin-block: var(--tp-space-md); line-height: 2; }
+.tp-store-page .tp-product-detail { align-items: stretch; }
 .tp-store-page .tp-product-form {
   display: grid;
   gap: var(--tp-space-sm);
-  padding: var(--tp-space-md);
-  border: 1px solid var(--tp-color-border);
-  border-radius: var(--tp-radius-card);
-  background: var(--tp-color-surface);
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
 }
-.tp-store-page .tp-product-form .btn { width: 100%; }
+.tp-store-page .tp-product-form .btn { width: auto; }
 .tp-store-page .tp-cart-layout { align-items: start; }
 .tp-store-page .tp-cart-item { align-items: flex-start; min-width: 0; }
 .tp-store-page .tp-cart-thumb {
@@ -281,8 +257,7 @@
 @media (max-width: 600px) {
   .tp-store-page .tp-store-filter .sbar { align-items: stretch; flex-direction: column; }
   .tp-store-page .tp-store-filter .sbar .btn { width: 100%; }
-  .tp-store-page .tp-product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--tp-space-sm); }
-  .tp-store-page .tp-product-card .b { padding: var(--tp-space-sm); }
+  .tp-store-page .tp-product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .tp-store-page .tp-cart-thumb { flex-basis: 72px; width: 72px; }
   .tp-course-page .tp-course-filter .sbar { flex-direction: column; }
   .tp-course-page .tp-course-filter .sbar .btn { width: 100%; }
@@ -369,47 +344,6 @@
   .tp-coach-panel .tp-student-list .tp-episode-row > .mu { margin-inline-start: 48px; width: 100%; }
 }
 
-/* Product image gallery: one featured image with selectable thumbnails */
-.tp-store-page .tp-product-gallery { display: grid; gap: var(--tp-space-sm); align-content: start; }
-.tp-store-page .tp-product-gallery-main {
-  width: 100%;
-  min-height: 260px;
-  aspect-ratio: 4 / 3;
-  border-radius: var(--tp-radius-card);
-  background: var(--tp-color-neutral-tint);
-}
-.tp-store-page .tp-product-gallery-main img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  padding: var(--tp-space-sm);
-}
-.tp-store-page .tp-product-gallery-thumbs {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(64px, 88px));
-  gap: var(--tp-space-xs);
-}
-.tp-store-page .tp-product-thumb {
-  display: block;
-  overflow: hidden;
-  aspect-ratio: 1;
-  padding: 0;
-  border: 2px solid var(--tp-color-border);
-  border-radius: var(--tp-radius-control);
-  background: var(--tp-color-surface);
-  cursor: pointer;
-}
-.tp-store-page .tp-product-thumb.is-active,
-.tp-store-page .tp-product-thumb[aria-pressed=true] { border-color: var(--tp-color-brand); }
-.tp-store-page .tp-product-thumb img { display: block; width: 100%; height: 100%; object-fit: cover; }
-.tp-store-page .tp-product-thumb:focus-visible { outline: 2px solid var(--tp-color-ring); outline-offset: 2px; }
-@media (max-width: 600px) {
-  .tp-store-page .tp-product-gallery-main { min-height: 210px; }
-  .tp-store-page .tp-product-gallery-thumbs { grid-template-columns: repeat(auto-fill, minmax(56px, 72px)); }
-}
-
 /* Coach episode video upload progress; progressive enhancement only. */
 .tp-video-upload-progress {
   display: grid;
@@ -475,4 +409,121 @@
   padding-top: var(--tp-space-sm);
   color: var(--tp-color-text-secondary);
   font-size: var(--tp-font-size-sm);
+}
+
+/* ---------------- Store and cart controls ---------------- */
+/* These rules are scoped to the Django store and do not alter shared Preview buttons. */
+.tp-store-page .tp-product-card .pa {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--tp-space-xs);
+}
+.tp-store-page .tp-product-card .pa > .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: var(--tp-space-xs) var(--tp-space-sm);
+  line-height: 1.6;
+  white-space: normal;
+  text-align: center;
+}
+.tp-store-page .tp-product-form .pa {
+  display: flex;
+  align-items: stretch;
+  flex-wrap: wrap;
+  gap: var(--tp-space-sm);
+}
+.tp-store-page .tp-product-form .pa > .btn {
+  display: inline-flex;
+  flex: 1 1 12rem;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 48px;
+  white-space: normal;
+  line-height: 1.6;
+}
+.tp-store-page .tp-cart-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: var(--tp-space-sm);
+  width: 100%;
+}
+.tp-store-page .tp-cart-actions > form { min-width: 0; }
+.tp-store-page .tp-qty {
+  display: grid;
+  grid-template-columns: 44px minmax(4.5rem, 1fr) 44px;
+  align-items: end;
+  gap: var(--tp-space-xs);
+  width: 100%;
+  margin: 0;
+}
+.tp-store-page .tp-qty-label {
+  grid-column: 1 / -1;
+  color: var(--tp-color-text-secondary);
+  font-size: var(--tp-font-size-sm);
+}
+.tp-store-page .tp-qty-step {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  font-size: var(--tp-font-size-xl);
+  line-height: 1;
+}
+.tp-store-page .tp-qty-step[hidden] { display: none !important; }
+.tp-store-page .tp-qty-step:disabled {
+  background: var(--tp-color-neutral-tint);
+  border-color: var(--tp-color-border);
+  color: var(--tp-color-text-subtle);
+  opacity: 1;
+  transform: none;
+  box-shadow: none;
+}
+.tp-store-page .tp-qty-input {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding-inline: var(--tp-space-xs);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.tp-store-page .tp-qty-submit {
+  grid-column: 1 / -1;
+  width: 100%;
+  min-height: 44px;
+  white-space: nowrap;
+}
+.tp-store-page .tp-cart-remove-form {
+  display: flex;
+  align-items: stretch;
+}
+.tp-store-page .tp-cart-remove-btn {
+  min-width: 4.5rem;
+  min-height: 44px;
+  white-space: nowrap;
+}
+.tp-store-page .tp-cart-summary .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  white-space: normal;
+  line-height: 1.6;
+}
+@media (max-width: 600px) {
+  .tp-store-page .tp-cart-actions {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: stretch;
+  }
+  .tp-store-page .tp-cart-remove-form,
+  .tp-store-page .tp-cart-remove-btn { width: 100%; }
+  .tp-store-page .tp-product-form .pa > .btn { flex-basis: 100%; }
 }

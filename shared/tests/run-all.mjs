@@ -39,6 +39,18 @@ try{
    out.push(await runClubs(app,srv.url,browser));
    await srv.close();
   }
+ }else if(['student-public','coach-public','club-public'].includes(process.env.ONLY)){
+  const app=process.env.ONLY.replace('-public','');
+  const srv=await serve(()=>path.join(root,app));
+  console.log('→',app,'browser regression');
+  out.push(await runPublic(app,srv.url,browser));
+  await srv.close();
+ }else if(['student-pwa','coach-pwa','club-pwa'].includes(process.env.ONLY)){
+  const app=process.env.ONLY.replace('-pwa','');
+  const srv=await serve(()=>path.join(root,app));
+  console.log('→',app,'PWA technical regression');
+  out.push(await runPwa(app,srv.url,browser,ctl));
+  await srv.close();
  }else if(['student','coach','club'].includes(process.env.ONLY)){
   const app=process.env.ONLY;
   const srv=await serve(()=>path.join(root,app));
