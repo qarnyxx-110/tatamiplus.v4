@@ -82,6 +82,7 @@ def load_and_verify_manifest() -> dict[str, Any]:
         "base.html", "components/platform_navigation.html", "pages/home.html",
         "pages/home/partials/features.html", "pages/home/partials/intro.html",
         "club/course_list.html", "club/course_detail.html", "coaches/directory.html",
+        "blog/post_list.html", "blog/post_detail.html",
     }
     if expected["templates"] != required_templates:
         raise InstallError("فهرست قالب‌های Django با بستهٔ تأییدشده مطابقت ندارد.")
