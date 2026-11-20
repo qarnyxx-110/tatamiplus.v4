@@ -61,3 +61,13 @@ jobs:
       - name: Run Admin form and submit-footer browser regression
         working-directory: shared
         run: node tests/admin-workspace-ui.test.mjs
+
+
+      - name: Upload measured Admin sidebar screenshots and dimensions
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tatami-admin-sidebar-measured-layout
+          path: shared/artifacts/admin-sidebar-sizing/
+          if-no-files-found: warn
+          retention-days: 7
