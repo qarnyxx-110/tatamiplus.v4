@@ -282,6 +282,8 @@ jobs:
           assert 'aria-controls="tp-admin-module-list"' in admin_dashboard
           assert "data-admin-result-count" in admin_dashboard and "data-admin-no-results" in admin_dashboard
           assert "data-video-upload-form" in episode
+          # The upload limit is server-configured; do not hard-code a default in the template.
+          assert "data-max-upload-bytes" not in episode
           assert "tp-otp-resend-until:" in js
           assert "request.upload.addEventListener('progress'" in js
           assert "uploadRequest.abort()" in js
