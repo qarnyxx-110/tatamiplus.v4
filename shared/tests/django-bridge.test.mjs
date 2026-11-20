@@ -117,6 +117,14 @@ try {
   await page.locator('#bridge-form').waitFor({ state: 'visible', timeout: 15000 });
   assert.equal(await page.locator('#app').getAttribute('data-django-view'), '/store/');
 
+  await page.evaluate(() => { location.hash = '#/search?q=' + encodeURIComponent('اوکمی'); });
+  await page.waitForFunction(() => document.querySelector('#app h1')?.textContent.trim() === 'جستجو');
+  assert.equal(await page.locator('#app a[href^="#/blog/"]').count(), 0);
+  assert.match(await page.locator('#app').innerText(), /مقاله‌های منتشرشدهٔ وبلاگ مستقیماً از Django دریافت می‌شوند/);
+
+  await page.evaluate(() => { location.hash = '#/store'; });
+  await page.locator('#bridge-form').waitFor({ state: 'visible', timeout: 15000 });
+
   await page.evaluate(() => {
     Object.defineProperty(navigator, 'clipboard', {
       configurable: true,
