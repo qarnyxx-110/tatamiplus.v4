@@ -83,6 +83,28 @@ try {
     await route.fulfill({status:200,contentType:'text/html; charset=utf-8',body:documentHtml('<h1 id="coach-target">فهرست واقعی مربیان</h1>','مربیان')});
   });
 
+  await page.route('**/blog/**', async route => {
+    const url = new URL(route.request().url());
+    const parts = url.pathname.split('/').filter(Boolean);
+    if (parts.length > 1) {
+      const slug = decodeURIComponent(parts[1]);
+      await route.fulfill({
+        status: 200,
+        contentType: 'text/html; charset=utf-8',
+        body: documentHtml(
+          '<a id="blog-back-link" href="/blog/">بازگشت به وبلاگ</a><h1 id="blog-detail-target">' + slug + '</h1>',
+          'جزئیات وبلاگ'
+        )
+      });
+      return;
+    }
+    await route.fulfill({
+      status: 200,
+      contentType: 'text/html; charset=utf-8',
+      body: documentHtml('<h1 id="blog-list-target">مطالب منتشرشده</h1><a id="blog-post-link" href="/blog/uchi-mata/">اوچی‌ماتا</a>', 'وبلاگ')
+    });
+  });
+
   await page.route('**/club/**', async route => {
     await route.fulfill({
       status: 200,
@@ -141,6 +163,24 @@ try {
   await page.locator('#coach-target').waitFor({ state: 'visible', timeout: 15000 });
   assert.equal(await page.locator('#app').getAttribute('data-django-view'), '/coaches/');
 
+  await page.evaluate(() => { location.hash = '#/blog'; });
+  await page.locator('#blog-list-target').waitFor({ state: 'visible', timeout: 15000 });
+  assert.equal(await page.locator('#app').getAttribute('data-django-view'), '/blog/');
+  await page.locator('#blog-post-link').click();
+  await page.locator('#blog-detail-target').waitFor({ state: 'visible', timeout: 15000 });
+  assert.equal(await page.locator('#app').getAttribute('data-django-view'), '/blog/uchi-mata/');
+  await page.locator('#blog-back-link').click();
+  await page.locator('#blog-list-target').waitFor({ state: 'visible', timeout: 15000 });
+  assert.equal(await page.locator('#app').getAttribute('data-django-view'), '/blog/');
+
+  await page.evaluate(() => { location.hash = '#/blog/اوچی-ماتا'; });
+  await page.locator('#blog-detail-target').waitFor({ state: 'visible', timeout: 15000 });
+  assert.equal((await page.locator('#blog-detail-target').textContent()).trim(), 'اوچی-ماتا');
+  assert.equal(
+    await page.locator('#app').getAttribute('data-django-view'),
+    '/blog/' + encodeURIComponent('اوچی-ماتا') + '/'
+  );
+
   await page.route('**/auth/**', async route => {
     const url = new URL(route.request().url());
     await route.fulfill({
@@ -176,4 +216,4 @@ try {
 }
 
 if (failures.length) throw new Error(failures.join('\n\n'));
-console.log('Django Preview bridge browser checks: existing regression passed; auth routes: 5/5 passed');
+console.log('Django Preview bridge browser checks: existing regression passed; blog routes: list/detail/Persian slug passed; auth routes: 5/5 passed');
