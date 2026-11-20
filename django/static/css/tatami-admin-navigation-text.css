@@ -83,7 +83,7 @@
   text-align: right;
   unicode-bidi: plaintext;
   color: inherit;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 800;
   line-height: 1.65;
   letter-spacing: 0;
@@ -172,7 +172,7 @@
   text-align: right;
   unicode-bidi: plaintext;
   color: #d5e2f4 !important;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   line-height: 1.75;
   white-space: normal;
@@ -275,7 +275,7 @@
   direction: rtl;
   text-align: center;
   unicode-bidi: plaintext;
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 700;
   line-height: 1.4;
   white-space: nowrap;
@@ -470,7 +470,7 @@
   white-space: normal;
   overflow: hidden;
   color: #dce8fc !important;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 800;
   line-height: 1.65;
   text-decoration: none !important;
