@@ -222,6 +222,10 @@
     return '/store/?query=' + encodeURIComponent(productName);
   }
 
+  function isSafeBlogSlug(value) {
+    return /^[\\p{L}\\p{M}\\p{N}_-]+$/u.test(String(value || ''));
+  }
+
   function nextPathFromHash(value) {
     const raw = String(value || '');
     if (!raw.startsWith('#/')) return '';
@@ -237,7 +241,7 @@
         if (route.length !== 2) return '';
         let slug = '';
         try { slug = decodeURIComponent(route[1]); } catch { return ''; }
-        if (!/^[\\p{L}\\p{M}\\p{N}_-]+$/u.test(slug)) return '';
+        if (!isSafeBlogSlug(slug)) return '';
         return '/blog/' + slug + '/';
       }
       case 'courses':
@@ -276,7 +280,9 @@
     if (route === 'set-password') return '/auth/password/set/';
     if (route === 'coach-invite') return '/coaches/join/';
     if (route === 'blog') {
-      return parts[1] ? '/blog/' + encodeURIComponent(parts[1]) + '/' : '/blog/';
+      if (parts.length === 1) return '/blog/';
+      if (parts.length !== 2 || !isSafeBlogSlug(parts[1])) return '/blog/';
+      return '/blog/' + encodeURIComponent(parts[1]) + '/';
     }
 
     if (route === 'academy') return '/coaches/';
