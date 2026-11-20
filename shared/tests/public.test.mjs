@@ -37,13 +37,13 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
   await go('#/');
  }
  const nav=await pg.evaluate(()=>[...document.querySelectorAll('#nv a')].map(a=>a.textContent.trim()));
- S.ok('منو: بلاگ، تاتامی‌پدیا، مربیان، حامیان',['بلاگ','تاتامی‌پدیا','مربیان تاتامی','حامیان تاتامی پلاس'].every(x=>nav.includes(x)),nav.join('|'));S.ok('منو: دوره‌های آموزشی',nav.includes('دوره‌ها'),nav.join('|'));
+ S.ok('منو: مقالات و دانشنامه، مربیان، حامیان',['مقالات و دانشنامه','مربیان تاتامی','حامیان تاتامی پلاس'].every(x=>nav.includes(x)),nav.join('|'));S.ok('منو: آموزش‌ها',nav.includes('آموزش‌ها'),nav.join('|'));
  S.ok('منو: تاریخچه جم',nav.includes('جم'),nav.join('|'));
- S.ok('منو: مربی آنلاین برای هنرجو',app!=='student'||nav.includes('مربی آنلاین'),nav.join('|'));
+ S.ok('منو: تحلیل هوشمند حرکت برای هنرجو',app!=='student'||nav.includes('تحلیل هوشمند حرکت'),nav.join('|'));
  await go('#/online-coach');const oc=await T();
  S.ok('مربی آنلاین: صفحه مستقل و ابزار دوربین',oc.includes('مربی آنلاین')&&oc.includes('روشن کردن دوربین')&&await pg.locator('#tp-oc-video').count()===1);
- S.ok('مربی آنلاین: شمارش واقعی جعل نمی‌شود',await pg.locator('#tp-oc-count').innerText()==='—'&&oc.includes('ربات هنوز متصل نشده است')&&await pg.locator('#tp-oc-count-start').isDisabled());
- S.ok('مربی آنلاین: فعلاً فقط پیش‌نمایش محلی و بدون ورودی فایل',oc.includes('تصویر به سرور ارسال نمی‌شود')&&await pg.locator('#tp-oc-video').count()===1&&await pg.locator('#tp-oc input[type=file]').count()===0);
+ S.ok('تحلیل هوشمند: تا اتصال موتور واقعی، تحلیل غیرفعال است',oc.includes('موتور تحلیل متصل نیست')&&oc.includes('متصل نشده است')&&await pg.locator('#tp-oc-analysis-start').isDisabled()&&await pg.locator('#tp-oc-count').count()===0);
+ S.ok('تحلیل هوشمند: دوربین زنده و انتخاب فایل هر دو در دسترس‌اند',oc.includes('هیچ داده‌ای به سرور ارسال نمی‌شود')&&await pg.locator('#tp-oc-video').count()===1&&await pg.locator('#tp-oc input[type=file]').count()===1&&await pg.locator('#tp-oc-mode-file').count()===1);
  const ocWidths=[];for(const width of [320,360,390]){await pg.setViewportSize({width,height:800});await go('#/online-coach');ocWidths.push(await pg.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1&&document.body.scrollWidth<=innerWidth+1));}
  S.ok('مربی آنلاین: بدون اسکرول افقی در موبایل ۳۲۰/۳۶۰/۳۹۰',ocWidths.every(Boolean),ocWidths.join(','));
  await pg.setViewportSize({width:390,height:800});await go('#/');
@@ -111,7 +111,7 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
 
  S.ok('جم: نشان موجودی در هدر',await pg.locator('#hgem[href="#/gems"]').count()===1);
  S.ok('منو: «باشگاه‌ها» فقط برای هنرجو/باشگاه',(app==='coach')?!nav.includes('باشگاه‌ها'):nav.includes('باشگاه‌ها'));
- const foot=await pg.evaluate(()=>[...document.querySelectorAll('footer a')].map(a=>({text:a.textContent.trim(),href:a.getAttribute('href')})));S.ok('فوتر: لینک مربی آنلاین به صفحه مستقل مربی آنلاین متصل است',foot.some(a=>a.text==='مربی آنلاین'&&a.href==='#/online-coach')&&foot.some(a=>a.text==='تاتامی‌پدیا')&&foot.some(a=>a.text==='حامیان تاتامی پلاس')&&!foot.some(a=>a.text==='سیستم طراحی'),JSON.stringify(foot));
+ const foot=await pg.evaluate(()=>[...document.querySelectorAll('footer a')].map(a=>({text:a.textContent.trim(),href:a.getAttribute('href')})));S.ok('فوتر: سه بخش یکپارچه آموزش، تحلیل و دانشنامه لینک دارند',foot.some(a=>a.text==='آموزش‌ها'&&a.href==='#/learning')&&foot.some(a=>a.text==='تحلیل هوشمند حرکت'&&a.href==='#/online-coach')&&foot.some(a=>a.text==='مقالات و دانشنامه'&&a.href==='#/blog')&&foot.some(a=>a.text==='حامیان تاتامی پلاس')&&!foot.some(a=>a.text==='سیستم طراحی'),JSON.stringify(foot));
  await go('#/gems');const gems=await T();S.ok('جم: صفحه تاریخچه و وضعیت عدم اتصال',gems.includes('تاریخچه تراکنش‌ها')&&gems.includes('موجودی واقعی هنوز به این نسخه متصل نشده است'));S.ok('جم: عدم نمایش تراکنش ساختگی',gems.includes('تراکنشی برای نمایش وجود ندارد'));
  await go('#/my-profile');S.ok('«پروفایل من» فقط در PWA مربی',(app==='coach')?!await nf():await nf());
  if(app==='coach'){
