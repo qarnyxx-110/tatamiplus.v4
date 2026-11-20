@@ -608,7 +608,7 @@ export async function runPreview(base,browser){
   await go('#/learning?tab=courses');
   S.ok('آموزش‌ها: تب دوره‌ها محتوای دوره‌ها را نشان می‌دهد',(await T()).includes('دوره‌های آموزشی')&&await pg.locator('#app .tp-course-card').count()>0);
   await go('#/learning?tab=videos');
-  S.ok('آموزش‌ها: تب ویدیوها فهرست ویدیوهای ضبط‌شده را نشان می‌دهد',(await T()).includes('ویدیوهای ضبط‌شده')&&await pg.locator('#app .vg .vcd').count()>0);
+  S.ok('آموزش‌ها: تب ویدیوها فهرست ویدیوهای ضبط‌شده را نشان می‌دهد',(await T()).includes('ویدیوهای ضبط‌شده')&&await pg.locator('#app .vg a[href^="#/video/"]').count()>0);
   await go('#/courses');
   S.ok('مسیر قدیمی فهرست دوره‌ها به تب دوره‌های آموزش‌ها هدایت می‌شود',
     (await pg.evaluate(()=>location.hash)).startsWith('#/learning?')&&(await pg.evaluate(()=>location.hash)).includes('tab=courses'));
