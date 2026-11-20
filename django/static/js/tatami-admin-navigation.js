@@ -1,4 +1,4 @@
-/* Tatami Plus Admin Navigation
+/* Tatami Plus Admin Navigation · Persian labels */
  * Uses only links rendered by Django's permission-aware available_apps context.
  * No endpoints, permissions, counters, or backend behavior are invented here.
  */
@@ -61,9 +61,31 @@
       blog: "▤"
     };
 
+    // Persian display names for known Tatami Plus apps. These labels are
+    // presentation-only; the original Django app URLs and app labels stay intact.
+    const appDisplayNames = {
+      accounts: "حساب‌های کاربری",
+      auth: "کاربران و دسترسی‌ها",
+      club: "باشگاه",
+      coaches: "مربیان",
+      gems: "جم",
+      orders: "سفارش‌ها",
+      store: "فروشگاه",
+      blog: "وبلاگ"
+    };
+
     const getAppLabel = (group) => {
       const appClass = Array.from(group.classList).find((name) => name.startsWith("app-"));
       return appClass ? appClass.slice(4) : "general";
+    };
+
+    const getGroupDisplayName = (group) => {
+      const link = group && group.querySelector("caption a.section");
+      return safeText(link && (
+        link.dataset.tpaAppName ||
+        link.querySelector(".tpa-app-label")?.textContent ||
+        link.textContent
+      ));
     };
 
     const addCommandItem = (anchor, label, groupName, kind) => {
@@ -96,7 +118,8 @@
       const appLabel = getAppLabel(group);
       const caption = group.querySelector("caption");
       const appLink = caption && caption.querySelector("a.section");
-      const appName = safeText(appLink && appLink.textContent);
+      const sourceAppName = safeText(appLink && appLink.textContent);
+      const appName = appDisplayNames[appLabel] || sourceAppName;
       const table = group.querySelector("table");
       if (!caption || !table) return;
 
@@ -107,12 +130,23 @@
       );
 
       if (appLink) {
-        addCommandItem(appLink, appName, appName, "بخش");
+        // Replace only the visible caption text. Keep Django's real href untouched.
+        appLink.replaceChildren();
+        appLink.dataset.tpaAppName = appName;
+        appLink.setAttribute("aria-label", appName);
+        appLink.setAttribute("dir", "rtl");
+        appLink.title = "ورود به بخش " + appName;
+
         const icon = document.createElement("span");
         icon.className = "tpa-app-icon";
         icon.setAttribute("aria-hidden", "true");
         icon.textContent = appIcons[appLabel] || "◈";
-        appLink.prepend(icon);
+
+        const label = document.createElement("span");
+        label.className = "tpa-app-label";
+        label.textContent = appName;
+        appLink.append(icon, label);
+        addCommandItem(appLink, appName, appName, "بخش");
 
         const count = document.createElement("span");
         count.className = "tpa-app-count";
@@ -284,7 +318,7 @@
         else favorites.unshift({
           href,
           label: safeText(source.textContent),
-          group: safeText(source.closest(".module")?.querySelector("caption a.section")?.textContent)
+          group: getGroupDisplayName(source.closest(".module"))
         });
         favorites = favorites.slice(0, 30);
         writeStore(KEYS.favorites, favorites);
@@ -296,7 +330,7 @@
       if (!link || !nav.contains(link)) return;
       const row = link.closest("tr");
       const group = link.closest(".module");
-      const appName = safeText(group?.querySelector("caption a.section")?.textContent);
+      const appName = getGroupDisplayName(group);
       const modelName = safeText(row?.querySelector("th")?.textContent);
       const action = link.classList.contains("addlink") ? "افزودن " :
         link.classList.contains("viewlink") ? "مشاهده " : "";
