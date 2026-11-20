@@ -445,3 +445,10 @@
     max-width: 24px;
   }
 }
+
+/* Let the main canvas consume the remaining width after the wider text-first sidebar. */
+#content-start {
+  width: auto !important;
+  min-width: 0;
+  flex: 1 1 0;
+}
