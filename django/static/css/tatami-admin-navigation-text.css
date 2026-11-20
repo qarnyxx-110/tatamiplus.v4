@@ -219,14 +219,32 @@
   line-height: 1;
 }
 
-/* The only sidebar action in Django's native app list is usually Add.
-   Reserve 64px for its icon, Persian label, padding and border. */
+/* Explicit table columns align with Django's hidden 3-column header.
+   The unused third column is collapsed when the sidebar hides Change links. */
+#nav-sidebar .tpa-nav-group table col.tpa-menu-model-column {
+  width: auto;
+}
+
+#nav-sidebar .tpa-nav-group table col.tpa-menu-add-column {
+  width: 68px;
+  min-width: 68px;
+}
+
+#nav-sidebar .tpa-nav-group table col.tpa-menu-extra-column {
+  width: 68px;
+  min-width: 68px;
+}
+
+#nav-sidebar .tpa-nav-group table col.tpa-menu-extra-column.is-unused {
+  width: 0;
+  min-width: 0;
+}
+
 #nav-sidebar .tpa-nav-group table tbody tr td {
   box-sizing: border-box;
-  width: 64px;
-  min-width: 64px;
-  max-width: 64px;
-  padding: 6px 3px;
+  width: auto;
+  min-width: 0;
+  padding: 6px 2px;
   text-align: center;
   vertical-align: middle;
   white-space: nowrap;
@@ -331,10 +349,14 @@
     min-height: 52px;
   }
 
-  #nav-sidebar .tpa-nav-group table tbody tr td {
-    width: 60px;
-    min-width: 60px;
-    max-width: 60px;
+  #nav-sidebar .tpa-nav-group table col.tpa-menu-add-column {
+    width: 64px;
+    min-width: 64px;
+  }
+
+  #nav-sidebar .tpa-nav-group table col.tpa-menu-extra-column {
+    width: 64px;
+    min-width: 64px;
   }
 
   #nav-sidebar .tpa-nav-group table tbody tr th {
