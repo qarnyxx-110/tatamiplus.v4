@@ -294,7 +294,8 @@ export async function runPwa(app,base,browser,altRoot){
   pg.on('console',message=>{
    if(message.type()!=='error')return;
    const location=message.location();
-   if(message.text().includes('[Tatami SW]')||/\\/sw\\.js(?:$|\\?)/.test(location.url||'')){
+   const sourceUrl=String(location.url||'').split('?')[0];
+   if(message.text().includes('[Tatami SW]')||sourceUrl.endsWith('/sw.js')){
     swConsoleErrors.push(message.text()+(location.url?' @ '+location.url:''));
    }
   });
