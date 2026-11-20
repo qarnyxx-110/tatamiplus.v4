@@ -1,37 +1,32 @@
-/* Tatami Plus Admin Sidebar Typography & Alignment Fix
- * Persian-first text treatment and measured columns for Django's native app list.
- * No link destinations, actions or permissions are changed.
- */
+/* Tatami Plus Admin sidebar typography and measured layout.
+   Sidebar width remains owned by tatami-admin-ux.css (278px desktop,
+   246px tablet). This layer only sizes the contents inside that width. */
 
 #nav-sidebar {
   direction: rtl;
   text-align: right;
-  width: 316px !important;
-  min-width: 316px !important;
-  max-width: 316px !important;
-  flex: 0 0 316px !important;
-  padding-inline: 12px !important;
-  overflow-x: hidden;
   unicode-bidi: isolate;
+  overflow-x: hidden;
 }
 
-/* App heading: title, actual accessible-model count and collapse button
-   each have their own non-overlapping grid track. */
+/* Group header: fixed count and disclosure tracks, flexible Persian title. */
 #nav-sidebar > .tpa-nav-group > table {
   width: 100%;
   min-width: 0;
   table-layout: fixed;
   direction: rtl;
+  border-spacing: 0;
 }
 
 #nav-sidebar > .tpa-nav-group > table > caption {
   display: grid !important;
-  grid-template-columns: minmax(0, 1fr) 30px 36px;
-  grid-template-rows: minmax(58px, auto);
+  grid-template-columns: minmax(0, 1fr) 28px 34px;
+  grid-template-rows: minmax(54px, auto);
   align-items: stretch;
   width: 100%;
   min-width: 0;
   gap: 0;
+  padding: 0;
   direction: rtl;
   text-align: right;
   overflow: hidden;
@@ -40,35 +35,39 @@
 #nav-sidebar .tpa-nav-group caption a.section {
   grid-column: 1;
   grid-row: 1;
+  box-sizing: border-box;
   width: 100%;
   min-width: 0;
-  min-height: 58px;
+  min-height: 54px;
   display: grid !important;
-  grid-template-columns: 30px minmax(0, 1fr);
+  grid-template-columns: 24px minmax(0, 1fr);
   align-items: center;
   justify-content: stretch;
-  gap: 9px;
-  padding: 9px 12px;
+  gap: 7px;
+  padding: 8px 9px;
+  margin: 0;
   direction: rtl;
   text-align: right;
   text-transform: none !important;
+  letter-spacing: 0;
   white-space: normal;
   overflow: hidden;
-  line-height: 1.65;
+  line-height: 1.55;
 }
 
 #nav-sidebar .tpa-nav-group caption a.section .tpa-app-icon {
   grid-column: 1;
   grid-row: 1;
-  width: 28px;
-  height: 28px;
-  min-width: 28px;
+  box-sizing: border-box;
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
   flex: none;
   display: inline-grid;
   place-items: center;
   margin: 0;
-  border-radius: 9px;
-  font-size: 14px;
+  border-radius: 7px;
+  font-size: 12px;
   line-height: 1;
 }
 
@@ -82,13 +81,13 @@
   text-align: right;
   unicode-bidi: plaintext;
   color: inherit;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 800;
-  line-height: 1.7;
+  line-height: 1.65;
   letter-spacing: 0;
   text-transform: none !important;
   white-space: normal;
-  overflow-wrap: break-word;
+  overflow-wrap: anywhere;
   word-break: normal;
 }
 
@@ -97,16 +96,18 @@
   grid-row: 1;
   align-self: center;
   justify-self: center;
-  min-width: 23px;
-  width: 23px;
-  height: 23px;
+  box-sizing: border-box;
+  width: 22px;
+  min-width: 22px;
+  height: 22px;
   margin: 0;
-  padding: 0 4px;
+  padding: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   direction: ltr;
   unicode-bidi: isolate;
+  font-family: Tahoma, sans-serif;
   font-size: 10px;
   line-height: 1;
   font-variant-numeric: tabular-nums;
@@ -115,109 +116,120 @@
 #nav-sidebar .tpa-nav-group caption .tpa-group-toggle {
   grid-column: 3;
   grid-row: 1;
-  width: 36px;
-  min-width: 36px;
-  min-height: 58px;
+  box-sizing: border-box;
+  width: 34px;
+  min-width: 34px;
+  min-height: 54px;
   height: 100%;
   margin: 0;
   padding: 0;
   display: inline-grid;
   place-items: center;
   direction: ltr;
-  font-size: 17px;
+  font-size: 16px;
   line-height: 1;
 }
 
-/* Model names use a flexible text track; favorite star never competes with text. */
-#nav-sidebar .tpa-nav-group table tbody tr {
-  display: table-row;
-  width: 100%;
-  min-width: 0;
-}
-
+/* Model name and its favorite button share one measured line. */
 #nav-sidebar .tpa-nav-group table tbody tr th {
   width: auto;
   min-width: 0;
-  padding: 9px 10px 9px 5px;
+  padding: 8px 9px 8px 4px;
   direction: rtl;
   text-align: right;
   unicode-bidi: plaintext;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
-  line-height: 1.8;
+  line-height: 1.7;
   white-space: normal;
-  overflow-wrap: break-word;
+  overflow-wrap: anywhere;
   word-break: normal;
+  vertical-align: middle;
 }
 
-#nav-sidebar .tpa-nav-group table tbody tr th a:not(.tpa-favorite-toggle) {
-  display: block;
-  flex: 1 1 auto;
+#nav-sidebar .tpa-nav-group table tbody tr th .tpa-model-heading {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 5px;
+  direction: rtl;
+  text-align: right;
+}
+
+#nav-sidebar .tpa-nav-group table tbody tr th .tpa-model-heading > a {
   min-width: 0;
   max-width: 100%;
-  padding: 2px 0;
+  flex: 1 1 auto;
+  display: block;
+  margin: 0;
+  padding: 1px 0;
   direction: rtl;
   text-align: right;
   unicode-bidi: plaintext;
   color: #d5e2f4 !important;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
-  line-height: 1.85;
-  text-decoration: none;
+  line-height: 1.75;
   white-space: normal;
-  overflow-wrap: break-word;
+  overflow-wrap: anywhere;
   word-break: normal;
+  text-decoration: none;
 }
 
-#nav-sidebar .tpa-nav-group table tbody tr th a:not(.tpa-favorite-toggle):hover {
+#nav-sidebar .tpa-nav-group table tbody tr th .tpa-model-heading > a:hover {
   color: #fff !important;
   text-decoration: underline;
   text-decoration-thickness: 1px;
   text-underline-offset: 3px;
 }
 
-#nav-sidebar .tpa-nav-group table tbody tr th .tpa-favorite-toggle {
-  width: 26px;
-  min-width: 26px;
-  max-width: 26px;
-  height: 28px;
-  min-height: 28px;
-  flex: 0 0 26px;
+#nav-sidebar .tpa-nav-group table tbody tr th .tpa-model-label {
+  min-width: 0;
+  max-width: 100%;
+  flex: 1 1 auto;
+  direction: rtl;
+  text-align: right;
+  unicode-bidi: plaintext;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+#nav-sidebar .tpa-nav-group table tbody tr th .tpa-model-heading > .tpa-favorite-toggle {
+  position: static;
+  inset: auto;
+  box-sizing: border-box;
+  width: 22px;
+  min-width: 22px;
+  max-width: 22px;
+  height: 26px;
+  min-height: 26px;
+  flex: 0 0 22px;
+  align-self: center;
   display: inline-grid;
   place-items: center;
   margin: 0;
   padding: 0;
-  border: 1px solid transparent;
-  border-radius: 7px;
-  background: transparent;
-  color: #8ea4c4;
+  border-radius: 6px;
   font-family: Tahoma, sans-serif;
-  font-size: 15px;
+  font-size: 14px;
   line-height: 1;
-  cursor: pointer;
 }
 
-#nav-sidebar .tpa-nav-group table tbody tr th .tpa-favorite-toggle:hover,
-#nav-sidebar .tpa-nav-group table tbody tr th .tpa-favorite-toggle.is-active {
-  border-color: #65552e;
-  background: #342d20;
-  color: #ffda82;
-}
-
+/* The only sidebar action in Django's native app list is usually Add.
+   Reserve 64px for its icon, Persian label, padding and border. */
 #nav-sidebar .tpa-nav-group table tbody tr td {
-  width: 62px;
-  min-width: 62px;
-  max-width: 62px;
-  padding: 7px 3px;
+  box-sizing: border-box;
+  width: 64px;
+  min-width: 64px;
+  max-width: 64px;
+  padding: 6px 3px;
   text-align: center;
   vertical-align: middle;
   white-space: nowrap;
-}
-
-#nav-sidebar .tpa-nav-group table tbody tr td:nth-of-type(2) {
-  width: 58px;
-  min-width: 58px;
-  max-width: 58px;
 }
 
 #nav-sidebar .tpa-nav-group table tbody tr td:empty {
@@ -232,43 +244,33 @@
   box-sizing: border-box;
   width: 100%;
   min-width: 0;
-  min-height: 30px;
+  min-height: 29px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 3px;
-  padding: 5px 3px;
+  gap: 2px;
+  padding: 4px 2px;
   border: 1px solid transparent;
   border-radius: 7px;
   direction: rtl;
   text-align: center;
   unicode-bidi: plaintext;
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 700;
-  line-height: 1.45;
+  line-height: 1.4;
   white-space: nowrap;
   text-decoration: none !important;
 }
 
 #nav-sidebar .tpa-nav-group table tbody tr td .addlink::before {
-  width: 14px;
-  height: 14px;
-  flex: 0 0 14px;
-  font-size: 12px;
+  box-sizing: border-box;
+  width: 13px;
+  height: 13px;
+  flex: 0 0 13px;
+  font-size: 11px;
 }
 
-#nav-sidebar .tpa-nav-group table tbody tr td .changelink,
-#nav-sidebar .tpa-nav-group table tbody tr td .viewlink {
-  color: #b8cbea !important;
-}
-
-#nav-sidebar .tpa-nav-group table tbody tr td .addlink:hover,
-#nav-sidebar .tpa-nav-group table tbody tr td .changelink:hover,
-#nav-sidebar .tpa-nav-group table tbody tr td .viewlink:hover {
-  text-decoration: none !important;
-}
-
-/* Avoid all-caps inheritance from generic theme rules. */
+/* All admin menu captions and links retain natural language casing. */
 #nav-sidebar .tpa-nav-group,
 #nav-sidebar .tpa-nav-group caption,
 #nav-sidebar .tpa-nav-group caption a,
@@ -279,7 +281,6 @@
   letter-spacing: 0;
 }
 
-/* Keep Persian labels readable in the quick-access panels and command palette. */
 #nav-sidebar .tpa-quick-section,
 #nav-sidebar .tpa-quick-section *,
 .tpa-command-dialog,
@@ -293,90 +294,74 @@
 .tpa-command-result-copy small {
   text-align: right;
   unicode-bidi: plaintext;
-  overflow-wrap: break-word;
+  overflow-wrap: anywhere;
   word-break: normal;
 }
 
-/* Width balance for medium desktop screens. */
+/* At tablet widths, shrink the action column by 4px and preserve the text track.
+   The sidebar's 246px width is defined by the main admin theme. */
 @media (max-width: 1100px) and (min-width: 768px) {
-  #nav-sidebar {
-    width: 292px !important;
-    min-width: 292px !important;
-    max-width: 292px !important;
-    flex-basis: 292px !important;
-  }
-
-  #nav-sidebar .tpa-nav-group table tbody tr td {
-    width: 58px;
-    min-width: 58px;
-    max-width: 58px;
-  }
-
-  #nav-sidebar .tpa-nav-group table tbody tr td:nth-of-type(2) {
-    width: 54px;
-    min-width: 54px;
-    max-width: 54px;
-  }
-}
-
-/* Mobile: sidebar stays within viewport and labels wrap at word boundaries. */
-@media (max-width: 767px) {
-  #nav-sidebar {
-    width: min(84vw, 320px) !important;
-    min-width: min(84vw, 320px) !important;
-    max-width: min(84vw, 320px) !important;
-    flex: 0 0 min(84vw, 320px) !important;
-    padding-inline: 10px !important;
-  }
-
   #nav-sidebar > .tpa-nav-group > table > caption {
-    grid-template-columns: minmax(0, 1fr) 27px 33px;
+    grid-template-columns: minmax(0, 1fr) 26px 32px;
+    grid-template-rows: minmax(52px, auto);
   }
 
   #nav-sidebar .tpa-nav-group caption a.section {
-    grid-template-columns: 27px minmax(0, 1fr);
-    gap: 7px;
-    padding-inline: 9px;
+    min-height: 52px;
+    grid-template-columns: 23px minmax(0, 1fr);
+    gap: 6px;
+    padding-inline: 8px;
   }
 
   #nav-sidebar .tpa-nav-group caption a.section .tpa-app-icon {
-    width: 25px;
-    height: 25px;
-    min-width: 25px;
+    width: 23px;
+    height: 23px;
+    min-width: 23px;
+  }
+
+  #nav-sidebar .tpa-nav-group caption .tpa-app-count {
+    width: 21px;
+    min-width: 21px;
+    height: 21px;
   }
 
   #nav-sidebar .tpa-nav-group caption .tpa-group-toggle {
-    width: 33px;
-    min-width: 33px;
-  }
-
-  #nav-sidebar .tpa-nav-group table tbody tr th {
-    padding-inline: 7px 4px;
-    font-size: 11px;
-  }
-
-  #nav-sidebar .tpa-nav-group table tbody tr th a:not(.tpa-favorite-toggle) {
-    font-size: 11px;
+    width: 32px;
+    min-width: 32px;
+    min-height: 52px;
   }
 
   #nav-sidebar .tpa-nav-group table tbody tr td {
-    width: 56px;
-    min-width: 56px;
-    max-width: 56px;
-    padding-inline: 2px;
+    width: 60px;
+    min-width: 60px;
+    max-width: 60px;
   }
 
-  #nav-sidebar .tpa-nav-group table tbody tr td:nth-of-type(2) {
-    width: 50px;
-    min-width: 50px;
-    max-width: 50px;
+  #nav-sidebar .tpa-nav-group table tbody tr th {
+    font-size: 10.5px;
   }
 
-  #nav-sidebar .tpa-nav-group table tbody tr td .addlink,
-  #nav-sidebar .tpa-nav-group table tbody tr td .changelink,
-  #nav-sidebar .tpa-nav-group table tbody tr td .viewlink {
-    font-size: 9px;
-    padding-inline: 2px;
+  #nav-sidebar .tpa-nav-group table tbody tr th .tpa-model-heading {
+    gap: 4px;
+  }
+
+  #nav-sidebar .tpa-nav-group table tbody tr th .tpa-model-heading > .tpa-favorite-toggle {
+    width: 21px;
+    min-width: 21px;
+    max-width: 21px;
+    flex-basis: 21px;
+  }
+}
+
+/* Django 5.2 hides its sidebar below 768px and uses the native navigation
+   toggle. Do not force a sidebar width or display over that responsive rule. */
+@media (max-width: 767px) {
+  #nav-sidebar .tpa-nav-group caption a.section .tpa-app-label {
+    font-size: 11px;
+  }
+
+  #nav-sidebar .tpa-nav-group table tbody tr th .tpa-model-heading > a {
+    font-size: 11px;
   }
 }
 
@@ -386,69 +371,4 @@
   .tpa-command-dialog * {
     transition: none !important;
   }
-}
-
-/* Model title and favorite control share a dedicated flex row.
-   This keeps long Persian names wrapped naturally without pushing the star
-   onto a separate line or disturbing Django's native table-cell layout. */
-#nav-sidebar .tpa-nav-group table tbody tr th .tpa-model-heading {
-  width: 100%;
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 6px;
-  direction: rtl;
-  text-align: right;
-}
-
-#nav-sidebar .tpa-nav-group table tbody tr th .tpa-model-heading > a {
-  min-width: 0;
-  flex: 1 1 auto;
-  display: block;
-  padding: 2px 0;
-  direction: rtl;
-  text-align: right;
-  unicode-bidi: plaintext;
-  white-space: normal;
-  overflow-wrap: break-word;
-  word-break: normal;
-}
-
-#nav-sidebar .tpa-nav-group table tbody tr th .tpa-model-label {
-  min-width: 0;
-  flex: 1 1 auto;
-  direction: rtl;
-  text-align: right;
-  unicode-bidi: plaintext;
-  white-space: normal;
-  overflow-wrap: break-word;
-  word-break: normal;
-}
-
-#nav-sidebar .tpa-nav-group table tbody tr th .tpa-model-heading > .tpa-favorite-toggle {
-  position: static;
-  inset: auto;
-  flex: 0 0 26px;
-  align-self: center;
-}
-
-@media (max-width: 767px) {
-  #nav-sidebar .tpa-nav-group table tbody tr th .tpa-model-heading {
-    gap: 4px;
-  }
-
-  #nav-sidebar .tpa-nav-group table tbody tr th .tpa-model-heading > .tpa-favorite-toggle {
-    flex-basis: 24px;
-    width: 24px;
-    min-width: 24px;
-    max-width: 24px;
-  }
-}
-
-/* Let the main canvas consume the remaining width after the wider text-first sidebar. */
-#content-start {
-  width: auto !important;
-  min-width: 0;
-  flex: 1 1 0;
 }
