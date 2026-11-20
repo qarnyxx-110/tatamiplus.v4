@@ -1,5 +1,6 @@
 const V='tatami-v2',SHELL=['./','index.html','offline.html','manifest.webmanifest','icons/icon-192.png','icons/icon-512.png'];
-self.addEventListener('install',e=>{e.waitUntil(self.skipWaiting());e.waitUntil((async()=>{
+self.addEventListener('install',e=>{e.waitUntil((async()=>{
+ await self.skipWaiting();
  const c=await caches.open(V),core=SHELL.slice(0,7),routes=SHELL.slice(7);
  await c.addAll(core);
  const results=await Promise.allSettled(routes.map(url=>c.add(url)));
