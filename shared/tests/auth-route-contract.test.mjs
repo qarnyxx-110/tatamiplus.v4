@@ -13,7 +13,7 @@ assert.match(bridge, /if \(route === 'blog'\) \{\s*return parts\[1\] \? '\/blog\
 assert.ok(bridge.includes('account|blog|club'), 'Bridge URL allowlist must include the Django blog route');
 assert.ok(bridge.includes("case 'blog': {"), 'Safe next paths must handle blog routes explicitly');
 assert.ok(bridge.includes("slug = decodeURIComponent(route[1])"), 'Blog return slugs must be decoded before URLSearchParams encodes the next value');
-assert.ok(bridge.includes("route.length !== 2") && bridge.includes("slug === '..'") && bridge.includes("/[\\\\/\\\\\\\\?#]/.test(slug)"), 'Unsafe or multi-segment blog return paths must be rejected');
+assert.ok(bridge.includes("^[\\\\p{L}\\\\p{M}\\\\p{N}_-]+$"), 'Blog return slugs must reject encoded separators and non-slug characters');
 assert.ok(router.includes("'set-password','blog','store'"), 'Live Preview interception must include Django blog pages');
 
 console.log('Django auth route contract: PASS');
