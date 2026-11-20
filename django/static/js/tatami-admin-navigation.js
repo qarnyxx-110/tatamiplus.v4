@@ -395,7 +395,7 @@
       const action = link.classList.contains("addlink") ? "افزودن " :
         link.classList.contains("viewlink") ? "مشاهده " : "";
       const label = link.classList.contains("section")
-        ? safeText(link.textContent)
+        ? safeText(link.querySelector(".tpa-app-label")?.textContent || link.textContent)
         : action + (modelName || safeText(link.textContent));
       recent = [{
         href: link.href,
