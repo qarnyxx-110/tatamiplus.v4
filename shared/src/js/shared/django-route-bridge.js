@@ -295,7 +295,7 @@
       const lesson = /^([a-z0-9-]+)-lesson-\d+$/.exec(parts[1] || '');
       return lesson ? resolveRealCourse(lesson[1]) : '/club/';
     }
-    if (route === 'club') return '/club/';
+    if (route === 'club') return parts[1] ? '' : '/club/';
     if (route === 'gems') return '/account/gems/';
     if (route === 'profile' || route === 'my-profile') return '/account/';
     if (route === 'orders') return '/orders/';
