@@ -266,6 +266,7 @@
     if (route === 'password-reset' || route === 'set-password') return '/auth/login/';
     if (route === 'coach-invite') return '/coaches/join/';
 
+    if (route === 'academy') return '/coaches/';
     if (route === 'coaches') {
       return parts[1] ? resolveRealCoach(parts[1]) : '/coaches/';
     }

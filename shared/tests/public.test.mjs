@@ -37,11 +37,16 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
   await go('#/');
  }
  const nav=await pg.evaluate(()=>[...document.querySelectorAll('#nv a')].map(a=>a.textContent.trim()));
- S.ok('منو: بلاگ، تاتامی‌پدیا، مربیان، حامیان',['بلاگ','تاتامی‌پدیا','مربیان تاتامی','حامیان تاتامی پلاس'].every(x=>nav.includes(x)),nav.join('|'));S.ok('منو: دوره‌های آموزشی',nav.includes('دوره‌ها'),nav.join('|'));
+ S.ok('منو: چهار بخش ادغام‌شده با نام‌های واحد',['باشگاه مجازی','مربیان','وبلاگ','حامیان تاتامی پلاس'].every(x=>nav.includes(x)),nav.join('|'));S.ok('منو: نام‌های فرعی به‌صورت لینک مستقل حذف شده‌اند',!['ویدیوهای ضبط‌شده','آکادمی اساتید','تاتامی‌پدیا','آنالیز هوش مصنوعی'].some(x=>nav.includes(x)),nav.join('|'));
  S.ok('منو: تاریخچه جم',nav.includes('جم'),nav.join('|'));
  S.ok('منو: مربی آنلاین برای هنرجو',app!=='student'||nav.includes('مربی آنلاین'),nav.join('|'));
+ await go('#/courses');let hub=await T();S.ok('باشگاه مجازی: تب دوره‌ها و ویدیوهای ضبط‌شده در یک صفحه',hub.includes('باشگاه مجازی')&&await pg.locator('.tp-section-tabs a[href="#/courses"]').count()===1&&await pg.locator('.tp-section-tabs a[href="#/videos"]').count()===1);
+ await go('#/videos');hub=await T();S.ok('باشگاه مجازی: مسیر قدیمی ویدیوها به همان بخش یکپارچه می‌رسد',hub.includes('باشگاه مجازی')&&await pg.locator('.tp-section-tabs a[aria-current="page"]').getAttribute('href')==='#/videos');
+ await go('#/blog');hub=await T();S.ok('وبلاگ: تب مقاله و دانشنامه در یک بخش',hub.includes('وبلاگ')&&await pg.locator('.tp-section-tabs a[href="#/tatamipedia"]').count()===1);
+ await go('#/tatamipedia');hub=await T();S.ok('تاتامی‌پدیا: مسیر قدیمی به تب همان بخش وبلاگ می‌رسد',hub.includes('وبلاگ')&&await pg.locator('.tp-section-tabs a[aria-current="page"]').getAttribute('href')==='#/tatamipedia');
+ await go('#/academy');hub=await T();S.ok('آکادمی اساتید: مسیر قدیمی به فهرست واحد مربیان می‌رسد',hub.includes('مربیان')&&await pg.locator('#kfq').count()===1);
  await go('#/online-coach');const oc=await T();
- S.ok('مربی آنلاین: صفحه مستقل و ابزار دوربین',oc.includes('مربی آنلاین')&&oc.includes('روشن کردن دوربین')&&await pg.locator('#tp-oc-video').count()===1);
+ S.ok('مربی آنلاین: صفحه مشترک و تب آنالیز برای نقش‌های مجاز',oc.includes('مربی آنلاین')&&oc.includes('روشن کردن دوربین')&&await pg.locator('#tp-oc-video').count()===1&&await pg.locator('.tp-section-tabs a[href="#/online-coach"]').count()===1&&(app==='coach'||app==='club'?await pg.locator('.tp-section-tabs a[href="#/ai"]').count()===0:await pg.locator('.tp-section-tabs a[href="#/ai"]').count()===1));
  S.ok('مربی آنلاین: شمارش واقعی جعل نمی‌شود',await pg.locator('#tp-oc-count').innerText()==='—'&&oc.includes('ربات هنوز متصل نشده است')&&await pg.locator('#tp-oc-count-start').isDisabled());
  S.ok('مربی آنلاین: فعلاً فقط پیش‌نمایش محلی و بدون ورودی فایل',oc.includes('تصویر به سرور ارسال نمی‌شود')&&await pg.locator('#tp-oc-video').count()===1&&await pg.locator('#tp-oc input[type=file]').count()===0);
  const ocWidths=[];for(const width of [320,360,390]){await pg.setViewportSize({width,height:800});await go('#/online-coach');ocWidths.push(await pg.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1&&document.body.scrollWidth<=innerWidth+1));}
@@ -111,7 +116,7 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
 
  S.ok('جم: نشان موجودی در هدر',await pg.locator('#hgem[href="#/gems"]').count()===1);
  S.ok('منو: «باشگاه‌ها» فقط برای هنرجو/باشگاه',(app==='coach')?!nav.includes('باشگاه‌ها'):nav.includes('باشگاه‌ها'));
- const foot=await pg.evaluate(()=>[...document.querySelectorAll('footer a')].map(a=>({text:a.textContent.trim(),href:a.getAttribute('href')})));S.ok('فوتر: لینک مربی آنلاین به صفحه مستقل مربی آنلاین متصل است',foot.some(a=>a.text==='مربی آنلاین'&&a.href==='#/online-coach')&&foot.some(a=>a.text==='تاتامی‌پدیا')&&foot.some(a=>a.text==='حامیان تاتامی پلاس')&&!foot.some(a=>a.text==='سیستم طراحی'),JSON.stringify(foot));
+ const foot=await pg.evaluate(()=>[...document.querySelectorAll('footer a')].map(a=>({text:a.textContent.trim(),href:a.getAttribute('href')})));S.ok('فوتر: بخش‌های ادغام‌شده فقط یک‌بار و با نام یکسان آمده‌اند',foot.some(a=>a.text==='باشگاه مجازی'&&a.href==='#/courses')&&foot.some(a=>a.text==='مربیان'&&a.href==='#/coaches')&&foot.some(a=>a.text==='وبلاگ'&&a.href==='#/blog')&&foot.some(a=>a.text==='مربی آنلاین'&&a.href==='#/online-coach')&&!['ویدیوهای ضبط‌شده','آکادمی اساتید','تاتامی‌پدیا','آنالیز هوش مصنوعی'].some(x=>foot.some(a=>a.text===x)),JSON.stringify(foot));
  await go('#/gems');const gems=await T();S.ok('جم: صفحه تاریخچه و وضعیت عدم اتصال',gems.includes('تاریخچه تراکنش‌ها')&&gems.includes('موجودی واقعی هنوز به این نسخه متصل نشده است'));S.ok('جم: عدم نمایش تراکنش ساختگی',gems.includes('تراکنشی برای نمایش وجود ندارد'));
  await go('#/my-profile');S.ok('«پروفایل من» فقط در PWA مربی',(app==='coach')?!await nf():await nf());
  if(app==='coach'){

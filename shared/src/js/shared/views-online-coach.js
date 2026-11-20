@@ -11,6 +11,7 @@ Object.assign(views, {
     };
     return `
       <div class="w tp-oc">
+        ${tpSectionTabs('بخش‌های مربی آنلاین',[['online-coach','تمرین آنلاین'],...(allowed('ai')?[['ai','آنالیز حرکت']]:[])],'online-coach')}
         <section class="tp-oc-hero" aria-labelledby="tp-oc-title">
           <div class="tp-oc-hero-copy">
             <span class="tag">تمرین هوشمند جودو</span>

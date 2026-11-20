@@ -79,6 +79,10 @@ try {
     });
   });
 
+  await page.route('**/coaches/**', async route => {
+    await route.fulfill({status:200,contentType:'text/html; charset=utf-8',body:documentHtml('<h1 id="coach-target">فهرست واقعی مربیان</h1>','مربیان')});
+  });
+
   await page.route('**/club/**', async route => {
     await route.fulfill({
       status: 200,
@@ -133,6 +137,10 @@ try {
   assert.equal(await page.locator('#club-target').count(), 1);
   assert.equal(await page.locator('#post-result').count(), 0);
 
+  await page.evaluate(() => { location.hash = '#/academy'; });
+  await page.locator('#coach-target').waitFor({ state: 'visible', timeout: 15000 });
+  assert.equal(await page.locator('#app').getAttribute('data-django-view'), '/coaches/');
+
   await page.close();
 } catch (error) {
   failures.push(error?.stack || String(error));
@@ -143,4 +151,4 @@ try {
 }
 
 if (failures.length) throw new Error(failures.join('\n\n'));
-console.log('Django Preview bridge browser checks: 5/5 passed');
+console.log('Django Preview bridge browser checks: 6/6 passed');

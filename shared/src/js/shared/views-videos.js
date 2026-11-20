@@ -2,7 +2,7 @@ Object.assign(views,{
 videos:()=>{const n=nz(vq);let l=V.filter(v=>(!vcat||v.c==vcat)&&(!vlev||v.l==vlev)&&(!vsv||saved.includes(v.id))&&(!n||nz(v.t+' '+I[v.i].n+' '+v.c).includes(n)));
 l.sort({p:(a,b)=>b.v-a.v,s:(a,b)=>a.d-b.d,l:(a,b)=>b.d-a.d}[vsort]||((a,b)=>b.nw-a.nw));
 const cw=[...new Set([lw,...Object.keys(prog).map(Number)].filter(x=>x!=null&&V[x]))].filter(x=>(prog[x]||0)<100).slice(0,3),fc=(vcat?1:0)+(vlev?1:0)+(vsv?1:0);
-return`<div class="w"><h1>ویدیوهای ضبط‌شده</h1><p class="mu">آموزش‌های تخصصی جودو را ببینید، تمرین کنید و مسیر پیشرفت خود را ادامه دهید.</p>
+return`<div class="w"><h1>باشگاه مجازی</h1><p class="mu">دوره‌های آموزشی و ویدیوهای ضبط‌شده در یک بخش یکپارچه.</p>${tpSectionTabs('بخش‌های باشگاه مجازی',[['courses','دوره‌های آموزشی'],['videos','ویدیوهای ضبط‌شده']],'videos')}<h2>ویدیوهای ضبط‌شده</h2><p class="mu">آموزش‌های تخصصی جودو را ببینید، تمرین کنید و مسیر پیشرفت خود را ادامه دهید.</p>
 ${cw.length?`<section class="d-s" style="margin-top:var(--tp-space-md)" aria-label="ادامه تماشا"><h2>ادامه تماشا</h2><div class="pg">${cw.map(x=>{const v=V[x],p=prog[x]||0;return`<div class="card b"><a href="#/video/${v.id}"><b>${v.t}</b></a><div class="mu sm">${F(v.d)} دقیقه · ${F(p)}٪ دیده‌شده</div>${bar(p,'','پیشرفت تماشا: '+v.t)}<p><a class="btn s" href="#/video/${v.id}">ادامه تماشا</a></p></div>`}).join('')}</div></section>`:''}
 <div class="sbar"><label class="sr" for="vfq">جستجوی ویدیو</label><input id="vfq" type="search" placeholder="جستجوی ویدیو..." value="${esc(vq)}" oninput="vq=this.value;R('vfq')"></div>
 <nav class="cn" aria-label="دسته‌بندی ویدیوها">${['',...VC].map(c=>chp(c||'همه',vcat==c,`vcat='${c}';R('x')`)).join('')}</nav>
