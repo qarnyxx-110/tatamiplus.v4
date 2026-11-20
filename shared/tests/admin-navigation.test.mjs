@@ -54,7 +54,10 @@ const fixture = String.raw`<!doctype html>
 const browser = await chromium.launch({ headless: true });
 try {
   const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
-  await page.setContent(fixture, { waitUntil: "domcontentloaded" });
+  await page.route("https://tatamiplus.ir/**", (route) =>
+    route.fulfill({ status: 200, contentType: "text/html", body: fixture })
+  );
+  await page.goto("https://tatamiplus.ir/admin/", { waitUntil: "domcontentloaded" });
   await page.addStyleTag({ content: style });
   await page.addScriptTag({ content: script });
 
@@ -113,6 +116,10 @@ try {
   await page.locator(".tpa-command-trigger").click();
   await page.locator(".tpa-command-input").fill("افزودن ورود گروهی");
   await assert.equal(await page.locator(".tpa-command-result").first().getAttribute("href"), "https://tatamiplus.ir/admin/accounts/bulkimport/add/");
+  await page.keyboard.press("Enter");
+  await page.waitForURL("https://tatamiplus.ir/admin/accounts/bulkimport/add/");
+  const keyboardRecent = await page.evaluate(() => JSON.parse(localStorage.getItem("tatami.admin.nav.recent.v1")));
+  await assert.equal(keyboardRecent[0].href, "https://tatamiplus.ir/admin/accounts/bulkimport/add/");
 
   console.log("ADMIN_NAVIGATION_BROWSER_TEST_OK");
 } finally {
