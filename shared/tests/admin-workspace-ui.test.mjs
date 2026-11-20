@@ -7,10 +7,11 @@ import { dirname, resolve } from "node:path";
 const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(here, "../..");
 const root = resolve(repoRoot, "django/static");
-const [navigationScript, navigationCss, workspaceCss] = await Promise.all([
+const [navigationScript, navigationCss, workspaceCss, navigationTextCss] = await Promise.all([
   readFile(resolve(root, "js/tatami-admin-navigation.js"), "utf8"),
   readFile(resolve(root, "css/tatami-admin-navigation.css"), "utf8"),
-  readFile(resolve(root, "css/tatami-admin-workspace.css"), "utf8")
+  readFile(resolve(root, "css/tatami-admin-workspace.css"), "utf8"),
+  readFile(resolve(root, "css/tatami-admin-navigation-text.css"), "utf8")
 ]);
 
 const fixture = String.raw`<!doctype html>
@@ -23,6 +24,7 @@ const fixture = String.raw`<!doctype html>
       <div class="app-blog module">
         <table>
           <caption><a class="section" href="/admin/blog/">وبلاگ</a></caption>
+          <thead class="visually-hidden"><tr><th scope="col">Model</th><th scope="col">Add</th><th scope="col">Change</th></tr></thead>
           <tbody>
             <tr class="model-post">
               <th scope="row"><a href="/admin/blog/post/">پست‌های وبلاگ</a></th>
@@ -107,6 +109,7 @@ try {
   await page.goto("https://tatamiplus.ir/admin/blog/post/add/", { waitUntil: "domcontentloaded" });
   await page.addStyleTag({ content: navigationCss });
   await page.addStyleTag({ content: workspaceCss });
+  await page.addStyleTag({ content: navigationTextCss });
   await page.addScriptTag({ content: navigationScript });
 
   // Navigation group caption uses distinct grid tracks; count and collapse arrow do not overlap.
