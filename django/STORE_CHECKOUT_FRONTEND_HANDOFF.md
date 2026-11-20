@@ -1,8 +1,8 @@
 # اتصال فرانت‌اند Django به بک‌اند تاتامی پلاس
 
-**مرجع قرارداد:** `Radinsharifi/Tatami-demo`، شاخه `main`  
+**مرجع قرارداد:** `Radinsharifi/Tatami-demo`، revision قفل‌شده در CI: `25fde937def556edc7b81291e5900a9ac84fccb2`  
 **سند مرجع بک‌اند:** `FRONTEND_BACKEND_HANDOFF_FA.md`  
-**تاریخ تطبیق:** ۱۵ نوامبر ۲۰۲۶
+**تاریخ تطبیق:** ۲۱ نوامبر ۲۰۲۶
 
 ## معماری قطعی
 
@@ -27,19 +27,29 @@
 
 ## قراردادهای واقعی و آمادهٔ اتصال
 
-### احراز هویت با OTP
+### احراز هویت، OTP و بازیابی رمز
 
-| عملیات | Route | فیلدهای واقعی |
-| --- | --- | --- |
-| ورود/ثبت‌نام | `GET, POST /auth/login/` | `phone`, `role` (فقط `student` یا `coach`), `next_url` |
-| ارسال مجدد | `POST /auth/otp/send/` | شماره در Session؛ CSRF الزامی |
-| تأیید کد | `GET, POST /auth/otp/verify/` | `code`، دقیقاً ۵ رقم |
-| تکمیل پروفایل | `GET, POST /auth/complete-profile/` | `name`, `city`, `role` |
-| خروج | `POST /accounts/logout/` | CSRF الزامی |
+**منبع تأیید:** `accounts/auth_urls.py`، `accounts/views.py` و `accounts/forms.py` در revision بک‌اندی که CI به آن قفل شده است.
 
-ثبت‌نام صفحهٔ جداگانه ندارد. شمارهٔ همراه موجود وارد همان حساب می‌شود؛ شمارهٔ جدید پس از OTP حساب می‌سازد. ارسال مجدد از سمت سرور محدودیت ۶۰ ثانیه دارد؛ کد پس از ۱۲۰ ثانیه منقضی می‌شود. ارقام فارسی و عربی توسط فرم سرور پذیرفته و نرمال می‌شوند. نقش باشگاه در بک‌اند وجود ندارد؛ آن را در UI به‌عنوان حساب قابل ساخت نمایش ندهید.
+| عملیات | Route واقعی | ورودی GET / Query | فیلدهای POST |
+|---|---|---|---|
+| ورود با رمز | `GET, POST /auth/login/` | `next` اختیاری | `phone`, `password`, `next_url` |
+| ورود/ثبت‌نام پیامکی | `GET, POST /auth/login/sms/` | `role`، `next` اختیاری | `phone`, `role`, `next_url` |
+| ارسال دوبارهٔ OTP | `POST /auth/otp/send/` | شماره از Session خوانده می‌شود | بدون فیلد شماره؛ CSRF الزامی |
+| تأیید OTP | `GET, POST /auth/otp/verify/` | شماره و نقش از Session | `code` |
+| تکمیل پروفایل پس از OTP | `GET, POST /auth/complete-profile/` | - | `name`, `city`, `role`, `password`, `password_confirm` |
+| ساخت رمز برای حساب قدیمی | `GET, POST /auth/password/set/` | کاربر باید وارد شده باشد | `password`, `password_confirm` |
+| شروع بازیابی رمز | `GET, POST /auth/password/reset/` | - | `phone` |
+| تأیید بازیابی و ثبت رمز تازه | `GET, POST /auth/password/reset/confirm/` | شماره از Session خوانده می‌شود | `code`, `password`, `password_confirm` |
+| خروج | `POST /accounts/logout/` | - | CSRF الزامی |
 
-نام‌های route معتبر عبارت‌اند از `phone_auth:login`، `phone_auth:send_otp`، `phone_auth:verify_otp` و `phone_auth:complete_profile`. مسیرهای قدیمی `accounts:register` و `accounts:login` فقط redirect سازگار هستند.
+نکتهٔ مهم دربارهٔ پارامترها: نام پارامتر مقصد در Query String برابر `next` است؛ مقدار پنهان فرم پس از رندر شدن برابر `next_url` می‌شود. View بک‌اند مقصد را با `_safe_next` به همان host محدود می‌کند. پل فرانت‌اند باید فقط مسیرهای داخلی شناخته‌شده را به `next` تبدیل کند و نباید URL خارجی یا مقدار دلخواه را عبور دهد.
+
+ثبت‌نام صفحهٔ مستقل در بک‌اند ندارد. مسیر سازگاری قدیمی `/accounts/register/` به `/auth/login/sms/` هدایت می‌شود. شمارهٔ تازه پس از تأیید OTP حساب می‌سازد؛ شمارهٔ موجود به همان حساب وارد می‌شود. نقش معتبر فقط `student` یا `coach` است. نقش باشگاه در مدل کاربر وجود ندارد و نباید به‌عنوان حساب قابل ساخت معرفی شود.
+
+ارسال مجدد از سمت سرور محدودیت زمانی دارد و کد OTP پس از ۱۲۰ ثانیه منقضی می‌شود. ارقام فارسی و عربی در فرم OTP نرمال می‌شوند. همهٔ POSTها باید با CSRF و Session واقعی Django انجام شوند.
+
+نام‌های route معتبر عبارت‌اند از `phone_auth:login`، `phone_auth:sms_login`، `phone_auth:send_otp`، `phone_auth:verify_otp`، `phone_auth:complete_profile`، `phone_auth:set_password`، `phone_auth:password_reset` و `phone_auth:password_reset_confirm`. مسیر قدیمی `accounts:register` redirect سازگار است؛ `accounts:login` نیز redirect ورود با رمز است.
 
 ### مربیان
 
@@ -134,7 +144,10 @@
 | #/product/<id> | نام محصول صرفاً برای یافتن کارت همان محصول در HTML واقعی Django به کار می‌رود؛ اگر تطبیق یکتا پیدا نشود، جست‌وجوی سرور با نام محصول باز می‌شود. صفحه جزئیات و قیمت محلی به‌عنوان داده واقعی استفاده نمی‌شوند |
 | #/cart | /store/cart/ |
 | #/checkout | /checkout/address/ |
-| #/login، #/register و #/role | /auth/login/؛ نقش معتبر student یا coach حفظ می‌شود |
+| #/login | /auth/login/؛ ورود با رمز |
+| #/register و #/role | /auth/login/sms/؛ ثبت‌نام/ورود پیامکی، نقش معتبر student یا coach و مقصد داخلی امن حفظ می‌شوند |
+| #/password-reset | /auth/password/reset/ |
+| #/set-password | /auth/password/set/؛ فقط کاربر واردشدهٔ واجد شرایط |
 | #/coaches | /coaches/ |
 | #/coach-apply | /coaches/apply/ |
 | #/coach-application | /coaches/application/ |
