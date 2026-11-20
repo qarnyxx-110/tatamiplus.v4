@@ -74,6 +74,15 @@ try {
   await groupToggle.click();
   await assert.equal(await accountsGroup.evaluate((el) => el.classList.contains("tpa-group-collapsed")), false);
 
+  // Bulk collapse respects the current group and communicates its next action.
+  const collapseAll = page.locator(".tpa-collapse-all");
+  await collapseAll.click();
+  await assert.equal(await nav.locator(".tpa-nav-group.tpa-group-collapsed").count(), 2);
+  await assert.equal(await collapseAll.textContent(), "بازکردن همه");
+  await collapseAll.click();
+  await assert.equal(await nav.locator(".tpa-nav-group.tpa-group-collapsed").count(), 0);
+  await assert.equal(await collapseAll.textContent(), "جمع‌کردن همه");
+
   // Favorites are browser-local and retain only the real admin URL.
   await accountsGroup.locator(".tpa-favorite-toggle").first().click();
   await assert.equal(await accountsGroup.locator(".tpa-favorite-toggle").first().getAttribute("aria-pressed"), "true");
