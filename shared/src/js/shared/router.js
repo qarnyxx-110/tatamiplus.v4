@@ -11,7 +11,7 @@ if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)&&!window.__
  const registerTatamiServiceWorker=()=>navigator.serviceWorker.register(new URL('sw.js',document.baseURI),{scope:'./'}).then(registration=>{
    if(!registration)return null;
    const requestActivation=worker=>{
-    if(worker&&navigator.serviceWorker.controller)worker.postMessage({type:'TP_SKIP_WAITING'});
+    if(worker)worker.postMessage({type:'TP_SKIP_WAITING'});
    };
    // Handle a waiting update that existed before this page loaded.
    requestActivation(registration.waiting);
