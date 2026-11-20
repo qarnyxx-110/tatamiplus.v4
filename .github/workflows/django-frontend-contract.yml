@@ -265,7 +265,7 @@ jobs:
           assert "blog:detail" in blog_list and "tp-section-tabs" in blog_list
           assert "tp-article" in blog_detail and "blog:list" in blog_detail
           assert "coach-row" not in blog_list and "page-main" not in blog_list
-          assert "| #/blog و #/blog/<slug> | /blog/ و /blog/<str:slug>/؛ متصل به پل Preview |" in handoff
+          assert "| #/blog و #/blog/<slug> | /blog/ و /blog/<str:slug>/؛ مطالب منتشرشدهٔ Django از طریق پل Preview نمایش داده می‌شوند |" in handoff
           assert "| #/login | /auth/login/؛ ورود با رمز |" in handoff
           assert "| #/register و #/role | /auth/login/sms/" in handoff
           print("DJANGO_FRONTEND_ROUTE_CONTRACT_OK")
