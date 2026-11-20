@@ -227,7 +227,38 @@ jobs:
         run: |
           set -euo pipefail
           git clone https://github.com/Radinsharifi/Tatami-demo.git backend
-          git -C backend checkout --detach 25fde937def556edc7b81291e5900a9ac84fccb2
+          git -C backend checkout --detach 20e96721cc1a589d625fecd3fffa9ec42b1fc64f
+
+      - name: Verify frontend route mappings against current Django source
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          auth_urls = Path("backend/accounts/auth_urls.py").read_text(encoding="utf-8")
+          account_views = Path("backend/accounts/views.py").read_text(encoding="utf-8")
+          config_urls = Path("backend/config/urls.py").read_text(encoding="utf-8")
+          blog_urls = Path("backend/blog/urls.py").read_text(encoding="utf-8")
+          blog_views = Path("backend/blog/views.py").read_text(encoding="utf-8")
+          bridge = Path("shared/src/js/shared/django-route-bridge.js").read_text(encoding="utf-8")
+          handoff = Path("django/STORE_CHECKOUT_FRONTEND_HANDOFF.md").read_text(encoding="utf-8")
+
+          assert "path('login/', views.password_login, name='login')" in auth_urls
+          assert "path('login/sms/', views.phone_login, name='sms_login')" in auth_urls
+          assert "path('password/reset/', views.password_reset, name='password_reset')" in auth_urls
+          assert "path('password/set/', views.set_password, name='set_password')" in auth_urls
+          register_view = account_views.split("def register(request):", 1)[1].split("def legacy_login_redirect", 1)[0]
+          assert "reverse('phone_auth:sms_login')" in register_view
+          assert "path('blog/', include('blog.urls'))" in config_urls
+          assert "path('', views.post_list, name='list')" in blog_urls
+          assert "path('<str:slug>/', views.post_detail, name='detail')" in blog_urls
+          assert "filter(is_published=True)" in blog_views
+          assert "const target = route === 'login' ? '/auth/login/' : '/auth/login/sms/';" in bridge
+          assert "if (route === 'password-reset') return '/auth/password/reset/';" in bridge
+          assert "if (route === 'set-password') return '/auth/password/set/';" in bridge
+          assert "| #/login | /auth/login/؛ ورود با رمز |" in handoff
+          assert "| #/register و #/role | /auth/login/sms/" in handoff
+          print("DJANGO_FRONTEND_ROUTE_CONTRACT_OK")
+          PY
 
       - name: Install backend dependencies
         run: |
