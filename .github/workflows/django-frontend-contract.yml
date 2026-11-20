@@ -363,6 +363,17 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+      - name: Build Admin visual polish cPanel installer
+        run: python deploy/build-admin-visual-polish-package.py
+
+      - name: Upload Admin visual polish installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: tatami-admin-visual-polish-cpanel
+          path: tatami-admin-visual-polish-cpanel.zip
+          if-no-files-found: error
+          retention-days: 14
+
       - name: Build backend product-catalog handoff package
         run: |
           python - <<'PY'
