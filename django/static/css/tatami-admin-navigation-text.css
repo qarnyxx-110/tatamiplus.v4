@@ -396,3 +396,215 @@
     transition: none !important;
   }
 }
+
+/* Full-width app heading row.
+   The visible link lives in a three-column spanning cell, not in table caption:
+   browsers shrink-wrap captions, which caused the narrow header seen before. */
+#nav-sidebar .tpa-nav-group caption.tpa-visually-hidden-caption {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  min-width: 1px !important;
+  max-width: 1px !important;
+  margin: -1px !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+#nav-sidebar .tpa-nav-group table tbody > tr.tpa-app-heading-row {
+  display: table-row !important;
+  width: 100%;
+  min-width: 0;
+  height: auto;
+  background: transparent !important;
+}
+
+#nav-sidebar .tpa-nav-group table tbody > tr.tpa-app-heading-row > th {
+  box-sizing: border-box;
+  width: auto !important;
+  min-width: 0;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  vertical-align: middle;
+}
+
+#nav-sidebar .tpa-nav-group .tpa-app-heading {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: 54px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 28px 34px;
+  align-items: stretch;
+  gap: 0;
+  padding: 0;
+  direction: rtl;
+  text-align: right;
+  overflow: hidden;
+  border-bottom: 1px solid #2d4057;
+  border-radius: 11px 11px 0 0;
+  background: linear-gradient(110deg, #1c2a3c 0%, #192536 100%);
+}
+
+#nav-sidebar .tpa-nav-group .tpa-app-heading > a.section {
+  box-sizing: border-box;
+  grid-column: 1;
+  grid-row: 1;
+  width: 100%;
+  min-width: 0;
+  min-height: 54px;
+  display: grid !important;
+  grid-template-columns: 24px minmax(0, 1fr);
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  padding: 8px 9px;
+  direction: rtl;
+  text-align: right;
+  text-transform: none !important;
+  letter-spacing: 0;
+  white-space: normal;
+  overflow: hidden;
+  color: #dce8fc !important;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.65;
+  text-decoration: none !important;
+}
+
+#nav-sidebar .tpa-nav-group .tpa-app-heading > a.section:hover {
+  background: #22334b !important;
+  color: #fff !important;
+}
+
+#nav-sidebar .tpa-nav-group .tpa-app-heading > a.section .tpa-app-icon {
+  grid-column: 1;
+  grid-row: 1;
+  box-sizing: border-box;
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  display: inline-grid;
+  place-items: center;
+  margin: 0;
+  border-radius: 7px;
+  font-size: 12px;
+  line-height: 1;
+}
+
+#nav-sidebar .tpa-nav-group .tpa-app-heading > a.section .tpa-app-label {
+  grid-column: 2;
+  grid-row: 1;
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  direction: rtl;
+  text-align: right;
+  unicode-bidi: plaintext;
+  color: inherit;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.65;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: normal;
+  text-transform: none !important;
+}
+
+#nav-sidebar .tpa-nav-group .tpa-app-heading > .tpa-app-count {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: center;
+  justify-self: center;
+  box-sizing: border-box;
+  width: 22px;
+  min-width: 22px;
+  height: 22px;
+  margin: 0;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  direction: ltr;
+  unicode-bidi: isolate;
+  font-family: Tahoma, sans-serif;
+  font-size: 10px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+#nav-sidebar .tpa-nav-group .tpa-app-heading > .tpa-group-toggle {
+  grid-column: 3;
+  grid-row: 1;
+  box-sizing: border-box;
+  width: 34px;
+  min-width: 34px;
+  min-height: 54px;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  display: inline-grid;
+  place-items: center;
+  border: 0;
+  border-inline-start: 1px solid #2d3e55;
+  border-radius: 0;
+  background: transparent;
+  color: #aac2e7;
+  direction: ltr;
+  font-size: 16px;
+  line-height: 1;
+}
+
+#nav-sidebar .tpa-nav-group .tpa-app-heading > .tpa-group-toggle:hover {
+  background: #263c5a;
+  color: #fff;
+}
+
+#nav-sidebar .tpa-nav-group.tpa-group-collapsed .tpa-app-heading {
+  border-radius: 11px;
+  border-bottom: 0;
+}
+
+#nav-sidebar .tpa-nav-group.tpa-group-collapsed tbody > tr[class*="model-"] {
+  display: none !important;
+}
+
+#nav-sidebar.tpa-nav-compact .tpa-nav-group .tpa-app-heading,
+#nav-sidebar.tpa-nav-compact .tpa-nav-group .tpa-app-heading > a.section,
+#nav-sidebar.tpa-nav-compact .tpa-nav-group .tpa-app-heading > .tpa-group-toggle {
+  min-height: 48px;
+}
+
+#nav-sidebar.tpa-nav-compact .tpa-nav-group .tpa-app-heading > a.section {
+  padding-block: 6px;
+}
+
+@media (max-width: 1100px) and (min-width: 768px) {
+  #nav-sidebar .tpa-nav-group .tpa-app-heading {
+    grid-template-columns: minmax(0, 1fr) 26px 32px;
+    min-height: 52px;
+  }
+
+  #nav-sidebar .tpa-nav-group .tpa-app-heading > a.section {
+    grid-template-columns: 23px minmax(0, 1fr);
+    gap: 6px;
+    min-height: 52px;
+    padding-inline: 8px;
+  }
+
+  #nav-sidebar .tpa-nav-group .tpa-app-heading > .tpa-app-count {
+    width: 21px;
+    min-width: 21px;
+    height: 21px;
+  }
+
+  #nav-sidebar .tpa-nav-group .tpa-app-heading > .tpa-group-toggle {
+    width: 32px;
+    min-width: 32px;
+    min-height: 52px;
+  }
+}
