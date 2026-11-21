@@ -119,7 +119,23 @@ try {
   });
 
   await page.route('**/coaches/**', async route => {
-    await route.fulfill({status:200,contentType:'text/html; charset=utf-8',body:documentHtml('<h1 id="coach-target">فهرست واقعی مربیان</h1>','مربیان')});
+    const pathname = new URL(route.request().url()).pathname;
+    if (pathname === '/coaches/') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'text/html; charset=utf-8',
+        body: documentHtml(
+          '<ul class="tp-coaches"><li><article class="card tp-coach-card"><div class="b tp-coach-card-copy"><b>سارا احمدی</b><a href="/coaches/42/">مشاهده پروفایل</a></div></article></li></ul>',
+          'مربیان'
+        )
+      });
+      return;
+    }
+    if (pathname === '/coaches/42/') {
+      await route.fulfill({status:200,contentType:'text/html; charset=utf-8',body:documentHtml('<h1 id="coach-profile-target">پروفایل واقعی سارا احمدی</h1>','پروفایل مربی')});
+      return;
+    }
+    await route.fulfill({status:404,contentType:'text/html; charset=utf-8',body:documentHtml('پیدا نشد','۴۰۴')});
   });
 
   await page.route('**/blog/**', async route => {
@@ -145,10 +161,30 @@ try {
   });
 
   await page.route('**/club/**', async route => {
+    const url = new URL(route.request().url());
+    if (url.pathname === '/club/') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'text/html; charset=utf-8',
+        body: documentHtml(
+          '<div class="tp-course-grid"><article class="tp-course-card"><h3>آشنایی با فنون پایه جودو</h3><a href="/club/course/judo-foundations-live/">مشاهده دوره</a></article></div><h1 id="club-target">فهرست دوره‌های واقعی</h1>',
+          'باشگاه مجازی'
+        )
+      });
+      return;
+    }
+    if (url.pathname === '/club/course/judo-foundations-live/') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'text/html; charset=utf-8',
+        body: documentHtml('<h1 id="course-detail-target">جزئیات واقعی دوره از Django</h1>', 'جزئیات دوره')
+      });
+      return;
+    }
     await route.fulfill({
-      status: 200,
+      status: 404,
       contentType: 'text/html; charset=utf-8',
-      body: documentHtml('<h1 id="club-target">صفحهٔ واقعی باشگاه</h1>', 'باشگاه آزمایشی')
+      body: documentHtml('پیدا نشد', '۴۰۴')
     });
   });
 
@@ -245,6 +281,14 @@ try {
   await page.evaluate(() => { location.hash = '#/academy'; });
   await page.locator('#coach-target').waitFor({ state: 'visible', timeout: 15000 });
   assert.equal(await page.locator('#app').getAttribute('data-django-view'), '/coaches/');
+
+  await page.evaluate(() => { location.hash = '#/coaches/sara-ahmadi'; });
+  await page.locator('#coach-profile-target').waitFor({ state: 'visible', timeout: 15000 });
+  assert.equal(await page.locator('#app').getAttribute('data-django-view'), '/coaches/42/');
+
+  await page.evaluate(() => { location.hash = '#/courses/judo-foundations'; });
+  await page.locator('#course-detail-target').waitFor({ state: 'visible', timeout: 15000 });
+  assert.equal(await page.locator('#app').getAttribute('data-django-view'), '/club/course/judo-foundations-live/');
 
   await page.evaluate(() => { location.hash = '#/blog'; });
   await page.locator('#blog-list-target').waitFor({ state: 'visible', timeout: 15000 });
