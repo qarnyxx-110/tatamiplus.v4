@@ -668,6 +668,11 @@
     } catch { return; }
     if (!isAllowedDjangoUrl(action)) return;
 
+    // Django's pay view redirects to an external gateway. Keep this one POST
+    // as a native top-level navigation; XHR cannot safely follow a cross-origin
+    // payment redirect and would leave the customer stranded after order creation.
+    if (method === 'POST' && action.pathname === '/checkout/pay/') return;
+
     event.preventDefault();
     event.stopImmediatePropagation();
 
