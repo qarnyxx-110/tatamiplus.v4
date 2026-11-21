@@ -362,11 +362,10 @@ export async function runPwa(app,base,browser,altRoot){
    let latest=await navigator.serviceWorker.getRegistration();
    // Some browser/host combinations leave the updated worker in "waiting".
    // Ask that worker to activate explicitly, then verify controllerchange.
-   let activationAcknowledged=null;
+   let activationAcknowledged=null,activationResponse=null;
    if(!changed&&latest?.waiting){
     activationRequested=true;
     const forcedChange=waitForControllerChange();
-    let activationResponse=null;
     activationAcknowledged=await new Promise(resolve=>{
      const channel=new MessageChannel();
      const timer=setTimeout(()=>resolve(false),5000);
