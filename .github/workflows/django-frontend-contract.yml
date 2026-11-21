@@ -275,7 +275,7 @@ jobs:
           assert "if (!isSafeBlogSlug(slug)) return '/blog/';" in bridge
           assert "return '/blog/' + encodeURIComponent(slug) + '/';" in bridge
           assert "case 'blog': {" in bridge and "slug = decodeURIComponent(route[1])" in bridge
-          assert "^[\\\\p{L}\\\\p{M}\\\\p{N}_-]+$" in bridge
+          assert r"return /^[\p{L}\p{M}\p{N}_-]+$/u.test" in bridge
           assert "function isSafeBlogSlug(value)" in bridge
           assert "if (!isSafeBlogSlug(slug)) return '';" in bridge
           assert "account|blog|club" in bridge
