@@ -268,6 +268,8 @@ jobs:
           assert "'set-password','blog','store'" in router
           assert "blog:detail" in blog_list and "tp-section-tabs" in blog_list
           assert "tp-article" in blog_detail and "blog:list" in blog_detail
+          assert "post.author.phone" not in blog_detail
+          assert "تیم تاتامی پلاس" in blog_detail
           assert "coach-row" not in blog_list and "page-main" not in blog_list
           assert "| #/blog و #/blog/<slug> | /blog/ و /blog/<str:slug>/؛ مطالب منتشرشدهٔ Django از طریق پل Preview نمایش داده می‌شوند |" in handoff
           assert "| #/login | /auth/login/؛ ورود با رمز |" in handoff
