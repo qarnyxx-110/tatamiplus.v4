@@ -220,7 +220,7 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
  await pg.fill('#pmin','');await wait(100);await pg.locator('#sf .chip',{hasText:'XXL'}).first().click();await wait(150);S.ok('فروشگاه: فیلتر سایز XXL ← ۲',await cnt('#app .sl .pg article.pcd')===2,String(await cnt('#app .sl .pg article.pcd')));
  await pg.locator('#app button',{hasText:'پاک کردن فیلترها'}).first().click();await wait(150);S.ok('فروشگاه: پاک‌کردن فیلترها ← ۶۲',(await T()).includes('۶۲ محصول'));
  await go('#/store');S.ok('فروشگاه: پیشنهادها (۳ بخش × ۴ محصول) از کاتالوگ',await cnt('section[aria-label="تازه جودو را شروع کرده‌ام"] article')===4&&await cnt('section[aria-label="برای تمرین حرفه‌ای آماده‌ام"] article')===4&&await cnt('section[aria-label="برای مسابقه آماده می‌شوم"] article')===4);
- await go('#/product/0');t=await T();S.ok('جزئیات محصول کاتالوگ: قیمت مرجع، منبع، بدون ستاره/نظر جعلی، سایزهای نام محصول',t.includes('قیمت نهایی تاتامی پلاس نیست')&&t.includes('منبع قیمت مرجع')&&!t.includes('★')&&!/نظر\)/.test(t)&&t.includes('XXL'));
+ let t='';await go('#/product/0');t=await T();S.ok('جزئیات محصول کاتالوگ: قیمت مرجع، منبع، بدون ستاره/نظر جعلی، سایزهای نام محصول',t.includes('قیمت نهایی تاتامی پلاس نیست')&&t.includes('منبع قیمت مرجع')&&!t.includes('★')&&!/نظر\)/.test(t)&&t.includes('XXL'));
  S.ok('جزئیات: قیمت منبع ۱۴٬۵۰۰٬۰۰۰ تومان (بدون تغییر)',t.includes('۱۴٬۵۰۰٬۰۰۰ تومان'));
  S.ok('جزئیات محصول: موجودی نمونه به‌صورت شفاف برچسب خورده است',t.includes('موجودی تأیید نشده'));
  const referenceProductId=await pg.evaluate(()=>P.find(p=>p.ref&&!p.sz.length&&!p.cl.length)?.id??-1);
