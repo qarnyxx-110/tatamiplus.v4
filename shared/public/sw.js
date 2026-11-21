@@ -7,7 +7,10 @@ self.addEventListener('install',e=>{e.waitUntil((async()=>{
  await self.skipWaiting();
 })().catch(error=>{console.error('[Tatami SW] install failed',error);throw error}))});
 self.addEventListener('message',event=>{
- if(event.data&&event.data.type==='SKIP_WAITING')event.waitUntil(self.skipWaiting());
+ if(event.data&&event.data.type==='SKIP_WAITING')event.waitUntil((async()=>{
+  await self.skipWaiting();
+  if(event.ports&&event.ports[0])event.ports[0].postMessage({type:'SKIP_WAITING_ACK'});
+ })());
 });
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==V).map(x=>caches.delete(x)))).then(()=>self.clients.claim()))});
 self.addEventListener('fetch',e=>{const r=e.request;if(r.method!=='GET')return;
