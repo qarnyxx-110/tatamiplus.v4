@@ -153,6 +153,20 @@ try {
   await page.locator('#bridge-form').waitFor({ state: 'visible', timeout: 15000 });
   assert.equal(await page.locator('#app').getAttribute('data-django-view'), '/store/');
 
+  await page.evaluate(() => { location.hash = '#/store?min_price=100.50&max_price=500.75&page=2'; });
+  await page.locator('#bridge-form').waitFor({ state: 'visible', timeout: 15000 });
+  assert.equal(
+    await page.locator('#app').getAttribute('data-django-view'),
+    '/store/?min_price=100.50&max_price=500.75&page=2'
+  );
+
+  await page.evaluate(() => { location.hash = '#/store?min_price=100.999&page=2'; });
+  await page.locator('#bridge-form').waitFor({ state: 'visible', timeout: 15000 });
+  assert.equal(await page.locator('#app').getAttribute('data-django-view'), '/store/?page=2');
+
+  await page.evaluate(() => { location.hash = '#/store'; });
+  await page.locator('#bridge-form').waitFor({ state: 'visible', timeout: 15000 });
+
   // Preview product IDs resolve to Django slugs from the real product cards.
   await page.evaluate(() => { location.hash = '#/product/0'; });
   await page.locator('#product-target').waitFor({ state: 'visible', timeout: 15000 });
