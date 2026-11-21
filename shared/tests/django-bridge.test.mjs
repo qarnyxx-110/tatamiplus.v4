@@ -303,6 +303,7 @@ try {
   await page.locator('#app h1').filter({ hasText: 'جستجو' }).waitFor({ state: 'visible' });
   const publishedBlogLink = page.locator('#app a[href="#/blog"]');
   assert.equal(await publishedBlogLink.count(), 1);
+  assert.match(await page.locator('#app').innerText(), /در داده‌های محلی نتیجه‌ای پیدا نشد؛ بخش‌های متصل به سامانه را بررسی کنید/);
   assert.match(await page.locator('#app').innerText(), /جست‌وجوی سمت سرور وبلاگ هنوز قرارداد ندارد/);
   assert.equal(await page.locator('#app a[href^="#/blog/"]').count(), 0);
   await publishedBlogLink.click();
