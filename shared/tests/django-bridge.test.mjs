@@ -414,6 +414,15 @@ try {
   // gateway becomes a real top-level browser navigation.
   await page.evaluate(() => { location.hash = '#/server/' + encodeURIComponent('/checkout/review/'); });
   await page.locator('#payment-form').waitFor({ state: 'visible', timeout: 15000 });
+  const duplicatePayBlocked = await page.evaluate(() => {
+    const form = document.querySelector('#payment-form');
+    form.dataset.tpPaymentSubmitting = 'true';
+    const duplicate = new Event('submit', { bubbles: true, cancelable: true });
+    form.dispatchEvent(duplicate);
+    delete form.dataset.tpPaymentSubmitting;
+    return duplicate.defaultPrevented;
+  });
+  assert.equal(duplicatePayBlocked, true, 'A second payment submit must be blocked while the first navigation is pending');
   await page.locator('#payment-form button[type="submit"]').click();
   await page.waitForURL('https://gateway.example.test/pay/authority-test', { timeout: 15000 });
   await page.locator('#gateway-target').waitFor({ state: 'visible' });
