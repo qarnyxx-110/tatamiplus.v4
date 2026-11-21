@@ -299,6 +299,16 @@ try {
   }
 
   // Live search must not present local reference/demo products or coach profiles as Django records.
+  await page.evaluate(() => { location.hash = '#/search?q=' + encodeURIComponent('عنوان مقاله واقعی'); });
+  await page.locator('#app h1').filter({ hasText: 'جستجو' }).waitFor({ state: 'visible' });
+  const publishedBlogLink = page.locator('#app a[href="#/blog"]');
+  assert.equal(await publishedBlogLink.count(), 1);
+  assert.match(await page.locator('#app').innerText(), /جست‌وجوی سمت سرور وبلاگ هنوز قرارداد ندارد/);
+  assert.equal(await page.locator('#app a[href^="#/blog/"]').count(), 0);
+  await publishedBlogLink.click();
+  await page.locator('#blog-list-target').waitFor({ state: 'visible', timeout: 15000 });
+  assert.equal(await page.locator('#app').getAttribute('data-django-view'), '/blog/');
+
   await page.evaluate(() => { location.hash = '#/search?q=' + encodeURIComponent('سامکو'); });
   await page.locator('#app h1').filter({ hasText: 'جستجو' }).waitFor({ state: 'visible' });
   assert.equal(await page.locator('#app a[href^="#/product/"]').count(), 0);
