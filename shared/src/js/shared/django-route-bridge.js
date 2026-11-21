@@ -671,7 +671,22 @@
     // Django's pay view redirects to an external gateway. Keep this one POST
     // as a native top-level navigation; XHR cannot safely follow a cross-origin
     // payment redirect and would leave the customer stranded after order creation.
-    if (method === 'POST' && action.pathname === '/checkout/pay/') return;
+    // Guard a second submit while the browser is navigating: the pay endpoint
+    // creates an order per POST and must not receive duplicate clicks from this form.
+    if (method === 'POST' && action.pathname === '/checkout/pay/') {
+      if (form.dataset.tpPaymentSubmitting === 'true') {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        return;
+      }
+      form.dataset.tpPaymentSubmitting = 'true';
+      form.setAttribute('aria-busy', 'true');
+      form.querySelectorAll('button[type="submit"],input[type="submit"]').forEach((node) => {
+        node.setAttribute('aria-disabled', 'true');
+        node.classList.add('is-loading');
+      });
+      return;
+    }
 
     event.preventDefault();
     event.stopImmediatePropagation();
