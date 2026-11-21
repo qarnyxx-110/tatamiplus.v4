@@ -360,21 +360,50 @@ export async function runPwa(app,base,browser,altRoot){
   const updateState=await pg.evaluate(async()=>{
    const registration=await navigator.serviceWorker.getRegistration();
    if(!registration)return{registration:false,controllerChanged:false,error:'no registration'};
-   let timer=0;
-   const controllerChanged=new Promise(resolve=>{
+   const waitForControllerChange=()=>new Promise(resolve=>{
+    let timer=0;
     const onChange=()=>{if(timer)clearTimeout(timer);resolve(true)};
     navigator.serviceWorker.addEventListener('controllerchange',onChange,{once:true});
     timer=setTimeout(()=>{navigator.serviceWorker.removeEventListener('controllerchange',onChange);resolve(false)},12000);
    });
+   const firstChange=waitForControllerChange();
    try{await registration.update()}catch(error){
-    if(timer)clearTimeout(timer);
     return{registration:true,controllerChanged:false,error:String(error)};
    }
-   const changed=await controllerChanged;
-   const latest=await navigator.serviceWorker.getRegistration();
+   let changed=await firstChange;
+   const automaticControllerChange=changed;
+   let activationRequested=false;
+   let latest=await navigator.serviceWorker.getRegistration();
+   // Some browser/host combinations leave the updated worker in "waiting".
+   // Ask that worker to activate explicitly, then verify controllerchange.
+   let activationAcknowledged=null;
+   if(!changed&&latest?.waiting){
+    activationRequested=true;
+    const forcedChange=waitForControllerChange();
+    activationAcknowledged=await new Promise(resolve=>{
+     const channel=new MessageChannel();
+     const timer=setTimeout(()=>resolve(false),5000);
+     channel.port1.onmessage=event=>{
+      clearTimeout(timer);
+      resolve(!!(event.data&&event.data.type==='SKIP_WAITING_ACK'));
+     };
+     channel.port1.onmessageerror=()=>{
+      clearTimeout(timer);
+      resolve(false);
+     };
+     latest.waiting.postMessage({type:'SKIP_WAITING'},[channel.port2]);
+    });
+    changed=await forcedChange;
+    latest=await navigator.serviceWorker.getRegistration();
+   }
+   const builtHandlerPresent=await fetch('sw.js').then(response=>response.text()).then(source=>source.includes('SKIP_WAITING_ACK'));
    return{
     registration:true,
     controllerChanged:changed,
+    automaticControllerChange,
+    activationRequested,
+    activationAcknowledged,
+    builtHandlerPresent,
     active:latest?.active?.state||null,
     installing:latest?.installing?.state||null,
     waiting:latest?.waiting?.state||null,
@@ -392,6 +421,8 @@ export async function runPwa(app,base,browser,altRoot){
   const cacheReplaced=after.length===1&&after[0]!==before;
   S.ok('به‌روزرسانی: ثبت نسخه جدید Service Worker و controllerchange',
    updateState.registration&&updateState.controllerChanged,JSON.stringify(updateState));
+  S.ok('به‌روزرسانی: worker جدید فرمان فعال‌سازی را دریافت کرد',
+   updateState.builtHandlerPresent&&(!updateState.activationRequested||updateState.activationAcknowledged),JSON.stringify(updateState));
   S.ok('به‌روزرسانی: Cache نسخه جدید جایگزین قدیمی شد',
    cacheReplaced,before+' → '+after.join());
   S.ok('به‌روزرسانی: محتوای نسخه جدید نمایش داده می‌شود',
