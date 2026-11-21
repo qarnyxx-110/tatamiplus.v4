@@ -17,11 +17,15 @@
 | مخزن فرانت‌اند | مقصد در مخزن Django |
 | --- | --- |
 | `django/templates/base.html` | `templates/base.html` |
-| `django/static/css/backend-templates.css` | `static/css/backend-templates.css` |
 | `django/static/css/tatami.css` | `static/css/tatami.css` |
+| `django/static/css/backend-templates.css` | `static/css/backend-templates.css` |
+| `django/static/css/module-pages.css` | `static/css/module-pages.css` |
 | `django/static/js/tatami.js` | `static/js/tatami.js` |
+| `django/static/js/module-pages.js` | `static/js/module-pages.js` |
 
-فایل `static/css/styles.css` فعلی بک‌اند حفظ می‌شود و باید پیش از فایل‌های جدید بارگذاری شود؛ این فایل همچنان کلاس‌های قالب‌های فعلی را تأمین می‌کند. پوستهٔ جدید سپس CSS مشترک و لایهٔ سازگاری قالب‌های Django را بارگذاری می‌کند.
+پوستهٔ فعال `base.html` فایل‌های `tatami.css`، `backend-templates.css` و `module-pages.css` و اسکریپت‌های `tatami.js` و `module-pages.js` را بارگذاری می‌کند. **عمداً `styles.css` قدیمی را بارگذاری نمی‌کند**؛ کلاس‌های قدیمی مانند `site-header`، `page-main` و `button-dark` بخشی از پوستهٔ فعال نیستند. فایل legacy را برای مسیرهای قدیمی دیگر حذف نکنید، اما آن را دوباره به `base.html` اضافه نکنید.
+
+**محدودهٔ بستهٔ Sections:** نصب‌کنندهٔ cPanel فقط پوشهٔ Preview و ده قالب مشخص را جایگزین می‌کند و هیچ فایل static را کپی یا جایگزین نمی‌کند. در زمان نصب، فایل‌های static بالا باید از استقرار قبلی در `/home/pvchubir/tatamiplus.ir/static/` موجود و قابل دسترسی باشند؛ این پیش‌نیاز را با این بسته تغییر نمی‌دهیم.
 
 **فونت:** در جست‌وجوی هر دو مخزن GitHub، فایل WOFF2 محلیِ قابل تأیید پیدا نشد. در این تغییر به Google Fonts وابسته نمی‌شویم و از fallback سیستم استفاده می‌شود. برای فعال‌کردن Vazirmatn/Lalezar محلی، فایل‌های مجاز WOFF2 و مجوز آن‌ها باید از مالک پروژه دریافت شود.
 
