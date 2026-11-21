@@ -17,7 +17,7 @@ export async function runMarketingApi(base,pubBase,browser){const S=new Suite('�
  S.ok('بدون ورود: API مدیریتی ← ۴۰۱',(await api(pg,'GET','/cms/articles')).s===401);
  await pg.fill('#lu',pg.url()&&'marketing');await pg.fill('#lp','bad');await pg.click('button.btn:has-text("ورود")');await wait(400);S.ok('رمز اشتباه ← پیام خطا',(await txt(pg)).includes('درست نیست'));
  await login(pg,base,'student','student123');S.ok('هنرجو: ورود می‌شود اما مقالات «دسترسی ندارید»',(await pg.goto(base+'/marketing/index.html#/articles'),await wait(400),(await txt(pg)).includes('دسترسی ندارید')));
- S.ok('هنرجو: API مقالات و اصطلاحات ← ۴۰۳ (کنترل واقعی در بک‌اند)',(await api(pg,'GET','/cms/articles')).s===403&&(await api(pg,'POST','/cms/glossary/terms',{})).s===403&&(await api(pg,'POST','/cms/articles',{title:'x',slug:'x'})).s===403);
+ S.ok('هنرجو: API مقالات ← ۴۰۳ (کنترل واقعی در بک‌اند)',(await api(pg,'GET','/cms/articles')).s===403&&(await api(pg,'POST','/cms/articles',{title:'x',slug:'x'})).s===403);
  await pg.click('button:has-text("خروج")');await wait(400);
  // مارکتینگ
  await login(pg,base,'marketing','marketing123');S.ok('مارکتینگ: ورود موفق و منوی پنل',(await txt(pg)).includes('پنل مارکتینگ')&&(await txt(pg)).includes('مقاله‌های منتشرشده'));
@@ -65,22 +65,10 @@ export async function runMarketingApi(base,pubBase,browser){const S=new Suite('�
  // حذف با تأیید
  await pg.goto(base+'/marketing/index.html#/articles/'+id);await wait(500);await pg.click('button:has-text("حذف مقاله")');await wait(200);await pg.click('#tpm button:has-text("انصراف")');await wait(200);S.ok('حذف: انصراف مقاله را نگه می‌دارد',(await api(pg,'GET','/cms/articles/'+id)).s===200);
  await pg.click('button:has-text("حذف مقاله")');await wait(200);await pg.click('#tpm button:has-text("حذف مقاله")');await wait(600);S.ok('حذف با تأیید: مقاله حذف و بازگشت به فهرست',(await api(pg,'GET','/cms/articles/'+id)).s===404&&(await pg.evaluate(()=>location.hash))==='#/articles');
- // اصطلاحات
- await pg.goto(base+'/marketing/index.html#/tatamipedia/new');await wait(400);await pg.fill('#f-name_fa','تست‌وازه');await pg.fill('#f-romaji','Test-waza');await pg.fill('#f-slug','test-waza');await pg.fill('#f-meaning','معنی آزمایشی');await pg.fill('#f-name_ja','テスト');await pg.selectOption('#f-status','published');
- await pg.click('button:has-text("ذخیره")');await wait(500);S.ok('اصطلاح منتشرشده بدون دسته ← خطای اعتبارسنجی',(await txt(pg)).includes('حداقل یک دسته'));
- await pg.check('input[name="tcat"][value="refereeing"]');await pg.click('button:has-text("ذخیره")');await wait(700);S.ok('اصطلاح: ذخیره و انتشار',(await txt(pg)).includes('ویرایش اصطلاح'));
- const tpdPub=async()=>(await(await fetch(base+'/api/v1/public/glossary/terms?page_size=500')).json()).results.map(t=>t.slug);S.ok('اصطلاح منتشرشده در API عمومی است',(await tpdPub()).includes('test-waza'));
- await openPub('#/tatamipedia/test-waza');await wait(1300);S.ok('صفحه عمومی تاتامی‌پدیا: اصطلاح جدید با نام ژاپنی و فارسی',(await pp.evaluate(()=>document.getElementById('app').innerText)).includes('تست‌وازه')&&(await pp.evaluate(()=>document.getElementById('app').innerText)).includes('テスト'));
- await pg.selectOption('#f-status','draft');await pg.click('button:has-text("ذخیره")');await wait(600);S.ok('اصطلاح پیش‌نویس از API عمومی حذف می‌شود',!(await tpdPub()).includes('test-waza'));
- await pg.goto(base+'/marketing/index.html#/tatamipedia');await wait(500);await pg.fill('#tq','test-waza');await wait(500);S.ok('اصطلاحات: جست‌وجو با لاتین',(await pg.locator('.mk-row').count())===1);
- await pg.goto(base+'/marketing/index.html#/tatamipedia-categories');await wait(500);S.ok('دسته‌ها: فهرست ۱۰ دسته',(await pg.locator('.mk-row').count())===10);
- await pg.click('button:has-text("حذف")');await wait(200);await pg.click('#tpm button:has-text("حذف")');await wait(500);S.ok('دسته دارای اصطلاح حذف نمی‌شود',(await api(pg,'GET','/cms/glossary/categories')).j.results.length===10);
- // حذف اصطلاح
- await pg.goto(base+'/marketing/index.html#/tatamipedia');await wait(400);await pg.fill('#tq','test-waza');await wait(500);await pg.click('.mk-row a:has-text("ویرایش")');await wait(500);await pg.click('button:has-text("حذف")');await wait(200);await pg.click('#tpm button:has-text("حذف اصطلاح")');await wait(600);S.ok('حذف اصطلاح با تأیید',!(await api(pg,'GET','/cms/glossary/terms?q=test-waza')).j.results.length);
  // مجوز: ویراستار بدون حق حذف
  await pg.click('button:has-text("خروج")');await wait(400);await login(pg,base,'editor','editor123');
  await pg.goto(base+'/marketing/index.html#/articles/1');await wait(500);S.ok('ویراستار: دکمه حذف نمایش داده نمی‌شود',await pg.locator('button:has-text("حذف مقاله")').count()===0);
- S.ok('ویراستار: DELETE مستقیم ← ۴۰۳ در بک‌اند',(await api(pg,'DELETE','/cms/articles/1')).s===403&&(await api(pg,'DELETE','/cms/glossary/terms/1')).s===403);
+ S.ok('ویراستار: DELETE مستقیم ← ۴۰۳ در بک‌اند',(await api(pg,'DELETE','/cms/articles/1')).s===403);
  // sanitizer
  await pp.goto('about:blank');await pp.goto(pubBase+'/index.html');const clean=await pp.evaluate(()=>sanitizeHtml('<p onclick="x()">a</p><script>1</script><a href="javascript:alert(1)">l</a><a href="https://e.test">ok</a><img src=x onerror=1><img src="/m.png"><iframe src="//x"></iframe><style>*{}</style><h2>t</h2><svg onload=1></svg>'));
  S.ok('پاک‌ساز HTML: script/onclick/onerror/javascript:/iframe/style/svg حذف و h2/لینک امن حفظ',!/script|onclick|onerror|javascript:|iframe|<style|svg/i.test(clean)&&clean.includes('<h2>t</h2>')&&clean.includes('rel="noopener noreferrer nofollow"'),clean);
@@ -88,7 +76,7 @@ export async function runMarketingApi(base,pubBase,browser){const S=new Suite('�
  await openPub('#/blog');await wait(500);S.ok('پنل مارکتینگ: بدون خطای JS',!errs.length,errs.slice(0,3).join(' | '));
  // واکنش‌گرایی پنل
  const over=[];for(const w of WIDTHS){const c=await browser.newContext({viewport:{width:w,height:800}}),p=await c.newPage();await p.goto(base+'/marketing/index.html#/');await wait(250);await p.fill('#lu','marketing');await p.fill('#lp','marketing123');await p.click('button.btn:has-text("ورود")');await wait(500);
-  for(const r of ['#/','#/articles','#/articles/1','#/articles/new','#/tatamipedia','#/tatamipedia/1','#/tatamipedia-categories']){await p.evaluate(x=>{location.hash=x},r);await wait(250);const o=await p.evaluate(OVERFLOW_JS);if(o.o)over.push(w+r);if(o.dup.length)over.push('dup '+r+o.dup)}await c.close()}
+  for(const r of ['#/','#/articles','#/articles/1','#/articles/new']){await p.evaluate(x=>{location.hash=x},r);await wait(250);const o=await p.evaluate(OVERFLOW_JS);if(o.o)over.push(w+r);if(o.dup.length)over.push('dup '+r+o.dup)}await c.close()}
  S.ok('پنل: بدون اسکرول افقی/ID تکراری در ۷ عرض',!over.length,over.slice(0,4).join(' '));
  await ctx.close();await pc.close();return S}
 export async function runMarketingDemo(base,browser){const S=new Suite('پنل مارکتینگ (حالت نمایشی)');

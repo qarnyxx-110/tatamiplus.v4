@@ -1,17 +1,18 @@
 {% comment %}ناوبری مشترک: مسیرهای دارای بک‌اند از پل Preview به Django می‌رسند؛ سایر بخش‌ها در فرانت‌اند اصلی می‌مانند.{% endcomment %}
 <nav{% if nav_id %} id="{{ nav_id }}"{% endif %}{% if nav_class %} class="{{ nav_class }}"{% endif %} aria-label="{{ nav_label|default:'منوی اصلی' }}">
   <a href="/preview/#/"{% if route == 'home' %} class="on" aria-current="page"{% endif %}>خانه</a>
+  <a href="/preview/#/specialist-services">خدمات تخصصی</a>
   <a href="/preview/#/store"{% if app == 'store' and route != 'cart' %} class="on" aria-current="page"{% endif %}>فروشگاه</a>
-  <a href="/preview/#/online-coach">مربی آنلاین</a>
+
   <a href="/preview/#/courses"{% if app == 'club' %} class="on" aria-current="page"{% endif %}>دوره‌ها</a>
   <a href="/preview/#/tournaments">تورنمنت‌ها</a>
-  <a href="/preview/#/videos">ویدیوهای ضبط‌شده</a>
+
   <a href="/preview/#/ai">آنالیز هوش مصنوعی</a>
   <a href="/preview/#/academy">آکادمی اساتید</a>
   <a href="/preview/#/coaches"{% if app == 'coaches' %} class="on" aria-current="page"{% endif %}>مربیان تاتامی</a>
   <a href="/preview/#/clubs">باشگاه‌ها</a>
   <a href="/preview/#/blog">بلاگ</a>
-  <a href="/preview/#/tatamipedia">تاتامی‌پدیا</a>
+
   <a href="/preview/#/sponsors">حامیان تاتامی پلاس</a>
   <a href="/preview/#/gems"{% if app == 'gems' %} class="on" aria-current="page"{% endif %}>جم</a>
   <a href="/preview/#/search">جستجو</a>

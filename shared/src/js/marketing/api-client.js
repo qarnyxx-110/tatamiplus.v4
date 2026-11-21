@@ -13,6 +13,5 @@ const Api=(()=>{const B=TP_CMS.apiBase;
  publish:(id,at)=>req('POST','/cms/articles/'+id+'/publish',at?{publish_at:at}:{}),unpublish:id=>req('POST','/cms/articles/'+id+'/unpublish',{}),deleteArticle:id=>req('DELETE','/cms/articles/'+id),
  async articleCategories(){return(await req('GET','/cms/article-categories')).results},
  uploadMedia(file){const f=new FormData();f.append('file',file);return req('POST','/cms/media',f,true)},
- listTerms:p=>req('GET','/cms/glossary/terms'+qs(p)),getTerm:id=>req('GET','/cms/glossary/terms/'+id),saveTerm:d=>d.id?req('PUT','/cms/glossary/terms/'+d.id,d):req('POST','/cms/glossary/terms',d),deleteTerm:id=>req('DELETE','/cms/glossary/terms/'+id),
- async listTermCats(){return(await req('GET','/cms/glossary/categories')).results},saveTermCat:d=>d.id?req('PUT','/cms/glossary/categories/'+d.id,d):req('POST','/cms/glossary/categories',d),deleteTermCat:id=>req('DELETE','/cms/glossary/categories/'+id)}})();
+}})();
 const DB=TP_CMS.mode==='api'?Api:Demo;

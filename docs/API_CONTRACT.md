@@ -1,6 +1,6 @@
 # قرارداد API (برای پیاده‌سازی بک‌اند توسط تیم شما)
 
-**وضعیت:** این پروژه بک‌اند ندارد. این سند قراردادی است که کلاینت پنل مارکتینگ (`marketing/`) و اتصال عمومی بلاگ/تاتامی‌پدیا (`student|coach|club/`) از قبل بر پایه آن نوشته و با سرور آزمایشی `tools/mock-api-server.mjs` (فقط ابزار تست، نه بک‌اند محصول) آزمایش شده‌اند. بک‌اند واقعی باید همین رفتار را داشته باشد.
+**وضعیت:** این سند فقط قرارداد پنل مارکتینگ برای مدیریت مقاله‌ها و وبلاگ عمومی است و با سرور آزمایشی `tools/mock-api-server.mjs` (ابزار تست، نه بک‌اند محصول) آزمایش می‌شود. خدمات تخصصی سه‌گانه قرارداد SSR جداگانه در `SPECIALIST_SERVICES_FRONTEND_HANDOFF_FA.md` دارد؛ برای آن‌ها endpoint JSON در این سند تعریف نشده است.
 
 پیشوند: `TP_API_BASE` هنگام Build (مثلاً `/api/v1`). همه پاسخ‌ها JSON UTF-8. خطا: `{"errors":{field:"پیام"|[..], "_":"پیام کلی"}}` یا `{"detail":"پیام"}` با کد ۴۰۰/۴۰۱/۴۰۳/۴۰۴/۴۰۹/۴۱۳.
 
@@ -9,8 +9,6 @@
 |---|---|
 | `GET /public/articles?page=&page_size=&q=&category=` | `{count, results:[{id, slug, title, excerpt, body_html, cover_image_url, author_name, category:{name,slug}, tags:[{name}], published_at}]}` |
 | `GET /public/articles/{slug}` | یک مقاله یا ۴۰۴ |
-| `GET /public/glossary/categories` | `{results:[{slug,name,name_ja,romaji,order}]}` |
-| `GET /public/glossary/terms?page_size=` | `{count, results:[{slug,name_fa,name_ja,romaji,meaning,description,usage,safety,categories:[slug],related:[slug],featured,image_url}]}` |
 
 **قواعد الزامی:** فقط `status=published` یا `scheduled` با `publish_at <= now` برگردد؛ پیش‌نویس و زمان‌بندی‌شده آینده هرگز. `body_html` باید در **بک‌اند پاک‌سازی (sanitize) شود**؛ کلاینت هم دوباره پاک می‌کند اما تنها دفاع نیست. ترتیب مقاله‌ها: جدیدترین انتشار اول.
 
@@ -21,7 +19,6 @@
 
 ## ۳. مدیریت (نیازمند ورود + مجوز — **همه در بک‌اند اعمال شود**)
 مجوزها (نقش «marketing» مستقل از هنرجو/مربی/باشگاه؛ بدون دسترسی به کاربران، پرداخت، تنظیمات):
-`articles.manage`، `articles.delete`، `glossary.manage`، `glossary.delete`، `media.upload`. حساب بدون مجوز: ۴۰۳.
 
 | درخواست | توضیح |
 |---|---|
@@ -32,8 +29,6 @@
 | `POST /cms/articles/{id}/unpublish` | ← `draft` |
 | `GET /cms/article-categories` | `{results:[{id,name,slug}]}` |
 | `POST /cms/media` (multipart `file`) | فقط JPEG/PNG/WebP **با بررسی محتوای واقعی فایل (magic bytes) نه فقط پسوند**، حداکثر ۲ مگابایت؛ `201 {id,url}`؛ خطا ۴۰۰/۴۱۳ با `{errors:{file}}` |
-| `GET/POST /cms/glossary/terms` · `GET/PUT/DELETE /cms/glossary/terms/{id}` | فیلدها: `slug (^[a-z0-9]+(-[a-z0-9]+)*$ یکتا), name_fa*, name_ja, romaji*, meaning*, description, usage, safety, categories:[slug], related:[slug], featured, status(draft|published), image_url`؛ انتشار بدون دسته ← ۴۰۰ |
-| `GET/POST /cms/glossary/categories` · `PUT/DELETE /cms/glossary/categories/{id}` | حذف دسته دارای اصطلاح ← ۴۰۰ |
 
 ## ۴. ملاحظات پیاده‌سازی Django (پیشنهاد، پیاده‌سازی‌نشده)
 Group «marketing» با مجوزهای بالا؛ `is_staff=False` تا به Django Admin راه نداشته باشد؛ مدل‌های Article/ArticleCategory/Tag/GlossaryTerm/GlossaryCategory/MediaAsset؛ `publish_at` + بررسی `now()` در Queryset عمومی (یا Task زمان‌بندی)؛ پاک‌سازی HTML با کتابخانه allowlist؛ ذخیره رسانه روی Object Storage؛ آدرس مقاله `/blog/<slug>`.
