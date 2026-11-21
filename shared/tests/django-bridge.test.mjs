@@ -303,6 +303,13 @@ try {
   assert.match(await page.locator('#app').innerText(), /اطلاعات نمونه/);
   assert.notEqual(await page.locator('#app').getAttribute('data-django-view'), '/club/');
 
+  // The legacy recorded-videos tab is intentionally a local demo until a real backend feed exists.
+  await page.evaluate(() => { location.hash = '#/videos'; });
+  await page.locator('#app h1').filter({ hasText: 'باشگاه مجازی' }).waitFor({ state: 'visible' });
+  assert.match(await page.locator('#app [role="note"]').innerText(), /نسخهٔ پیش‌نمایش/);
+  assert.match(await page.locator('#app [role="note"]').innerText(), /دادهٔ نمونه و محلی‌اند/);
+  assert.match(await page.locator('#app [role="note"]').innerText(), /از داده‌های واقعی Django دریافت نمی‌شود/);
+
   await page.close();
 } catch (error) {
   failures.push(error?.stack || String(error));
@@ -313,4 +320,4 @@ try {
 }
 
 if (failures.length) throw new Error(failures.join('\n\n'));
-console.log('Django Preview bridge browser checks: existing regression passed; blog routes, live search provenance and sample club details passed; auth routes: 10/10 passed');
+console.log('Django Preview bridge browser checks: existing regression passed; blog routes, live search provenance, sample club routes and video demo notice passed; auth routes: 10/10 passed');
