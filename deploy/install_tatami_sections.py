@@ -16,6 +16,19 @@ PAYLOAD_ROOT = PACKAGE_ROOT / "payload"
 MANIFEST_PATH = PACKAGE_ROOT / "MANIFEST.json"
 LAST_INSTALL_PATH = CPANEL_HOME / ".tatami_sections_last_install.json"
 BACKUP_ROOT = CPANEL_HOME / "tatami_backups"
+STATIC_ROOT = PUBLIC_ROOT / "static"
+REQUIRED_STATIC_FILES = (
+    "css/tatami.css",
+    "css/backend-templates.css",
+    "css/module-pages.css",
+    "css/home-restored.css",
+    "css/reference-store.css",
+    "js/tatami.js",
+    "js/module-pages.js",
+    "js/home-restored.js",
+    "js/reference-store.js",
+    "data/reference-store-catalog.json",
+)
 
 class InstallError(RuntimeError):
     pass
@@ -107,6 +120,40 @@ def check_cpanel_paths() -> None:
     if PREVIEW_ROOT.is_symlink():
         raise InstallError(f"مسیر Preview نباید symlink باشد: {PREVIEW_ROOT}")
 
+def check_required_static_assets(static_root: Path) -> None:
+    """Refuse template-only installs when their pre-existing static dependencies are missing."""
+    if static_root.is_symlink() or not static_root.is_dir():
+        raise InstallError(
+            f"پوشهٔ static موردنیاز پیدا نشد یا معتبر نیست: {static_root}. "
+            "این بسته static را نصب نمی‌کند."
+        )
+
+    missing: list[str] = []
+    invalid: list[str] = []
+    for value in REQUIRED_STATIC_FILES:
+        relative = safe_relative(value)
+        current = static_root
+        for part in relative.parts:
+            current = current / part
+            if current.is_symlink():
+                invalid.append(value)
+                break
+        else:
+            if not current.is_file() or current.stat().st_size <= 0:
+                missing.append(value)
+
+    if invalid:
+        raise InstallError(
+            "مسیرهای static نباید symlink باشند: " + "، ".join(invalid)
+        )
+    if missing:
+        raise InstallError(
+            "نصب متوقف شد؛ فایل‌های static موردنیاز از استقرار قبلی روی هاست موجود نیستند: "
+            + "، ".join(missing)
+            + ". ابتدا بستهٔ static سازگار را با مسئول استقرار بررسی کنید؛ این نصب‌کننده static را تغییر نمی‌دهد."
+        )
+
+
 def copy_tree(source: Path, destination: Path) -> None:
     if destination.exists():
         shutil.rmtree(destination)
@@ -147,6 +194,7 @@ def restore_from_backup(state: dict[str, Any]) -> None:
 def install() -> None:
     manifest = load_and_verify_manifest()
     check_cpanel_paths()
+    check_required_static_assets(STATIC_ROOT)
     install_id = datetime.now().strftime("%Y%m%d_%H%M%S")
     backup = BACKUP_ROOT / f"frontend_sections_{install_id}"
     backup.mkdir(parents=True, exist_ok=False)
