@@ -10,6 +10,12 @@ build(tempRoot);
 const server = await serve(tempRoot);
 const port = new URL(server.url).port;
 const base = `http://tatamiplus.ir:${port}`;
+const gatewayRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'tatami-test-gateway-'));
+const gatewayDir = path.join(gatewayRoot, 'pay', 'authority-test');
+fs.mkdirSync(gatewayDir, { recursive: true });
+fs.writeFileSync(path.join(gatewayDir, 'index.html'), '<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><title>درگاه پرداخت</title></head><body><h1 id="gateway-target">درگاه پرداخت آزمایشی</h1></body></html>');
+const gatewayServer = await serve(gatewayRoot);
+const gatewayUrl = gatewayServer.url + '/pay/authority-test/';
 const failures = [];
 let browser = null;
 let postMode = 'success';
@@ -40,7 +46,7 @@ const storeForm = (result = '') => `
 try {
   browser = await chromium.launch({
     headless: true,
-    args: ['--host-resolver-rules=MAP tatamiplus.ir 127.0.0.1,MAP gateway.example.test 127.0.0.1']
+    args: ['--host-resolver-rules=MAP tatamiplus.ir 127.0.0.1']
   });
   const page = await browser.newPage();
   page.on('pageerror', error => failures.push('browser error: ' + error.message));
@@ -105,7 +111,7 @@ try {
     if (route.request().method() === 'POST' && url.pathname === '/checkout/pay/') {
       await route.fulfill({
         status: 302,
-        headers: { location: 'http://gateway.example.test:' + port + '/pay/authority-test' }
+        headers: { location: gatewayUrl }
       });
       return;
     }
@@ -116,14 +122,6 @@ try {
       status: 200,
       contentType: 'text/html; charset=utf-8',
       body: documentHtml(content, 'تسویه‌حساب')
-    });
-  });
-
-  await page.route('http://gateway.example.test:' + port + '/**', async route => {
-    await route.fulfill({
-      status: 200,
-      contentType: 'text/html; charset=utf-8',
-      body: documentHtml('<h1 id="gateway-target">درگاه پرداخت آزمایشی</h1>', 'درگاه پرداخت')
     });
   });
 
@@ -424,9 +422,9 @@ try {
   });
   assert.equal(duplicatePayBlocked, true, 'A second payment submit must be blocked while the first navigation is pending');
   await page.locator('#payment-form button[type="submit"]').click();
-  await page.waitForURL('http://gateway.example.test:' + port + '/pay/authority-test', { timeout: 15000 });
+  await page.waitForURL(gatewayUrl, { timeout: 15000 });
   await page.locator('#gateway-target').waitFor({ state: 'visible' });
-  assert.equal(new URL(page.url()).origin, 'http://gateway.example.test:' + port);
+  assert.equal(new URL(page.url()).origin, gatewayServer.url);
   assert.equal((await page.locator('#gateway-target').textContent()).trim(), 'درگاه پرداخت آزمایشی');
 
   await page.close();
@@ -434,7 +432,9 @@ try {
   failures.push(error?.stack || String(error));
 } finally {
   if (browser) await browser.close();
+  await gatewayServer.close();
   await server.close();
+  fs.rmSync(gatewayRoot, { recursive: true, force: true });
   fs.rmSync(tempRoot, { recursive: true, force: true });
 }
 
