@@ -48,10 +48,28 @@ try {
   await page.route('**/store/**', async route => {
     const request = route.request();
     if (request.method() === 'GET') {
+      const pathname = new URL(request.url()).pathname;
+      if (pathname === '/store/cart/') {
+        await route.fulfill({
+          status: 200,
+          contentType: 'text/html; charset=utf-8',
+          body: documentHtml('<h1 id="cart-target">سبد خرید Django</h1>', 'سبد خرید')
+        });
+        return;
+      }
+      if (/^\/store\/[^/]+\/$/.test(pathname)) {
+        await route.fulfill({
+          status: 200,
+          contentType: 'text/html; charset=utf-8',
+          body: documentHtml('<h1 id="product-target">جزئیات محصول Django</h1>', 'جزئیات محصول')
+        });
+        return;
+      }
+      const productCard = '<article class="tp-product-card"><h3>لباس جودو سامکو مدل Approved (سایز S تا XXL)</h3><a href="/store/samko-approved/">مشاهده محصول</a></article>';
       await route.fulfill({
         status: 200,
         contentType: 'text/html; charset=utf-8',
-        body: documentHtml(storeForm(), 'فروشگاه آزمایشی')
+        body: documentHtml(storeForm() + productCard, 'فروشگاه آزمایشی')
       });
       return;
     }
@@ -76,6 +94,24 @@ try {
       status: 200,
       contentType: 'text/html; charset=utf-8',
       body: documentHtml(storeForm('فرم با موفقیت به سرور رسید.'), 'نتیجهٔ فرم')
+    });
+  });
+
+  await page.route('**/checkout/**', async route => {
+    const pathname = new URL(route.request().url()).pathname;
+    await route.fulfill({
+      status: 200,
+      contentType: 'text/html; charset=utf-8',
+      body: documentHtml('<h1 id="checkout-target">' + pathname + '</h1>', 'تسویه‌حساب')
+    });
+  });
+
+  await page.route('**/orders/**', async route => {
+    const pathname = new URL(route.request().url()).pathname;
+    await route.fulfill({
+      status: 200,
+      contentType: 'text/html; charset=utf-8',
+      body: documentHtml('<h1 id="orders-target">' + pathname + '</h1>', 'سفارش‌ها')
     });
   });
 
@@ -116,6 +152,26 @@ try {
   await page.goto(`${base}/preview/#/store`, { waitUntil: 'load' });
   await page.locator('#bridge-form').waitFor({ state: 'visible', timeout: 15000 });
   assert.equal(await page.locator('#app').getAttribute('data-django-view'), '/store/');
+
+  // Preview product IDs resolve to Django slugs from the real product cards.
+  await page.evaluate(() => { location.hash = '#/product/0'; });
+  await page.locator('#product-target').waitFor({ state: 'visible', timeout: 15000 });
+  assert.equal(await page.locator('#app').getAttribute('data-django-view'), '/store/samko-approved/');
+
+  await page.evaluate(() => { location.hash = '#/cart'; });
+  await page.locator('#cart-target').waitFor({ state: 'visible', timeout: 15000 });
+  assert.equal(await page.locator('#app').getAttribute('data-django-view'), '/store/cart/');
+
+  await page.evaluate(() => { location.hash = '#/checkout'; });
+  await page.locator('#checkout-target').waitFor({ state: 'visible', timeout: 15000 });
+  assert.equal(await page.locator('#app').getAttribute('data-django-view'), '/checkout/address/');
+
+  await page.evaluate(() => { location.hash = '#/orders'; });
+  await page.locator('#orders-target').waitFor({ state: 'visible', timeout: 15000 });
+  assert.equal(await page.locator('#app').getAttribute('data-django-view'), '/orders/');
+
+  await page.evaluate(() => { location.hash = '#/store'; });
+  await page.locator('#bridge-form').waitFor({ state: 'visible', timeout: 15000 });
 
   await page.evaluate(() => { location.hash = '#/search?q=' + encodeURIComponent('اوکمی'); });
   await page.waitForFunction(() => document.querySelector('#app h1')?.textContent.trim() === 'جستجو');
