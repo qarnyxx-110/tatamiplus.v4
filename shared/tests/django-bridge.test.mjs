@@ -101,11 +101,29 @@ try {
   });
 
   await page.route('**/checkout/**', async route => {
-    const pathname = new URL(route.request().url()).pathname;
+    const url = new URL(route.request().url());
+    if (route.request().method() === 'POST' && url.pathname === '/checkout/pay/') {
+      await route.fulfill({
+        status: 302,
+        headers: { location: 'https://gateway.example.test/pay/authority-test' }
+      });
+      return;
+    }
+    const content = url.pathname === '/checkout/review/'
+      ? '<form id="payment-form" method="post" action="/checkout/pay/"><input type="hidden" name="csrfmiddlewaretoken" value="test-csrf"><button type="submit">پرداخت و ثبت سفارش</button></form>'
+      : '<h1 id="checkout-target">' + url.pathname + '</h1>';
     await route.fulfill({
       status: 200,
       contentType: 'text/html; charset=utf-8',
-      body: documentHtml('<h1 id="checkout-target">' + pathname + '</h1>', 'تسویه‌حساب')
+      body: documentHtml(content, 'تسویه‌حساب')
+    });
+  });
+
+  await page.route('https://gateway.example.test/**', async route => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'text/html; charset=utf-8',
+      body: documentHtml('<h1 id="gateway-target">درگاه پرداخت آزمایشی</h1>', 'درگاه پرداخت')
     });
   });
 
@@ -391,6 +409,16 @@ try {
   assert.match(await page.locator('#app [role="note"]').innerText(), /نسخهٔ پیش‌نمایش/);
   assert.match(await page.locator('#app [role="note"]').innerText(), /دادهٔ نمونه و محلی‌اند/);
   assert.match(await page.locator('#app [role="note"]').innerText(), /از داده‌های واقعی Django دریافت نمی‌شود/);
+
+  // Payment must leave XHR interception so Django's 302 to the external
+  // gateway becomes a real top-level browser navigation.
+  await page.evaluate(() => { location.hash = '#/server/' + encodeURIComponent('/checkout/review/'); });
+  await page.locator('#payment-form').waitFor({ state: 'visible', timeout: 15000 });
+  await page.locator('#payment-form button[type="submit"]').click();
+  await page.waitForURL('https://gateway.example.test/pay/authority-test', { timeout: 15000 });
+  await page.locator('#gateway-target').waitFor({ state: 'visible' });
+  assert.equal(new URL(page.url()).origin, 'https://gateway.example.test');
+  assert.equal((await page.locator('#gateway-target').textContent()).trim(), 'درگاه پرداخت آزمایشی');
 
   await page.close();
 } catch (error) {
