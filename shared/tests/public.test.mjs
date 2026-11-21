@@ -366,11 +366,13 @@ export async function runPwa(app,base,browser,altRoot){
    if(!changed&&latest?.waiting){
     activationRequested=true;
     const forcedChange=waitForControllerChange();
+    let activationResponse=null;
     activationAcknowledged=await new Promise(resolve=>{
      const channel=new MessageChannel();
      const timer=setTimeout(()=>resolve(false),5000);
      channel.port1.onmessage=event=>{
       clearTimeout(timer);
+      activationResponse=event.data||null;
       resolve(!!(event.data&&event.data.type==='SKIP_WAITING_ACK'));
      };
      channel.port1.onmessageerror=()=>{
@@ -389,6 +391,7 @@ export async function runPwa(app,base,browser,altRoot){
     automaticControllerChange,
     activationRequested,
     activationAcknowledged,
+    activationResponse,
     builtHandlerPresent,
     active:latest?.active?.state||null,
     installing:latest?.installing?.state||null,
