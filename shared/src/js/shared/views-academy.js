@@ -28,8 +28,8 @@ function tpCourseCard(c){
  </article>`;
 }
 function tpCourseList(){
- PT={t:'دوره‌های آموزشی',d:'فهرست نمایشی دوره‌های آموزشی تاتامی پلاس'};
- return `<div class="w"><h1>دوره‌های آموزشی</h1><p class="mu">دوره‌ها و قسمت‌ها در این صفحه برای نمایش رابط کاربری نمونه‌سازی شده‌اند.</p>
+ PT={t:'باشگاه مجازی',d:'دوره‌های آموزشی و ویدیوهای ضبط‌شده تاتامی پلاس'};
+ return `<div class="w"><h1>باشگاه مجازی</h1><p class="mu">دوره‌های آموزشی و ویدیوهای ضبط‌شده در یک بخش؛ اطلاعات این دوره‌ها در نسخه پیش‌نمایش نمونه‌اند.</p>${tpSectionTabs('بخش‌های باشگاه مجازی',[['courses','دوره‌های آموزشی'],['videos','ویدیوهای ضبط‌شده']],'courses')}<h2>دوره‌های آموزشی</h2>
  <div class="d-c" role="note"><b>نسخه پیش‌نمایش</b><p class="mu sm" style="margin:var(--tp-space-2xs) 0 0">اطلاعات دوره‌ها نمونه است؛ ثبت‌نام، خرید، دسترسی به محتوای قفل‌شده و پخش ویدئوی واقعی هنوز به بک‌اند و قرارداد نهایی نیاز دارند.</p></div>
  <div class="pg" style="margin-top:var(--tp-space-lg)">${TP_DEMO_COURSES.map(tpCourseCard).join('')}</div></div>`;
 }
@@ -60,7 +60,7 @@ function tpEpisodeDetail(raw){
  <div class="tp-cluster" style="margin-top:var(--tp-space-md)"><a class="btn o" href="#/courses/${c.slug}">بازگشت به فهرست قسمت‌ها</a><a class="btn" href="#/courses">همه دوره‌ها</a></div></div>`;
 }
 Object.assign(views,{
-academy:()=>`<div class="w"><h1>آکادمی اساتید</h1><p class="mu">مربیان و پروفایل‌ها فرضی و نمایشی هستند.</p><div class="grid">${I.map(ic).join('')}</div></div>`,
+academy:()=>coachesList(),
  courses:(n,raw)=>raw===undefined?tpCourseList():tpCourseDetail(raw),
  episode:(n,raw)=>tpEpisodeDetail(raw),
 });

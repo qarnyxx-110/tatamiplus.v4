@@ -67,6 +67,8 @@ jobs:
           const html = fs.readFileSync("dist/preview/index.html", "utf8");
           const required = [
             '<main id="app"></main>',
+            "باشگاه مجازی",
+            "tpSectionTabs",
             "دوره‌های آموزشی",
             "پخش ویدئو در پیش‌نمایش فعال نیست",
             "ثبت‌نام در دوره",
@@ -82,6 +84,10 @@ jobs:
             if (!html.includes(item)) throw new Error("Missing Preview content: " + item);
           }
           const authRouteMarkers = ["/auth/login/", "serverHashForUrl", "'www.tatamiplus.ir'", "next_url", "localStorage.removeItem(\'tp:users\')", "loadDjangoPath", "document.addEventListener('submit'", "activeDjangoView = true"];
+          const unifiedMarkers = ["ویدیوهای ضبط‌شده", "تاتامی‌پدیا", "آنالیز هوش مصنوعی", "مربیان"];
+          for (const marker of unifiedMarkers) {
+            if (!html.includes(marker)) throw new Error("Missing unified section content: " + marker);
+          }
           for (const marker of authRouteMarkers) {
             if (!html.includes(marker)) throw new Error("Missing live Django route bridge marker: " + marker);
           }

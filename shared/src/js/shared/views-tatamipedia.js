@@ -7,8 +7,8 @@ function tpdSet(o){setHashParams({...tpdParams(),...o});R(o.q!==undefined?'tq':'
 function tpdList(){loadTpd();const{q,cat}=tpdParams(),n=nz(q),all=TPD.terms.filter(t=>t.status!=='draft');
  const l=all.filter(t=>(!cat||t.categories.includes(cat))&&(!n||nz([t.nameFa,t.nameJa,t.romaji,t.meaning,t.description].join(' ')).includes(n))).sort((a,b)=>a.romaji.localeCompare(b.romaji));
  const cats=TPD.categories.slice().sort((a,b)=>a.order-b.order),feat=all.filter(t=>t.featured).slice(0,6);
- PT={t:'تاتامی‌پدیا | دانشنامه جودو',d:'مرجع فارسی اصطلاحات و مفاهیم جودو: نام فارسی، ژاپنی و آوانویسی لاتین.'};
- return`<div class="w"><h1>تاتامی‌پدیا | دانشنامه جودو</h1><p class="mu" style="max-width:46rem">مرجعی فارسی و قابل‌جست‌وجو برای اصطلاحات و مفاهیم جودو، با نام فارسی، نوشتار ژاپنی و آوانویسی لاتین. محتوا برای بازبینی تخصصی آماده است و نهایی نیست.</p>
+ PT={t:'وبلاگ | تاتامی‌پدیا',d:'مقاله‌ها و دانشنامه فارسی اصطلاحات و مفاهیم جودو.'};
+ return`<div class="w"><h1>وبلاگ</h1><p class="mu">مقاله‌ها و دانشنامه جودو در یک بخش یکپارچه.</p>${tpSectionTabs('بخش‌های وبلاگ',[['blog','مقاله‌ها'],['tatamipedia','تاتامی‌پدیا']],'tatamipedia')}<h2>تاتامی‌پدیا | دانشنامه جودو</h2><p class="mu" style="max-width:46rem">مرجعی فارسی و قابل‌جست‌وجو برای اصطلاحات و مفاهیم جودو، با نام فارسی، نوشتار ژاپنی و آوانویسی لاتین. محتوا برای بازبینی تخصصی آماده است و نهایی نیست.</p>
 <div class="sbar"><label class="sr" for="tq">جستجوی اصطلاح</label><input id="tq" type="search" placeholder="جستجوی نام فارسی، ژاپنی یا لاتین..." value="${esc(q)}" oninput="tpdSet({q:this.value})"></div>
 <nav class="cn" aria-label="دسته‌بندی اصطلاحات">${chp('همه',!cat,"tpdSet({cat:''})")}${cats.map(c=>chp(esc(c.name),cat==c.slug,`tpdSet({cat:'${c.slug}'})`)).join('')}</nav>
 ${!q&&!cat&&feat.length?`<section class="d-s" aria-label="اصطلاحات پرکاربرد"><h2>اصطلاحات پرکاربرد</h2><div class="pg">${feat.map(tpdCard).join('')}</div></section>`:''}

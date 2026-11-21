@@ -16,6 +16,11 @@
     <a class="ib" href="{% url 'coaches:directory' %}">آشنایی با مربیان</a>
   </header>
 
+  <nav class="chips tp-section-tabs" aria-label="بخش‌های باشگاه مجازی">
+    <a class="chip on" href="{% url 'club:course_list' %}" aria-current="page">دوره‌های آموزشی</a>
+    <a class="chip" href="/preview/#/videos">ویدیوهای ضبط‌شده</a>
+  </nav>
+
   <form class="tp-course-filter" method="get" action="{% url 'club:course_list' %}" role="search" aria-label="جست‌وجو و فیلتر دوره‌ها">
     <div class="sbar">
       <label class="sr" for="{{ form.q.id_for_label }}">جست‌وجوی دوره</label>
