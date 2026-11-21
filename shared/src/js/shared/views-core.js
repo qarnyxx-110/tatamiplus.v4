@@ -34,6 +34,7 @@ function searchView(){const raw=(hashParams().get('q')||'').slice(0,80),n=nz(raw
     ...TPD.terms.filter(t=>t.status!=='draft'&&has([t.nameFa,t.nameJa,t.romaji,t.meaning].join(' '))).map(t=>[`#/tatamipedia/${encodeURIComponent(t.slug)}`,t.nameFa,isLiveDjangoPreview?'دانشنامه محلی · تاتامی‌پدیا':[t.romaji,t.meaning].filter(Boolean).join(' · ')])
    ];
    G.push(['وبلاگ',blogHits,searchExpandButton('blog',blogHits.length),'blog']);
+   if(isLiveDjangoPreview)liveSearchTargets.push(['#/blog','مطالب منتشرشدهٔ وبلاگ','جست‌وجوی سمت سرور وبلاگ هنوز قرارداد ندارد؛ این پیوند فهرست واقعی Django را باز می‌کند']);
   }
   if(allowed('videos')){
    const courses=typeof TP_DEMO_COURSES!=='undefined'&&Array.isArray(TP_DEMO_COURSES)?TP_DEMO_COURSES:[];
