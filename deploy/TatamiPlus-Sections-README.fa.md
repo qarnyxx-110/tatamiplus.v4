@@ -4,6 +4,8 @@
 - نسخهٔ آمادهٔ فرانت‌اند در مسیر /home/pvchubir/tatamiplus.ir/preview/
 - ده قالب HTML مشخص Django در مسیر /home/pvchubir/tatamiplus_app/templates/
 
+**نکتهٔ static:** این بسته فایل‌های CSS/JS یا پوشهٔ `static/` را تغییر نمی‌دهد. فایل‌های موردنیاز پوسته یعنی `css/tatami.css`، `css/backend-templates.css`، `css/module-pages.css`، `js/tatami.js` و `js/module-pages.js` باید از استقرار قبلی در مسیر `/home/pvchubir/tatamiplus.ir/static/` موجود باشند. اگر این فایل‌ها روی سرور نیستند یا پاسخ ۲۰۰ ندارند، این بسته را نصب نکنید؛ نصب‌کننده عمداً static root را دست نمی‌زند.
+
 ## پیش‌نیاز مهم بک‌اند
 
 این بسته کد Python، فایل URLهای Django یا اپلیکیشن Blog را نصب/به‌روزرسانی نمی‌کند. قبل از نصب روی سایت عمومی، بک‌اندِ فعال باید از قبل اپ Blog و مسیرهای `/blog/` و `/blog/<slug>/` را داشته باشد؛ قرارداد مرجع در این پروژه با commit `20e96721cc1a589d625fecd3fffa9ec42b1fc64f` از مخزن `Radinsharifi/Tatami-demo` بررسی شده است. اگر تیم بک‌اند این نسخه یا معادل سازگار آن را روی سرور منتشر نکرده، فعلاً این بسته را نصب نکنید؛ نصب آن به‌تنهایی route وبلاگ را به Django اضافه نمی‌کند.
