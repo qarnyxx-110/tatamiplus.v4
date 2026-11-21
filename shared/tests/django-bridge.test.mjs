@@ -125,7 +125,7 @@ try {
         status: 200,
         contentType: 'text/html; charset=utf-8',
         body: documentHtml(
-          '<ul class="tp-coaches"><li><article class="card tp-coach-card"><div class="b tp-coach-card-copy"><b>سارا احمدی</b><a href="/coaches/42/">مشاهده پروفایل</a></div></article></li></ul>',
+          '<h1 id="coach-target">فهرست مربیان واقعی</h1><ul class="tp-coaches"><li><article class="card tp-coach-card"><div class="b tp-coach-card-copy"><b>سارا احمدی</b><a href="/coaches/42/">مشاهده پروفایل</a></div></article></li></ul>',
           'مربیان'
         )
       });
