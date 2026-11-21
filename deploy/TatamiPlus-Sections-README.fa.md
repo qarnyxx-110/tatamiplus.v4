@@ -10,7 +10,7 @@
 - JavaScript: `js/tatami.js`، `js/module-pages.js`، `js/home-restored.js` و `js/reference-store.js`
 - دادهٔ کاتالوگ مرجع: `data/reference-store-catalog.json`
 
-پیش از نصب، نشانی‌های متناظر زیر دامنهٔ `https://tatamiplus.ir/static/` را باز کنید. اگر هرکدام وجود ندارد یا پاسخ ۲۰۰ نمی‌دهد، این بسته را نصب نکنید؛ ابتدا باید مالک بک‌اند/استقرار، staticهای سازگار را منتشر کند. نصب‌کننده عمداً static root را دست نمی‌زند.
+پیش‌نیازهای بالا در مسیر فایل‌های هاست نیز باید موجود باشند. نصب‌کننده آن‌ها را در مرحلهٔ --preflight بررسی می‌کند؛ این مرحله فقط خواندنی است و هیچ فایلی را تغییر نمی‌دهد. پس از پیش‌بررسی، نشانی‌های متناظر زیر دامنهٔ https://tatamiplus.ir/static/ را نیز باز کنید و پاسخ HTTP 200 را ببینید. اگر فایل یا نشانی‌ای موجود نیست، نصب را متوقف کنید؛ ابتدا باید مسئول استقرار staticهای سازگار را منتشر کند. نصب‌کننده عمداً static root را دست نمی‌زند.
 
 ## پیش‌نیاز مهم بک‌اند
 
@@ -18,17 +18,26 @@
 
 ## نصب در cPanel
 1. فایل ZIP را در مسیر /home/pvchubir بارگذاری کنید.
-2. در File Manager روی ZIP گزینهٔ Extract را بزنید و مقصد را همان /home/pvchubir بگذارید.
-3. در Terminal فقط این دستور را اجرا کنید:
+2. در File Manager آن را Extract کنید و مقصد را دقیقاً /home/pvchubir بگذارید.
+3. در Terminal، ابتدا سلامت خود ZIP را بررسی کنید:
+
+   python3 /home/pvchubir/TatamiPlus-Sections-2026-11-21/install.py --check
+
+4. پیش‌بررسی مسیرهای cPanel و فایل‌های static را اجرا کنید:
+
+   python3 /home/pvchubir/TatamiPlus-Sections-2026-11-21/install.py --preflight
+
+5. فقط وقتی هر دو دستور قبلی موفق شدند و نشانی‌های static پاسخ ۲۰۰ می‌دهند، نصب را اجرا کنید:
 
    python3 /home/pvchubir/TatamiPlus-Sections-2026-11-21/install.py
 
-نصب‌کننده پیش از نصب، تمام فایل‌های بسته را با SHA256 کنترل می‌کند، از Preview فعلی و ده قالبی که جایگزین می‌شوند پشتیبان می‌گیرد و سپس فایل‌ها را جایگزین می‌کند.
+**اگر --check یا --preflight خطا داد، دستور نصب را اجرا نکنید.** خطا را برای بررسی بفرستید. پیش‌بررسی و بررسی ZIP هیچ فایلی از سایت را تغییر نمی‌دهند.
 
-## بررسی ZIP بدون نصب
-python3 /home/pvchubir/TatamiPlus-Sections-2026-11-21/install.py --check
+نصب‌کننده پیش از جایگزینی، از Preview فعلی و ده قالبی که تغییر می‌کنند پشتیبان می‌گیرد. static root دست‌نخورده می‌ماند.
 
 ## بازگردانی نسخهٔ قبلی
+در صورت نیاز به بازگشت، این دستور را اجرا کنید:
+
 python3 /home/pvchubir/TatamiPlus-Sections-2026-11-21/install.py --rollback
 
 پشتیبان‌ها در /home/pvchubir/tatami_backups/ نگهداری می‌شوند.
