@@ -360,21 +360,34 @@ export async function runPwa(app,base,browser,altRoot){
   const updateState=await pg.evaluate(async()=>{
    const registration=await navigator.serviceWorker.getRegistration();
    if(!registration)return{registration:false,controllerChanged:false,error:'no registration'};
-   let timer=0;
-   const controllerChanged=new Promise(resolve=>{
+   const waitForControllerChange=()=>new Promise(resolve=>{
+    let timer=0;
     const onChange=()=>{if(timer)clearTimeout(timer);resolve(true)};
     navigator.serviceWorker.addEventListener('controllerchange',onChange,{once:true});
     timer=setTimeout(()=>{navigator.serviceWorker.removeEventListener('controllerchange',onChange);resolve(false)},12000);
    });
+   const firstChange=waitForControllerChange();
    try{await registration.update()}catch(error){
-    if(timer)clearTimeout(timer);
     return{registration:true,controllerChanged:false,error:String(error)};
    }
-   const changed=await controllerChanged;
-   const latest=await navigator.serviceWorker.getRegistration();
+   let changed=await firstChange;
+   const automaticControllerChange=changed;
+   let activationRequested=false;
+   let latest=await navigator.serviceWorker.getRegistration();
+   // Some browser/host combinations leave the updated worker in "waiting".
+   // Ask that worker to activate explicitly, then verify controllerchange.
+   if(!changed&&latest?.waiting){
+    activationRequested=true;
+    const forcedChange=waitForControllerChange();
+    latest.waiting.postMessage({type:'SKIP_WAITING'});
+    changed=await forcedChange;
+    latest=await navigator.serviceWorker.getRegistration();
+   }
    return{
     registration:true,
     controllerChanged:changed,
+    automaticControllerChange,
+    activationRequested,
     active:latest?.active?.state||null,
     installing:latest?.installing?.state||null,
     waiting:latest?.waiting?.state||null,
