@@ -9,7 +9,10 @@ assert.match(bridge, /if \(route === 'password-reset'\) return '\/auth\/password
 assert.match(bridge, /if \(route === 'set-password'\) return '\/auth\/password\/set\/';/);
 assert.ok(router.includes("'password-reset':0,'set-password':0"), 'Preview route guard must allow the password routes');
 assert.ok(router.includes("'password-reset','set-password'"), 'Live Preview interception must include the password routes');
-assert.match(bridge, /if \(route === 'blog'\) \{\s*return parts\[1\] \? '\/blog\/' \+ encodeURIComponent\(parts\[1\]\) \+ '\/' : '\/blog\/';\s*\}/);
+assert.ok(bridge.includes("function isSafeBlogSlug(value)"), 'A single strict Unicode slug validator must guard blog routes');
+assert.ok(bridge.includes("if (route === 'blog') {"), 'Direct blog routes must be handled explicitly');
+assert.ok(bridge.includes("if (!isSafeBlogSlug(slug)) return '/blog/';"), 'Invalid direct blog slugs must safely fall back to the blog list');
+assert.ok(bridge.includes("return '/blog/' + encodeURIComponent(slug) + '/';"), 'Valid raw and encoded blog slugs must resolve to the canonical Django URL');
 assert.ok(bridge.includes('account|blog|club'), 'Bridge URL allowlist must include the Django blog route');
 assert.ok(bridge.includes("case 'blog': {"), 'Safe next paths must handle blog routes explicitly');
 assert.ok(bridge.includes("slug = decodeURIComponent(route[1])"), 'Blog return slugs must be decoded before URLSearchParams encodes the next value');
