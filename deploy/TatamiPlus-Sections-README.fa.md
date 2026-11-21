@@ -4,7 +4,13 @@
 - نسخهٔ آمادهٔ فرانت‌اند در مسیر /home/pvchubir/tatamiplus.ir/preview/
 - ده قالب HTML مشخص Django در مسیر /home/pvchubir/tatamiplus_app/templates/
 
-**نکتهٔ static:** این بسته فایل‌های CSS/JS یا پوشهٔ `static/` را تغییر نمی‌دهد. فایل‌های موردنیاز پوسته یعنی `css/tatami.css`، `css/backend-templates.css`، `css/module-pages.css`، `js/tatami.js` و `js/module-pages.js` باید از استقرار قبلی در مسیر `/home/pvchubir/tatamiplus.ir/static/` موجود باشند. اگر این فایل‌ها روی سرور نیستند یا پاسخ ۲۰۰ ندارند، این بسته را نصب نکنید؛ نصب‌کننده عمداً static root را دست نمی‌زند.
+**نکتهٔ static:** این بسته هیچ فایل CSS/JS، فونت یا پوشهٔ `static/` را تغییر نمی‌دهد. چون قالب‌های نصب‌شونده از این فایل‌های موجود استفاده می‌کنند، همهٔ موارد زیر باید از استقرار قبلی در مسیر `/home/pvchubir/tatamiplus.ir/static/` وجود داشته باشند و از مرورگر پاسخ HTTP 200 بدهند:
+
+- CSS: `css/tatami.css`، `css/backend-templates.css`، `css/module-pages.css`، `css/home-restored.css` و `css/reference-store.css`
+- JavaScript: `js/tatami.js`، `js/module-pages.js`، `js/home-restored.js` و `js/reference-store.js`
+- دادهٔ کاتالوگ مرجع: `data/reference-store-catalog.json`
+
+پیش از نصب، نشانی‌های متناظر زیر دامنهٔ `https://tatamiplus.ir/static/` را باز کنید. اگر هرکدام وجود ندارد یا پاسخ ۲۰۰ نمی‌دهد، این بسته را نصب نکنید؛ ابتدا باید مالک بک‌اند/استقرار، staticهای سازگار را منتشر کند. نصب‌کننده عمداً static root را دست نمی‌زند.
 
 ## پیش‌نیاز مهم بک‌اند
 
