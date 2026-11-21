@@ -70,7 +70,8 @@
 
     ['min_price', 'max_price', 'page'].forEach((key) => {
       const value = (params.get(key) || '').trim();
-      if (value && /^\d+$/.test(value)) query.set(key, value);
+      const valid = key === 'page' ? /^\d+$/.test(value) : /^\d+(?:\.\d{1,2})?$/.test(value);
+      if (value && valid) query.set(key, value);
     });
 
     const keys = ['category', 'size', 'color', 'training_level', 'sort'];
