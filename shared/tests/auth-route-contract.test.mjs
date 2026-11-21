@@ -16,7 +16,7 @@ assert.ok(bridge.includes("return '/blog/' + encodeURIComponent(slug) + '/';"), 
 assert.ok(bridge.includes('account|blog|club'), 'Bridge URL allowlist must include the Django blog route');
 assert.ok(bridge.includes("case 'blog': {"), 'Safe next paths must handle blog routes explicitly');
 assert.ok(bridge.includes("slug = decodeURIComponent(route[1])"), 'Blog return slugs must be decoded before URLSearchParams encodes the next value');
-assert.ok(bridge.includes("^[\\\\p{L}\\\\p{M}\\\\p{N}_-]+$"), 'Blog return slugs must reject encoded separators and non-slug characters');
+assert.ok(bridge.includes(String.raw\`return /^[\p{L}\p{M}\p{N}_-]+$/u.test\`), 'Unicode slug validator must allow letters, marks and numbers only');
 assert.ok(router.includes("'set-password','blog','store'"), 'Live Preview interception must include Django blog pages');
 
 console.log('Django auth route contract: PASS');
