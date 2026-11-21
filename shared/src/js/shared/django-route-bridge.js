@@ -223,7 +223,7 @@
   }
 
   function isSafeBlogSlug(value) {
-    return /^[\\p{L}\\p{M}\\p{N}_-]+$/u.test(String(value || ''));
+    return /^[\p{L}\p{M}\p{N}_-]+$/u.test(String(value || ''));
   }
 
   function nextPathFromHash(value) {
