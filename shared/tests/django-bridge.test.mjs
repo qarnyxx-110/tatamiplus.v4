@@ -297,8 +297,15 @@ try {
   await page.evaluate(() => { location.hash = '#/search?q=' + encodeURIComponent('سامکو'); });
   await page.locator('#app h1').filter({ hasText: 'جستجو' }).waitFor({ state: 'visible' });
   assert.equal(await page.locator('#app a[href^="#/product/"]').count(), 0);
-  assert.equal(await page.locator('#app a[href^="#/store?query="]').count(), 1);
+  const liveStoreLink = page.locator('#app a[href^="#/store?query="]');
+  assert.equal(await liveStoreLink.count(), 1);
   assert.match(await page.locator('#app').innerText(), /قیمت فروش و موجودی ثبت‌شده در Django/);
+  await liveStoreLink.click();
+  await page.waitForFunction(() => {
+    const value = document.querySelector('#app')?.getAttribute('data-django-view') || '';
+    try { return new URL(value, location.origin).searchParams.get('query') === 'سامکو'; }
+    catch { return false; }
+  });
 
   await page.evaluate(() => { location.hash = '#/search?q=' + encodeURIComponent('سارا احمدی'); });
   await page.locator('#app h1').filter({ hasText: 'جستجو' }).waitFor({ state: 'visible' });
@@ -311,7 +318,7 @@ try {
   await page.locator('#app a[href="#/club/0"]').waitFor({ state: 'visible' });
   assert.match(await page.locator('#app').innerText(), /داده نمونه · تهران/);
 
-  await page.evaluate(() => { location.hash = '#/club/0'; });
+  await page.locator('#app a[href="#/club/0"]').click();
   await page.locator('#app .tp-club-detail').waitFor({ state: 'visible', timeout: 15000 });
   assert.match(await page.locator('#app').innerText(), /باشگاه جودوی ققنوس/);
   assert.match(await page.locator('#app').innerText(), /اطلاعات نمونه/);
