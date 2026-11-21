@@ -308,6 +308,10 @@ try {
     '/blog/' + encodeURIComponent('اوچی-ماتا') + '/'
   );
 
+  await page.evaluate(() => { location.hash = '#/blog/' + encodeURIComponent('اوچی-ماتا'); });
+  await page.locator('#blog-detail-target').waitFor({ state: 'visible', timeout: 15000 });
+  assert.equal(await page.locator('#app').getAttribute('data-django-view'), '/blog/' + encodeURIComponent('اوچی-ماتا') + '/');
+
   await page.evaluate(() => { location.hash = '#/blog/one%252Ftwo'; });
   await page.locator('#blog-list-target').waitFor({ state: 'visible', timeout: 15000 });
   assert.equal(await page.locator('#app').getAttribute('data-django-view'), '/blog/');
