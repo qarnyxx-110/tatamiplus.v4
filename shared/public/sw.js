@@ -4,13 +4,13 @@ self.addEventListener('install',e=>{e.waitUntil((async()=>{
  await c.addAll(core);
  const results=await Promise.allSettled(routes.map(url=>c.add(url)));
  results.forEach((result,index)=>{if(result.status==='rejected')console.warn('[Tatami SW] optional route was not precached:',routes[index],result.reason)});
- await self.skipWaiting();
+ // Do not await skipWaiting here: activation can depend on the install event finishing.
+ self.skipWaiting().catch(error=>console.error('[Tatami SW] skipWaiting failed',error));
 })().catch(error=>{console.error('[Tatami SW] install failed',error);throw error}))});
 self.addEventListener('message',event=>{
  if(event.data&&event.data.type==='SKIP_WAITING'){
-  const activation=self.skipWaiting();
-  event.waitUntil(activation);
-  // Reply before activation completes so the message event can finish.
+  // Trigger activation without extending this message event with the activation promise.
+  self.skipWaiting().catch(error=>console.error('[Tatami SW] requested activation failed',error));
   if(event.ports&&event.ports[0])event.ports[0].postMessage({type:'SKIP_WAITING_ACK'});
  }
 });
