@@ -15,7 +15,7 @@
         <time datetime="{{ post.published_at|date:'c' }}">{{ post.published_at|jformat:'%Y/%m/%d'|persian_digits }}</time>
       {% endif %}
       {% if post.author %}
-        <span>نوشتهٔ {{ post.author.first_name|default:post.author.phone }}</span>
+        <span>نوشتهٔ {{ post.author.first_name|default:'تیم تاتامی پلاس' }}</span>
       {% endif %}
     </div>
   </header>
