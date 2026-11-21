@@ -290,7 +290,8 @@ def rollback() -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="نصب یا بازگردانی تغییرات بخش‌های فرانت‌اند تاتامی پلاس")
-    parser.add_argument("--check", action="store_true", help="فقط سلامت ZIP را بررسی کن")
+    parser.add_argument("--check", action="store_true", help="فقط سلامت ZIP و مانیفست بسته را بررسی کن")
+    parser.add_argument("--preflight", action="store_true", help="مسیرهای cPanel و پیش‌نیازهای static را بدون تغییر سایت بررسی کن")
     parser.add_argument("--rollback", action="store_true", help="بازگردانی آخرین نصب")
     args = parser.parse_args()
     try:
@@ -302,6 +303,14 @@ def main() -> int:
             template_count = sum(1 for item in manifest["files"] if item["area"] == "templates")
             print(f"بسته سالم است: {preview_count} فایل Preview و {template_count} قالب Django.")
             print("در حالت check هیچ تغییری در سایت ایجاد نشد.")
+        elif args.preflight:
+            manifest = load_and_verify_manifest()
+            check_cpanel_paths()
+            check_required_static_assets(STATIC_ROOT)
+            preview_count = sum(1 for item in manifest["files"] if item["area"] == "preview")
+            template_count = sum(1 for item in manifest["files"] if item["area"] == "templates")
+            print(f"پیش‌بررسی موفق بود: {preview_count} فایل Preview، {template_count} قالب Django و تمام پیش‌نیازهای static.")
+            print("در حالت preflight هیچ فایلی از سایت تغییر نکرد.")
         else:
             install()
         return 0
