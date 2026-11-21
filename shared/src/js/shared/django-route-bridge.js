@@ -282,8 +282,11 @@
     if (route === 'coach-invite') return '/coaches/join/';
     if (route === 'blog') {
       if (parts.length === 1) return '/blog/';
-      if (parts.length !== 2 || !isSafeBlogSlug(parts[1])) return '/blog/';
-      return '/blog/' + encodeURIComponent(parts[1]) + '/';
+      if (parts.length !== 2) return '/blog/';
+      let slug = '';
+      try { slug = decodeURIComponent(parts[1]); } catch { return '/blog/'; }
+      if (!isSafeBlogSlug(slug)) return '/blog/';
+      return '/blog/' + encodeURIComponent(slug) + '/';
     }
 
     if (route === 'academy') return '/coaches/';
