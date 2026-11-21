@@ -65,11 +65,14 @@ try {
         });
         return;
       }
+      const storeUrl = new URL(request.url());
+      const queryMarkers = '<output id="store-query-string">' + storeUrl.search + '</output>' +
+        '<output id="store-query-value">' + (storeUrl.searchParams.get('query') || '') + '</output>';
       const productCard = '<article class="tp-product-card"><h3>لباس جودو سامکو مدل Approved (سایز S تا XXL)</h3><a href="/store/samko-approved/">مشاهده محصول</a></article>';
       await route.fulfill({
         status: 200,
         contentType: 'text/html; charset=utf-8',
-        body: documentHtml(storeForm() + productCard, 'فروشگاه آزمایشی')
+        body: documentHtml(queryMarkers + storeForm() + productCard, 'فروشگاه آزمایشی')
       });
       return;
     }
@@ -155,14 +158,16 @@ try {
 
   await page.evaluate(() => { location.hash = '#/store?min_price=100.50&max_price=500.75&page=2'; });
   await page.locator('#bridge-form').waitFor({ state: 'visible', timeout: 15000 });
+  assert.equal(await page.locator('#app').getAttribute('data-django-view'), '/store/');
   assert.equal(
-    await page.locator('#app').getAttribute('data-django-view'),
-    '/store/?min_price=100.50&max_price=500.75&page=2'
+    (await page.locator('#store-query-string').textContent()).trim(),
+    '?min_price=100.50&max_price=500.75&page=2'
   );
 
   await page.evaluate(() => { location.hash = '#/store?min_price=100.999&page=2'; });
   await page.locator('#bridge-form').waitFor({ state: 'visible', timeout: 15000 });
-  assert.equal(await page.locator('#app').getAttribute('data-django-view'), '/store/?page=2');
+  assert.equal(await page.locator('#app').getAttribute('data-django-view'), '/store/');
+  assert.equal((await page.locator('#store-query-string').textContent()).trim(), '?page=2');
 
   await page.evaluate(() => { location.hash = '#/store'; });
   await page.locator('#bridge-form').waitFor({ state: 'visible', timeout: 15000 });
@@ -301,11 +306,8 @@ try {
   assert.equal(await liveStoreLink.count(), 1);
   assert.match(await page.locator('#app').innerText(), /قیمت فروش و موجودی ثبت‌شده در Django/);
   await liveStoreLink.click();
-  await page.waitForFunction(() => {
-    const value = document.querySelector('#app')?.getAttribute('data-django-view') || '';
-    try { return new URL(value, location.origin).searchParams.get('query') === 'سامکو'; }
-    catch { return false; }
-  });
+  await page.locator('#store-query-value').waitFor({ state: 'visible', timeout: 15000 });
+  assert.equal((await page.locator('#store-query-value').textContent()).trim(), 'سامکو');
 
   await page.evaluate(() => { location.hash = '#/search?q=' + encodeURIComponent('سارا احمدی'); });
   await page.locator('#app h1').filter({ hasText: 'جستجو' }).waitFor({ state: 'visible' });
