@@ -11,13 +11,9 @@ self.addEventListener('install',e=>{
 });
 self.addEventListener('message',event=>{
  if(event.data&&event.data.type==='SKIP_WAITING'){
-  const port=event.ports&&event.ports[0];
-  const activation=self.skipWaiting();
-  if(port)port.postMessage({type:'SKIP_WAITING_ACK',version:V});
-  event.waitUntil(activation.then(
-   ()=>{if(port)port.postMessage({type:'SKIP_WAITING_RESOLVED',version:V})},
-   error=>{if(port)port.postMessage({type:'SKIP_WAITING_ERROR',version:V,error:String(error)});else console.error('[Tatami SW] requested activation failed',error)}
-  ));
+  // Trigger activation without extending this message event with the activation promise.
+  self.skipWaiting().catch(error=>console.error('[Tatami SW] requested activation failed',error));
+  if(event.ports&&event.ports[0])event.ports[0].postMessage({type:'SKIP_WAITING_ACK'});
  }
 });
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==V).map(x=>caches.delete(x)))).then(()=>self.clients.claim()))});
