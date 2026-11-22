@@ -30,9 +30,24 @@
     {% endif %}
 
     <div class="pa">
-      <a class="btn s{% if availability_status != 'in_stock' %} o{% endif %}" href="{% url 'store:product_detail' product.slug %}">
-        {% if availability_status == 'in_stock' %}مشاهده و انتخاب تنوع{% else %}مشاهده جزئیات{% endif %}
-      </a>
+      {% with variants=product.variants.all %}
+        {% if variants|length == 1 %}
+          {% with variant=variants|first %}
+            {% if variant.is_active and variant.stock_quantity > 0 and not variant.size and not variant.color %}
+              <form method="post" action="{% url 'store:product_detail' product.slug %}" class="tp-product-card-add">
+                {% csrf_token %}
+                <input type="hidden" name="variant" value="{{ variant.pk }}">
+                <input type="hidden" name="quantity" value="1">
+                <button class="btn s" type="submit">افزودن به سبد خرید</button>
+              </form>
+            {% else %}
+              <a class="btn s" href="{% url 'store:product_detail' product.slug %}">مشاهده و انتخاب تنوع</a>
+            {% endif %}
+          {% endwith %}
+        {% else %}
+          <a class="btn s" href="{% url 'store:product_detail' product.slug %}">مشاهده و انتخاب تنوع</a>
+        {% endif %}
+      {% endwith %}
     </div>
   </div>
 </article>
