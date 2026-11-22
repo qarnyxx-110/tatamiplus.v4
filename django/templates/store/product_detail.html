@@ -18,8 +18,8 @@
   <div class="pd tp-product-detail">
     <section class="tp-product-gallery" data-product-gallery aria-label="گالری تصاویر محصول">
       {% with main_image=product.images.all|first %}
-        <div class="tp-product-gallery-main" data-gallery-main>
-          <figure class="ph r43{% if main_image %} ok{% endif %}">
+        <div class="tp-product-gallery-main">
+          <figure class="ph r43{% if main_image %} ok{% endif %}" data-gallery-main>
             {% if main_image %}
               <img data-gallery-main-image src="{{ main_image.image.url }}" alt="{{ main_image.alt_text|default:product.name }}" decoding="async" fetchpriority="high">
             {% else %}
