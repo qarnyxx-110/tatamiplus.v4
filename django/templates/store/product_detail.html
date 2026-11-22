@@ -79,16 +79,16 @@
       {% else %}
         <p class="tp-product-stock tp-product-stock--unregistered" data-product-availability>موجودی ثبت نشده</p>
       {% endif %}
-      {% if starting_price or starting_price == 0 %}
-        <p class="sv tp-product-current-price"><span data-variant-price-display>{{ starting_price|price_fa }}</span> <span>تومان</span></p>
-      {% else %}
-        <p class="tp-product-no-price tp-product-current-price" data-variant-price-display>قیمت فروش ثبت نشده</p>
-      {% endif %}
 
       <form id="tp-product-form" method="post" class="tp-product-form" data-product-form
         data-starting-price="{% if starting_price or starting_price == 0 %}{{ starting_price }}{% endif %}"
         data-starting-price-label="{% if starting_price or starting_price == 0 %}{{ starting_price|price_fa }}{% endif %}" novalidate>
         {% csrf_token %}
+        {% if starting_price or starting_price == 0 %}
+          <p class="sv tp-product-current-price"><span data-variant-price-display>{{ starting_price|price_fa }}</span> <span>تومان</span></p>
+        {% else %}
+          <p class="tp-product-no-price tp-product-current-price" data-variant-price-display>قیمت فروش ثبت نشده</p>
+        {% endif %}
         {% if form.non_field_errors %}
           <div class="tp-form-sum" role="alert" tabindex="-1">
             {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
