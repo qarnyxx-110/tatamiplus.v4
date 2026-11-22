@@ -1,77 +1,196 @@
 {% extends 'base.html' %}
 {% load store_format %}
+{% load persian %}
 
 {% block title %}{{ product.name }} | فروشگاه تاتامی پلاس{% endblock %}
-{% block description %}جزئیات، تصاویر و تنوع‌های قابل انتخاب {{ product.name }} در فروشگاه تاتامی پلاس.{% endblock %}
+{% block description %}جزئیات، تصاویر، سایز و رنگ‌های قابل انتخاب {{ product.name }} در فروشگاه تاتامی پلاس.{% endblock %}
 {% block content %}
 <main class="w tp-store-page tp-product-detail-page">
   <nav class="tp-crumbs" aria-label="مسیر صفحه">
-    <ol><li><a href="{% url 'home' %}">خانه</a></li><li><a href="{% url 'store:product_list' %}">فروشگاه</a></li><li aria-current="page">{{ product.name }}</li></ol>
+    <ol>
+      <li><a href="{% url 'home' %}">خانه</a></li>
+      <li><a href="{% url 'store:product_list' %}">فروشگاه</a></li>
+      <li><a href="{% url 'store:product_list' %}?category={{ product.category.pk }}">{{ product.category.name }}</a></li>
+      <li aria-current="page">{{ product.name }}</li>
+    </ol>
   </nav>
 
   <div class="pd tp-product-detail">
-    <section data-product-gallery aria-label="تصاویر محصول">
+    <section class="tp-product-gallery" data-product-gallery aria-label="گالری تصاویر محصول">
       {% with main_image=product.images.all|first %}
-        <div class="pm">
-          <figure class="ph r43{% if main_image %} ok{% endif %}" data-gallery-main>
+        <div class="tp-product-gallery-main" data-gallery-main>
+          <figure class="ph r43{% if main_image %} ok{% endif %}">
             {% if main_image %}
-              <img data-gallery-main-image src="{{ main_image.image.url }}" alt="{{ main_image.alt_text|default:product.name }}" decoding="async">
+              <img data-gallery-main-image src="{{ main_image.image.url }}" alt="{{ main_image.alt_text|default:product.name }}" decoding="async" fetchpriority="high">
             {% else %}
               <svg viewBox="0 0 40 40" fill="currentColor" aria-hidden="true"><path d="M5 8h30v24H5zM11 26l6-7 4 4 4-6 5 9z"/></svg>
               <figcaption>تصویری برای این محصول ثبت نشده است</figcaption>
             {% endif %}
           </figure>
+          {% if main_image %}
+            <button type="button" class="tp-gallery-open" data-gallery-open aria-label="نمایش بزرگ تصویر محصول">بزرگ‌نمایی تصویر</button>
+          {% endif %}
         </div>
       {% endwith %}
+
       {% if product.images.count > 1 %}
-        <div class="pt" role="group" aria-label="انتخاب تصویر محصول">
+        <div class="tp-product-gallery-thumbs" role="group" aria-label="انتخاب تصویر محصول">
           {% for image in product.images.all %}
-            <button type="button" class="ptb{% if forloop.first %} on is-active{% endif %}"
-              data-gallery-select data-src="{{ image.image.url }}" data-alt="{{ image.alt_text|default:product.name }}"
-              aria-label="نمایش تصویر {{ forloop.counter }}" aria-pressed="{% if forloop.first %}true{% else %}false{% endif %}">
-              <figure class="ph th ok">
-                <img src="{{ image.image.url }}" alt="" loading="lazy" decoding="async">
-              </figure>
+            <button type="button" class="tp-product-thumb{% if forloop.first %} is-active{% endif %}"
+              data-gallery-select data-index="{{ forloop.counter0 }}"
+              data-src="{{ image.image.url }}" data-alt="{{ image.alt_text|default:product.name }}"
+              aria-label="نمایش تصویر {{ forloop.counter|persian_digits }}" aria-pressed="{% if forloop.first %}true{% else %}false{% endif %}">
+              <img src="{{ image.image.url }}" alt="" loading="lazy" decoding="async">
             </button>
           {% endfor %}
         </div>
       {% endif %}
+
+      {% if main_image %}
+        <dialog class="tp-gallery-dialog" data-gallery-dialog aria-label="نمایش بزرگ تصاویر محصول">
+          <div class="tp-gallery-dialog-header">
+            <span data-gallery-counter aria-live="polite">تصویر ۱</span>
+            <button type="button" class="btn o s" data-gallery-close aria-label="بستن گالری">بستن</button>
+          </div>
+          <div class="tp-gallery-dialog-stage" data-gallery-stage>
+            <button type="button" class="tp-gallery-nav" data-gallery-prev aria-label="تصویر قبلی">‹</button>
+            <img data-gallery-dialog-image src="{{ main_image.image.url }}" alt="{{ main_image.alt_text|default:product.name }}">
+            <button type="button" class="tp-gallery-nav" data-gallery-next aria-label="تصویر بعدی">›</button>
+          </div>
+          <p class="mu sm tp-gallery-swipe-hint">در موبایل تصویر را به چپ یا راست بکشید.</p>
+        </dialog>
+      {% endif %}
     </section>
 
-    <section class="tp-product-purchase" aria-labelledby="pd-title" data-availability="{% if availability_status %}{{ availability_status }}{% elif starting_price or starting_price == 0 %}in_stock{% else %}inventory_unregistered{% endif %}">
+    <section class="tp-product-purchase" aria-labelledby="pd-title"
+      data-availability="{% if starting_price or starting_price == 0 %}in_stock{% else %}inventory_unregistered{% endif %}">
       <a class="mu sm" href="{% url 'store:product_list' %}?category={{ product.category.pk }}">{{ product.category.name }}</a>
       <h1 id="pd-title">{{ product.name }}</h1>
       {% if product.training_level %}<p class="mu sm">سطح تمرین: {{ product.training_level }}</p>{% endif %}
-      {% if availability_status == 'in_stock' %}
-        <p><span class="tp-product-stock tp-product-stock--available">موجود</span></p>
-      {% elif availability_status == 'out_of_stock' %}
-        <p><span class="tp-product-stock tp-product-stock--unavailable">ناموجود</span></p>
-      {% elif availability_status == 'inventory_unregistered' %}
-        <p><span class="tp-product-stock tp-product-stock--unregistered">موجودی ثبت نشده</span></p>
-      {% elif starting_price or starting_price == 0 %}
-        <p><span class="tp-product-stock tp-product-stock--available">موجود</span></p>
-      {% else %}
-        <p><span class="tp-product-stock tp-product-stock--unregistered">موجودی ثبت نشده</span></p>
-      {% endif %}
-      {% if starting_price or starting_price == 0 %}
-        <p class="sv">از {{ starting_price|price_fa }}</p>
-      {% else %}
-        <p class="tp-product-no-price">قیمت فروش ثبت نشده</p>
-      {% endif %}
-      {% if product.description %}<div class="tp-product-description">{{ product.description|linebreaks }}</div>{% endif %}
 
-      <form method="post" class="tp-product-form" novalidate>
+      {% if starting_price or starting_price == 0 %}
+        <p class="tp-product-stock tp-product-stock--available" data-product-availability>موجود</p>
+        <p class="sv tp-product-current-price"><span data-variant-price-display>{{ starting_price|price_fa }}</span> <span>تومان</span></p>
+      {% else %}
+        <p class="tp-product-stock tp-product-stock--unregistered" data-product-availability>موجودی ثبت نشده</p>
+        <p class="tp-product-no-price tp-product-current-price" data-variant-price-display>قیمت فروش ثبت نشده</p>
+      {% endif %}
+
+      <form id="tp-product-form" method="post" class="tp-product-form" data-product-form
+        data-starting-price="{% if starting_price or starting_price == 0 %}{{ starting_price }}{% endif %}"
+        data-starting-price-label="{% if starting_price or starting_price == 0 %}{{ starting_price|price_fa }}{% endif %}" novalidate>
         {% csrf_token %}
-        {% include 'includes/form_fields.html' %}
-        {% if availability_status %}
-          <button class="btn" type="submit"{% if availability_status != 'in_stock' or not starting_price and starting_price != 0 %} disabled{% endif %}>افزودن به سبد خرید</button>
-        {% else %}
-          <button class="btn" type="submit"{% if not starting_price and starting_price != 0 %} disabled{% endif %}>افزودن به سبد خرید</button>
+        {% if form.non_field_errors %}
+          <div class="tp-form-sum" role="alert" tabindex="-1">
+            {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+          </div>
         {% endif %}
+
+        <div class="tp-variant-native" data-variant-native>
+          <div class="tp-field">
+            <label for="{{ form.variant.id_for_label }}">{{ form.variant.label }}</label>
+            {{ form.variant }}
+            {% for error in form.variant.errors %}<p class="tp-error-text">{{ error }}</p>{% endfor %}
+          </div>
+        </div>
+
+        <div class="tp-variant-picker" data-variant-ui hidden>
+          <div data-variant-records hidden>
+            {% for variant in form.variant.field.queryset %}
+              <span data-variant-record data-id="{{ variant.pk }}" data-size="{{ variant.size }}"
+                data-color="{{ variant.color }}" data-stock="{{ variant.stock_quantity }}"
+                data-price="{{ variant.price }}" data-price-label="{{ variant.price|price_fa }}"></span>
+            {% endfor %}
+          </div>
+          <fieldset class="tp-variant-group" data-variant-group="size" hidden>
+            <legend>انتخاب سایز</legend>
+            <div class="tp-variant-options" data-variant-options="size" role="group" aria-label="سایزهای محصول"></div>
+            <button type="button" class="tp-size-guide-link" data-dialog-open="tp-size-guide-dialog">راهنمای انتخاب سایز</button>
+          </fieldset>
+          <fieldset class="tp-variant-group" data-variant-group="color" hidden>
+            <legend>انتخاب رنگ</legend>
+            <div class="tp-variant-options" data-variant-options="color" role="group" aria-label="رنگ‌های محصول"></div>
+          </fieldset>
+          <p class="tp-variant-notice" data-variant-notice role="status" aria-live="polite">برای انتخاب تنوع، گزینه‌های موجود را انتخاب کنید.</p>
+          {% for error in form.variant.errors %}<p class="tp-error-text" role="alert">{{ error }}</p>{% endfor %}
+        </div>
+
+        <div class="tp-field tp-quantity-field">
+          <label for="{{ form.quantity.id_for_label }}">تعداد</label>
+          {{ form.quantity }}
+          {% for error in form.quantity.errors %}<p class="tp-error-text" role="alert">{{ error }}</p>{% endfor %}
+        </div>
+
+        <div class="tp-variant-live-summary" aria-live="polite">
+          <span data-variant-stock-display>{% if starting_price or starting_price == 0 %}برای انتخاب قیمت دقیق، سایز یا رنگ را مشخص کنید.{% else %}موجودی قابل فروش ثبت نشده است.{% endif %}</span>
+        </div>
+
+        <button class="btn" type="submit" data-variant-submit{% if not starting_price and starting_price != 0 %} disabled{% endif %}>افزودن به سبد خرید</button>
       </form>
-      <p class="mu sm">قیمت و موجودی نهایی هنگام ثبت درخواست از سمت سرور بررسی می‌شود.</p>
+
+      <p class="mu sm">قیمت و موجودی نهایی هنگام ثبت درخواست توسط سرور بررسی می‌شود.</p>
       <a class="btn o" href="{% url 'store:cart' %}">مشاهده سبد خرید</a>
     </section>
   </div>
+
+  <section class="tp-product-tabs" data-product-tabs aria-label="اطلاعات محصول">
+    <div class="tp-product-tab-list" role="tablist" aria-label="بخش‌های اطلاعات محصول">
+      <button type="button" role="tab" id="tp-tab-description" aria-controls="tp-panel-description"
+        aria-selected="true" tabindex="0" data-product-tab="description">توضیحات</button>
+      <button type="button" role="tab" id="tp-tab-specifications" aria-controls="tp-panel-specifications"
+        aria-selected="false" tabindex="-1" data-product-tab="specifications">مشخصات</button>
+    </div>
+    <section id="tp-panel-description" class="tp-product-tab-panel" role="tabpanel"
+      aria-labelledby="tp-tab-description" data-product-tab-panel="description">
+      {% if product.description %}
+        <div class="tp-product-description">{{ product.description|linebreaks }}</div>
+      {% else %}
+        <p class="mu">توضیحات تکمیلی برای این محصول ثبت نشده است.</p>
+      {% endif %}
+    </section>
+    <section id="tp-panel-specifications" class="tp-product-tab-panel" role="tabpanel"
+      aria-labelledby="tp-tab-specifications" data-product-tab-panel="specifications" hidden>
+      <dl class="tp-product-spec-list">
+        <div><dt>نام محصول</dt><dd>{{ product.name }}</dd></div>
+        <div><dt>دسته‌بندی</dt><dd>{{ product.category.name }}</dd></div>
+        {% if product.training_level %}<div><dt>سطح تمرین</dt><dd>{{ product.training_level }}</dd></div>{% endif %}
+        <div><dt>سایز انتخاب‌شده</dt><dd data-product-spec-size>—</dd></div>
+        <div><dt>رنگ انتخاب‌شده</dt><dd data-product-spec-color>—</dd></div>
+        <div><dt>وضعیت تنوع</dt><dd data-product-spec-stock>{% if starting_price or starting_price == 0 %}برای بررسی پس از انتخاب تنوع{% else %}موجودی ثبت نشده{% endif %}</dd></div>
+      </dl>
+      <p class="mu sm">مشخصاتی مانند جنس، وزن پارچه و تأییدیه IJF فقط پس از ثبت اطلاعات معتبر توسط مدیر فروشگاه نمایش داده می‌شوند.</p>
+    </section>
+  </section>
+
+  <dialog id="tp-size-guide-dialog" class="tp-size-guide-dialog" aria-labelledby="tp-size-guide-title">
+    <div class="tp-dialog-heading">
+      <h2 id="tp-size-guide-title">راهنمای انتخاب سایز</h2>
+      <button type="button" class="btn o s" data-dialog-close>بستن</button>
+    </div>
+    {% if size_guide %}
+      <div class="tp-size-guide-table-wrap">
+        <table class="tp-size-guide-table">
+          <thead><tr><th>سایز</th><th>قد (سانتی‌متر)</th><th>وزن (کیلوگرم)</th></tr></thead>
+          <tbody>
+            {% for row in size_guide %}
+              <tr><th scope="row">{{ row.size }}</th><td>{{ row.height }}</td><td>{{ row.weight }}</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p class="tp-note" role="note">جدول اندازه‌گیری اختصاصی این محصول هنوز در اطلاعات فروشگاه ثبت نشده است. برای جلوگیری از راهنمایی اشتباه، اندازه یا وزن تخمینی نمایش داده نمی‌شود.</p>
+    {% endif %}
+  </dialog>
+
+  {% if starting_price or starting_price == 0 %}
+    <div class="tp-product-sticky" data-product-sticky hidden>
+      <div class="tp-product-sticky-copy">
+        <b data-sticky-price>از {{ starting_price|price_fa }} تومان</b>
+        <span data-sticky-stock>انتخاب تنوع برای افزودن به سبد</span>
+      </div>
+      <button class="btn" type="submit" form="tp-product-form" data-variant-submit>افزودن به سبد</button>
+    </div>
+  {% endif %}
 </main>
 {% endblock %}
