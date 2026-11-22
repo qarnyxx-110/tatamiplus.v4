@@ -346,19 +346,22 @@ export async function runPwa(app,base,browser,altRoot){
    const updatePg=await updateCtx.newPage();
    updatePg.setDefaultTimeout(15000);
    updatePg.setDefaultNavigationTimeout(15000);
-   await updatePg.goto(base+'/index.html');
-   await updatePg.evaluate(()=>Promise.race([navigator.serviceWorker.ready,new Promise(resolve=>setTimeout(resolve,10000))]));
-   await wait(900);
+   // Register the worker from a minimal document rather than booting the
+   // full application. This prevents app/image/API requests from keeping the
+   // outgoing worker busy during the update test.
+   await updatePg.goto(base+'/offline.html');
+   await updatePg.evaluate(async()=>{
+    const registration=await navigator.serviceWorker.register('sw.js',{scope:'./'});
+    await Promise.race([navigator.serviceWorker.ready,new Promise(resolve=>setTimeout(()=>resolve(null),10000))]);
+    return registration.scope;
+   });
    await updatePg.reload();
-   await wait(500);
-   const beforeKeys=await updatePg.evaluate(()=>caches.keys());
-   const before=beforeKeys[0]||'';
-   S.ok('به‌روزرسانی: context مستقل Cache اولیه دارد',beforeKeys.length===1&&!!before,beforeKeys.join());
-   await updatePg.goto(base+'/offline.html',{timeout:8000});
    await updatePg.waitForLoadState('networkidle',{timeout:5000}).catch(()=>{});
    await wait(500);
    const cleanClientControlled=await updatePg.evaluate(()=>!!navigator.serviceWorker.controller);
-   S.ok('به‌روزرسانی: کلاینت سبک تحت کنترل worker قبلی است',cleanClientControlled);
+   const beforeKeys=await updatePg.evaluate(()=>caches.keys());
+   const before=beforeKeys[0]||'';
+   S.ok('به‌روزرسانی: context مستقل با worker فعال و Cache اولیه',cleanClientControlled&&beforeKeys.length===1&&!!before,JSON.stringify({controlled:cleanClientControlled,caches:beforeKeys}));
    altRoot.use();
 
    // Force the browser to check the changed Service Worker script.
