@@ -161,6 +161,16 @@ jobs:
           assert 'data-availability="{{ availability_status|default:' in store_card
           assert "stock_quantity" not in store_card
           assert "ProductVariant.price" not in store_card
+          assert 'data-gallery-select' in store_detail_template
+          assert 'data-gallery-dialog' in store_detail_template
+          assert 'data-variant-record' in store_detail_template
+          assert 'data-product-form' in store_detail_template
+          assert 'data-product-sticky' in store_detail_template
+          assert 'data-product-tabs' in store_detail_template
+          assert 'data-variant-choice="size"' in module_pages
+          assert 'data-variant-choice="color"' in module_pages
+          assert 'csrf_token' in store_card and 'name="variant"' in store_card and 'name="quantity"' in store_card
+          assert 'store:product_detail' in store_card and 'افزودن به سبد خرید' in store_card
           assert all("sourceUrl" not in product and "shop" not in product for product in reference_catalog["products"])
           static_mapping = next(item for item in frontend_manifest["mappings"] if item["destination"] == "static")
           assert "css/tatami.css" not in static_mapping.get("exclude", [])
@@ -262,7 +272,7 @@ jobs:
 
       - name: Run backend tests with proposed frontend
         working-directory: backend
-        run: python manage.py test accounts.tests.AuthenticationFlowTests accounts.tests.CoachSignupLeadTests accounts.tests.AccountPageTests coaches.tests.CoachInviteTests gems.tests.GemPageTests orders.tests.CheckoutFlowTests --verbosity 1
+        run: python manage.py test store.tests.StoreWorkflowTests store.tests.StoreAdminLocalizationTests accounts.tests.AuthenticationFlowTests accounts.tests.CoachSignupLeadTests accounts.tests.AccountPageTests coaches.tests.CoachInviteTests gems.tests.GemPageTests orders.tests.CheckoutFlowTests --verbosity 1
 
       - name: Build separate templates and static cPanel packages
         run: |
