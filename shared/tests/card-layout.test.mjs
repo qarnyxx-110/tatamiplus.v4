@@ -107,7 +107,7 @@ try {
   await page.goto(server.url + '/index.html');
   await wait(250);
   await checkPage(page, '#/store', 'store product cards', '#app .pg > .pcd', '.pa > .btn:first-child');
-  await checkPage(page, '#/videos', 'video cards', '#app .pg > .vcd', '.pa > .btn:first-child');
+  await checkPage(page, '#/specialist-services', 'specialist service cards', '#app .tp-services .grid > .card', '.btn');
   await checkPage(page, '#/coaches', 'coach cards', '#app .pg > article.card', '.b > a.btn:last-child');
   await checkPage(page, '#/courses', 'course cards', '#app .pg > .tp-course-card', '.tp-cluster:last-child a.btn');
   assert.deepEqual(errors, [], 'page runtime errors');
@@ -116,7 +116,7 @@ try {
   const mobile = await browser.newPage({ viewport: { width: 390, height: 844 } });
   await mobile.emulateMedia({ reducedMotion: 'reduce' });
   await mobile.goto(server.url + '/index.html');
-  for (const route of ['#/store', '#/videos', '#/coaches', '#/courses']) {
+  for (const route of ['#/store', '#/specialist-services', '#/coaches', '#/courses']) {
     await mobile.evaluate(hash => { location.hash = hash; }, route);
     await wait(120);
     const metrics = await mobile.evaluate(() => ({

@@ -19,7 +19,7 @@ function pfDaily(d){
 
 function instructorView(i){
  const x=I[i],co=x&&COACHES[x.id];if(!x||!co)return nfp('مربی‌ای پیدا نشد','#/academy','مشاهده آکادمی');
- const pf=co.portfolio||{},c=CB[x.club],vs=V.filter(v=>v.i==x.id),ar=BL.filter(b=>b.a==x.id),dan=pf.dan||0,beltLabel=dan?`کمربند مشکی · دان ${F(dan)}`:'کمربند مشکی';
+ const pf=co.portfolio||{},c=CB[x.club],ar=BL.filter(b=>b.a==x.id),dan=pf.dan||0,beltLabel=dan?`کمربند مشکی · دان ${F(dan)}`:'کمربند مشکی';
  const pts=pf.points||{},ptTotal=(pts.ranking||0)+(pts.teaching||0)+(pts.feedback||0),ranks=pf.ranks||[],mcs=pf.masterclasses||[],exams=pf.exams||[],hist=pf.beltHistory||[],nd=pf.nextDan;
  PT={t:x.n+' — پورتفوی مربی',d:`پورتفوی ${x.n}: ${beltLabel}، ${F(x.st)} شاگرد، رتبه‌ها و مستر کلاس‌ها.`};
  const kpi=(v,l)=>`<div class="pf-kpi"><b>${v}</b><span>${l}</span></div>`;
@@ -49,6 +49,5 @@ function instructorView(i){
  ${pfSec('pf-ranks','رتبه‌های کسب‌شده','',rk)}
  ${pfSec('pf-points','امتیازها','',pt)}
  ${pfSec('pf-mc','مستر کلاس‌ها','دوره‌های حضوری فشرده با ظرفیت محدود',mc)}
- ${vs.length?pfSec('pf-vid','دوره‌های ویدیویی','',`<div class="grid">${vs.map(vc).join('')}</div>`):''}
  ${ar.length?pfSec('pf-art','مقاله‌ها','',ar.map(b=>`<a class="rec" href="${bLink(b)}"><b>${b.t}</b><span>${b.d}</span></a>`).join('')):''}
  </div>`}
