@@ -107,7 +107,7 @@ try {
   assert.equal(await page.locator('[data-gallery-dialog-image]').getAttribute('src'), 'https://example.test/a.jpg');
   await page.locator('[data-gallery-stage]').dispatchEvent('pointerdown', { pointerType: 'touch', pointerId: 7, clientX: 280, clientY: 150 });
   await page.locator('[data-gallery-stage]').dispatchEvent('pointerup', { pointerType: 'touch', pointerId: 7, clientX: 90, clientY: 155 });
-  assert.equal(await page.locator('[data-gallery-dialog-image]').getAttribute('src'), 'https://example.test/a.jpg');
+  assert.equal(await page.locator('[data-gallery-dialog-image]').getAttribute('src'), 'https://example.test/b.jpg');
   await page.locator('[data-gallery-close]').click();
   assert.equal(await page.locator('[data-gallery-dialog]').evaluate(el => el.open), false);
 
