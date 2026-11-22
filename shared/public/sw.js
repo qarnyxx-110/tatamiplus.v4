@@ -1,26 +1,19 @@
 const V='tatami-v2',SHELL=['./','index.html','offline.html','manifest.webmanifest','icons/icon-192.png','icons/icon-512.png'];
 self.addEventListener('install',e=>{
+ // Request activation synchronously while the install event is being dispatched.
+ self.skipWaiting().catch(error=>console.error('[Tatami SW] skipWaiting failed',error));
  e.waitUntil((async()=>{
   const c=await caches.open(V),core=SHELL.slice(0,7),routes=SHELL.slice(7);
   await c.addAll(core);
   const results=await Promise.allSettled(routes.map(url=>c.add(url)));
   results.forEach((result,index)=>{if(result.status==='rejected')console.warn('[Tatami SW] optional route was not precached:',routes[index],result.reason)});
-  // Request activation only after the required cache is ready. Do not await
-  // skipWaiting(): the install event itself is already waiting on this task.
-  self.skipWaiting().catch(error=>console.error('[Tatami SW] skipWaiting failed',error));
  })().catch(error=>{console.error('[Tatami SW] install failed',error);throw error}));
 });
 self.addEventListener('message',event=>{
  if(event.data&&event.data.type==='SKIP_WAITING'){
-  const activation=self.skipWaiting();
-  if(event.ports&&event.ports[0]){
-   event.waitUntil(activation.then(
-    ()=>event.ports[0].postMessage({type:'SKIP_WAITING_ACK',version:V}),
-    error=>event.ports[0].postMessage({type:'SKIP_WAITING_ERROR',version:V,error:String(error)})
-   ));
-  }else{
-   event.waitUntil(activation.catch(error=>console.error('[Tatami SW] requested activation failed',error)));
-  }
+  // Trigger activation without extending this message event with the activation promise.
+  self.skipWaiting().catch(error=>console.error('[Tatami SW] requested activation failed',error));
+  if(event.ports&&event.ports[0])event.ports[0].postMessage({type:'SKIP_WAITING_ACK'});
  }
 });
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==V).map(x=>caches.delete(x)))).then(()=>self.clients.claim()))});
