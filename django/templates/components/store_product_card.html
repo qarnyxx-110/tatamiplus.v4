@@ -33,7 +33,7 @@
       {% with variants=product.variants.all %}
         {% if variants|length == 1 %}
           {% with variant=variants|first %}
-            {% if variant.is_active and variant.stock_quantity > 0 and not variant.size and not variant.color %}
+            {% if not variant.size and not variant.color %}
               <form method="post" action="{% url 'store:product_detail' product.slug %}" class="tp-product-card-add">
                 {% csrf_token %}
                 <input type="hidden" name="variant" value="{{ variant.pk }}">
