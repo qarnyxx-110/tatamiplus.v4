@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360" role="img" aria-labelledby="t d"><title id="t">نمودار شماتیک سئوی‌ناگه</title><desc id="d">جودوکار سفید با چرخش پشت به حریف و خم‌کردن زانوها، حریف آبی را روی شانه بارگیری می‌کند.</desc><defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#182638"/><stop offset="1" stop-color="#101721"/></linearGradient><pattern id="g" width="32" height="32" patternUnits="userSpaceOnUse"><path d="M32 0H0V32" fill="none" stroke="#8DB0FF" stroke-opacity=".08"/></pattern><marker id="a" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0 0L6 3L0 6" fill="none" stroke="#FFC933" stroke-width="1.5"/></marker></defs><rect width="640" height="360" rx="24" fill="url(#bg)"/><rect x="18" y="18" width="604" height="324" rx="18" fill="url(#g)" stroke="#8DB0FF" stroke-opacity=".17"/><path d="M55 292H585" stroke="#8DB0FF" stroke-opacity=".16" stroke-width="2" stroke-dasharray="5 9"/><ellipse cx="320" cy="298" rx="210" ry="18" fill="#050b12" opacity=".4"/>
+<g stroke-linecap="round" stroke-linejoin="round">
+<circle cx="252" cy="154" r="23" fill="#DDB69A" stroke="#DDE7F5" stroke-width="4"/>
+<path d="M230 182Q258 166 286 183L316 232L264 253L227 223Z" fill="#F1F4FA" stroke="#B8C7D8" stroke-width="4"/>
+<path d="M238 191L292 168L349 133M278 191L321 153L367 139" fill="none" stroke="#F1F4FA" stroke-width="20"/><path d="M238 191L292 168L349 133M278 191L321 153L367 139" fill="none" stroke="#B8C7D8" stroke-width="3"/>
+<path d="M246 238L224 275L215 292M286 237L311 268L325 290" fill="none" stroke="#F1F4FA" stroke-width="25"/><path d="M246 238L224 275L215 292M286 237L311 268L325 290" fill="none" stroke="#B8C7D8" stroke-width="3"/>
+<path d="M226 225Q259 241 300 222" fill="none" stroke="#244FB3" stroke-width="10"/>
+<circle cx="392" cy="83" r="23" fill="#D9A98D" stroke="#8DB0FF" stroke-width="4"/>
+<path d="M365 104Q397 99 425 124L412 177L356 170L344 133Z" fill="#2F62D6" stroke="#8DB0FF" stroke-width="4"/>
+<path d="M369 124L328 153L296 142M410 125L447 145L472 131M360 166L331 212L302 238M404 169L438 197L468 213" fill="none" stroke="#2F62D6" stroke-width="22"/>
+<path d="M369 124L328 153L296 142M410 125L447 145L472 131M360 166L331 212L302 238M404 169L438 197L468 213" fill="none" stroke="#8DB0FF" stroke-width="3"/>
+<path d="M340 108Q383 49 438 79M344 245Q388 215 404 171" fill="none" stroke="#FFC933" stroke-width="4" stroke-dasharray="8 8" marker-end="url(#a)"/>
+</g></svg>
