@@ -193,7 +193,6 @@
     const colorGroup = form.querySelector('[data-variant-group="color"]');
     const notice = form.querySelector('[data-variant-notice]');
     const initialPrice = form.dataset.startingPriceLabel || priceDisplay?.textContent || '';
-    const initialPriceValue = form.dataset.startingPrice || '';
 
     const makeChoice = (field, value) => {
       const button = document.createElement('button');
@@ -226,16 +225,14 @@
     const setButtonsDisabled = () => {
       form.querySelectorAll('[data-variant-choice="size"]').forEach((button) => {
         const hasStock = records.some((record) =>
-          record.size === button.dataset.value && record.stock > 0 &&
-          (!selectedColor || record.color === selectedColor));
+          record.size === button.dataset.value && record.stock > 0);
         button.disabled = !hasStock;
         button.classList.toggle('is-selected', selectedSize === button.dataset.value);
         button.setAttribute('aria-pressed', String(selectedSize === button.dataset.value));
       });
       form.querySelectorAll('[data-variant-choice="color"]').forEach((button) => {
         const hasStock = records.some((record) =>
-          record.color === button.dataset.value && record.stock > 0 &&
-          (!selectedSize || record.size === selectedSize));
+          record.color === button.dataset.value && record.stock > 0);
         button.disabled = !hasStock;
         button.classList.toggle('is-selected', selectedColor === button.dataset.value);
         button.setAttribute('aria-pressed', String(selectedColor === button.dataset.value));
@@ -271,6 +268,12 @@
         if (priceDisplay) priceDisplay.textContent = price ? price + ' تومان' : 'قیمت ثبت نشده';
         if (stockDisplay) stockDisplay.textContent = stock;
         if (notice) notice.textContent = 'تنوع انتخاب‌شده موجود است.';
+        const specSize = document.querySelector('[data-product-spec-size]');
+        const specColor = document.querySelector('[data-product-spec-color]');
+        const specStock = document.querySelector('[data-product-spec-stock]');
+        if (specSize) specSize.textContent = selected.size || 'بدون سایز';
+        if (specColor) specColor.textContent = selected.color || 'بدون رنگ';
+        if (specStock) specStock.textContent = stock;
         syncSticky(true, stock, price ? price + ' تومان' : 'قیمت ثبت نشده');
       } else {
         select.value = '';
@@ -284,6 +287,12 @@
         if (priceDisplay) priceDisplay.textContent = initialPrice ? 'از ' + initialPrice + ' تومان' : 'قیمت فروش ثبت نشده';
         if (stockDisplay) stockDisplay.textContent = hasSelection ? 'ناموجود' : 'انتخاب تنوع لازم است';
         if (notice) notice.textContent = message;
+        const specSize = document.querySelector('[data-product-spec-size]');
+        const specColor = document.querySelector('[data-product-spec-color]');
+        const specStock = document.querySelector('[data-product-spec-stock]');
+        if (specSize) specSize.textContent = selectedSize || '—';
+        if (specColor) specColor.textContent = selectedColor || '—';
+        if (specStock) specStock.textContent = hasSelection ? 'ترکیب انتخاب‌شده ناموجود است' : 'برای بررسی پس از انتخاب تنوع';
         syncSticky(false, message, initialPrice ? 'از ' + initialPrice + ' تومان' : 'قیمت ثبت نشده');
       }
     };
