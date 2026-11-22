@@ -147,6 +147,9 @@ try {
   await page.locator('#tp-size-guide-dialog [data-dialog-close]').click();
   assert.equal(await page.locator('#tp-size-guide-dialog').evaluate(el => el.open), false);
 
+  // The dialog trigger scrolls the purchase form into view; return to the top
+  // to verify that the sticky bar appears when the form is outside the viewport.
+  await page.evaluate(() => window.scrollTo(0, 0));
   await page.waitForFunction(() => document.querySelector('[data-product-sticky]')?.hidden === false);
   assert.equal(await page.locator('[data-product-sticky] [data-variant-submit]').isEnabled(), true);
 
