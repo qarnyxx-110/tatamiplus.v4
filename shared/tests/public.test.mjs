@@ -362,24 +362,39 @@ export async function runPwa(app,base,browser,altRoot){
    let latest=await navigator.serviceWorker.getRegistration();
    // Some browser/host combinations leave the updated worker in "waiting".
    // Ask that worker to activate explicitly, then verify controllerchange.
-   let activationAcknowledged=null,activationResponse=null;
+   let activationAcknowledged=null,activationResponse=null,activationTransitions=[];
+   let waitingScript=null,previousActiveScript=latest?.active?.scriptURL||null;
    if(!changed&&latest?.waiting){
     activationRequested=true;
     const forcedChange=waitForControllerChange();
-    activationAcknowledged=await new Promise(resolve=>{
+    const waitingWorker=latest.waiting;
+    waitingScript=waitingWorker.scriptURL;
+    waitingWorker.addEventListener('statechange',()=>activationTransitions.push({state:waitingWorker.state,at:Date.now()}));
+    const activationStatus=await new Promise(resolve=>{
      const channel=new MessageChannel();
-     const timer=setTimeout(()=>resolve(false),5000);
+     let acknowledged=false;
+     const timer=setTimeout(()=>resolve({acknowledged,response:{type:'SKIP_WAITING_RESULT_TIMEOUT'}}),5000);
      channel.port1.onmessage=event=>{
-      clearTimeout(timer);
-      activationResponse=event.data||null;
-      resolve(!!(event.data&&event.data.type==='SKIP_WAITING_ACK'));
+      const message=event.data||null;
+      if(message&&message.type==='SKIP_WAITING_ACK'){
+       acknowledged=true;
+       activationResponse=message;
+       return;
+      }
+      if(message&&(message.type==='SKIP_WAITING_RESOLVED'||message.type==='SKIP_WAITING_ERROR')){
+       clearTimeout(timer);
+       activationResponse=message;
+       resolve({acknowledged,response:message});
+      }
      };
      channel.port1.onmessageerror=()=>{
       clearTimeout(timer);
-      resolve(false);
+      resolve({acknowledged,response:{type:'SKIP_WAITING_MESSAGE_ERROR'}});
      };
-     latest.waiting.postMessage({type:'SKIP_WAITING'},[channel.port2]);
+     waitingWorker.postMessage({type:'SKIP_WAITING'},[channel.port2]);
     });
+    activationAcknowledged=activationStatus.acknowledged;
+    activationResponse=activationStatus.response;
     changed=await forcedChange;
     latest=await navigator.serviceWorker.getRegistration();
    }
@@ -391,6 +406,11 @@ export async function runPwa(app,base,browser,altRoot){
     activationRequested,
     activationAcknowledged,
     activationResponse,
+    activationTransitions,
+    previousActiveScript,
+    waitingScript,
+    activeScript:latest?.active?.scriptURL||null,
+    waitingScriptAfter:latest?.waiting?.scriptURL||null,
     builtHandlerPresent,
     active:latest?.active?.state||null,
     installing:latest?.installing?.state||null,
