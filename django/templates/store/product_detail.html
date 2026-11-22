@@ -63,16 +63,25 @@
     </section>
 
     <section class="tp-product-purchase" aria-labelledby="pd-title"
-      data-availability="{% if starting_price or starting_price == 0 %}in_stock{% else %}inventory_unregistered{% endif %}">
+      data-availability="{% if availability_status %}{{ availability_status }}{% elif starting_price or starting_price == 0 %}in_stock{% else %}inventory_unregistered{% endif %}">
       <a class="mu sm" href="{% url 'store:product_list' %}?category={{ product.category.pk }}">{{ product.category.name }}</a>
       <h1 id="pd-title">{{ product.name }}</h1>
       {% if product.training_level %}<p class="mu sm">سطح تمرین: {{ product.training_level }}</p>{% endif %}
 
-      {% if starting_price or starting_price == 0 %}
+      {% if availability_status == 'in_stock' %}
         <p class="tp-product-stock tp-product-stock--available" data-product-availability>موجود</p>
-        <p class="sv tp-product-current-price"><span data-variant-price-display>{{ starting_price|price_fa }}</span> <span>تومان</span></p>
+      {% elif availability_status == 'out_of_stock' %}
+        <p class="tp-product-stock tp-product-stock--unavailable" data-product-availability>ناموجود</p>
+      {% elif availability_status == 'inventory_unregistered' %}
+        <p class="tp-product-stock tp-product-stock--unregistered" data-product-availability>موجودی ثبت نشده</p>
+      {% elif starting_price or starting_price == 0 %}
+        <p class="tp-product-stock tp-product-stock--available" data-product-availability>موجود</p>
       {% else %}
         <p class="tp-product-stock tp-product-stock--unregistered" data-product-availability>موجودی ثبت نشده</p>
+      {% endif %}
+      {% if starting_price or starting_price == 0 %}
+        <p class="sv tp-product-current-price"><span data-variant-price-display>{{ starting_price|price_fa }}</span> <span>تومان</span></p>
+      {% else %}
         <p class="tp-product-no-price tp-product-current-price" data-variant-price-display>قیمت فروش ثبت نشده</p>
       {% endif %}
 
