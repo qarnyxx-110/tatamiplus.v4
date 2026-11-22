@@ -338,7 +338,14 @@ export async function runPwa(app,base,browser,altRoot){
  }catch(e){S.ok('آفلاین: ورود مستقیم /coaches/<slug>/',false,e.message.slice(0,80))}
  await ctx.setOffline(false);
  if(altRoot){
-  const before=keys[0];
+  // Isolate the update check from offline/dashboard traffic that may still be
+  // handled by the outgoing worker. Keep one quiet, controlled client alive.
+  await pg.goto(base+'/offline.html',{timeout:8000});
+  await pg.waitForLoadState('networkidle',{timeout:5000}).catch(()=>{});
+  await wait(500);
+  const cleanClientControlled=await pg.evaluate(()=>!!navigator.serviceWorker.controller);
+  S.ok('به‌روزرسانی: صفحه آزمون سبک تحت کنترل worker قبلی است',cleanClientControlled);
+  const before=(await pg.evaluate(()=>caches.keys()))[0]||keys[0];
   altRoot.use();
 
   // Force the browser to check the changed Service Worker script rather than
@@ -362,39 +369,24 @@ export async function runPwa(app,base,browser,altRoot){
    let latest=await navigator.serviceWorker.getRegistration();
    // Some browser/host combinations leave the updated worker in "waiting".
    // Ask that worker to activate explicitly, then verify controllerchange.
-   let activationAcknowledged=null,activationResponse=null,activationTransitions=[];
-   let waitingScript=null,previousActiveScript=latest?.active?.scriptURL||null;
+   let activationAcknowledged=null,activationResponse=null;
    if(!changed&&latest?.waiting){
     activationRequested=true;
     const forcedChange=waitForControllerChange();
-    const waitingWorker=latest.waiting;
-    waitingScript=waitingWorker.scriptURL;
-    waitingWorker.addEventListener('statechange',()=>activationTransitions.push({state:waitingWorker.state,at:Date.now()}));
-    const activationStatus=await new Promise(resolve=>{
+    activationAcknowledged=await new Promise(resolve=>{
      const channel=new MessageChannel();
-     let acknowledged=false;
-     const timer=setTimeout(()=>resolve({acknowledged,response:{type:'SKIP_WAITING_RESULT_TIMEOUT'}}),5000);
+     const timer=setTimeout(()=>resolve(false),5000);
      channel.port1.onmessage=event=>{
-      const message=event.data||null;
-      if(message&&message.type==='SKIP_WAITING_ACK'){
-       acknowledged=true;
-       activationResponse=message;
-       return;
-      }
-      if(message&&(message.type==='SKIP_WAITING_RESOLVED'||message.type==='SKIP_WAITING_ERROR')){
-       clearTimeout(timer);
-       activationResponse=message;
-       resolve({acknowledged,response:message});
-      }
+      clearTimeout(timer);
+      activationResponse=event.data||null;
+      resolve(!!(event.data&&event.data.type==='SKIP_WAITING_ACK'));
      };
      channel.port1.onmessageerror=()=>{
       clearTimeout(timer);
-      resolve({acknowledged,response:{type:'SKIP_WAITING_MESSAGE_ERROR'}});
+      resolve(false);
      };
-     waitingWorker.postMessage({type:'SKIP_WAITING'},[channel.port2]);
+     latest.waiting.postMessage({type:'SKIP_WAITING'},[channel.port2]);
     });
-    activationAcknowledged=activationStatus.acknowledged;
-    activationResponse=activationStatus.response;
     changed=await forcedChange;
     latest=await navigator.serviceWorker.getRegistration();
    }
@@ -406,11 +398,6 @@ export async function runPwa(app,base,browser,altRoot){
     activationRequested,
     activationAcknowledged,
     activationResponse,
-    activationTransitions,
-    previousActiveScript,
-    waitingScript,
-    activeScript:latest?.active?.scriptURL||null,
-    waitingScriptAfter:latest?.waiting?.scriptURL||null,
     builtHandlerPresent,
     active:latest?.active?.state||null,
     installing:latest?.installing?.state||null,
