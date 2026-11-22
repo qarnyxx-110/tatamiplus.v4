@@ -13,15 +13,11 @@ self.addEventListener('message',event=>{
  if(event.data&&event.data.type==='SKIP_WAITING'){
   const port=event.ports&&event.ports[0];
   const activation=self.skipWaiting();
-  if(port){
-   port.postMessage({type:'SKIP_WAITING_ACK',version:V});
-   activation.then(
-    ()=>port.postMessage({type:'SKIP_WAITING_RESOLVED',version:V}),
-    error=>port.postMessage({type:'SKIP_WAITING_ERROR',version:V,error:String(error)})
-   );
-  }else{
-   activation.catch(error=>console.error('[Tatami SW] requested activation failed',error));
-  }
+  if(port)port.postMessage({type:'SKIP_WAITING_ACK',version:V});
+  event.waitUntil(activation.then(
+   ()=>{if(port)port.postMessage({type:'SKIP_WAITING_RESOLVED',version:V})},
+   error=>{if(port)port.postMessage({type:'SKIP_WAITING_ERROR',version:V,error:String(error)});else console.error('[Tatami SW] requested activation failed',error)}
+  ));
  }
 });
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==V).map(x=>caches.delete(x)))).then(()=>self.clients.claim()))});
