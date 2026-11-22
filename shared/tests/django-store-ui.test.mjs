@@ -72,8 +72,8 @@ const html = `<!doctype html>
         <button type="button" role="tab" id="tp-tab-description" aria-selected="true" data-product-tab="description">توضیحات</button>
         <button type="button" role="tab" id="tp-tab-specifications" aria-selected="false" data-product-tab="specifications">مشخصات</button>
       </div>
-      <section role="tabpanel" aria-labelledby="tp-tab-description" data-product-tab-panel="description">شرح</section>
-      <section role="tabpanel" aria-labelledby="tp-tab-specifications" data-product-tab-panel="specifications" hidden>مشخصات</section>
+      <section id="tp-panel-description" role="tabpanel" aria-labelledby="tp-tab-description" data-product-tab-panel="description">شرح</section>
+      <section id="tp-panel-specifications" role="tabpanel" aria-labelledby="tp-tab-specifications" data-product-tab-panel="specifications" hidden>مشخصات</section>
     </section>
   </section>
   <dialog id="tp-size-guide-dialog"><button type="button" data-dialog-close>بستن</button><p>جدول سایز هنوز ثبت نشده است.</p></dialog>
