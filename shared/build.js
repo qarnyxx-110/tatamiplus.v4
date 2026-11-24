@@ -19,9 +19,9 @@ const APPS={
  student:{fixed:true,role:'student',home:'',deny:['role','my-profile','design-system','checkout'],name:'Tatami Plus Student',short:'Tatami Student',desc:'تاتامی پلاس برای هنرجویان جودو',start:'./',
   nav:[['','خانه'],['dashboard','داشبورد'],['store','فروشگاه'],['specialist-services','خدمات تخصصی'],['online-coach','مربی آنلاین'],['tournaments','تورنمنت‌ها'],['courses','باشگاه مجازی'],['gems','جم'],['coaches','مربیان'],['clubs','باشگاه‌ها'],['blog','وبلاگ'],['sponsors','حامیان تاتامی پلاس'],['search','جستجو']]},
  coach:{fixed:true,role:'coach',home:'dashboard',deny:['role','ai','clubs','club','design-system','checkout'],name:'Tatami Plus Coach',short:'Tatami Coach',desc:'تاتامی پلاس برای مربیان جودو',start:'./#/dashboard',
-  nav:[['','خانه'],['dashboard','داشبورد مربی'],['my-profile','پروفایل من'],['tournaments','تورنمنت‌ها'],['courses','باشگاه مجازی'],['gems','جم'],['coaches','مربیان'],['blog','وبلاگ'],['store','فروشگاه'],['sponsors','حامیان تاتامی پلاس'],['search','جستجو']]},
+  nav:[['','خانه'],['dashboard','داشبورد مربی'],['my-profile','پروفایل من'],['specialist-services','خدمات تخصصی'],['tournaments','تورنمنت‌ها'],['courses','باشگاه مجازی'],['gems','جم'],['coaches','مربیان'],['blog','وبلاگ'],['store','فروشگاه'],['sponsors','حامیان تاتامی پلاس'],['search','جستجو']]},
  club:{fixed:true,role:'club',home:'dashboard',deny:['role','ai','my-profile','design-system','checkout'],name:'Tatami Plus Club',short:'Tatami Club',desc:'تاتامی پلاس برای باشگاه‌های جودو',start:'./#/dashboard',
-  nav:[['','خانه'],['dashboard','داشبورد باشگاه'],['clubs','باشگاه‌ها'],['tournaments','تورنمنت‌ها'],['courses','باشگاه مجازی'],['gems','جم'],['coaches','مربیان'],['blog','وبلاگ'],['store','فروشگاه'],['sponsors','حامیان تاتامی پلاس'],['search','جستجو']]}
+  nav:[['','خانه'],['dashboard','داشبورد باشگاه'],['clubs','باشگاه‌ها'],['specialist-services','خدمات تخصصی'],['tournaments','تورنمنت‌ها'],['courses','باشگاه مجازی'],['gems','جم'],['coaches','مربیان'],['blog','وبلاگ'],['store','فروشگاه'],['sponsors','حامیان تاتامی پلاس'],['search','جستجو']]}
 };
 const walk=(d,b='')=>fs.existsSync(d)?fs.readdirSync(d,{withFileTypes:true}).flatMap(e=>e.isDirectory()?walk(path.join(d,e.name),b+e.name+'/'):[b+e.name]):[];
 const AVAIL=walk(J('public/assets/images')).filter(f=>/\.(jpe?g|png|webp|avif)$/i.test(f));
