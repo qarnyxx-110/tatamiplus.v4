@@ -22,9 +22,9 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
   tournamentDetail.includes('نیازمند تأیید'));
  await go('#/');
  // --- مسیرهای معتبر/نامعتبر
- const valid=['#/','#/store','#/store/','#/product/3','#/product?id=3','#/blog','#/blog/uchi-mata-basics','#/blog/2','#/tournaments','#/tournament/1','#/instructor/1','#/academy','#/profile','#/gems','#/cart','#/dashboard','#/search','#/coaches','#/coaches/sara-ahmadi','#/sponsors','#/specialist-services','#/nutrition-coaches','#/sports-clinics','#/sports-psychologists','#/blog?page=2'];
+ const valid=['#/','#/store','#/online-coach','#/store/','#/product/3','#/product?id=3','#/video/3','#/video?id=3','#/blog','#/blog/uchi-mata-basics','#/blog/2','#/tournaments','#/tournament/1','#/instructor/1','#/academy','#/profile','#/gems','#/cart','#/dashboard','#/videos','#/search','#/coaches','#/coaches/sara-ahmadi','#/sponsors','#/tatamipedia','#/tatamipedia/ippon','#/tatamipedia?q=ippon&cat=refereeing','#/blog?page=2','#/specialist-services','#/nutrition-coaches','#/sports-clinics','#/sports-psychologists'];
  const bad=[];for(const r of valid){await go(r);if(await nf())bad.push(r)}S.ok('مسیرهای معتبر 404 نمی‌دهند ('+valid.length+' مسیر)',!bad.length,bad.join(' '));
- const invalid=['#/gems/extra','#/courses/unknown','#/episode/unknown-lesson-1','#/store/x/y','#/product/abc','#/product/1/2','#/product/999','#/product','#/product/','#/video/','#/video/99','#/video?id=','#/videos','#/video/3','#/tatamipedia','#/tatamipedia/nobody','#/tatamipedia/','#/online-coach','#/tournament/abc','#/tournament/99','#/tournament/','#/instructor/99','#/instructor/','#/blog/not-a-real-slug','#/blog/a/b','#/coaches/nobody','#/coaches/','#/coaches/a/b','#/specialist-services/unknown','#/nutrition-coaches/slug','#/sports-clinics/slug','#/sports-psychologists/slug','#/nonexistent','#/a/b/c/d/e','#/'+'x'.repeat(420),'#store','#/club/99'];
+ const invalid=['#/gems/extra','#/courses/unknown','#/episode/unknown-lesson-1','#/store/x/y','#/product/abc','#/product/1/2','#/product/999','#/product','#/product/','#/video/','#/video/99','#/video?id=','#/tournament/abc','#/tournament/99','#/tournament/','#/instructor/99','#/instructor/','#/blog/not-a-real-slug','#/blog/a/b','#/coaches/nobody','#/coaches/','#/coaches/a/b','#/tatamipedia/nobody','#/tatamipedia/','#/tatamipedia/a/b','#/nonexistent','#/a/b/c/d/e','#/'+'x'.repeat(420),'#store','#/club/99'];
  const wrong=[];for(const r of invalid){await go(r);if(!await nf())wrong.push(r.slice(0,40))}S.ok('مسیرهای نامعتبر همه 404 دارند ('+invalid.length+' مسیر)',!wrong.length,wrong.join(' '));
  await go('#/zzz');S.ok('404: دکمه «بازگشت به صفحه اصلی»',await pg.evaluate(()=>!!document.querySelector('#app a[href="#/"]')&&/بازگشت به صفحه اصلی/.test(document.getElementById('app').innerText)));
  // --- نقش‌ها
@@ -37,15 +37,30 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
   await go('#/');
  }
  const nav=await pg.evaluate(()=>[...document.querySelectorAll('#nv a')].map(a=>a.textContent.trim()));
- S.ok('منو: بلاگ، مربیان، حامیان و خدمات تخصصی',['بلاگ','مربیان تاتامی','حامیان تاتامی پلاس','خدمات تخصصی'].every(x=>nav.includes(x)),nav.join('|'));S.ok('منو: دوره‌های آموزشی',nav.includes('دوره‌ها'),nav.join('|'));
+ S.ok('منو: چهار بخش ادغام‌شده با نام‌های واحد',['باشگاه مجازی','مربیان','وبلاگ','حامیان تاتامی پلاس'].every(x=>nav.includes(x)),nav.join('|'));S.ok('منو: نام‌های فرعی به‌صورت لینک مستقل حذف شده‌اند',!['ویدیوهای ضبط‌شده','آکادمی اساتید','تاتامی‌پدیا','آنالیز هوش مصنوعی'].some(x=>nav.includes(x)),nav.join('|'));
  S.ok('منو: تاریخچه جم',nav.includes('جم'),nav.join('|'));
- S.ok('همه نقش‌ها: مسیرهای حذف‌شده در منو دیده نمی‌شوند',!nav.some(x=>['مربی آنلاین','ویدیوهای ضبط‌شده','تاتامی‌پدیا'].includes(x)),nav.join('|'));
- await go('#/specialist-services');const serviceHome=await T();S.ok('خدمات تخصصی: سه دسته در دسترس است',['مربیان تغذیه','کلینیک‌های ورزشی','روان‌شناسی ورزشی'].every(x=>serviceHome.includes(x)));
+ S.ok('منو: مربی آنلاین برای هنرجو',app!=='student'||nav.includes('مربی آنلاین'),nav.join('|'));
+ S.ok('منو: خدمات تخصصی در دسترس است',nav.includes('خدمات تخصصی'),nav.join('|'));
+ await go('#/specialist-services');let serviceText=await T();
+ S.ok('خدمات تخصصی: سه دسته معرفی شده‌اند',['مربیان تغذیه','کلینیک‌های ورزشی','روان‌شناسی ورزشی'].every(x=>serviceText.includes(x)));
  await go('#/nutrition-coaches');S.ok('مربیان تغذیه: بدون پروفایل یا فرم ساختگی',(await T()).includes('هنوز از سامانه مدیریت Django'));
- await go('#/sports-clinics');S.ok('کلینیک‌های ورزشی: تا اتصال بک‌اند، داده ساختگی ندارد',(await T()).includes('هنوز از سامانه مدیریت Django'));
- await go('#/sports-psychologists');S.ok('روان‌شناسی ورزشی: تا اتصال بک‌اند، داده ساختگی ندارد',(await T()).includes('هنوز از سامانه مدیریت Django'));
- if(app==='student'){await go('#/ai');const ai=await T();S.ok('آنالیز حرکت: صفحه مستقل حفظ شده و فقط نمونه معرفی می‌شود',ai.includes('هیچ دوربین، فایل یا مدل هوش مصنوعی واقعی')&&ai.includes('دادهٔ آزمایشی'));await go('#/');}
+ await go('#/sports-clinics');S.ok('کلینیک‌های ورزشی: بدون داده ساختگی',(await T()).includes('هنوز از سامانه مدیریت Django'));
+ await go('#/sports-psychologists');S.ok('روان‌شناسی ورزشی: بدون داده ساختگی',(await T()).includes('هنوز از سامانه مدیریت Django'));
  await go('#/');
+ await go('#/courses');let hub=await T();S.ok('باشگاه مجازی: تب دوره‌ها و ویدیوهای ضبط‌شده در یک صفحه',hub.includes('باشگاه مجازی')&&await pg.locator('.tp-section-tabs a[href="#/courses"]').count()===1&&await pg.locator('.tp-section-tabs a[href="#/videos"]').count()===1);
+ await go('#/videos');hub=await T();S.ok('باشگاه مجازی: مسیر قدیمی ویدیوها به همان بخش یکپارچه می‌رسد',hub.includes('باشگاه مجازی')&&await pg.locator('.tp-section-tabs a[aria-current="page"]').getAttribute('href')==='#/videos');
+ await go('#/blog');hub=await T();S.ok('وبلاگ: تب مقاله و دانشنامه در یک بخش',hub.includes('وبلاگ')&&await pg.locator('.tp-section-tabs a[href="#/tatamipedia"]').count()===1);
+ await go('#/tatamipedia');hub=await T();S.ok('تاتامی‌پدیا: مسیر قدیمی به تب همان بخش وبلاگ می‌رسد',hub.includes('وبلاگ')&&await pg.locator('.tp-section-tabs a[aria-current="page"]').getAttribute('href')==='#/tatamipedia');
+ await go('#/academy');hub=await T();S.ok('آکادمی اساتید: مسیر قدیمی به فهرست واحد مربیان می‌رسد',hub.includes('مربیان')&&await pg.locator('#kfq').count()===1);
+ await go('#/online-coach');const oc=await T();
+ S.ok('مربی آنلاین: صفحه مشترک و تب آنالیز برای نقش‌های مجاز',oc.includes('مربی آنلاین')&&oc.includes('روشن کردن دوربین')&&await pg.locator('#tp-oc-video').count()===1&&await pg.locator('.tp-section-tabs a[href="#/online-coach"]').count()===1&&(app==='coach'||app==='club'?await pg.locator('.tp-section-tabs a[href="#/ai"]').count()===0:await pg.locator('.tp-section-tabs a[href="#/ai"]').count()===1));
+ S.ok('مربی آنلاین: شمارش واقعی جعل نمی‌شود',await pg.locator('#tp-oc-count').innerText()==='—'&&oc.includes('ربات هنوز متصل نشده است')&&await pg.locator('#tp-oc-count-start').isDisabled());
+ S.ok('مربی آنلاین: فعلاً فقط پیش‌نمایش محلی و بدون ورودی فایل',oc.includes('تصویر به سرور ارسال نمی‌شود')&&await pg.locator('#tp-oc-video').count()===1&&await pg.locator('#tp-oc input[type=file]').count()===0);
+ const ocWidths=[];for(const width of [320,360,390]){await pg.setViewportSize({width,height:800});await go('#/online-coach');ocWidths.push(await pg.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1&&document.body.scrollWidth<=innerWidth+1));}
+ S.ok('مربی آنلاین: بدون اسکرول افقی در موبایل ۳۲۰/۳۶۰/۳۹۰',ocWidths.every(Boolean),ocWidths.join(','));
+ await pg.setViewportSize({width:390,height:800});await go('#/');
+  const homeOnlineCoachLinks=await pg.locator('#app a[href="#/online-coach"]').count();
+  S.ok('صفحه اصلی هنرجو: دکمه و کارت مربی آنلاین در دسترس‌اند',app==='student'?homeOnlineCoachLinks>=2:homeOnlineCoachLinks===0,String(homeOnlineCoachLinks));
  if(app!=='coach'){
   await go('#/clubs');const clubList=await T();
   S.ok('باشگاه‌ها: صفحه جستجو و فهرست',clubList.includes('جستجوی باشگاه‌ها')&&clubList.includes('فهرست باشگاه‌ها'));
@@ -108,7 +123,7 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
 
  S.ok('جم: نشان موجودی در هدر',await pg.locator('#hgem[href="#/gems"]').count()===1);
  S.ok('منو: «باشگاه‌ها» فقط برای هنرجو/باشگاه',(app==='coach')?!nav.includes('باشگاه‌ها'):nav.includes('باشگاه‌ها'));
- const foot=await pg.evaluate(()=>[...document.querySelectorAll('footer a')].map(a=>({text:a.textContent.trim(),href:a.getAttribute('href')})));S.ok('فوتر: خدمات تخصصی و حامیان موجود؛ ماژول‌های حذف‌شده غایب',foot.some(a=>a.text==='خدمات تخصصی'&&a.href==='#/specialist-services')&&foot.some(a=>a.text==='حامیان تاتامی پلاس')&&!foot.some(a=>['مربی آنلاین','ویدیوهای ضبط‌شده','تاتامی‌پدیا','سیستم طراحی'].includes(a.text)),JSON.stringify(foot));
+ const foot=await pg.evaluate(()=>[...document.querySelectorAll('footer a')].map(a=>({text:a.textContent.trim(),href:a.getAttribute('href')})));S.ok('فوتر: بخش‌های ادغام‌شده فقط یک‌بار و با نام یکسان آمده‌اند',foot.some(a=>a.text==='باشگاه مجازی'&&a.href==='#/courses')&&foot.some(a=>a.text==='مربیان'&&a.href==='#/coaches')&&foot.some(a=>a.text==='وبلاگ'&&a.href==='#/blog')&&foot.some(a=>a.text==='مربی آنلاین'&&a.href==='#/online-coach')&&!['ویدیوهای ضبط‌شده','آکادمی اساتید','تاتامی‌پدیا','آنالیز هوش مصنوعی'].some(x=>foot.some(a=>a.text===x)),JSON.stringify(foot));
  await go('#/gems');const gems=await T();S.ok('جم: صفحه تاریخچه و وضعیت عدم اتصال',gems.includes('تاریخچه تراکنش‌ها')&&gems.includes('موجودی واقعی هنوز به این نسخه متصل نشده است'));S.ok('جم: عدم نمایش تراکنش ساختگی',gems.includes('تراکنشی برای نمایش وجود ندارد'));
  await go('#/my-profile');S.ok('«پروفایل من» فقط در PWA مربی',(app==='coach')?!await nf():await nf());
  if(app==='coach'){
@@ -150,6 +165,17 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
  await go('#/coaches');await pg.locator('#app article a.btn').first().click();await wait(100);S.ok('پروفایل مربی باز می‌شود',(await pg.evaluate(()=>location.hash))==='#/coaches/sara-ahmadi'&&(await T()).includes('سارا احمدی'));
  S.ok('پروفایل: عدم جعل مدرک/افتخار/تماس',(await T()).includes('هنوز افتخار یا مدرکی ثبت نشده')&&(await T()).includes('راه ارتباطی عمومی'));
  S.ok('پروفایل: عنوان صفحه اختصاصی',(await pg.title()).startsWith('سارا احمدی'));
+ // --- تاتامی‌پدیا
+ await go('#/tatamipedia');const tq=async q=>{await pg.fill('#tq',q);await wait(120);return cnt('#app section[aria-label="فهرست اصطلاحات"] a.card')};
+ S.ok('تاتامی‌پدیا: ۴۰ اصطلاح',await tq('')===40,String(await tq('')));
+ for(const [q,slug] of [['اوچی‌ماتا','uchi-mata'],['اوچیماتا','uchi-mata'],['内股','uchi-mata'],['Uchi-mata','uchi-mata'],['uchimata','uchi-mata'],['uchi mata','uchi-mata'],['Ōsoto','o-soto-gari'],['osotogari','o-soto-gari'],['برهم‌زدن تعادل','kuzushi'],['كوزوشي','kuzushi'],['ایپون','ippon']]){await tq(q);const found=await pg.evaluate(s=>!!document.querySelector('#app section[aria-label="فهرست اصطلاحات"] a[href="#/tatamipedia/'+s+'"]'),slug);S.ok(`تاتامی‌پدیا: «${q}» ← ${slug}`,found)}
+ await tq('zzzzqq');S.ok('تاتامی‌پدیا: نتیجه خالی',await pg.evaluate(()=>/اصطلاحی پیدا نشد/.test(document.getElementById('app').innerText)));
+ await go('#/tatamipedia?cat=refereeing');const rc=await cnt('#app section[aria-label="فهرست اصطلاحات"] a.card');S.ok('تاتامی‌پدیا: فیلتر دسته از آدرس',rc>=5&&rc<40,'n='+rc);
+ await pg.locator('#app button',{hasText:'پاک کردن فیلترها'}).first().click();await wait(100);S.ok('تاتامی‌پدیا: پاک کردن فیلترها',await cnt('#app section[aria-label="فهرست اصطلاحات"] a.card')===40);
+ await go('#/tatamipedia/uchi-mata');let t=await T();S.ok('اصطلاح: نام فارسی، ژاپنی، لاتین، معنی، ایمنی، مرتبط',['اوچی‌ماتا','内股','Uchi-mata','ران داخلی','نکته ایمنی','کوزوشی'].every(x=>t.includes(x)));
+ S.ok('اصطلاح: عنوان ژاپنی با lang=ja، جداسازی bidi و هم‌ترازی با متن فارسی',await pg.evaluate(()=>{const e=document.querySelector('#app .tp-ja[lang="ja"]');return !!e&&getComputedStyle(e).unicodeBidi==='isolate'&&getComputedStyle(e).textAlign!=='left'}));
+ await pg.locator('#app .tp-cluster a.chip',{hasText:'کوزوشی'}).first().click();await wait(100);S.ok('اصطلاح: لینک مرتبط کار می‌کند',(await pg.evaluate(()=>location.hash))==='#/tatamipedia/kuzushi');
+ await go('#/tatamipedia?q='+encodeURIComponent('<img src=x onerror=window.__x=1>'));await wait(150);S.ok('تاتامی‌پدیا: XSS از آدرس/جست‌وجو اجرا نمی‌شود',!await pg.evaluate(()=>!!window.__x));
  // --- فروشگاه: کاتالوگ کارفرما
  await go('#/store');const sc=()=>cnt('#app .pg:not(section .pg) article.pcd'),prod=await pg.evaluate(()=>({n:P.length,names:new Set(P.map(p=>p.n)).size,skus:new Set(P.filter(p=>p.sku).map(p=>p.sku)).size,ref:P.filter(p=>p.ref).length,demo:P.filter(p=>p.demo).length}));
  S.ok('فروشگاه: ۵۹ محصول کاتالوگ + ۳ نمونه آزمایشی (دسته بدون کاتالوگ)، بدون نام/SKU تکراری',prod.ref===59&&prod.demo===3&&prod.names===prod.n&&prod.skus===59,JSON.stringify(prod));
@@ -220,7 +246,7 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
  await pg.fill('#pmin','');await wait(100);await pg.locator('#sf .chip',{hasText:'XXL'}).first().click();await wait(150);S.ok('فروشگاه: فیلتر سایز XXL ← ۲',await cnt('#app .sl .pg article.pcd')===2,String(await cnt('#app .sl .pg article.pcd')));
  await pg.locator('#app button',{hasText:'پاک کردن فیلترها'}).first().click();await wait(150);S.ok('فروشگاه: پاک‌کردن فیلترها ← ۶۲',(await T()).includes('۶۲ محصول'));
  await go('#/store');S.ok('فروشگاه: پیشنهادها (۳ بخش × ۴ محصول) از کاتالوگ',await cnt('section[aria-label="تازه جودو را شروع کرده‌ام"] article')===4&&await cnt('section[aria-label="برای تمرین حرفه‌ای آماده‌ام"] article')===4&&await cnt('section[aria-label="برای مسابقه آماده می‌شوم"] article')===4);
- let t='';await go('#/product/0');t=await T();S.ok('جزئیات محصول کاتالوگ: قیمت مرجع، منبع، بدون ستاره/نظر جعلی، سایزهای نام محصول',t.includes('قیمت نهایی تاتامی پلاس نیست')&&t.includes('منبع قیمت مرجع')&&!t.includes('★')&&!/نظر\)/.test(t)&&t.includes('XXL'));
+ await go('#/product/0');t=await T();S.ok('جزئیات محصول کاتالوگ: قیمت مرجع، منبع، بدون ستاره/نظر جعلی، سایزهای نام محصول',t.includes('قیمت نهایی تاتامی پلاس نیست')&&t.includes('منبع قیمت مرجع')&&!t.includes('★')&&!/نظر\)/.test(t)&&t.includes('XXL'));
  S.ok('جزئیات: قیمت منبع ۱۴٬۵۰۰٬۰۰۰ تومان (بدون تغییر)',t.includes('۱۴٬۵۰۰٬۰۰۰ تومان'));
  S.ok('جزئیات محصول: موجودی نمونه به‌صورت شفاف برچسب خورده است',t.includes('موجودی تأیید نشده'));
  const referenceProductId=await pg.evaluate(()=>P.find(p=>p.ref&&!p.sz.length&&!p.cl.length)?.id??-1);
@@ -242,6 +268,37 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
  await go('#/episode/judo-foundations-lesson-1');t=await T();S.ok('قسمت دوره: معرفی نمونه بدون ویدئوی ساختگی',t.includes('پخش ویدئو در پیش‌نمایش فعال نیست')&&await cnt('#app video')===0);
  await go('#/episode/not-a-course-lesson-1');S.ok('قسمت نامعتبر به صفحه ۴۰۴ می‌رود',await nf());
 
+ // --- جستجوی سراسری: هر دو زیرمجموعه محتوای ادغام‌شده
+ await go('#/search?q='+encodeURIComponent('فنون پایه'));
+ const courseSearchGroup=pg.locator('#app .d-s[aria-label="باشگاه مجازی"]');
+ S.ok('جستجوی سراسری: دوره‌ها در گروه باشگاه مجازی جستجو می‌شوند',
+   await courseSearchGroup.locator('a[href="#/courses/judo-foundations"]').count()===1,
+   await T());
+
+ await go('#/search?q='+encodeURIComponent('ا'));
+ const blogSearchGroup=pg.locator('#app .d-s[aria-label="وبلاگ"]');
+ const blogShowAll=blogSearchGroup.locator('button[data-search-expand="blog"]');
+ S.ok('جستجوی وبلاگ: نتیجه‌های اولیه محدود و کنترل نمایش همه حاضر است',
+   await blogSearchGroup.locator('a.rec').count()===5&&await blogShowAll.count()===1);
+ await blogShowAll.click();await wait(80);
+ let blogSearchLinks=await blogSearchGroup.locator('a.rec').evaluateAll(items=>items.map(item=>item.getAttribute('href')||''));
+ S.ok('جستجوی وبلاگ: نمایش همه، هم مقاله‌ها و هم تاتامی‌پدیا را نگه می‌دارد',
+   blogSearchLinks.length>5&&blogSearchLinks.some(href=>href.startsWith('#/blog/'))&&blogSearchLinks.some(href=>href.startsWith('#/tatamipedia/')),
+   'نتایج نمایش‌داده‌شده: '+blogSearchLinks.length);
+ await blogShowAll.click();await wait(80);
+ S.ok('جستجوی وبلاگ: امکان جمع‌کردن دوباره نتایج',
+   await blogSearchGroup.locator('a.rec').count()===5&&await blogSearchGroup.locator('button[data-search-expand="blog"]').getAttribute('aria-expanded')==='false');
+
+ const clubSearchGroup=pg.locator('#app .d-s[aria-label="باشگاه مجازی"]');
+ const clubShowAll=clubSearchGroup.locator('button[data-search-expand="virtual-club"]');
+ S.ok('جستجوی باشگاه مجازی: دوره و ویدیو هر دو در گروه نتایج قابل گسترش‌اند',
+   await clubSearchGroup.locator('a[href^="#/courses/"]').count()>0&&await clubShowAll.count()===1);
+ await clubShowAll.click();await wait(80);
+ const clubSearchLinks=await clubSearchGroup.locator('a.rec').evaluateAll(items=>items.map(item=>item.getAttribute('href')||''));
+ S.ok('جستجوی همه باشگاه مجازی: لینک دوره‌ها و ویدیوها حفظ می‌شود',
+   clubSearchLinks.length>5&&clubSearchLinks.some(href=>href.startsWith('#/courses/'))&&clubSearchLinks.some(href=>href.startsWith('#/video/')),
+   'نتایج نمایش‌داده‌شده: '+clubSearchLinks.length);
+
  // --- وبلاگ
  await go('#/blog');S.ok('بلاگ: صفحه اول ۶ مقاله + صفحه‌بندی',await cnt('#app article')===6&&await cnt('.tp-pager')===1);
  await pg.locator('.tp-pager button[aria-label="صفحه ۲"]').click();await wait(100);S.ok('بلاگ: صفحه ۲ دو مقاله دارد و در آدرس است',await cnt('#app article')===2&&(await pg.evaluate(()=>location.hash)).includes('page=2'));
@@ -255,13 +312,13 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
  await pg.goto('about:blank');await pg.goto(base+'/index.html#/cart');await wait(400);
  S.ok('امنیت: HTML تزریق‌شده از localStorage اجرا نمی‌شود',!await pg.evaluate(()=>!!window.__ls));
  S.ok('امنیت: داده نامعتبر سبد پاک‌سازی/محدود شد',await pg.evaluate((safeId)=>{const c=JSON.parse(localStorage.getItem('cart'));return c.length===1&&c[0].id===safeId&&c[0].q<=50&&!/[<>]/.test(JSON.stringify(c))},safeCartId));
- S.ok('امنیت: کلید پیشرفت قدیمی حفظ و مقدار نامعتبر محدود می‌شود',await pg.evaluate(()=>{const p=JSON.parse(localStorage.getItem('prog'));return Object.keys(p).join()==='3'&&p[3]===100}));
+ S.ok('امنیت: پیشرفت ویدیو در بازه ۰..۱۰۰ و کلیدهای نامعتبر حذف',await pg.evaluate(()=>{const p=JSON.parse(localStorage.getItem('prog'));return Object.keys(p).join()==='3'&&p[3]===100}));
  S.ok('امنیت: علاقه‌مندی/ذخیره‌ها اعتبارسنجی شد',await pg.evaluate(()=>JSON.stringify(JSON.parse(localStorage.getItem('fav')))==='[1]'&&localStorage.getItem('saved')==='[]'));
  await go('#/dashboard');S.ok('امنیت: بدون خطای JS با داده خراب',!errs.length,errs.join(' | '));
  await pg.evaluate(()=>localStorage.clear());
  await ctx.close();
  // --- واکنش‌گرایی، ID تکراری، خطاهای JS در همه عرض‌ها
- const routes=['#/','#/login','#/register','#/coaches','#/coaches/sara-ahmadi','#/sponsors','#/blog','#/blog/uchi-mata-basics','#/store','#/product/2','#/cart','#/tournaments','#/tournament/1','#/specialist-services','#/nutrition-coaches','#/sports-clinics','#/sports-psychologists','#/ai','#/academy','#/instructor/0','#/dashboard','#/profile','#/clubs','#/club/0','#/gems','#/search','#/my-profile','#/nope'];
+ const routes=['#/','#/login','#/register','#/coaches','#/coaches/sara-ahmadi','#/sponsors','#/tatamipedia','#/tatamipedia/uchi-mata','#/blog','#/blog/uchi-mata-basics','#/store','#/product/2','#/cart','#/tournaments','#/tournament/1','#/videos','#/video/3','#/academy','#/instructor/0','#/dashboard','#/profile','#/ai','#/clubs','#/club/0','#/gems','#/search','#/my-profile','#/nope'];
  const over=[],dup=new Set();for(const w of WIDTHS){const c2=await browser.newContext({viewport:{width:w,height:800},serviceWorkers:'block'});const p2=await c2.newPage();p2.on('pageerror',e=>errs.push('PAGEERROR@'+w+' '+String(e).slice(0,80)));await p2.goto(base+'/index.html');
   for(const r of routes){await p2.evaluate(x=>{location.hash=x},r);await wait(50);const o=await p2.evaluate(OVERFLOW_JS);if(o.o)over.push(`${w}${r}`);o.dup.forEach(d=>dup.add(r+':'+d))}await c2.close()}
  S.ok(`واکنش‌گرایی: بدون اسکرول افقی (${WIDTHS.join('/')} × ${routes.length} مسیر)`,!over.length,over.slice(0,5).join(' '));S.ok('بدون شناسه تکراری',!dup.size,[...dup].join(' '));S.ok('بدون خطای JavaScript',!errs.length,errs.slice(0,3).join(' | '));
@@ -322,9 +379,9 @@ export async function runPwa(app,base,browser,altRoot){
   await pg.reload({timeout:8000});
   await wait(400);
   S.ok('آفلاین: رفرش برنامه',await pg.evaluate(()=>document.getElementById('app').innerHTML.length)>500);
-  await pg.evaluate(()=>{location.hash='#/specialist-services'});
+  await pg.evaluate(()=>{location.hash='#/tatamipedia/ippon'});
   await wait(100);
-  S.ok('آفلاین: خدمات تخصصی در دسترس است',(await pg.evaluate(()=>document.getElementById('app').innerText)).includes('مربیان تغذیه'));
+  S.ok('آفلاین: تاتامی‌پدیا',(await pg.evaluate(()=>document.getElementById('app').innerText)).includes('ایپون'));
   const offlineConfig=await pg.evaluate(async()=>{
    try{const r=await fetch('assets/neshan-config.js');return{status:r.status,text:await r.text()}}
    catch{return{status:0,text:''}}
@@ -338,116 +395,60 @@ export async function runPwa(app,base,browser,altRoot){
  }catch(e){S.ok('آفلاین: ورود مستقیم /coaches/<slug>/',false,e.message.slice(0,80))}
  await ctx.setOffline(false);
  if(altRoot){
-  // Run the update lifecycle in a fresh context so offline-navigation traffic
-  // from the earlier checks cannot keep the outgoing worker busy.
-  altRoot.reset();
-  const updateCtx=await browser.newContext({viewport:{width:390,height:800},serviceWorkers:'allow'});
-  try{
-   const updatePg=await updateCtx.newPage();
-   updatePg.setDefaultTimeout(15000);
-   updatePg.setDefaultNavigationTimeout(15000);
-   // Register the worker from a minimal document rather than booting the
-   // full application. This prevents app/image/API requests from keeping the
-   // outgoing worker busy during the update test.
-   await updatePg.goto(base+'/offline.html');
-   await updatePg.evaluate(async()=>{
-    const registration=await navigator.serviceWorker.register('sw.js',{scope:'./'});
-    await Promise.race([navigator.serviceWorker.ready,new Promise(resolve=>setTimeout(()=>resolve(null),10000))]);
-    return registration.scope;
-   });
-   await updatePg.reload();
-   await updatePg.waitForLoadState('networkidle',{timeout:5000}).catch(()=>{});
-   await wait(500);
-   const cleanClientControlled=await updatePg.evaluate(()=>!!navigator.serviceWorker.controller);
-   const beforeKeys=await updatePg.evaluate(()=>caches.keys());
-   const before=beforeKeys[0]||'';
-   S.ok('به‌روزرسانی: context مستقل با worker فعال و Cache اولیه',cleanClientControlled&&beforeKeys.length===1&&!!before,JSON.stringify({controlled:cleanClientControlled,caches:beforeKeys}));
-   altRoot.use();
+  const before=keys[0];
+  altRoot.use();
 
-   // Force the browser to check the changed Service Worker script.
-   const updateState=await updatePg.evaluate(async()=>{
-    const registration=await navigator.serviceWorker.getRegistration();
-    if(!registration)return{registration:false,controllerChanged:false,error:'no registration'};
-    const waitForControllerChange=()=>new Promise(resolve=>{
-     let timer=0;
-     const onChange=()=>{if(timer)clearTimeout(timer);resolve(true)};
-     navigator.serviceWorker.addEventListener('controllerchange',onChange,{once:true});
-     timer=setTimeout(()=>{navigator.serviceWorker.removeEventListener('controllerchange',onChange);resolve(false)},12000);
-    });
-    const firstChange=waitForControllerChange();
-    try{await registration.update()}catch(error){
-     return{registration:true,controllerChanged:false,error:String(error)};
-    }
-    let changed=await firstChange;
-    const automaticControllerChange=changed;
-    let activationRequested=false;
-    let latest=await navigator.serviceWorker.getRegistration();
-    let activationAcknowledged=null,activationResponse=null;
-    if(!changed&&latest?.waiting){
-     activationRequested=true;
-     const forcedChange=waitForControllerChange();
-     activationAcknowledged=await new Promise(resolve=>{
-      const channel=new MessageChannel();
-      const timer=setTimeout(()=>resolve(false),5000);
-      channel.port1.onmessage=event=>{
-       clearTimeout(timer);
-       activationResponse=event.data||null;
-       resolve(!!(event.data&&event.data.type==='SKIP_WAITING_ACK'));
-      };
-      channel.port1.onmessageerror=()=>{
-       clearTimeout(timer);
-       resolve(false);
-      };
-      latest.waiting.postMessage({type:'SKIP_WAITING'},[channel.port2]);
-     });
-     changed=await forcedChange;
-     latest=await navigator.serviceWorker.getRegistration();
-    }
-    const builtHandlerPresent=await fetch('sw.js').then(response=>response.text()).then(source=>source.includes('SKIP_WAITING_ACK'));
-    return{
-     registration:true,
-     controllerChanged:changed,
-     automaticControllerChange,
-     activationRequested,
-     activationAcknowledged,
-     activationResponse,
-     builtHandlerPresent,
-     active:latest?.active?.state||null,
-     installing:latest?.installing?.state||null,
-     waiting:latest?.waiting?.state||null,
-     controlled:!!navigator.serviceWorker.controller
-    };
+  // Force the browser to check the changed Service Worker script rather than
+  // relying on its automatic update-check schedule.
+  const updateState=await pg.evaluate(async()=>{
+   const registration=await navigator.serviceWorker.getRegistration();
+   if(!registration)return{registration:false,controllerChanged:false,error:'no registration'};
+   let timer=0;
+   const controllerChanged=new Promise(resolve=>{
+    const onChange=()=>{if(timer)clearTimeout(timer);resolve(true)};
+    navigator.serviceWorker.addEventListener('controllerchange',onChange,{once:true});
+    timer=setTimeout(()=>{navigator.serviceWorker.removeEventListener('controllerchange',onChange);resolve(false)},12000);
    });
-
-   await updatePg.goto(base+'/index.html');
-   let after=[];
-   for(let i=0;i<30;i++){
-    await wait(400);
-    after=await updatePg.evaluate(()=>caches.keys());
-    if(after.length===1&&after[0]!==before)break;
+   try{await registration.update()}catch(error){
+    if(timer)clearTimeout(timer);
+    return{registration:true,controllerChanged:false,error:String(error)};
    }
-   const cacheReplaced=after.length===1&&after[0]!==before;
-   S.ok('به‌روزرسانی: ثبت نسخه جدید Service Worker و controllerchange',
-    updateState.registration&&updateState.controllerChanged,JSON.stringify(updateState));
-   S.ok('به‌روزرسانی: worker جدید فرمان فعال‌سازی را دریافت کرد',
-    updateState.builtHandlerPresent&&(!updateState.activationRequested||updateState.activationAcknowledged),JSON.stringify(updateState));
-   S.ok('به‌روزرسانی: Cache نسخه جدید جایگزین قدیمی شد',
-    cacheReplaced,before+' → '+after.join());
-   S.ok('به‌روزرسانی: محتوای نسخه جدید نمایش داده می‌شود',
-    await updatePg.evaluate(()=>document.documentElement.outerHTML.includes('UPDATE_MARKER')));
-  }catch(error){
-   S.ok('به‌روزرسانی: اجرای context مستقل',false,String(error).slice(0,160));
-  }finally{
-   await updateCtx.close();
-   altRoot.reset();
+   const changed=await controllerChanged;
+   const latest=await navigator.serviceWorker.getRegistration();
+   return{
+    registration:true,
+    controllerChanged:changed,
+    active:latest?.active?.state||null,
+    installing:latest?.installing?.state||null,
+    waiting:latest?.waiting?.state||null,
+    controlled:!!navigator.serviceWorker.controller
+   };
+  });
+
+  await pg.goto(base+'/index.html');
+  let after=[];
+  for(let i=0;i<30;i++){
+   await wait(400);
+   after=await pg.evaluate(()=>caches.keys());
+   if(after.length===1&&after[0]!==before)break;
   }
+  const cacheReplaced=after.length===1&&after[0]!==before;
+  S.ok('به‌روزرسانی: ثبت نسخه جدید Service Worker و controllerchange',
+   updateState.registration&&updateState.controllerChanged,JSON.stringify(updateState));
+  S.ok('به‌روزرسانی: Cache نسخه جدید جایگزین قدیمی شد',
+   cacheReplaced,before+' → '+after.join());
+  S.ok('به‌روزرسانی: محتوای نسخه جدید نمایش داده می‌شود',
+   await pg.evaluate(()=>document.documentElement.outerHTML.includes('UPDATE_MARKER')));
+  altRoot.reset();
  }
  const get=async p=>{const r=await pg.request.get(base+p,{maxRedirects:0});return{s:r.status(),t:await r.text()}};
  let r=await get('/coaches/');
  S.ok('/coaches/ ← صفحه پوششی به فهرست مربیان',r.s===200&&r.t.includes('#/coaches'));
  r=await get('/coaches');
  S.ok('/coaches (بدون اسلش) ← ریدایرکت ۳۰۱ به /coaches/',r.s===301);
-  for(const removed of ['/tatamipedia/ippon/','/videos/','/online-coach/']){r=await get(removed);S.ok('صفحه عمومی حذف‌شده از خروجی Build در دسترس نیست: '+removed,r.s===404,String(r.s))}
+ r=await get('/tatamipedia/ippon/');
+ S.ok('صفحه پوششی اصطلاح: عنوان/توضیح و Redirect',r.s===200&&r.t.includes('ایپون')&&r.t.includes('og:title')&&r.t.includes('#/tatamipedia/ippon'));
+ S.ok('صفحه پوششی بدون SITE_URL: canonical/og:url/og:image ساخته نمی‌شود (دامنه جعل نمی‌شود)',!r.t.includes('canonical')&&!r.t.includes('og:url')&&!r.t.includes('og:image'));
  await ctx.close();
  return S;
 }
@@ -537,7 +538,7 @@ export async function runPreview(base,browser){
  const fresh=await freshCtx.newPage();await fresh.goto(base+'/index.html');await wait(250);
  S.ok('بازدیدکننده بدون نقش در صفحه اصلی می‌ماند',await fresh.evaluate(()=>!location.hash||location.hash==='#/'));
  S.ok('بازدیدکننده بدون نقش محتوای خانه را می‌بیند',/نسل جدید تجربه جودو/.test(await fresh.locator('#app').innerText()));
-  S.ok('صفحه اصلی عمومی: خدمات تخصصی در دسترس است',await fresh.locator('#app a[href="#/specialist-services"]').count()>=1);
+  S.ok('صفحه اصلی عمومی: لینک مربی آنلاین در دسترس است',await fresh.locator('#app a[href="#/online-coach"]').count()>=2);
  await freshCtx.close();
  const go=async h=>{await pg.evaluate(x=>{location.hash=x},h);await wait(100)};
  const T=()=>pg.locator('#app').innerText();
@@ -545,10 +546,12 @@ export async function runPreview(base,browser){
  await go('#/');
  S.ok('صفحه اصلی در بازدید اول پیام «آماده شروع هستید؟» را دارد',(await T()).includes('آماده شروع هستید؟'));
  S.ok('CTA خانه به ثبت‌نام هدایت می‌کند',await pg.locator('#app .cta a[href="#/register"]').count()===1);
-  S.ok('صفحه اصلی Preview: خدمات تخصصی در دسترس است',await pg.locator('#app a[href="#/specialist-services"]').count()>=1);
-  S.ok('منوی اصلی Preview: خدمات تخصصی مسیر مستقل دارد',await pg.locator('#nv a[href="#/specialist-services"]').count()===1);
-  S.ok('فوتر Preview: لینک‌های ماژول‌های حذف‌شده وجود ندارد',await pg.locator('footer a[href="#/online-coach"],footer a[href="#/videos"],footer a[href="#/tatamipedia"]').count()===0);
-  await go('#/specialist-services');S.ok('Preview: صفحه خدمات بدون داده یا درخواست ساختگی',(await T()).includes('هیچ پروفایل یا درخواست نوبت ساختگی نمایش داده نمی‌شود'));
+  S.ok('صفحه اصلی Preview: دکمه و کارت مربی آنلاین در دسترس‌اند',await pg.locator('#app a[href="#/online-coach"]').count()>=2);
+  S.ok('منوی اصلی Preview: مربی آنلاین مسیر مستقل دارد',await pg.locator('#nv a[href="#/online-coach"]').count()===1);
+  S.ok('فوتر Preview: مربی آنلاین به مسیر مستقل می‌رود',await pg.locator('footer a[href="#/online-coach"]').count()===1);
+  S.ok('دکمه مربی آنلاین در ابتدای صفحه اصلی قابل مشاهده است',await pg.locator('#app a[href="#/online-coach"]').first().isVisible());
+  await go('#/online-coach');
+  S.ok('صفحه مربی آنلاین در Preview باز می‌شود',(await T()).includes('روشن کردن دوربین')&&await pg.locator('#tp-oc-video').count()===1);
   await go('#/');
  S.ok('لینک سیستم طراحی از فوتر حذف شده است',await pg.locator('footer a[href="#/design-system"]').count()===0);
  S.ok('لینک انتخاب نوع حساب از فوتر حذف شده است',await pg.locator('footer a[href="#/role"]').count()===0);
@@ -607,7 +610,7 @@ export async function runPreview(base,browser){
  await pg.reload();await wait(300);
  S.ok('مخفی‌ماندن پیام پس از بارگذاری مجدد پایدار است',!(await T()).includes('آماده شروع هستید؟'));
  
- const previewMobileRoutes=['#/','#/login','#/register','#/coaches','#/coaches/sara-ahmadi','#/sponsors','#/blog','#/blog/uchi-mata-basics','#/store','#/product/0','#/cart','#/tournaments','#/tournament/1','#/specialist-services','#/nutrition-coaches','#/sports-clinics','#/sports-psychologists','#/ai','#/academy','#/instructor/0','#/dashboard','#/profile','#/clubs','#/club/0','#/gems','#/search','#/courses','#/courses/judo-foundations','#/episode/judo-foundations-lesson-1'];
+ const previewMobileRoutes=['#/','#/login','#/register','#/coaches','#/coaches/sara-ahmadi','#/sponsors','#/tatamipedia','#/tatamipedia/ippon','#/blog','#/blog/uchi-mata-basics','#/store','#/product/0','#/cart','#/tournaments','#/tournament/1','#/videos','#/video/3','#/academy','#/instructor/0','#/dashboard','#/profile','#/ai','#/clubs','#/club/0','#/gems','#/search','#/courses','#/courses/judo-foundations','#/episode/judo-foundations-lesson-1'];
  const mobileOverflow=[];
  for(const width of [320,360,390]){
   await pg.setViewportSize({width,height:850});
