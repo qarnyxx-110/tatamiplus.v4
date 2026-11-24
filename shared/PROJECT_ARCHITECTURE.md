@@ -1,5 +1,7 @@
 # تاتامی پلاس — PROJECT_ARCHITECTURE
 
+> **هشدار: این سند معماری نسخهٔ اولیه است و دیگر توصیف‌کنندهٔ وضعیت فعلی مخزن نیست.** ساختار تک‌فایلی، مسیرها، وضعیت بک‌اند و داده‌های ثبت‌شده در بخش‌های قدیمی این سند تاریخی‌اند. مرجع فعال معماری و قواعد تغییرات از این پس [`docs/FRONTEND_ARCHITECTURE.md`](../docs/FRONTEND_ARCHITECTURE.md) است؛ قرارداد اتصال Django نیز [`django/STORE_CHECKOUT_FRONTEND_HANDOFF.md`](../django/STORE_CHECKOUT_FRONTEND_HANDOFF.md) است. بخش‌های قدیمی را برای تغییر کد جاری مبنا قرار ندهید.
+
 > وضعیت: نمونه اولیه فرانت‌اند (Frontend Prototype) · همه داده‌ها Demo · بدون Backend، Database، Authentication و پرداخت.
 > نسخه پایه (Baseline): `baseline/tatami-plus.v1-baseline.html` — SHA-256 با پیشوند `6a302f101da13bcc`، ۶۲٬۷۴۲ بایت، ۲۰۷ خط. این فایل با `tatami-plus.html` کاملاً یکسان است و هیچ تغییری در سایت داده نشده است.
 
