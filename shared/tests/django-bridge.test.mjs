@@ -10,6 +10,12 @@ build(tempRoot);
 const server = await serve(tempRoot);
 const port = new URL(server.url).port;
 const base = `http://tatamiplus.ir:${port}`;
+const gatewayRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'tatami-test-gateway-'));
+const gatewayDir = path.join(gatewayRoot, 'pay', 'authority-test');
+fs.mkdirSync(gatewayDir, { recursive: true });
+fs.writeFileSync(path.join(gatewayDir, 'index.html'), '<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><title>درگاه پرداخت</title></head><body><h1 id="gateway-target">درگاه پرداخت آزمایشی</h1></body></html>');
+const gatewayServer = await serve(gatewayRoot);
+const gatewayUrl = gatewayServer.url + '/pay/authority-test/';
 const failures = [];
 let browser = null;
 let postMode = 'success';
@@ -48,10 +54,31 @@ try {
   await page.route('**/store/**', async route => {
     const request = route.request();
     if (request.method() === 'GET') {
+      const pathname = new URL(request.url()).pathname;
+      if (pathname === '/store/cart/') {
+        await route.fulfill({
+          status: 200,
+          contentType: 'text/html; charset=utf-8',
+          body: documentHtml('<h1 id="cart-target">سبد خرید Django</h1>', 'سبد خرید')
+        });
+        return;
+      }
+      if (/^\/store\/[^/]+\/$/.test(pathname)) {
+        await route.fulfill({
+          status: 200,
+          contentType: 'text/html; charset=utf-8',
+          body: documentHtml('<h1 id="product-target">جزئیات محصول Django</h1>', 'جزئیات محصول')
+        });
+        return;
+      }
+      const storeUrl = new URL(request.url());
+      const queryMarkers = '<output id="store-query-string">' + storeUrl.search + '</output>' +
+        '<output id="store-query-value">' + (storeUrl.searchParams.get('query') || '') + '</output>';
+      const productCard = '<article class="tp-product-card"><h3>لباس جودو سامکو مدل Approved (سایز S تا XXL)</h3><a href="/store/samko-approved/">مشاهده محصول</a></article>';
       await route.fulfill({
         status: 200,
         contentType: 'text/html; charset=utf-8',
-        body: documentHtml(storeForm(), 'فروشگاه آزمایشی')
+        body: documentHtml(queryMarkers + storeForm() + productCard, 'فروشگاه آزمایشی')
       });
       return;
     }
@@ -79,17 +106,151 @@ try {
     });
   });
 
-  await page.route('**/club/**', async route => {
+  await page.route('**/checkout/**', async route => {
+    const url = new URL(route.request().url());
+    if (route.request().method() === 'POST' && url.pathname === '/checkout/pay/') {
+      await route.fulfill({
+        status: 302,
+        headers: { location: gatewayUrl }
+      });
+      return;
+    }
+    const content = url.pathname === '/checkout/review/'
+      ? '<form id="payment-form" method="post" action="/checkout/pay/"><input type="hidden" name="csrfmiddlewaretoken" value="test-csrf"><button type="submit">پرداخت و ثبت سفارش</button></form>'
+      : '<h1 id="checkout-target">' + url.pathname + '</h1>';
     await route.fulfill({
       status: 200,
       contentType: 'text/html; charset=utf-8',
-      body: documentHtml('<h1 id="club-target">صفحهٔ واقعی باشگاه</h1>', 'باشگاه آزمایشی')
+      body: documentHtml(content, 'تسویه‌حساب')
+    });
+  });
+
+  await page.route('**/orders/**', async route => {
+    const pathname = new URL(route.request().url()).pathname;
+    await route.fulfill({
+      status: 200,
+      contentType: 'text/html; charset=utf-8',
+      body: documentHtml('<h1 id="orders-target">' + pathname + '</h1>', 'سفارش‌ها')
+    });
+  });
+
+  await page.route('**/coaches/**', async route => {
+    const pathname = new URL(route.request().url()).pathname;
+    if (pathname === '/coaches/') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'text/html; charset=utf-8',
+        body: documentHtml(
+          '<h1 id="coach-target">فهرست مربیان واقعی</h1><ul class="tp-coaches"><li><article class="card tp-coach-card"><div class="b tp-coach-card-copy"><b>سارا احمدی</b><a href="/coaches/42/">مشاهده پروفایل</a></div></article></li></ul>',
+          'مربیان'
+        )
+      });
+      return;
+    }
+    if (pathname === '/coaches/42/') {
+      await route.fulfill({status:200,contentType:'text/html; charset=utf-8',body:documentHtml('<h1 id="coach-profile-target">پروفایل واقعی سارا احمدی</h1>','پروفایل مربی')});
+      return;
+    }
+    await route.fulfill({status:404,contentType:'text/html; charset=utf-8',body:documentHtml('پیدا نشد','۴۰۴')});
+  });
+
+  await page.route('**/blog/**', async route => {
+    const url = new URL(route.request().url());
+    const parts = url.pathname.split('/').filter(Boolean);
+    if (parts.length > 1) {
+      const slug = decodeURIComponent(parts[1]);
+      await route.fulfill({
+        status: 200,
+        contentType: 'text/html; charset=utf-8',
+        body: documentHtml(
+          '<a id="blog-back-link" href="/blog/">بازگشت به وبلاگ</a><h1 id="blog-detail-target">' + slug + '</h1>',
+          'جزئیات وبلاگ'
+        )
+      });
+      return;
+    }
+    await route.fulfill({
+      status: 200,
+      contentType: 'text/html; charset=utf-8',
+      body: documentHtml('<h1 id="blog-list-target">مطالب منتشرشده</h1><a id="blog-post-link" href="/blog/uchi-mata/">اوچی‌ماتا</a>', 'وبلاگ')
+    });
+  });
+
+  await page.route('**/club/**', async route => {
+    const url = new URL(route.request().url());
+    if (url.pathname === '/club/') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'text/html; charset=utf-8',
+        body: documentHtml(
+          '<div class="tp-course-grid"><article class="tp-course-card"><h3>آشنایی با فنون پایه جودو</h3><a href="/club/course/judo-foundations-live/">مشاهده دوره</a></article></div><h1 id="club-target">فهرست دوره‌های واقعی</h1>',
+          'باشگاه مجازی'
+        )
+      });
+      return;
+    }
+    if (url.pathname === '/club/course/judo-foundations-live/') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'text/html; charset=utf-8',
+        body: documentHtml('<h1 id="course-detail-target">جزئیات واقعی دوره از Django</h1>', 'جزئیات دوره')
+      });
+      return;
+    }
+    await route.fulfill({
+      status: 404,
+      contentType: 'text/html; charset=utf-8',
+      body: documentHtml('پیدا نشد', '۴۰۴')
     });
   });
 
   await page.goto(`${base}/preview/#/store`, { waitUntil: 'load' });
   await page.locator('#bridge-form').waitFor({ state: 'visible', timeout: 15000 });
   assert.equal(await page.locator('#app').getAttribute('data-django-view'), '/store/');
+
+  await page.evaluate(() => { location.hash = '#/store?min_price=100.50&max_price=500.75&page=2'; });
+  await page.locator('#bridge-form').waitFor({ state: 'visible', timeout: 15000 });
+  assert.equal(await page.locator('#app').getAttribute('data-django-view'), '/store/');
+  assert.equal(
+    (await page.locator('#store-query-string').textContent()).trim(),
+    '?min_price=100.50&max_price=500.75&page=2'
+  );
+
+  await page.evaluate(() => { location.hash = '#/store?min_price=100.999&page=2'; });
+  await page.locator('#bridge-form').waitFor({ state: 'visible', timeout: 15000 });
+  assert.equal(await page.locator('#app').getAttribute('data-django-view'), '/store/');
+  assert.equal((await page.locator('#store-query-string').textContent()).trim(), '?page=2');
+
+  await page.evaluate(() => { location.hash = '#/store'; });
+  await page.locator('#bridge-form').waitFor({ state: 'visible', timeout: 15000 });
+
+  // Preview product IDs resolve to Django slugs from the real product cards.
+  await page.evaluate(() => { location.hash = '#/product/0'; });
+  await page.locator('#product-target').waitFor({ state: 'visible', timeout: 15000 });
+  assert.equal(await page.locator('#app').getAttribute('data-django-view'), '/store/samko-approved/');
+
+  await page.evaluate(() => { location.hash = '#/cart'; });
+  await page.locator('#cart-target').waitFor({ state: 'visible', timeout: 15000 });
+  assert.equal(await page.locator('#app').getAttribute('data-django-view'), '/store/cart/');
+
+  await page.evaluate(() => { location.hash = '#/checkout'; });
+  await page.locator('#checkout-target').waitFor({ state: 'visible', timeout: 15000 });
+  assert.equal(await page.locator('#app').getAttribute('data-django-view'), '/checkout/address/');
+
+  await page.evaluate(() => { location.hash = '#/orders'; });
+  await page.locator('#orders-target').waitFor({ state: 'visible', timeout: 15000 });
+  assert.equal(await page.locator('#app').getAttribute('data-django-view'), '/orders/');
+
+  await page.evaluate(() => { location.hash = '#/store'; });
+  await page.locator('#bridge-form').waitFor({ state: 'visible', timeout: 15000 });
+
+  await page.evaluate(() => { location.hash = '#/search?q=' + encodeURIComponent('اوکمی'); });
+  await page.waitForFunction(() => document.querySelector('#app h1')?.textContent.trim() === 'جستجو');
+  assert.equal(await page.locator('#app a[href^="#/blog/"]').count(), 0);
+  assert.match(await page.locator('#app').innerText(), /مقاله‌های منتشرشدهٔ وبلاگ مستقیماً از Django دریافت می‌شوند/);
+
+  await page.evaluate(() => { location.hash = '#/store'; });
+  await page.locator('#bridge-form').waitFor({ state: 'visible', timeout: 15000 });
 
   await page.evaluate(() => {
     Object.defineProperty(navigator, 'clipboard', {
@@ -133,14 +294,149 @@ try {
   assert.equal(await page.locator('#club-target').count(), 1);
   assert.equal(await page.locator('#post-result').count(), 0);
 
+  await page.evaluate(() => { location.hash = '#/academy'; });
+  await page.locator('#coach-target').waitFor({ state: 'visible', timeout: 15000 });
+  assert.equal(await page.locator('#app').getAttribute('data-django-view'), '/coaches/');
+
+  await page.evaluate(() => { location.hash = '#/coaches/sara-ahmadi'; });
+  await page.locator('#coach-profile-target').waitFor({ state: 'visible', timeout: 15000 });
+  assert.equal(await page.locator('#app').getAttribute('data-django-view'), '/coaches/42/');
+
+  await page.evaluate(() => { location.hash = '#/courses/judo-foundations'; });
+  await page.locator('#course-detail-target').waitFor({ state: 'visible', timeout: 15000 });
+  assert.equal(await page.locator('#app').getAttribute('data-django-view'), '/club/course/judo-foundations-live/');
+
+  await page.evaluate(() => { location.hash = '#/blog'; });
+  await page.locator('#blog-list-target').waitFor({ state: 'visible', timeout: 15000 });
+  assert.equal(await page.locator('#app').getAttribute('data-django-view'), '/blog/');
+  await page.locator('#blog-post-link').click();
+  await page.locator('#blog-detail-target').waitFor({ state: 'visible', timeout: 15000 });
+  assert.equal(await page.locator('#app').getAttribute('data-django-view'), '/blog/uchi-mata/');
+  await page.locator('#blog-back-link').click();
+  await page.locator('#blog-list-target').waitFor({ state: 'visible', timeout: 15000 });
+  assert.equal(await page.locator('#app').getAttribute('data-django-view'), '/blog/');
+
+  await page.evaluate(() => { location.hash = '#/blog/اوچی-ماتا'; });
+  await page.locator('#blog-detail-target').waitFor({ state: 'visible', timeout: 15000 });
+  assert.equal((await page.locator('#blog-detail-target').textContent()).trim(), 'اوچی-ماتا');
+  assert.equal(
+    await page.locator('#app').getAttribute('data-django-view'),
+    '/blog/' + encodeURIComponent('اوچی-ماتا') + '/'
+  );
+
+  await page.evaluate(() => { location.hash = '#/blog/' + encodeURIComponent('اوچی-ماتا'); });
+  await page.locator('#blog-detail-target').waitFor({ state: 'visible', timeout: 15000 });
+  assert.equal(await page.locator('#app').getAttribute('data-django-view'), '/blog/' + encodeURIComponent('اوچی-ماتا') + '/');
+
+  await page.evaluate(() => { location.hash = '#/blog/one%252Ftwo'; });
+  await page.locator('#blog-list-target').waitFor({ state: 'visible', timeout: 15000 });
+  assert.equal(await page.locator('#app').getAttribute('data-django-view'), '/blog/');
+
+  await page.route('**/auth/**', async route => {
+    const url = new URL(route.request().url());
+    await route.fulfill({
+      status: 200,
+      contentType: 'text/html; charset=utf-8',
+      body: documentHtml('<h1 id="auth-target">' + url.pathname + url.search + '</h1>', 'احراز هویت آزمایشی')
+    });
+  });
+
+  const authRoutes = [
+    ['#/login', '/auth/login/'],
+    ['#/register?role=coach&next=%23%2Fcart', '/auth/login/sms/?role=coach&next=%2Fstore%2Fcart%2F'],
+    ['#/role?role=student', '/auth/login/sms/?role=student'],
+    ['#/password-reset', '/auth/password/reset/'],
+    ['#/set-password', '/auth/password/set/'],
+    ['#/login?next=%23%2Fblog%2Fuchi-mata', '/auth/login/?next=%2Fblog%2Fuchi-mata%2F'],
+    ['#/login?next=%23%2Fblog%2F%D8%A7%D9%88%DA%86%DB%8C-%D9%85%D8%A7%D8%AA%D8%A7', '/auth/login/?next=%2Fblog%2F%D8%A7%D9%88%DA%86%DB%8C-%D9%85%D8%A7%D8%AA%D8%A7%2F'],
+    ['#/login?next=%23%2Fblog%2F..%2Fauth', '/auth/login/'],
+    ['#/login?next=%23%2Fblog%2Fone%2Ftwo', '/auth/login/'],
+    ['#/login?next=%23%2Fblog%2Fone%25252Ftwo', '/auth/login/']
+  ];
+  for (const [hash, expected] of authRoutes) {
+    await page.evaluate(value => { location.hash = value; }, hash);
+    await page.waitForFunction(
+      target => document.querySelector('#auth-target')?.textContent.trim() === target,
+      expected,
+      { timeout: 15000 }
+    );
+  }
+
+  // Live search must not present local reference/demo products or coach profiles as Django records.
+  await page.evaluate(() => { location.hash = '#/search?q=' + encodeURIComponent('عنوان مقاله واقعی'); });
+  await page.locator('#app h1').filter({ hasText: 'جستجو' }).waitFor({ state: 'visible' });
+  const publishedBlogLink = page.locator('#app a[href="#/blog"]');
+  assert.equal(await publishedBlogLink.count(), 1);
+  assert.match(await page.locator('#app').innerText(), /در داده‌های محلی نتیجه‌ای پیدا نشد؛ بخش‌های متصل به سامانه را بررسی کنید/);
+  assert.match(await page.locator('#app').innerText(), /جست‌وجوی سمت سرور وبلاگ هنوز قرارداد ندارد/);
+  assert.equal(await page.locator('#app a[href^="#/blog/"]').count(), 0);
+  await publishedBlogLink.click();
+  await page.locator('#blog-list-target').waitFor({ state: 'visible', timeout: 15000 });
+  assert.equal(await page.locator('#app').getAttribute('data-django-view'), '/blog/');
+
+  await page.evaluate(() => { location.hash = '#/search?q=' + encodeURIComponent('سامکو'); });
+  await page.locator('#app h1').filter({ hasText: 'جستجو' }).waitFor({ state: 'visible' });
+  assert.equal(await page.locator('#app a[href^="#/product/"]').count(), 0);
+  const liveStoreLink = page.locator('#app a[href^="#/store?query="]');
+  assert.equal(await liveStoreLink.count(), 1);
+  assert.match(await page.locator('#app').innerText(), /قیمت فروش و موجودی ثبت‌شده در Django/);
+  await liveStoreLink.click();
+  await page.locator('#store-query-value').waitFor({ state: 'visible', timeout: 15000 });
+  assert.equal((await page.locator('#store-query-value').textContent()).trim(), 'سامکو');
+
+  await page.evaluate(() => { location.hash = '#/search?q=' + encodeURIComponent('سارا احمدی'); });
+  await page.locator('#app h1').filter({ hasText: 'جستجو' }).waitFor({ state: 'visible' });
+  assert.equal(await page.locator('#app a[href="#/coaches/sara-ahmadi"]').count(), 0);
+  assert.equal(await page.locator('#app a[href="#/coaches"]').count(), 1);
+  assert.match(await page.locator('#app').innerText(), /فقط پروفایل‌های عمومی و منتشرشده در Django/);
+
+  // Sample clubs remain searchable, explicitly labelled, and their detail route stays in Preview.
+  await page.evaluate(() => { location.hash = '#/search?q=' + encodeURIComponent('ققنوس'); });
+  await page.locator('#app a[href="#/club/0"]').waitFor({ state: 'visible' });
+  assert.match(await page.locator('#app').innerText(), /داده نمونه · تهران/);
+
+  await page.locator('#app a[href="#/club/0"]').click();
+  await page.locator('#app .tp-club-detail').waitFor({ state: 'visible', timeout: 15000 });
+  assert.match(await page.locator('#app').innerText(), /باشگاه جودوی ققنوس/);
+  assert.match(await page.locator('#app').innerText(), /اطلاعات نمونه/);
+  assert.notEqual(await page.locator('#app').getAttribute('data-django-view'), '/club/');
+
+  // The legacy recorded-videos tab is intentionally a local demo until a real backend feed exists.
+  await page.evaluate(() => { location.hash = '#/videos'; });
+  await page.locator('#app h1').filter({ hasText: 'باشگاه مجازی' }).waitFor({ state: 'visible' });
+  assert.match(await page.locator('#app [role="note"]').innerText(), /نسخهٔ پیش‌نمایش/);
+  assert.match(await page.locator('#app [role="note"]').innerText(), /دادهٔ نمونه و محلی‌اند/);
+  assert.match(await page.locator('#app [role="note"]').innerText(), /از داده‌های واقعی Django دریافت نمی‌شود/);
+
+  // Payment must leave XHR interception so Django's 302 to the external
+  // gateway becomes a real top-level browser navigation.
+  await page.evaluate(() => { location.hash = '#/server/' + encodeURIComponent('/checkout/review/'); });
+  await page.locator('#payment-form').waitFor({ state: 'visible', timeout: 15000 });
+  const duplicatePayBlocked = await page.evaluate(() => {
+    const form = document.querySelector('#payment-form');
+    form.dataset.tpPaymentSubmitting = 'true';
+    const duplicate = new Event('submit', { bubbles: true, cancelable: true });
+    form.dispatchEvent(duplicate);
+    delete form.dataset.tpPaymentSubmitting;
+    return duplicate.defaultPrevented;
+  });
+  assert.equal(duplicatePayBlocked, true, 'A second payment submit must be blocked while the first navigation is pending');
+  await page.locator('#payment-form button[type="submit"]').click();
+  await page.waitForURL(gatewayUrl, { timeout: 15000 });
+  await page.locator('#gateway-target').waitFor({ state: 'visible' });
+  assert.equal(new URL(page.url()).origin, gatewayServer.url);
+  assert.equal((await page.locator('#gateway-target').textContent()).trim(), 'درگاه پرداخت آزمایشی');
+
   await page.close();
 } catch (error) {
   failures.push(error?.stack || String(error));
 } finally {
   if (browser) await browser.close();
+  await gatewayServer.close();
   await server.close();
+  fs.rmSync(gatewayRoot, { recursive: true, force: true });
   fs.rmSync(tempRoot, { recursive: true, force: true });
 }
 
 if (failures.length) throw new Error(failures.join('\n\n'));
-console.log('Django Preview bridge browser checks: 5/5 passed');
+console.log('Django Preview bridge browser checks: existing regression passed; blog routes, live search provenance, sample club routes and video demo notice passed; auth routes: 10/10 passed');
