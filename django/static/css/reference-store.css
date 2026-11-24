@@ -78,3 +78,55 @@
   .tp-reference-tools { grid-template-columns: minmax(0, 1fr); }
   .tp-reference-meta { display: grid; }
 }
+
+/* Store-only read-only reference catalogue refinements. */
+.tp-store-page .tp-reference-store {
+  display: grid;
+  gap: var(--tp-space-md);
+  margin-top: var(--tp-space-lg);
+  padding: clamp(var(--tp-space-sm), 2.5vw, var(--tp-space-lg));
+  border-color: var(--tp-color-border-strong);
+  background: var(--tp-color-surface);
+}
+.tp-store-page .tp-reference-notice {
+  border-color: var(--tp-color-brand);
+  background: var(--tp-color-brand-tint);
+}
+.tp-store-page .tp-reference-notice b { color: var(--tp-color-brand-text); }
+.tp-store-page .tp-reference-heading { margin-block: var(--tp-space-sm) 0; }
+.tp-store-page .tp-reference-tools { margin-bottom: 0; }
+.tp-store-page .tp-reference-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--tp-space-md); }
+.tp-store-page .tp-reference-product-card {
+  display: flex;
+  min-width: 0;
+  height: 100%;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--tp-color-border);
+  border-radius: var(--tp-radius-card);
+  background: var(--tp-color-bg);
+}
+.tp-store-page .tp-reference-product-card .tp-reference-media-placeholder {
+  min-height: 130px;
+  aspect-ratio: 4 / 3;
+  border-radius: 0;
+  background: var(--tp-color-neutral-tint);
+}
+.tp-store-page .tp-reference-product-card .b {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: var(--tp-space-xs);
+  padding: var(--tp-space-md);
+}
+.tp-store-page .tp-reference-product-card h3 { min-height: 3.4em; margin: 0; font-size: var(--tp-font-size-base); line-height: 1.7; }
+.tp-store-page .tp-reference-product-card .tag { align-self: flex-start; }
+.tp-store-page .tp-reference-product-card .tp-price { margin-top: auto; padding-top: var(--tp-space-xs); }
+.tp-store-page .tp-reference-product-card .tp-reference-details { margin-top: var(--tp-space-xs); }
+.tp-store-page .tp-reference-product-card .tp-reference-details summary { min-height: 44px; display: flex; align-items: center; }
+@media (max-width: 900px) {
+  .tp-store-page .tp-reference-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 380px) {
+  .tp-store-page .tp-reference-grid { grid-template-columns: minmax(0, 1fr); }
+}
