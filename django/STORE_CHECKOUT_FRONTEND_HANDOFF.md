@@ -1,8 +1,8 @@
 # اتصال فرانت‌اند Django به بک‌اند تاتامی پلاس
 
-**مرجع قرارداد:** `Radinsharifi/Tatami-demo`، شاخه `main`  
+**مرجع قرارداد:** `Radinsharifi/Tatami-demo`، revision فعلی شاخهٔ main و قفل‌شده در CI: `20e96721cc1a589d625fecd3fffa9ec42b1fc64f`  
 **سند مرجع بک‌اند:** `FRONTEND_BACKEND_HANDOFF_FA.md`  
-**تاریخ تطبیق:** ۱۵ نوامبر ۲۰۲۶
+**تاریخ تطبیق:** ۲۱ نوامبر ۲۰۲۶
 
 ## معماری قطعی
 
@@ -17,29 +17,45 @@
 | مخزن فرانت‌اند | مقصد در مخزن Django |
 | --- | --- |
 | `django/templates/base.html` | `templates/base.html` |
-| `django/static/css/backend-templates.css` | `static/css/backend-templates.css` |
 | `django/static/css/tatami.css` | `static/css/tatami.css` |
+| `django/static/css/backend-templates.css` | `static/css/backend-templates.css` |
+| `django/static/css/module-pages.css` | `static/css/module-pages.css` |
 | `django/static/js/tatami.js` | `static/js/tatami.js` |
+| `django/static/js/module-pages.js` | `static/js/module-pages.js` |
 
-فایل `static/css/styles.css` فعلی بک‌اند حفظ می‌شود و باید پیش از فایل‌های جدید بارگذاری شود؛ این فایل همچنان کلاس‌های قالب‌های فعلی را تأمین می‌کند. پوستهٔ جدید سپس CSS مشترک و لایهٔ سازگاری قالب‌های Django را بارگذاری می‌کند.
+پوستهٔ فعال `base.html` فایل‌های `tatami.css`، `backend-templates.css` و `module-pages.css` و اسکریپت‌های `tatami.js` و `module-pages.js` را بارگذاری می‌کند. **عمداً `styles.css` قدیمی را بارگذاری نمی‌کند**؛ کلاس‌های قدیمی مانند `site-header`، `page-main` و `button-dark` بخشی از پوستهٔ فعال نیستند. فایل legacy را برای مسیرهای قدیمی دیگر حذف نکنید، اما آن را دوباره به `base.html` اضافه نکنید.
+
+**محدودهٔ بستهٔ Sections:** نصب‌کنندهٔ cPanel فقط پوشهٔ Preview و ده قالب مشخص را جایگزین می‌کند و هیچ فایل static را کپی یا جایگزین نمی‌کند. در زمان نصب، فایل‌های static بالا باید از استقرار قبلی در `/home/pvchubir/tatamiplus.ir/static/` موجود و قابل دسترسی باشند؛ این پیش‌نیاز را با این بسته تغییر نمی‌دهیم.
 
 **فونت:** در جست‌وجوی هر دو مخزن GitHub، فایل WOFF2 محلیِ قابل تأیید پیدا نشد. در این تغییر به Google Fonts وابسته نمی‌شویم و از fallback سیستم استفاده می‌شود. برای فعال‌کردن Vazirmatn/Lalezar محلی، فایل‌های مجاز WOFF2 و مجوز آن‌ها باید از مالک پروژه دریافت شود.
 
 ## قراردادهای واقعی و آمادهٔ اتصال
 
-### احراز هویت با OTP
+### احراز هویت، OTP و بازیابی رمز
 
-| عملیات | Route | فیلدهای واقعی |
-| --- | --- | --- |
-| ورود/ثبت‌نام | `GET, POST /auth/login/` | `phone`, `role` (فقط `student` یا `coach`), `next_url` |
-| ارسال مجدد | `POST /auth/otp/send/` | شماره در Session؛ CSRF الزامی |
-| تأیید کد | `GET, POST /auth/otp/verify/` | `code`، دقیقاً ۵ رقم |
-| تکمیل پروفایل | `GET, POST /auth/complete-profile/` | `name`, `city`, `role` |
-| خروج | `POST /accounts/logout/` | CSRF الزامی |
+**منبع تأیید:** `accounts/auth_urls.py`، `accounts/views.py` و `accounts/forms.py` در revision بک‌اندی که CI به آن قفل شده است.
 
-ثبت‌نام صفحهٔ جداگانه ندارد. شمارهٔ همراه موجود وارد همان حساب می‌شود؛ شمارهٔ جدید پس از OTP حساب می‌سازد. ارسال مجدد از سمت سرور محدودیت ۶۰ ثانیه دارد؛ کد پس از ۱۲۰ ثانیه منقضی می‌شود. ارقام فارسی و عربی توسط فرم سرور پذیرفته و نرمال می‌شوند. نقش باشگاه در بک‌اند وجود ندارد؛ آن را در UI به‌عنوان حساب قابل ساخت نمایش ندهید.
+| عملیات | Route واقعی | ورودی GET / Query | فیلدهای POST |
+|---|---|---|---|
+| ورود با رمز | `GET, POST /auth/login/` | `next` اختیاری | `phone`, `password`, `next_url` |
+| ورود/ثبت‌نام پیامکی | `GET, POST /auth/login/sms/` | `role`، `next` اختیاری | `phone`, `role`, `next_url` |
+| ارسال دوبارهٔ OTP | `POST /auth/otp/send/` | شماره از Session خوانده می‌شود | بدون فیلد شماره؛ CSRF الزامی |
+| تأیید OTP | `GET, POST /auth/otp/verify/` | شماره و نقش از Session | `code` |
+| تکمیل پروفایل پس از OTP | `GET, POST /auth/complete-profile/` | - | `name`, `city`, `role`, `password`, `password_confirm` |
+| ساخت رمز برای حساب قدیمی | `GET, POST /auth/password/set/` | کاربر باید وارد شده باشد | `password`, `password_confirm` |
+| شروع بازیابی رمز | `GET, POST /auth/password/reset/` | - | `phone` |
+| تأیید بازیابی و ثبت رمز تازه | `GET, POST /auth/password/reset/confirm/` | شماره از Session خوانده می‌شود | `code`, `password`, `password_confirm` |
+| خروج | `POST /accounts/logout/` | - | CSRF الزامی |
 
-نام‌های route معتبر عبارت‌اند از `phone_auth:login`، `phone_auth:send_otp`، `phone_auth:verify_otp` و `phone_auth:complete_profile`. مسیرهای قدیمی `accounts:register` و `accounts:login` فقط redirect سازگار هستند.
+نکتهٔ مهم دربارهٔ پارامترها: نام پارامتر مقصد در Query String برابر `next` است؛ مقدار پنهان فرم پس از رندر شدن برابر `next_url` می‌شود. View بک‌اند مقصد را با `_safe_next` به همان host محدود می‌کند. پل فرانت‌اند باید فقط مسیرهای داخلی شناخته‌شده را به `next` تبدیل کند و نباید URL خارجی یا مقدار دلخواه را عبور دهد.
+
+**تطبیق با سورس بک‌اند در revision قفل‌شدهٔ CI:** در `accounts/auth_urls.py` مسیر `/auth/login/` به `password_login` و مسیر `/auth/login/sms/` به `phone_login` متصل است. همچنین `accounts/views.py` در تابع `register()` از `reverse('phone_auth:sms_login')` استفاده می‌کند؛ بنابراین ثبت‌نام قدیمی به مسیر پیامکی می‌رود. توضیح قدیمی در فایل `FRONTEND_BACKEND_HANDOFF_FA.md` بک‌اند که `/auth/login/` را مسیر OTP معرفی می‌کند، با URLconf و Viewهای همین revision سازگار نیست. برای اتصال فرانت‌اند، URLconf و Viewهای اجرایی و آزمون قراردادی CI مرجع‌اند؛ این PR فایل بک‌اند را تغییر نمی‌دهد و اصلاح سند قدیمی باید توسط مسئول بک‌اند انجام شود.
+
+ثبت‌نام صفحهٔ مستقل در بک‌اند ندارد. مسیر سازگاری قدیمی `/accounts/register/` به `/auth/login/sms/` هدایت می‌شود. شمارهٔ تازه پس از تأیید OTP حساب می‌سازد؛ شمارهٔ موجود به همان حساب وارد می‌شود. نقش معتبر فقط `student` یا `coach` است. نقش باشگاه در مدل کاربر وجود ندارد و نباید به‌عنوان حساب قابل ساخت معرفی شود.
+
+ارسال مجدد از سمت سرور محدودیت زمانی دارد و کد OTP پس از ۱۲۰ ثانیه منقضی می‌شود. ارقام فارسی و عربی در فرم OTP نرمال می‌شوند. همهٔ POSTها باید با CSRF و Session واقعی Django انجام شوند.
+
+نام‌های route معتبر عبارت‌اند از `phone_auth:login`، `phone_auth:sms_login`، `phone_auth:send_otp`، `phone_auth:verify_otp`، `phone_auth:complete_profile`، `phone_auth:set_password`، `phone_auth:password_reset` و `phone_auth:password_reset_confirm`. مسیر قدیمی `accounts:register` redirect سازگار است؛ `accounts:login` نیز redirect ورود با رمز است.
 
 ### مربیان
 
@@ -88,6 +104,18 @@
 
 فقط دوره‌های منتشرشده نمایش داده می‌شوند. قسمت اول رایگان است. ویدیوهای پولی URL عمومی ندارند و مسیر stream مجوز را دوباره بررسی می‌کند.
 
+> **پیش‌نیاز انتشار:** پل Preview و قالب‌های این مخزن فقط با بک‌اندی کار می‌کنند که اپ Blog و URLهای `blog:list` و `blog:detail` را داشته باشد. CI آن‌ها را روی revision `20e96721cc1a589d625fecd3fffa9ec42b1fc64f` از مخزن بک‌اند آزمایش می‌کند؛ این PR و بستهٔ cPanel کد Python یا URLconf بک‌اند سرور را به‌روزرسانی نمی‌کنند. نسخهٔ فعال سرور باید جداگانه توسط مالک بک‌اند تأیید شود.
+
+### وبلاگ
+
+- فهرست مطالب منتشرشده: `GET /blog/` با route name برابر `blog:list`.
+- جزئیات مطلب: `GET /blog/<str:slug>/` با route name برابر `blog:detail`؛ تبدیل‌کنندهٔ `str` برای slugهای فارسی هم پشتیبانی می‌شود.
+- فقط رکوردهای `is_published=True` از View عمومی برمی‌گردند؛ draft و مطلب منتشرنشده با 404 پاسخ می‌گیرند.
+- این صفحات با Django Template رندر می‌شوند؛ در revision فعلی endpoint عمومی JSON برای وبلاگ تعریف نشده است.
+- جست‌وجوی سراسری Preview در دامنهٔ زنده، مقاله‌های seed محلی را به‌عنوان مطلب واقعی نمایش نمی‌دهد؛ تا زمان اضافه‌شدن قرارداد جست‌وجوی سمت سرور، جست‌وجوی گروه ادغام‌شده فقط تاتامی‌پدیای محلی را بررسی می‌کند.
+- **وضعیت Preview:** مسیرهای `#/blog` و `#/blog/<slug>` اکنون از طریق `django-route-bridge.js` به صفحات واقعی Django متصل‌اند؛ فهرست و جزئیات فقط محتوای منتشرشده را نشان می‌دهند. تاتامی‌پدیا همچنان دادهٔ مستقل Preview است و به‌عنوان مطلب منتشرشدهٔ Django معرفی نمی‌شود.
+- تاتامی‌پدیا در revision فعلی بک‌اند معادل مستقیمی ندارد و تا ایجاد قرارداد واقعی، بخش مستقل فرانت‌اندی/نمایشی باقی می‌ماند.
+
 ### جم
 
 - تاریخچه: `GET /account/gems/` با route name `gems:history`.
@@ -134,7 +162,10 @@
 | #/product/<id> | نام محصول صرفاً برای یافتن کارت همان محصول در HTML واقعی Django به کار می‌رود؛ اگر تطبیق یکتا پیدا نشود، جست‌وجوی سرور با نام محصول باز می‌شود. صفحه جزئیات و قیمت محلی به‌عنوان داده واقعی استفاده نمی‌شوند |
 | #/cart | /store/cart/ |
 | #/checkout | /checkout/address/ |
-| #/login، #/register و #/role | /auth/login/؛ نقش معتبر student یا coach حفظ می‌شود |
+| #/login | /auth/login/؛ ورود با رمز |
+| #/register و #/role | /auth/login/sms/؛ ثبت‌نام/ورود پیامکی، نقش معتبر student یا coach و مقصد داخلی امن حفظ می‌شوند |
+| #/password-reset | /auth/password/reset/ |
+| #/set-password | /auth/password/set/؛ فقط کاربر واردشدهٔ واجد شرایط |
 | #/coaches | /coaches/ |
 | #/coach-apply | /coaches/apply/ |
 | #/coach-application | /coaches/application/ |
@@ -142,11 +173,17 @@
 | #/courses/<slug> | عنوان نمونه فقط برای یافتن دوره هم‌نام و یکتای منتشرشده در HTML واقعی استفاده می‌شود؛ در غیر این صورت جست‌وجوی سرور با عنوان دوره باز می‌شود |
 | #/episode/<slug>-lesson-<n> | به صفحه جزئیات دوره واقعی هم‌نام هدایت می‌شود؛ شماره قسمت نمونه هرگز به شناسه دیتابیس تعبیر نمی‌شود |
 | #/club | /club/؛ فهرست دوره‌های واقعی |
+| #/blog و #/blog/<slug> | /blog/ و /blog/<str:slug>/؛ مطالب منتشرشدهٔ Django از طریق پل Preview نمایش داده می‌شوند |
+| #/tatamipedia | معادل Django ندارد؛ فعلاً در Preview باقی می‌ماند |
 | #/gems | /account/gems/ |
 | #/profile و #/my-profile | /account/ |
 | #/orders | /orders/ |
 
-این پل درخواست HTML هم‌مبدأ را دریافت می‌کند، اما محتوا را داخل همان ناحیهٔ #app پوسته Preview نمایش می‌دهد؛ کاربر برای دیدن صفحهٔ فروشگاه، دوره، مربی یا حساب از پوستهٔ اصلی خارج نمی‌شود. کوکی Session مرورگر به Django می‌رسد و POSTها با فرم‌های واقعی، CSRF و اعتبارسنجی سمت سرور پردازش می‌شوند. هیچ endpoint JSON، CORS، قیمت، موجودی یا منطق مالی در مرورگر اضافه نمی‌شود.
+این پل درخواست HTML هم‌مبدأ را دریافت می‌کند، اما محتوا را داخل همان ناحیهٔ #app پوسته Preview نمایش می‌دهد؛ کاربر برای دیدن صفحهٔ فروشگاه، دوره، مربی یا حساب از پوستهٔ اصلی خارج نمی‌شود.
+
+
+
+**استثنای پرداخت:** فرم `POST /checkout/pay/` با ارسال عادی مرورگر انجام می‌شود، نه XHR؛ چون پاسخ View به درگاه پرداخت خارجی Redirect می‌کند و XHR نمی‌تواند نتیجهٔ cross-origin را به‌صورت امن به جریان ناوبری کاربر تبدیل کند. سایر فرم‌های POST مجاز همچنان با XHR، Session و CSRF پردازش و در پوستهٔ Preview نمایش داده می‌شوند. هنگام انتقال به درگاه، مرورگر عمداً از `/preview/` خارج می‌شود؛ صفحهٔ نتیجه از پاسخ واقعی Django می‌آید. کوکی Session مرورگر به Django می‌رسد و POSTها با فرم‌های واقعی، CSRF و اعتبارسنجی سمت سرور پردازش می‌شوند. هیچ endpoint JSON، CORS، قیمت، موجودی یا منطق مالی در مرورگر اضافه نمی‌شود.
 
 نقشه باشگاه‌ها، داشبوردهای برنامه‌ریزی‌نشده، مربی آنلاین، آنالیز هوش مصنوعی و سایر ماژول‌های بدون قرارداد واقعی عمداً به مسیر Django هدایت نمی‌شوند و در Preview باقی می‌مانند.
 
@@ -154,7 +191,7 @@
 
 1. فایل‌های Django مجاز در deploy/frontend-manifest.json به اپ Django منتقل شوند؛ فایل‌های متعلق به بک‌اند حفظ شوند.
 2. collectstatic اجرا و مسیرهای /store/، /store/cart/، /auth/login/ و /club/ روی دامنه آزمایش شوند.
-3. در مخزن فرانت‌اند، تغییرات shared/src/js/shared/django-route-bridge.js و shared/build.js در شاخه ادغام شوند.
+3. قالب‌های `django/templates/blog/` و مسیرهای `#/blog`/`#/blog/<slug>` از طریق پل Preview به صفحات منتشرشده Django متصل شده‌اند؛ این تغییرات فقط پس از عبور از CI قابل انتشارند.
 4. workflow ساخت Preview اجرا شود و artifact تولیدشده شامل کد اتصال inline در index.html باشد.
 5. فقط خروجی Build تأییدشده در مسیر عمومی preview/ منتشر شود. فایل‌های preview را دستی ویرایش نکنید.
 6. مسیرهای hash جدول بالا آزمایش شوند و /preview/ بدون hash همچنان صفحه اصلی موجود را نشان دهد.
