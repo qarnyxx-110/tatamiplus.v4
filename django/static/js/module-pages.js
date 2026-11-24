@@ -68,4 +68,75 @@
       });
     });
   });
+
+  // Storefront progressive enhancement: do not let shoppers select variants
+  // that the server-rendered option label identifies as having zero stock.
+  // Server-side form validation remains authoritative.
+  function enhanceStoreVariantStock(root) {
+    const forms = root.querySelectorAll('.tp-product-form');
+    forms.forEach((form) => {
+      if (form.dataset.tpStockOptionsBound === 'true') return;
+      const select = form.querySelector('select[name="variant"]');
+      if (!select) return;
+
+      const toAsciiDigits = (value) => String(value || '')
+        .replace(/[۰-۹]/g, (digit) => String('۰۱۲۳۴۵۶۷۸۹'.indexOf(digit)))
+        .replace(/[٠-٩]/g, (digit) => String('٠١٢٣٤٥٦٧٨٩'.indexOf(digit)));
+      const options = Array.from(select.options).filter((option) => option.value);
+      const available = [];
+      const unknown = [];
+      let stockMetadataFound = false;
+      let zeroStockCount = 0;
+
+      options.forEach((option) => {
+        const match = /موجودی\s*[:：]\s*([\d۰-۹٠-٩٬,]+)/.exec(option.textContent || '');
+        if (!match) {
+          unknown.push(option);
+          return;
+        }
+        stockMetadataFound = true;
+        const quantityText = toAsciiDigits(match[1]).replace(/[٬,]/g, '');
+        const quantity = Number.parseInt(quantityText, 10);
+        if (!Number.isFinite(quantity)) {
+          unknown.push(option);
+          return;
+        }
+        if (quantity <= 0) {
+          zeroStockCount += 1;
+          option.disabled = true;
+          option.textContent = (option.textContent || '').trim() + ' — ناموجود';
+        } else {
+          available.push(option);
+        }
+      });
+
+      if (!stockMetadataFound) return;
+      available.push(...unknown);
+      form.dataset.tpStockOptionsBound = 'true';
+
+      const selected = select.selectedOptions && select.selectedOptions[0];
+      if (!select.value || (selected && selected.disabled)) {
+        select.value = available.length ? available[0].value : '';
+      }
+
+      const field = select.closest('.tp-field') || select.parentElement;
+      if (field && zeroStockCount > 0 && !field.querySelector('.tp-variant-stock-note')) {
+        const note = document.createElement('p');
+        note.className = 'tp-hint tp-variant-stock-note';
+        note.setAttribute('role', 'status');
+        note.setAttribute('aria-live', 'polite');
+        note.textContent = available.length
+          ? 'تنوع‌های بدون موجودی قابل انتخاب نیستند.'
+          : 'در حال حاضر هیچ تنوعی با موجودی قابل خرید وجود ندارد.';
+        field.append(note);
+      }
+
+      if (!available.length) {
+        const submit = form.querySelector('button[type="submit"], input[type="submit"]');
+        if (submit) submit.disabled = true;
+      }
+    });
+  }
+
+  enhanceStoreVariantStock(document);
 })();
