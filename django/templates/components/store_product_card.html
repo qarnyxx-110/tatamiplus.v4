@@ -11,9 +11,9 @@
     </figure>
   </a>
   <div class="b">
-    <div class="mu sm">{{ product.category.name }}</div>
+    <div class="mu sm tp-product-card-category">{{ product.category.name }}</div>
     <h3><a href="{% url 'store:product_detail' product.slug %}">{{ product.name }}</a></h3>
-    {% if product.training_level %}<div class="mu sm">سطح تمرین: {{ product.training_level }}</div>{% endif %}
+    {% if product.training_level %}<div class="mu sm tp-product-level">سطح تمرین: {{ product.training_level }}</div>{% endif %}
 
     {% if availability_status == 'in_stock' %}
       <span class="tp-product-stock tp-product-stock--available">موجود</span>
