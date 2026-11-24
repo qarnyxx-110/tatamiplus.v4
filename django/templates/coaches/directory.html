@@ -40,10 +40,10 @@
         <button type="button" class="btn o s" style="min-height:2.4rem;" onclick="(function(){var r=document.getElementById('tp-coach-directory-v2'),i=r&&r.querySelector('#tp-coach-search-v2'),s=r&&r.querySelector('#tp-coach-sort-v2');if(i){i.value='';i.dispatchEvent(new Event('input',{bubbles:true}))}if(s){s.value='default';s.dispatchEvent(new Event('change',{bubbles:true}))}})()">پاک کردن جستجو و مرتب‌سازی</button>
       </div>
 
-      <ul id="tp-coach-grid-v2" aria-label="فهرست کارت‌های مربیان" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,18rem),1fr));gap:1rem;align-items:stretch;list-style:none;padding:0;margin:0;">
+      <ul id="tp-coach-grid-v2" class="tp-coaches tp-coach-grid" aria-label="فهرست کارت‌های مربیان" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,18rem),1fr));gap:1rem;align-items:stretch;list-style:none;padding:0;margin:0;">
         {% for profile in profiles %}
           <li data-coach-card-v2 data-order="{{ forloop.counter0 }}" data-name="{{ profile.display_name|default:'' }}" data-experience="{{ profile.years_experience|default:0 }}" data-search="{{ profile.display_name|default:'' }} {{ profile.belt|default:'' }} {{ profile.headline|default:'' }} {{ profile.coaching_level|default:'' }} {{ profile.years_experience|default:0 }} {{ profile.club|default:'' }} {{ profile.specializations|default:''|striptags }} {{ profile.biography|default:''|striptags }} {{ profile.certificate_details|default:''|striptags }}" style="display:flex;min-width:0;">
-            <article style="display:flex;flex:1;flex-direction:column;min-width:0;height:100%;overflow:hidden;border:1px solid var(--tp-color-border);border-radius:var(--tp-radius-card);background:var(--tp-color-surface);box-shadow:0 8px 24px rgba(0,0,0,.14);">
+            <article class="tp-coach-card" style="display:flex;flex:1;flex-direction:column;min-width:0;height:100%;overflow:hidden;border:1px solid var(--tp-color-border);border-radius:var(--tp-radius-card);background:var(--tp-color-surface);box-shadow:0 8px 24px rgba(0,0,0,.14);">
               <a href="{% url 'coaches:profile_detail' profile.pk %}" aria-label="مشاهده پروفایل {{ profile.display_name }}" style="display:block;padding:.65rem .65rem 0;">
                 <figure style="position:relative;display:flex;align-items:flex-end;justify-content:center;overflow:hidden;aspect-ratio:4/5;width:100%;margin:0;border-radius:calc(var(--tp-radius-card) - 4px);background:linear-gradient(145deg,var(--tp-color-brand-tint),var(--tp-color-surface));">
                   {% if profile.avatar %}
@@ -54,7 +54,7 @@
                   {% endif %}
                 </figure>
               </a>
-              <div style="display:flex;flex:1;flex-direction:column;min-width:0;padding:1rem;">
+              <div class="tp-coach-card-copy" style="display:flex;flex:1;flex-direction:column;min-width:0;padding:1rem;">
                 <div style="display:flex;align-items:center;justify-content:space-between;gap:.45rem;flex-wrap:wrap;margin-bottom:.55rem;">
                   {% if profile.belt %}<span class="tag g">{{ profile.belt }}</span>{% else %}<span class="tag m">مربی تأییدشده</span>{% endif %}
                   {% if profile.coaching_level %}<span class="tag">{{ profile.coaching_level }}</span>{% endif %}
