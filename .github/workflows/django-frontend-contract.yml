@@ -11,6 +11,17 @@ name: Django frontend checks and cPanel handoff
       - "shared/build.js"
       - "shared/src/css/**"
       - "shared/src/js/shared/django-route-bridge.js"
+      - "shared/src/js/shared/router.js"
+      - "shared/src/js/shared/views-core.js"
+      - "shared/src/js/shared/views-specialist-services.js"
+      - "shared/src/js/shared/views-videos.js"
+      - "shared/src/js/shared/views-online-coach.js"
+      - "shared/src/js/shared/views-tatamipedia.js"
+      - "shared/tests/public.test.mjs"
+      - "shared/tests/run-all.mjs"
+      - "shared/tests/django-bridge.test.mjs"
+      - "shared/tests/auth-route-contract.test.mjs"
+      - "django/STORE_CHECKOUT_FRONTEND_HANDOFF.md"
       - "shared/src/data/store-products.json"
       - "shared/src/design/tokens.json"
       - "deploy/frontend-manifest.json"
@@ -24,6 +35,17 @@ name: Django frontend checks and cPanel handoff
       - "shared/build.js"
       - "shared/src/css/**"
       - "shared/src/js/shared/django-route-bridge.js"
+      - "shared/src/js/shared/router.js"
+      - "shared/src/js/shared/views-core.js"
+      - "shared/src/js/shared/views-specialist-services.js"
+      - "shared/src/js/shared/views-videos.js"
+      - "shared/src/js/shared/views-online-coach.js"
+      - "shared/src/js/shared/views-tatamipedia.js"
+      - "shared/tests/public.test.mjs"
+      - "shared/tests/run-all.mjs"
+      - "shared/tests/django-bridge.test.mjs"
+      - "shared/tests/auth-route-contract.test.mjs"
+      - "django/STORE_CHECKOUT_FRONTEND_HANDOFF.md"
       - "shared/src/data/store-products.json"
       - "shared/src/design/tokens.json"
       - "deploy/frontend-manifest.json"
@@ -54,6 +76,9 @@ jobs:
           node --check django/static/js/home-restored.js
           node --check django/static/js/reference-store.js
           node --check shared/src/js/shared/django-route-bridge.js
+          node --check shared/src/js/shared/views-specialist-services.js
+          node --check shared/src/js/shared/views-online-coach.js
+          node --check shared/src/js/shared/views-tatamipedia.js
 
       - name: Verify shared design system output
         run: |
@@ -169,7 +194,8 @@ jobs:
           assert 'components/platform_navigation.html' in base and 'nav_id="nv"' in base
           assert 'nav_id="nvd"' in base and 'nav_class="tp-drawer-n"' in base
           assert 'id="{{ nav_id }}"' in navigation and 'class="{{ nav_class }}"' in navigation
-          assert navigation.count('href="/preview/#/') == 13
+          assert navigation.count('href="/preview/#/') == 12
+          assert all(label in navigation for label in ('باشگاه مجازی', 'مربیان', 'وبلاگ', 'مربی آنلاین', 'خدمات تخصصی'))
           assert 'id="hcart"' in base
           assert 'id="hgem"' in base
           assert 'id="mnb"' in base and 'id="mnd"' in base and 'id="mnx"' in base
@@ -226,7 +252,61 @@ jobs:
         run: |
           set -euo pipefail
           git clone https://github.com/Radinsharifi/Tatami-demo.git backend
-          git -C backend checkout --detach 25fde937def556edc7b81291e5900a9ac84fccb2
+          git -C backend checkout --detach 20e96721cc1a589d625fecd3fffa9ec42b1fc64f
+
+      - name: Verify frontend route mappings against current Django source
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          auth_urls = Path("backend/accounts/auth_urls.py").read_text(encoding="utf-8")
+          account_views = Path("backend/accounts/views.py").read_text(encoding="utf-8")
+          config_urls = Path("backend/config/urls.py").read_text(encoding="utf-8")
+          blog_urls = Path("backend/blog/urls.py").read_text(encoding="utf-8")
+          blog_views = Path("backend/blog/views.py").read_text(encoding="utf-8")
+          bridge = Path("shared/src/js/shared/django-route-bridge.js").read_text(encoding="utf-8")
+          router = Path("shared/src/js/shared/router.js").read_text(encoding="utf-8")
+          handoff = Path("django/STORE_CHECKOUT_FRONTEND_HANDOFF.md").read_text(encoding="utf-8")
+          blog_list = Path("django/templates/blog/post_list.html").read_text(encoding="utf-8")
+          blog_detail = Path("django/templates/blog/post_detail.html").read_text(encoding="utf-8")
+
+          assert "path('login/', views.password_login, name='login')" in auth_urls
+          assert "path('login/sms/', views.phone_login, name='sms_login')" in auth_urls
+          assert "path('password/reset/', views.password_reset, name='password_reset')" in auth_urls
+          assert "path('password/set/', views.set_password, name='set_password')" in auth_urls
+          register_view = account_views.split("def register(request):", 1)[1].split("def legacy_login_redirect", 1)[0]
+          assert "reverse('phone_auth:sms_login')" in register_view
+          assert "path('blog/', include('blog.urls'))" in config_urls
+          assert "path('', views.post_list, name='list')" in blog_urls
+          assert "path('<str:slug>/', views.post_detail, name='detail')" in blog_urls
+          assert "filter(is_published=True)" in blog_views
+          assert "const target = route === 'login' ? '/auth/login/' : '/auth/login/sms/';" in bridge
+          assert "if (route === 'password-reset') return '/auth/password/reset/';" in bridge
+          assert "if (route === 'set-password') return '/auth/password/set/';" in bridge
+          assert "if (route === 'blog') {" in bridge
+          assert "if (parts.length !== 2) return '/blog/';" in bridge
+          assert "if (!isSafeBlogSlug(slug)) return '/blog/';" in bridge
+          assert "return '/blog/' + encodeURIComponent(slug) + '/';" in bridge
+          assert "case 'blog': {" in bridge and "slug = decodeURIComponent(route[1])" in bridge
+          assert r"return /^[\p{L}\p{M}\p{N}_-]+$/u.test" in bridge
+          assert "function isSafeBlogSlug(value)" in bridge
+          assert "if (!isSafeBlogSlug(slug)) return '';" in bridge
+          assert "account|blog|club" in bridge
+          assert "'set-password','blog','store'" in router
+          assert "blog:detail" in blog_list and "tp-section-tabs" in blog_list
+          assert "tp-article" in blog_detail and "blog:list" in blog_detail
+          assert "post.author.phone" not in blog_detail
+          assert "تیم تاتامی پلاس" in blog_detail
+          assert "coach-row" not in blog_list and "page-main" not in blog_list
+          assert "| #/blog و #/blog/<slug> | /blog/ و /blog/<str:slug>/؛ مطالب منتشرشدهٔ Django از طریق پل Preview نمایش داده می‌شوند |" in handoff
+          assert "| #/login | /auth/login/؛ ورود با رمز |" in handoff
+          assert "| #/register و #/role | /auth/login/sms/" in handoff
+          service_build = Path("shared/build.js").read_text(encoding="utf-8")
+          service_view = Path("shared/src/js/shared/views-specialist-services.js").read_text(encoding="utf-8")
+          assert "shared/views-specialist-services" in service_build
+          assert all(label in service_view for label in ("مربیان تغذیه", "کلینیک‌های ورزشی", "روان‌شناسی ورزشی"))
+          print("DJANGO_FRONTEND_ROUTE_CONTRACT_OK")
+          PY
 
       - name: Install backend dependencies
         run: |
@@ -258,11 +338,11 @@ jobs:
       - name: Compile templates and resolve required static assets
         working-directory: backend
         run: |
-          python manage.py shell -c "from django.template.loader import get_template; from django.contrib.staticfiles.finders import find; names=('base.html','layouts/auth.html','components/auth_aside.html','components/store_product_card.html','admin/base_site.html','pages/home.html','pages/account.html','store/product_list.html','store/product_detail.html','store/cart_detail.html','coaches/directory.html','coaches/profile_detail.html','coaches/join.html','coaches/join_enter.html','coaches/coach_students.html','club/course_list.html','club/course_detail.html','club/coach/episode_form.html','gems/history.html','accounts/login.html','accounts/otp_verify.html','accounts/complete_profile.html','accounts/password_reset.html','accounts/password_reset_confirm.html','accounts/set_password.html','coaches/join_enter.html','orders/mock_gateway.html','orders/address.html','orders/review.html','orders/payment_result.html','orders/order_list.html','orders/order_detail.html','includes/form_fields.html'); [get_template(name) for name in names]; assets=('css/tatami.css','css/tatami-admin.css','css/backend-templates.css','css/module-pages.css','css/home-restored.css','css/reference-store.css','js/tatami.js','js/module-pages.js','js/home-restored.js','js/reference-store.js','data/reference-store-catalog.json'); assert all(find(name) for name in assets); print('DJANGO_TEMPLATE_AND_STATIC_CHECK_OK')"
+          python manage.py shell -c "from django.template.loader import get_template; from django.contrib.staticfiles.finders import find; names=('base.html','layouts/auth.html','components/auth_aside.html','components/store_product_card.html','admin/base_site.html','blog/post_list.html','blog/post_detail.html','pages/home.html','pages/account.html','store/product_list.html','store/product_detail.html','store/cart_detail.html','coaches/directory.html','coaches/profile_detail.html','coaches/join.html','coaches/join_enter.html','coaches/coach_students.html','club/course_list.html','club/course_detail.html','club/coach/episode_form.html','gems/history.html','accounts/login.html','accounts/otp_verify.html','accounts/complete_profile.html','accounts/password_reset.html','accounts/password_reset_confirm.html','accounts/set_password.html','coaches/join_enter.html','orders/mock_gateway.html','orders/address.html','orders/review.html','orders/payment_result.html','orders/order_list.html','orders/order_detail.html','includes/form_fields.html'); [get_template(name) for name in names]; assets=('css/tatami.css','css/tatami-admin.css','css/backend-templates.css','css/module-pages.css','css/home-restored.css','css/reference-store.css','js/tatami.js','js/module-pages.js','js/home-restored.js','js/reference-store.js','data/reference-store-catalog.json'); assert all(find(name) for name in assets); print('DJANGO_TEMPLATE_AND_STATIC_CHECK_OK')"
 
       - name: Run backend tests with proposed frontend
         working-directory: backend
-        run: python manage.py test accounts.tests.AuthenticationFlowTests accounts.tests.CoachSignupLeadTests accounts.tests.AccountPageTests coaches.tests.CoachInviteTests gems.tests.GemPageTests orders.tests.CheckoutFlowTests --verbosity 1
+        run: python manage.py test accounts.tests.AuthenticationFlowTests accounts.tests.CoachSignupLeadTests accounts.tests.AccountPageTests coaches.tests.CoachInviteTests gems.tests.GemPageTests orders.tests.CheckoutFlowTests blog.tests.BlogViewTests.test_list_renders_and_shows_only_published_posts blog.tests.BlogViewTests.test_detail_renders_a_published_post blog.tests.BlogViewTests.test_drafts_and_unknown_slugs_are_404 blog.tests.BlogViewTests.test_a_persian_slug_round_trips_through_the_url --verbosity 1
 
       - name: Build separate templates and static cPanel packages
         run: |
