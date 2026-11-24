@@ -68,7 +68,7 @@
           <div class="pg tp-product-grid">
             {% for product in page %}
               {% with image=product.images.all|first %}
-                {% include 'components/store_product_card.html' with product=product image=image starting_price=product.starting_price availability_status=product.availability_status|default:'in_stock' only %}
+                {% include 'components/store_product_card.html' with product=product image=image starting_price=product.starting_price availability_status='in_stock' only %}
               {% endwith %}
             {% endfor %}
           </div>

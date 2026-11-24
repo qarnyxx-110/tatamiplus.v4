@@ -14,6 +14,11 @@
     </ol>
   </nav>
 
+  <nav class="chips tp-section-tabs" aria-label="بخش‌های باشگاه مجازی">
+    <a class="chip on" href="{% url 'club:course_list' %}" aria-current="page">دوره‌های آموزشی</a>
+    <a class="chip" href="/preview/#/videos">ویدیوهای ضبط‌شده</a>
+  </nav>
+
   <div class="two" style="align-items:start;margin-top:var(--tp-space-md)">
     <section>
       <figure class="ph r169{% if course.cover %} ok{% endif %}" style="--h:180">

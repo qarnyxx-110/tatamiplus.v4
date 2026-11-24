@@ -10,7 +10,7 @@
   {% include "pages/home/partials/techniques.html" %}
   {% include "pages/home/partials/features.html" %}
   {% url 'club:course_list' as home_courses_url %}
-  {% include "pages/home/partials/live_feed.html" with eyebrow="LEARN & PRACTICE" heading_id="home-courses-title" heading="دوره‌های آموزشی آنلاین" copy="آخرین دوره‌های منتشرشده را از باشگاه مجازی ببینید و وارد صفحهٔ هر دوره شوید." source_url=home_courses_url selector=".tp-course-grid > .tp-course-card" layout="courses" empty_title="هنوز دورهٔ منتشرشده‌ای وجود ندارد" empty_copy="پس از انتشار دوره توسط مربیان، موارد قابل مشاهده در این بخش نمایش داده می‌شوند." action_label="مشاهده همه دوره‌ها" %}
+  {% include "pages/home/partials/live_feed.html" with eyebrow="LEARN & PRACTICE" heading_id="home-courses-title" heading="باشگاه مجازی" copy="آخرین دوره‌های منتشرشده را از باشگاه مجازی ببینید و وارد صفحهٔ هر دوره شوید." source_url=home_courses_url selector=".tp-course-grid > .tp-course-card" layout="courses" empty_title="هنوز دورهٔ منتشرشده‌ای وجود ندارد" empty_copy="پس از انتشار دوره توسط مربیان، موارد قابل مشاهده در این بخش نمایش داده می‌شوند." action_label="مشاهده باشگاه مجازی" %}
   {% url 'coaches:directory' as home_coaches_url %}
   {% include "pages/home/partials/live_feed.html" with eyebrow="MEET YOUR COACH" heading_id="home-coaches-title" heading="مربیان تاتامی پلاس" copy="پروفایل مربیانی را ببینید که تأیید شده‌اند و برای عموم انتشار یافته‌اند." source_url=home_coaches_url selector=".tp-coaches > li" layout="coaches" empty_title="هنوز پروفایل عمومی منتشرشده‌ای وجود ندارد" empty_copy="پس از تأیید مربیان و انتشار پروفایل آن‌ها، فهرست در این بخش نمایش داده می‌شود." action_label="مشاهده فهرست مربیان" %}
   {% url 'store:product_list' as home_store_url %}

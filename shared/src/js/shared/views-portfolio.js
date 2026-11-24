@@ -18,8 +18,8 @@ function pfDaily(d){
  <dl class="pf-mini"><div><dt>روزهای تمرین</dt><dd>${F(on.length)}</dd></div><div><dt>مجموع ساعت</dt><dd>${F(hrs)}</dd></div><div><dt>بیشترین پیوستگی</dt><dd>${F(best)} روز</dd></div><div><dt>میانگین هر جلسه</dt><dd>${F(Math.round(mins/Math.max(1,on.length)))} دقیقه</dd></div></dl>`}
 
 function instructorView(i){
- const x=I[i],co=x&&COACHES[x.id];if(!x||!co)return nfp('مربی‌ای پیدا نشد','#/academy','مشاهده آکادمی');
- const pf=co.portfolio||{},c=CB[x.club],ar=BL.filter(b=>b.a==x.id),dan=pf.dan||0,beltLabel=dan?`کمربند مشکی · دان ${F(dan)}`:'کمربند مشکی';
+ const x=I[i],co=x&&COACHES[x.id];if(!x||!co)return nfp('مربی‌ای پیدا نشد','#/coaches','مشاهده مربیان');
+ const pf=co.portfolio||{},c=CB[x.club],vs=V.filter(v=>v.i==x.id),ar=BL.filter(b=>b.a==x.id),dan=pf.dan||0,beltLabel=dan?`کمربند مشکی · دان ${F(dan)}`:'کمربند مشکی';
  const pts=pf.points||{},ptTotal=(pts.ranking||0)+(pts.teaching||0)+(pts.feedback||0),ranks=pf.ranks||[],mcs=pf.masterclasses||[],exams=pf.exams||[],hist=pf.beltHistory||[],nd=pf.nextDan;
  PT={t:x.n+' — پورتفوی مربی',d:`پورتفوی ${x.n}: ${beltLabel}، ${F(x.st)} شاگرد، رتبه‌ها و مستر کلاس‌ها.`};
  const kpi=(v,l)=>`<div class="pf-kpi"><b>${v}</b><span>${l}</span></div>`;
@@ -42,12 +42,13 @@ function instructorView(i){
  const pt=`<div class="d-c pf-pts"><div class="pf-pts-t"><span class="mu">امتیاز کل</span><b>${F(ptTotal)}</b></div><ul>${[['امتیاز رنکینگ مسابقات',pts.ranking],['امتیاز آموزشی و دوره‌ها',pts.teaching],['رضایت شاگردان',pts.feedback]].map(p=>`<li><div class="pf-row"><span>${p[0]}</span><b>${F(p[1]||0)}</b></div><div class="pf-bar" aria-hidden="true"><i style="width:${ptTotal?Math.round((p[1]||0)/ptTotal*100):0}%"></i></div></li>`).join('')}</ul></div>`;
  const mc=mcs.length?`<div class="pf-mcs">${mcs.map(m=>{const s=pfMc[m.status]||pfMc.done,left=Math.max(0,m.seats-m.taken);return`<article class="d-c pf-mcard"><div class="pf-row"><span class="tag ${s[1]}">${s[0]}</span><span class="mu sm">${esc(m.level)}</span></div><h3>${esc(m.title)}</h3><dl class="pf-mc-d"><div><dt>تاریخ</dt><dd>${esc(m.date)}</dd></div><div><dt>مدت</dt><dd>${F(m.hours)} ساعت</dd></div><div><dt>ظرفیت</dt><dd>${m.status==='open'?F(left)+' جای خالی از '+F(m.seats):F(m.seats)+' نفر'}</dd></div></dl>${m.status!=='done'?'<p class="pf-mc-soon mu sm">ثبت‌نام آنلاین به‌زودی فعال می‌شود.</p>':''}</article>`}).join('')}</div>`:tpState('empty','مستر کلاسی ثبت نشده','دوره‌های جدید پس از اعلام در اینجا نمایش داده می‌شوند.');
 
- return`<div class="w pf">${crumb([['خانه','#/'],['آکادمی اساتید','#/academy'],[x.n]])}${hero}
+ return`<div class="w pf">${crumb([['خانه','#/'],['مربیان','#/coaches'],[x.n]])}${hero}
  <nav class="pf-nav" aria-label="بخش‌های پورتفو">${nav.map(n=>`<button type="button" class="chip" onclick="pfGo('${n[0]}')">${n[1]}</button>`).join('')}</nav>
  <p class="pf-demo mu sm">اطلاعات این پورتفو نمونه و نمایشی است و پس از اتصال بک‌اند با داده واقعی جایگزین می‌شود.</p>
  ${pfSec('pf-card','کارنامه','کمربند، پیشرفت، رکورد تمرین روزانه و نمره آزمون‌ها',`<div class="pf-grid">${belt}${prog}${daily}${ex}</div>`)}
  ${pfSec('pf-ranks','رتبه‌های کسب‌شده','',rk)}
  ${pfSec('pf-points','امتیازها','',pt)}
  ${pfSec('pf-mc','مستر کلاس‌ها','دوره‌های حضوری فشرده با ظرفیت محدود',mc)}
+ ${vs.length?pfSec('pf-vid','دوره‌های ویدیویی','',`<div class="grid">${vs.map(vc).join('')}</div>`):''}
  ${ar.length?pfSec('pf-art','مقاله‌ها','',ar.map(b=>`<a class="rec" href="${bLink(b)}"><b>${b.t}</b><span>${b.d}</span></a>`).join('')):''}
  </div>`}

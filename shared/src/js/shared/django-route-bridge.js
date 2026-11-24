@@ -70,7 +70,8 @@
 
     ['min_price', 'max_price', 'page'].forEach((key) => {
       const value = (params.get(key) || '').trim();
-      if (value && /^\d+$/.test(value)) query.set(key, value);
+      const valid = key === 'page' ? /^\d+$/.test(value) : /^\d+(?:\.\d{1,2})?$/.test(value);
+      if (value && valid) query.set(key, value);
     });
 
     const keys = ['category', 'size', 'color', 'training_level', 'sort'];
@@ -222,6 +223,10 @@
     return '/store/?query=' + encodeURIComponent(productName);
   }
 
+  function isSafeBlogSlug(value) {
+    return /^[\p{L}\p{M}\p{N}_-]+$/u.test(String(value || ''));
+  }
+
   function nextPathFromHash(value) {
     const raw = String(value || '');
     if (!raw.startsWith('#/')) return '';
@@ -232,6 +237,14 @@
       case 'checkout': return '/checkout/address/';
       case 'store': return '/store/';
       case 'coaches': return '/coaches/';
+      case 'blog': {
+        if (route.length === 1) return '/blog/';
+        if (route.length !== 2) return '';
+        let slug = '';
+        try { slug = decodeURIComponent(route[1]); } catch { return ''; }
+        if (!isSafeBlogSlug(slug)) return '';
+        return '/blog/' + slug + '/';
+      }
       case 'courses':
       case 'club':
       case 'episode': return '/club/';
@@ -260,12 +273,23 @@
       if (next) query.set('next', next);
 
       const suffix = query.toString();
-      return '/auth/login/' + (suffix ? '?' + suffix : '');
+      const target = route === 'login' ? '/auth/login/' : '/auth/login/sms/';
+      return target + (suffix ? '?' + suffix : '');
     }
 
-    if (route === 'password-reset' || route === 'set-password') return '/auth/login/';
+    if (route === 'password-reset') return '/auth/password/reset/';
+    if (route === 'set-password') return '/auth/password/set/';
     if (route === 'coach-invite') return '/coaches/join/';
+    if (route === 'blog') {
+      if (parts.length === 1) return '/blog/';
+      if (parts.length !== 2) return '/blog/';
+      let slug = '';
+      try { slug = decodeURIComponent(parts[1]); } catch { return '/blog/'; }
+      if (!isSafeBlogSlug(slug)) return '/blog/';
+      return '/blog/' + encodeURIComponent(slug) + '/';
+    }
 
+    if (route === 'academy') return '/coaches/';
     if (route === 'coaches') {
       return parts[1] ? resolveRealCoach(parts[1]) : '/coaches/';
     }
@@ -281,7 +305,7 @@
       const lesson = /^([a-z0-9-]+)-lesson-\d+$/.exec(parts[1] || '');
       return lesson ? resolveRealCourse(lesson[1]) : '/club/';
     }
-    if (route === 'club') return '/club/';
+    if (route === 'club') return parts[1] ? '' : '/club/';
     if (route === 'gems') return '/account/gems/';
     if (route === 'profile' || route === 'my-profile') return '/account/';
     if (route === 'orders') return '/orders/';
@@ -298,7 +322,7 @@
     try { url = value instanceof URL ? value : new URL(value, location.origin); } catch { return false; }
     if (url.origin !== location.origin) return false;
     return url.pathname === '/' ||
-      /^\/(store|checkout|payment|orders|auth|accounts|account|club|coach|coaches)(\/|$)/.test(url.pathname);
+      /^\/(store|checkout|payment|orders|auth|accounts|account|blog|club|coach|coaches)(\/|$)/.test(url.pathname);
   }
 
   function serverHashForUrl(value) {
@@ -643,6 +667,26 @@
       action = new URL(form.getAttribute('action') || currentServerUrl.href, currentServerUrl);
     } catch { return; }
     if (!isAllowedDjangoUrl(action)) return;
+
+    // Django's pay view redirects to an external gateway. Keep this one POST
+    // as a native top-level navigation; XHR cannot safely follow a cross-origin
+    // payment redirect and would leave the customer stranded after order creation.
+    // Guard a second submit while the browser is navigating: the pay endpoint
+    // creates an order per POST and must not receive duplicate clicks from this form.
+    if (method === 'POST' && action.pathname === '/checkout/pay/') {
+      if (form.dataset.tpPaymentSubmitting === 'true') {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        return;
+      }
+      form.dataset.tpPaymentSubmitting = 'true';
+      form.setAttribute('aria-busy', 'true');
+      form.querySelectorAll('button[type="submit"],input[type="submit"]').forEach((node) => {
+        node.setAttribute('aria-disabled', 'true');
+        node.classList.add('is-loading');
+      });
+      return;
+    }
 
     event.preventDefault();
     event.stopImmediatePropagation();
