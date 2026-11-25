@@ -43,7 +43,8 @@ const OUT=process.env.OUT?path.resolve(process.env.OUT):J('dist');
 // فایل تنظیمات نشان به‌صورت عمومی در هر PWA لازم است؛ سایر فایل‌های assets همچنان فقط بر اساس allowlist کپی می‌شوند.
 const NESHAN_CONFIG_SRC=J('public/assets/neshan-config.js');
 const NESHAN_CONFIG=fs.readFileSync(NESHAN_CONFIG_SRC,'utf8');
-const keep=s=>!/[\\/]assets[\\/]/.test(s)||fs.statSync(s).isDirectory()||/\.(jpe?g|png|webp|avif)$/i.test(s)||path.resolve(s)===NESHAN_CONFIG_SRC;
+const REQUIRED_ASSETS=new Set(['css/home-live-feeds.css','js/home-live-feeds.js','images/judo/uchi-mata.svg','images/judo/seoi-nage.svg','images/judo/osoto-gari.svg']);
+const keep=s=>!/[\\/]assets[\\/]/.test(s)||fs.statSync(s).isDirectory()||/\.(jpe?g|png|webp|avif)$/i.test(s)||path.resolve(s)===NESHAN_CONFIG_SRC||REQUIRED_ASSETS.has(path.relative(J('public/assets'),s).replace(/\\/g,'/'));
 const prune=d=>{for(const e of fs.readdirSync(d,{withFileTypes:true}))if(e.isDirectory()){prune(path.join(d,e.name));if(!fs.readdirSync(path.join(d,e.name)).length)fs.rmdirSync(path.join(d,e.name))}};
 const meta=(title,desc,url,img)=>`<title>${title} | تاتامی پلاس</title><meta name="description" content="${desc}"><meta property="og:title" content="${title}"><meta property="og:description" content="${desc}"><meta property="og:type" content="website">${SITE&&url?`<link rel="canonical" href="${SITE}/${url}"><meta property="og:url" content="${SITE}/${url}">`:''}${SITE&&img?`<meta property="og:image" content="${SITE}/${img}">`:''}`;
 // صفحه پوششی استاتیک: آدرس خوانا + متادیتا اختصاصی؛ سپس به مسیر هش‌محور برنامه هدایت می‌شود
