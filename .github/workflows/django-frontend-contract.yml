@@ -252,7 +252,7 @@ jobs:
         run: |
           set -euo pipefail
           git clone https://github.com/Radinsharifi/Tatami-demo.git backend
-          git -C backend checkout --detach 20e96721cc1a589d625fecd3fffa9ec42b1fc64f
+          git -C backend checkout --detach 5f3a416d0aa5aa0363b2064ed23051a9273d8f75
 
       - name: Verify frontend route mappings against current Django source
         run: |
@@ -261,7 +261,9 @@ jobs:
 
           auth_urls = Path("backend/accounts/auth_urls.py").read_text(encoding="utf-8")
           account_views = Path("backend/accounts/views.py").read_text(encoding="utf-8")
+          user_models = Path("backend/accounts/models.py").read_text(encoding="utf-8")
           config_urls = Path("backend/config/urls.py").read_text(encoding="utf-8")
+          gym_urls = Path("backend/gyms/urls.py").read_text(encoding="utf-8")
           blog_urls = Path("backend/blog/urls.py").read_text(encoding="utf-8")
           blog_views = Path("backend/blog/views.py").read_text(encoding="utf-8")
           bridge = Path("shared/src/js/shared/django-route-bridge.js").read_text(encoding="utf-8")
@@ -276,6 +278,14 @@ jobs:
           assert "path('password/set/', views.set_password, name='set_password')" in auth_urls
           register_view = account_views.split("def register(request):", 1)[1].split("def legacy_login_redirect", 1)[0]
           assert "reverse('phone_auth:sms_login')" in register_view
+          assert "GYM = 'gym'" in user_models
+          assert "path('gyms/', include('gyms.urls'))" in config_urls
+          assert "path('', views.directory, name='directory')" in gym_urls
+          assert "path('new/', views.create, name='create')" in gym_urls
+          assert "path('panel/', views.panel, name='panel')" in gym_urls
+          assert "const backendRole = role === 'club' ? 'gym' : role;" in bridge
+          assert "if (backendRole && !['student', 'coach', 'gym'].includes(backendRole)) return '';" in bridge
+          assert "coach|coaches|gyms" in bridge
           assert "path('blog/', include('blog.urls'))" in config_urls
           assert "path('', views.post_list, name='list')" in blog_urls
           assert "path('<str:slug>/', views.post_detail, name='detail')" in blog_urls
@@ -301,6 +311,8 @@ jobs:
           assert "| #/blog و #/blog/<slug> | /blog/ و /blog/<str:slug>/؛ مطالب منتشرشدهٔ Django از طریق پل Preview نمایش داده می‌شوند |" in handoff
           assert "| #/login | /auth/login/؛ ورود با رمز |" in handoff
           assert "| #/register و #/role | /auth/login/sms/" in handoff
+          assert "مقدار قدیمی club در پل به gym تبدیل می‌شود" in handoff
+          assert "| پیوندهای HTML Django به `/gyms/...` |" in handoff
           service_build = Path("shared/build.js").read_text(encoding="utf-8")
           service_view = Path("shared/src/js/shared/views-specialist-services.js").read_text(encoding="utf-8")
           assert "shared/views-specialist-services" in service_build
@@ -338,11 +350,11 @@ jobs:
       - name: Compile templates and resolve required static assets
         working-directory: backend
         run: |
-          python manage.py shell -c "from django.template.loader import get_template; from django.contrib.staticfiles.finders import find; names=('base.html','layouts/auth.html','components/auth_aside.html','components/store_product_card.html','admin/base_site.html','blog/post_list.html','blog/post_detail.html','pages/home.html','pages/account.html','store/product_list.html','store/product_detail.html','store/cart_detail.html','coaches/directory.html','coaches/profile_detail.html','coaches/join.html','coaches/join_enter.html','coaches/coach_students.html','club/course_list.html','club/course_detail.html','club/coach/episode_form.html','gems/history.html','accounts/login.html','accounts/otp_verify.html','accounts/complete_profile.html','accounts/password_reset.html','accounts/password_reset_confirm.html','accounts/set_password.html','coaches/join_enter.html','orders/mock_gateway.html','orders/address.html','orders/review.html','orders/payment_result.html','orders/order_list.html','orders/order_detail.html','includes/form_fields.html'); [get_template(name) for name in names]; assets=('css/tatami.css','css/tatami-admin.css','css/backend-templates.css','css/module-pages.css','css/home-restored.css','css/reference-store.css','js/tatami.js','js/module-pages.js','js/home-restored.js','js/reference-store.js','data/reference-store-catalog.json'); assert all(find(name) for name in assets); print('DJANGO_TEMPLATE_AND_STATIC_CHECK_OK')"
+          python manage.py shell -c "from django.template.loader import get_template; from django.contrib.staticfiles.finders import find; names=('base.html','layouts/auth.html','components/auth_aside.html','components/store_product_card.html','admin/base_site.html','gyms/directory.html','gyms/detail.html','gyms/panel.html','gyms/create.html','blog/post_list.html','blog/post_detail.html','pages/home.html','pages/account.html','store/product_list.html','store/product_detail.html','store/cart_detail.html','coaches/directory.html','coaches/profile_detail.html','coaches/join.html','coaches/join_enter.html','coaches/coach_students.html','club/course_list.html','club/course_detail.html','club/coach/episode_form.html','gems/history.html','accounts/login.html','accounts/otp_verify.html','accounts/complete_profile.html','accounts/password_reset.html','accounts/password_reset_confirm.html','accounts/set_password.html','coaches/join_enter.html','orders/mock_gateway.html','orders/address.html','orders/review.html','orders/payment_result.html','orders/order_list.html','orders/order_detail.html','includes/form_fields.html'); [get_template(name) for name in names]; assets=('css/tatami.css','css/tatami-admin.css','css/backend-templates.css','css/module-pages.css','css/home-restored.css','css/reference-store.css','js/tatami.js','js/module-pages.js','js/home-restored.js','js/reference-store.js','data/reference-store-catalog.json'); assert all(find(name) for name in assets); print('DJANGO_TEMPLATE_AND_STATIC_CHECK_OK')"
 
       - name: Run backend tests with proposed frontend
         working-directory: backend
-        run: python manage.py test accounts.tests.AuthenticationFlowTests accounts.tests.CoachSignupLeadTests accounts.tests.AccountPageTests coaches.tests.CoachInviteTests gems.tests.GemPageTests orders.tests.CheckoutFlowTests blog.tests.BlogViewTests.test_list_renders_and_shows_only_published_posts blog.tests.BlogViewTests.test_detail_renders_a_published_post blog.tests.BlogViewTests.test_drafts_and_unknown_slugs_are_404 blog.tests.BlogViewTests.test_a_persian_slug_round_trips_through_the_url --verbosity 1
+        run: python manage.py test accounts.tests.AuthenticationFlowTests accounts.tests.CoachSignupLeadTests accounts.tests.AccountPageTests coaches.tests.CoachInviteTests gyms.tests gems.tests.GemPageTests orders.tests.CheckoutFlowTests blog.tests.BlogViewTests.test_list_renders_and_shows_only_published_posts blog.tests.BlogViewTests.test_detail_renders_a_published_post blog.tests.BlogViewTests.test_drafts_and_unknown_slugs_are_404 blog.tests.BlogViewTests.test_a_persian_slug_round_trips_through_the_url --verbosity 1
 
       - name: Build separate templates and static cPanel packages
         run: |
