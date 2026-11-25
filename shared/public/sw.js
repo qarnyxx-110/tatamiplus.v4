@@ -1,12 +1,12 @@
 const V='tatami-v2',SHELL=['./','index.html','offline.html','manifest.webmanifest','icons/icon-192.png','icons/icon-512.png'];
 self.addEventListener('install',e=>{
- // Do not request activation until every required shell asset is safely cached.
+ // Request skipWaiting immediately and keep that request alive with the install event.
+ e.waitUntil(self.skipWaiting().catch(error=>console.error('[Tatami SW] skipWaiting failed',error)));
  e.waitUntil((async()=>{
   const c=await caches.open(V),core=SHELL.slice(0,12),routes=SHELL.slice(12);
   await c.addAll(core);
   const results=await Promise.allSettled(routes.map(url=>c.add(url)));
   results.forEach((result,index)=>{if(result.status==='rejected')console.warn('[Tatami SW] optional route was not precached:',routes[index],result.reason)});
-  await self.skipWaiting();
  })().catch(error=>{console.error('[Tatami SW] install failed',error);throw error}));
 });
 self.addEventListener('message',event=>{
