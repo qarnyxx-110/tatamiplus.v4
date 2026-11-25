@@ -395,51 +395,109 @@ export async function runPwa(app,base,browser,altRoot){
  }catch(e){S.ok('آفلاین: ورود مستقیم /coaches/<slug>/',false,e.message.slice(0,80))}
  await ctx.setOffline(false);
  if(altRoot){
-  const before=keys[0];
-  altRoot.use();
-
-  // Force the browser to check the changed Service Worker script rather than
-  // relying on its automatic update-check schedule.
-  const updateState=await pg.evaluate(async()=>{
-   const registration=await navigator.serviceWorker.getRegistration();
-   if(!registration)return{registration:false,controllerChanged:false,error:'no registration'};
-   let timer=0;
-   const controllerChanged=new Promise(resolve=>{
-    const onChange=()=>{if(timer)clearTimeout(timer);resolve(true)};
-    navigator.serviceWorker.addEventListener('controllerchange',onChange,{once:true});
-    timer=setTimeout(()=>{navigator.serviceWorker.removeEventListener('controllerchange',onChange);resolve(false)},12000);
-   });
-   try{await registration.update()}catch(error){
-    if(timer)clearTimeout(timer);
-    return{registration:true,controllerChanged:false,error:String(error)};
-   }
-   const changed=await controllerChanged;
-   const latest=await navigator.serviceWorker.getRegistration();
-   return{
-    registration:true,
-    controllerChanged:changed,
-    active:latest?.active?.state||null,
-    installing:latest?.installing?.state||null,
-    waiting:latest?.waiting?.state||null,
-    controlled:!!navigator.serviceWorker.controller
-   };
-  });
-
-  await pg.goto(base+'/index.html');
-  let after=[];
-  for(let i=0;i<30;i++){
-   await wait(400);
-   after=await pg.evaluate(()=>caches.keys());
-   if(after.length===1&&after[0]!==before)break;
-  }
-  const cacheReplaced=after.length===1&&after[0]!==before;
-  S.ok('به‌روزرسانی: ثبت نسخه جدید Service Worker و controllerchange',
-   updateState.registration&&updateState.controllerChanged,JSON.stringify(updateState));
-  S.ok('به‌روزرسانی: Cache نسخه جدید جایگزین قدیمی شد',
-   cacheReplaced,before+' → '+after.join());
-  S.ok('به‌روزرسانی: محتوای نسخه جدید نمایش داده می‌شود',
-   await pg.evaluate(()=>document.documentElement.outerHTML.includes('UPDATE_MARKER')));
+  // Run the update lifecycle in a fresh context so offline-navigation traffic
+  // from the earlier checks cannot keep the outgoing worker busy.
   altRoot.reset();
+  const updateCtx=await browser.newContext({viewport:{width:390,height:800},serviceWorkers:'allow'});
+  try{
+   const updatePg=await updateCtx.newPage();
+   updatePg.setDefaultTimeout(15000);
+   updatePg.setDefaultNavigationTimeout(15000);
+   // Register the worker from a minimal document rather than booting the
+   // full application. This prevents app/image/API requests from keeping the
+   // outgoing worker busy during the update test.
+   await updatePg.goto(base+'/offline.html');
+   await updatePg.evaluate(async()=>{
+    const registration=await navigator.serviceWorker.register('sw.js',{scope:'./'});
+    await Promise.race([navigator.serviceWorker.ready,new Promise(resolve=>setTimeout(()=>resolve(null),10000))]);
+    return registration.scope;
+   });
+   await updatePg.reload();
+   await updatePg.waitForLoadState('networkidle',{timeout:5000}).catch(()=>{});
+   await wait(500);
+   const cleanClientControlled=await updatePg.evaluate(()=>!!navigator.serviceWorker.controller);
+   const beforeKeys=await updatePg.evaluate(()=>caches.keys());
+   const before=beforeKeys[0]||'';
+   S.ok('به‌روزرسانی: context مستقل با worker فعال و Cache اولیه',cleanClientControlled&&beforeKeys.length===1&&!!before,JSON.stringify({controlled:cleanClientControlled,caches:beforeKeys}));
+   altRoot.use();
+
+   // Force the browser to check the changed Service Worker script.
+   const updateState=await updatePg.evaluate(async()=>{
+    const registration=await navigator.serviceWorker.getRegistration();
+    if(!registration)return{registration:false,controllerChanged:false,error:'no registration'};
+    const waitForControllerChange=()=>new Promise(resolve=>{
+     let timer=0;
+     const onChange=()=>{if(timer)clearTimeout(timer);resolve(true)};
+     navigator.serviceWorker.addEventListener('controllerchange',onChange,{once:true});
+     timer=setTimeout(()=>{navigator.serviceWorker.removeEventListener('controllerchange',onChange);resolve(false)},12000);
+    });
+    const firstChange=waitForControllerChange();
+    try{await registration.update()}catch(error){
+     return{registration:true,controllerChanged:false,error:String(error)};
+    }
+    let changed=await firstChange;
+    const automaticControllerChange=changed;
+    let activationRequested=false;
+    let latest=await navigator.serviceWorker.getRegistration();
+    let activationAcknowledged=null,activationResponse=null;
+    if(!changed&&latest?.waiting){
+     activationRequested=true;
+     const forcedChange=waitForControllerChange();
+     activationAcknowledged=await new Promise(resolve=>{
+      const channel=new MessageChannel();
+      const timer=setTimeout(()=>resolve(false),5000);
+      channel.port1.onmessage=event=>{
+       clearTimeout(timer);
+       activationResponse=event.data||null;
+       resolve(!!(event.data&&event.data.type==='SKIP_WAITING_ACK'));
+      };
+      channel.port1.onmessageerror=()=>{
+       clearTimeout(timer);
+       resolve(false);
+      };
+      latest.waiting.postMessage({type:'SKIP_WAITING'},[channel.port2]);
+     });
+     changed=await forcedChange;
+     latest=await navigator.serviceWorker.getRegistration();
+    }
+    const builtHandlerPresent=await fetch('sw.js').then(response=>response.text()).then(source=>source.includes('SKIP_WAITING_ACK'));
+    return{
+     registration:true,
+     controllerChanged:changed,
+     automaticControllerChange,
+     activationRequested,
+     activationAcknowledged,
+     activationResponse,
+     builtHandlerPresent,
+     active:latest?.active?.state||null,
+     installing:latest?.installing?.state||null,
+     waiting:latest?.waiting?.state||null,
+     controlled:!!navigator.serviceWorker.controller
+    };
+   });
+
+   await updatePg.goto(base+'/index.html');
+   let after=[];
+   for(let i=0;i<30;i++){
+    await wait(400);
+    after=await updatePg.evaluate(()=>caches.keys());
+    if(after.length===1&&after[0]!==before)break;
+   }
+   const cacheReplaced=after.length===1&&after[0]!==before;
+   S.ok('به‌روزرسانی: ثبت نسخه جدید Service Worker و controllerchange',
+    updateState.registration&&updateState.controllerChanged,JSON.stringify(updateState));
+   S.ok('به‌روزرسانی: worker جدید فرمان فعال‌سازی را دریافت کرد',
+    updateState.builtHandlerPresent&&(!updateState.activationRequested||updateState.activationAcknowledged),JSON.stringify(updateState));
+   S.ok('به‌روزرسانی: Cache نسخه جدید جایگزین قدیمی شد',
+    cacheReplaced,before+' → '+after.join());
+   S.ok('به‌روزرسانی: محتوای نسخه جدید نمایش داده می‌شود',
+    await updatePg.evaluate(()=>document.documentElement.outerHTML.includes('UPDATE_MARKER')));
+  }catch(error){
+   S.ok('به‌روزرسانی: اجرای context مستقل',false,String(error).slice(0,160));
+  }finally{
+   await updateCtx.close();
+   altRoot.reset();
+  }
  }
  const get=async p=>{const r=await pg.request.get(base+p,{maxRedirects:0});return{s:r.status(),t:await r.text()}};
  let r=await get('/coaches/');
