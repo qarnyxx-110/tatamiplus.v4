@@ -6,6 +6,10 @@
 (() => {
   'use strict';
 
+  // Django-backed homepage feeds belong only to the Preview shell. Standalone role PWAs do not expose Django /store or /coaches routes.
+  const previewPath = window.location.pathname.replace(/index\.html$/i, '').replace(/\/+$/, '');
+  if (previewPath !== '/preview') return;
+
   const feeds = Array.from(document.querySelectorAll('[data-tp-home-feed]'));
   if (!feeds.length) return;
 
