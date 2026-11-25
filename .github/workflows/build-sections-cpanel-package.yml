@@ -123,7 +123,7 @@ jobs:
           assert "آکادمی اساتید" not in navigation
           assert "تاتامی‌پدیا" not in navigation
           assert "دوره‌های آموزشی" in courses and "ویدیوهای ضبط‌شده" in courses
-          assert "<h1>مربیان</h1>" in coaches
+          assert 'id="tp-coach-directory-v2"' in coaches and "مربیان تاتامی" in coaches
           blog_list = Path("django/templates/blog/post_list.html").read_text(encoding="utf-8")
           blog_detail = Path("django/templates/blog/post_detail.html").read_text(encoding="utf-8")
           assert "blog:detail" in blog_list and "tp-blog-list-title" in blog_list
