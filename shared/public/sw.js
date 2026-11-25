@@ -6,7 +6,7 @@ self.addEventListener('install',e=>{
   await c.addAll(core);
   const results=await Promise.allSettled(routes.map(url=>c.add(url)));
   results.forEach((result,index)=>{if(result.status==='rejected')console.warn('[Tatami SW] optional route was not precached:',routes[index],result.reason)});
-  self.skipWaiting().catch(error=>console.error('[Tatami SW] skipWaiting failed',error));
+  await self.skipWaiting();
  })().catch(error=>{console.error('[Tatami SW] install failed',error);throw error}));
 });
 self.addEventListener('message',event=>{
