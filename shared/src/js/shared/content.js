@@ -18,18 +18,18 @@ const hs=(t,l,h,b)=>!allowed(h.slice(2))?'':`<section class="w d-s" aria-label="
 function homeIntro(){return`<section class="w d-s" aria-label="معرفی پلتفرم"><h2>تاتامی پلاس چیست؟</h2><p class="mu" style="max-width:720px">تاتامی پلاس جایی است که هنرجو، مربی و باشگاه کنار هم قرار می‌گیرند: دوره‌های آموزشی، اطلاعات تورنمنت‌ها، معرفی باشگاه‌ها و مربیان، خدمات تخصصی و فروشگاه تجهیزات جودو.</p><div class="d-stats">${[['🥋',F(I.length)+' مربی'],['🏯',F(CB.length)+' باشگاه'],['🛒',F(P.length)+' محصول']].map(x=>`<div class="sc2"><span class="ic" aria-hidden="true">${x[0]}</span><b>${x[1]}</b></div>`).join('')}</div><p class="mu sm">اعداد بر اساس داده‌های نمایشی همین نمونه‌اند.</p></section>`}
 function hasRegisteredAccount(){const users=L('tp:users',{});return !!((typeof ME!=='undefined'&&ME)||(users&&typeof users==='object'&&!Array.isArray(users)&&Object.keys(users).length))}
 function homeLiveFeed(layout,source,selector,limit,emptyTitle,emptyCopy,referenceUrl=''){
- const referenceAttr=referenceUrl?\x60 data-reference-catalog-url="\x24{referenceUrl}"\x60:'';
- return \x60<div class="tp-home-live-feed is-\x24{layout}" data-tp-home-feed data-source="\x24{source}" data-selector="\x24{selector}" data-layout="\x24{layout}" data-limit="\x24{limit}"\x24{referenceAttr} data-empty-title="\x24{emptyTitle}" data-empty-copy="\x24{emptyCopy}" data-error-title="محتوا فعلاً در دسترس نیست" data-error-copy="برای دریافت اطلاعات واقعی، اتصال به سرور را بررسی کنید." aria-live="polite" aria-busy="true"><p class="tp-home-live-feed-loading">در حال دریافت اطلاعات از سامانه…</p></div>\x60;
+ const referenceAttr=referenceUrl?` data-reference-catalog-url="${referenceUrl}"`:'';
+ return `<div class="tp-home-live-feed is-${layout}" data-tp-home-feed data-source="${source}" data-selector="${selector}" data-layout="${layout}" data-limit="${limit}"${referenceAttr} data-empty-title="${emptyTitle}" data-empty-copy="${emptyCopy}" data-error-title="محتوا فعلاً در دسترس نیست" data-error-copy="برای دریافت اطلاعات واقعی، اتصال به سرور را بررسی کنید." aria-live="polite" aria-busy="true"><p class="tp-home-live-feed-loading">در حال دریافت اطلاعات از سامانه…</p></div>`;
 }
 function homeMore(){
  const tu=TN.filter(t=>t.s!='پایان‌یافته').slice(0,3);
- return hs('تورنمنت‌ها','مشاهده همه','#/tournaments',\x60<div class="pg">\x24{tu.map(tc).join('')}</div>\x60)
- +hs('باشگاه‌ها','مشاهده همه','#/clubs',\x60<div class="pg">\x24{CB.slice(0,3).map(ccard).join('')}</div>\x60)
+ return hs('تورنمنت‌ها','مشاهده همه','#/tournaments',`<div class="pg">${tu.map(tc).join('')}</div>`)
+ +hs('باشگاه‌ها','مشاهده همه','#/clubs',`<div class="pg">${CB.slice(0,3).map(ccard).join('')}</div>`)
  +hs('مربیان','مشاهده همه مربیان','#/coaches',homeLiveFeed('coaches','/coaches/','.tp-coaches > li',3,'هنوز پروفایل عمومی‌ای منتشر نشده است','پس از تأیید و انتشار پروفایل مربیان، فهرست آن‌ها در این بخش نمایش داده می‌شود.'))
- +hs('وبلاگ','مشاهده همه مقالات','#/blog',\x60<div class="pg">\x24{BL.slice(0,3).map(bcard).join('')}</div>\x60)
+ +hs('وبلاگ','مشاهده همه مقالات','#/blog',`<div class="pg">${BL.slice(0,3).map(bcard).join('')}</div>`)
  +hs('فروشگاه تجهیزات جودو','مشاهده فروشگاه','#/store',homeLiveFeed('products','/store/','.tp-product-grid > .tp-product-card',4,'هنوز محصول فعال و دارای موجودی در فروشگاه ثبت نشده است','پس از ثبت محصولات واقعی در فروشگاه، کارت آن‌ها در این بخش نمایش داده می‌شود.','/static/data/reference-store-catalog.json'))
- +hs('آنالیز هوش مصنوعی','امتحان نسخه نمایشی','#/ai',\x60<div class="d-c"><p class="mu" style="margin:0 0 var(--tp-space-xs)">رابط تحلیل حرکت را با داده‌های نمایشی ببینید؛ نتیجه‌ها واقعی نیستند.</p></div>\x60)
- +(hasRegisteredAccount()?'':\x60<section class="w"><div class="cta"><h2>آماده شروع هستید؟</h2><p class="mu">\x24{APP.fixed?'مسیر جودو را با تاتامی پلاس ادامه دهید.':'برای شروع، حساب بسازید یا وارد شوید و مسیر جودو را با تاتامی پلاس ادامه دهید.'}</p>\x24{APP.fixed?'<a class="btn" href="#/dashboard">ورود به داشبورد</a>':'<a class="btn" href="#/register">ثبت‌نام</a>'}</div></section>\x60);
+ +hs('آنالیز هوش مصنوعی','امتحان نسخه نمایشی','#/ai',`<div class="d-c"><p class="mu" style="margin:0 0 var(--tp-space-xs)">رابط تحلیل حرکت را با داده‌های نمایشی ببینید؛ نتیجه‌ها واقعی نیستند.</p></div>`)
+ +(hasRegisteredAccount()?'':`<section class="w"><div class="cta"><h2>آماده شروع هستید؟</h2><p class="mu">${APP.fixed?'مسیر جودو را با تاتامی پلاس ادامه دهید.':'برای شروع، حساب بسازید یا وارد شوید و مسیر جودو را با تاتامی پلاس ادامه دهید.'}</p>${APP.fixed?'<a class="btn" href="#/dashboard">ورود به داشبورد</a>':'<a class="btn" href="#/register">ثبت‌نام</a>'}</div></section>`);
 }
 
 const BLOG_SLUGS=['ukemi-first-lesson','kumi-kata-grip-fight','uchi-mata-basics','belt-order','safe-weight-cut','ippon-wazaari-shido','first-competition','judogi-care'];
