@@ -411,7 +411,7 @@ export async function runPwa(app,base,browser,altRoot){
    });
    try{await registration.update()}catch(error){
     if(timer)clearTimeout(timer);
-    return{registration:true,controllerChanged:false,error:String(error)};
+    return{registration:true,controllerChanged:false,error:String(error),diagnostics:window.__TP_SW_UPDATE_DIAG||null};
    }
    const changed=await controllerChanged;
    const latest=await navigator.serviceWorker.getRegistration();
@@ -421,7 +421,8 @@ export async function runPwa(app,base,browser,altRoot){
     active:latest?.active?.state||null,
     installing:latest?.installing?.state||null,
     waiting:latest?.waiting?.state||null,
-    controlled:!!navigator.serviceWorker.controller
+    controlled:!!navigator.serviceWorker.controller,
+    diagnostics:window.__TP_SW_UPDATE_DIAG||null
    };
   });
 
