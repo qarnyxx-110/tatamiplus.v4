@@ -22,7 +22,7 @@ if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)&&!window.__
   });
  };
  const registerTatamiServiceWorker=()=>navigator.serviceWorker.register(new URL('sw.js',document.baseURI),{scope:'./'})
-  .then(registration=>{watchServiceWorker(registration);return registration})
+  .then(registration=>{if(registration&&typeof registration.addEventListener==='function')watchServiceWorker(registration);return registration})
   .catch(error=>console.error('[Tatami SW] registration failed',error));
  if(document.readyState==='complete')registerTatamiServiceWorker();
  else addEventListener('load',registerTatamiServiceWorker,{once:true});
