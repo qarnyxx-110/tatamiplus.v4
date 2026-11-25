@@ -184,7 +184,7 @@ jobs:
           assert "data-copy-target" in coach_students and "کپی لینک" in coach_students
           assert "data-copy-target" in bridge and "navigator.clipboard.writeText" in bridge
           assert "data-copy-target" in module_pages and "navigator.clipboard.writeText" in module_pages
-          assert "موجودی ثبت نشده" in store_detail_template
+          assert "در حال حاضر تنوع قابل خرید ندارد" in store_detail_template
           assert "if starting_price or starting_price == 0" in store_card_template
           assert all(token in store_card for token in ("in_stock", "out_of_stock", "inventory_unregistered"))
           assert 'data-availability="{{ availability_status|default:' in store_card
