@@ -2,11 +2,16 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import vm from 'node:vm';
 import { chromium } from 'playwright';
 import { build, serve, wait } from './helpers.mjs';
 
 const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'tatami-django-bridge-'));
 build(tempRoot);
+const previewHtml = fs.readFileSync(path.join(tempRoot, 'preview', 'index.html'), 'utf8');
+const inlineScripts = [...previewHtml.matchAll(/<script>([\\s\\S]*?)<\\/script>/g)];
+if (!inlineScripts.length) throw new Error('Preview build did not produce an inline application script.');
+new vm.Script(inlineScripts.map(match => match[1]).join('\\n'), { filename: 'tatami-preview-inline.js' });
 const server = await serve(tempRoot);
 const port = new URL(server.url).port;
 const base = `http://tatamiplus.ir:${port}`;
