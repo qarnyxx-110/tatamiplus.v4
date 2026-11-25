@@ -174,7 +174,7 @@ jobs:
           assert all(p["image_asset_path"].startswith("preview/assets/images/products/") for p in imported_products)
           assert all(p["price_source"] in ("torob", "digikala") for p in imported_products)
           assert "{% include 'components/store_product_card.html'" in store_template
-          assert "availability_status=product.availability_status|default:'in_stock'" in store_template
+          assert "{% include 'components/store_product_card.html' with product=product image=image starting_price=product.starting_price availability_status='in_stock' only %}" in store_template
           assert all(state in store_detail_template for state in ("in_stock", "out_of_stock", "inventory_unregistered"))
           assert 'data-availability="{% if availability_status %}' in store_detail_template
           assert "در حال حاضر ناموجود" not in store_detail_template
