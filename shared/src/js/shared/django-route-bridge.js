@@ -266,8 +266,9 @@
     if (route === 'login' || route === 'register' || route === 'role') {
       const query = new URLSearchParams();
       const role = params.get('role');
-      if (role && role !== 'coach' && role !== 'student') return '';
-      if (role) query.set('role', role);
+      const backendRole = role === 'club' ? 'gym' : role;
+      if (backendRole && !['student', 'coach', 'gym'].includes(backendRole)) return '';
+      if (backendRole) query.set('role', backendRole);
 
       const next = nextPathFromHash(params.get('next') || params.get('next_url'));
       if (next) query.set('next', next);
@@ -322,7 +323,7 @@
     try { url = value instanceof URL ? value : new URL(value, location.origin); } catch { return false; }
     if (url.origin !== location.origin) return false;
     return url.pathname === '/' ||
-      /^\/(store|checkout|payment|orders|auth|accounts|account|blog|club|coach|coaches)(\/|$)/.test(url.pathname);
+      /^\/(store|checkout|payment|orders|auth|accounts|account|blog|club|coach|coaches|gyms)(\/|$)/.test(url.pathname);
   }
 
   function serverHashForUrl(value) {
