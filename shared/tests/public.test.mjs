@@ -331,7 +331,7 @@ export async function runPwa(app,base,browser,altRoot){
  const S=new Suite('PWA-فنی '+app);
  const ctx=await browser.newContext({viewport:{width:390,height:800},serviceWorkers:'allow'});
  const pg=await ctx.newPage();pg.setDefaultTimeout(15000);pg.setDefaultNavigationTimeout(15000);
- const swConsoleErrors=[];pg.on('console',message=>{if(message.type()==='error')swConsoleErrors.push(message.text())});
+ const swConsoleErrors=[],swHttpErrors=[];pg.on('console',message=>{if(message.type()==='error')swConsoleErrors.push(message.text())});pg.on('response',response=>{if(response.status()>=400)swHttpErrors.push(response.status()+' '+response.url())});
  await pg.goto(base+'/index.html');
  const neshanConfig=await pg.evaluate(async()=>{const r=await fetch('assets/neshan-config.js');return{status:r.status,text:await r.text()}});
  S.ok('تنظیمات نشان در خروجی PWA قابل دریافت است',neshanConfig.status===200&&neshanConfig.text.includes('TP_NESHAN_WEB_KEY')&&neshanConfig.text.includes('TP_CLUBS_JSON_URL'),String(neshanConfig.status));
@@ -355,7 +355,7 @@ export async function runPwa(app,base,browser,altRoot){
  S.ok('Service Worker registration exists',registrations.length>0,JSON.stringify(registrations));
  const swReady=await pg.evaluate(()=>Promise.race([navigator.serviceWorker.ready.then(()=>true),new Promise(resolve=>setTimeout(()=>resolve(false),10000))]));
  S.ok('Service Worker registration becomes ready within 10 seconds',swReady,swReady?'ready':'timed out');
- S.ok('Service Worker console has no registration/install error',!swConsoleErrors.length,swConsoleErrors.join(' | '));
+ S.ok('Service Worker has no registration, install, or resource-load errors',!swConsoleErrors.length&&!swHttpErrors.length,[...swConsoleErrors,...swHttpErrors].join(' | '));
  await wait(900);
  await pg.reload();
  await wait(500);
