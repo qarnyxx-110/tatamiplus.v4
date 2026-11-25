@@ -346,11 +346,11 @@ export async function runPwa(app,base,browser,altRoot){
   const source=await fetch('sw.js').then(r=>r.text());
   const match=source.match(/SHELL=(\[[^;]+\]);/);
   if(!match)return{ok:false,missing:['Unable to parse generated precache list']};
-  const paths=JSON.parse(match[1]),missing=[];
+  const paths=JSON.parse(match[1]),required=['assets/neshan-config.js','assets/css/home-live-feeds.css','assets/js/home-live-feeds.js','assets/images/judo/uchi-mata.svg','assets/images/judo/seoi-nage.svg','assets/images/judo/osoto-gari.svg'],missing=[],unlisted=required.filter(path=>!paths.includes(path));
   for(const path of paths){try{const response=await fetch(path);if(!response.ok)missing.push(path+' → HTTP '+response.status)}catch(error){missing.push(path+' → '+String(error))}}
-  return{ok:missing.length===0,missing};
+  return{ok:missing.length===0&&unlisted.length===0,missing,unlisted};
  });
- S.ok('همه مسیرهای پیش‌کش PWA قابل دریافت‌اند',precache.ok,precache.missing.join(' | '));
+ S.ok('همه منابع اصلی PWA در Precache موجود و قابل دریافت‌اند',precache.ok,[...precache.missing,...precache.unlisted.map(path=>path+' → not precached')].join(' | '));
  const registrations=await pg.evaluate(async()=>Promise.all((await navigator.serviceWorker.getRegistrations()).map(async registration=>({scope:registration.scope,active:registration.active?.state||null,installing:registration.installing?.state||null,waiting:registration.waiting?.state||null}))));
  S.ok('Service Worker registration exists',registrations.length>0,JSON.stringify(registrations));
  const swReady=await pg.evaluate(()=>Promise.race([navigator.serviceWorker.ready.then(()=>true),new Promise(resolve=>setTimeout(()=>resolve(false),10000))]));
