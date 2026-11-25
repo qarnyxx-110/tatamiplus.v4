@@ -1,7 +1,6 @@
 const V='tatami-v2',SHELL=['./','index.html','offline.html','manifest.webmanifest','icons/icon-192.png','icons/icon-512.png'];
 self.addEventListener('install',e=>{
- // Request skipWaiting immediately and keep that request alive with the install event.
- e.waitUntil(self.skipWaiting().catch(error=>console.error('[Tatami SW] skipWaiting failed',error)));
+ // A controlled client requests SKIP_WAITING after installation is complete.
  e.waitUntil((async()=>{
   const c=await caches.open(V),core=SHELL.slice(0,12),routes=SHELL.slice(12);
   await c.addAll(core);
