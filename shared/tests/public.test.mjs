@@ -3,7 +3,7 @@ import {Suite,WIDTHS,OVERFLOW_JS,wait} from './helpers.mjs';
 const is404=()=>/۴۰۴/.test(document.getElementById('app').innerText);
 export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA '+app),denied={student:['#/role','#/my-profile','#/design-system','#/checkout'],coach:['#/role','#/ai','#/clubs','#/club/0','#/design-system','#/checkout'],club:['#/role','#/ai','#/my-profile','#/design-system','#/checkout']}[app];
  const ctx=await browser.newContext({viewport:{width:390,height:800},serviceWorkers:'block'});const pg=await ctx.newPage();pg.setDefaultTimeout(15000);pg.setDefaultNavigationTimeout(15000);const errs=[];
- pg.on('pageerror',e=>errs.push('PAGEERROR '+String(e).slice(0,100)));pg.on('console',m=>{if(m.type()==='error'&&!/fonts\.g|ERR_NAME_NOT_RESOLVED|ERR_INTERNET|Failed to load resource/.test(m.text()))errs.push(m.text().slice(0,100))});
+ pg.on('pageerror',e=>errs.push('PAGEERROR '+String(e.stack||e).slice(0,1800)));pg.on('console',m=>{if(m.type()==='error'&&!/fonts\.g|ERR_NAME_NOT_RESOLVED|ERR_INTERNET|Failed to load resource/.test(m.text()))errs.push(m.text().slice(0,100))});
  const go=async h=>{await pg.evaluate(x=>{location.hash=x},h);await wait(60)},T=()=>pg.evaluate(()=>document.getElementById('app').innerText),cnt=sel=>pg.locator(sel).count(),nf=()=>pg.evaluate(is404);
  await pg.goto(base+'/index.html');await wait(300);
  // --- وضعیت داده‌های مسابقات با تاریخ سپری‌شده
