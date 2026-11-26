@@ -30,4 +30,3 @@ if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)&&!window.__
  if(document.readyState==='complete')registerTatamiServiceWorker();
  else addEventListener('load',registerTatamiServiceWorker,{once:true});
 }
-}
