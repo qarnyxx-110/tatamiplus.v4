@@ -176,7 +176,9 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
  S.ok('پروفایل: عدم جعل مدرک/افتخار/تماس',(await T()).includes('هنوز افتخار یا مدرکی ثبت نشده')&&(await T()).includes('راه ارتباطی عمومی'));
  S.ok('پروفایل: عنوان صفحه اختصاصی',(await pg.title()).startsWith('سارا احمدی'));
  // --- تاتامی‌پدیا
- await go('#/tatamipedia');const tq=async q=>{await pg.fill('#tq',q);await wait(120);return cnt('#app section[aria-label="فهرست اصطلاحات"] a.card')};
+ await go('#/tatamipedia');
+ console.log('TPD_ROUTE_DEBUG '+JSON.stringify({errors:errs.slice(-8),hash:await pg.evaluate(()=>location.hash),text:(await T()).slice(0,800),html:(await pg.locator('#app').innerHTML()).slice(0,1800)}));
+ const tq=async q=>{await pg.fill('#tq',q);await wait(120);return cnt('#app section[aria-label="فهرست اصطلاحات"] a.card')};
  S.ok('تاتامی‌پدیا: ۴۰ اصطلاح',await tq('')===40,String(await tq('')));
  for(const [q,slug] of [['اوچی‌ماتا','uchi-mata'],['اوچیماتا','uchi-mata'],['内股','uchi-mata'],['Uchi-mata','uchi-mata'],['uchimata','uchi-mata'],['uchi mata','uchi-mata'],['Ōsoto','o-soto-gari'],['osotogari','o-soto-gari'],['برهم‌زدن تعادل','kuzushi'],['كوزوشي','kuzushi'],['ایپون','ippon']]){await tq(q);const found=await pg.evaluate(s=>!!document.querySelector('#app section[aria-label="فهرست اصطلاحات"] a[href="#/tatamipedia/'+s+'"]'),slug);S.ok(`تاتامی‌پدیا: «${q}» ← ${slug}`,found)}
  await tq('zzzzqq');S.ok('تاتامی‌پدیا: نتیجه خالی',await pg.evaluate(()=>/اصطلاحی پیدا نشد/.test(document.getElementById('app').innerText)));
