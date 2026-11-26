@@ -13,6 +13,11 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
   tabs:[...document.querySelectorAll('[role="tab"]')].map(el=>({text:el.innerText,visible:!!(el.offsetWidth||el.offsetHeight||el.getClientRects().length),html:el.outerHTML.slice(0,220)}))
  }));
  console.log('TOURNAMENT_TABS_DEBUG '+JSON.stringify(tournamentDebug));
+ const runtimeDebug=await pg.evaluate(()=>({app:(document.getElementById('app')?.outerHTML||'').slice(0,2500),
+  scripts:[...document.scripts].map(s=>({src:s.src,type:s.type,length:s.textContent.length})),
+  ready:document.readyState
+ }));
+ console.log('TOURNAMENT_TABS_RUNTIME '+JSON.stringify({errors:errs,...runtimeDebug}));
  const tournamentNames=['جام بهاره تهران','لیگ باشگاه‌های اصفهان','مسابقات کشوری نوجوانان','جام دوستی شیراز'];
  const upcomingTournaments=await T();
  S.ok('مسابقات با تاریخ سپری‌شده به‌عنوان پیش‌رو نمایش داده نمی‌شوند',
