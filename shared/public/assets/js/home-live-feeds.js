@@ -6,8 +6,19 @@
 (() => {
   'use strict';
 
+  // Django-backed homepage feeds belong only to the Preview shell. Standalone role PWAs do not expose Django /store or /coaches routes.
+  const previewPath = window.location.pathname.replace(/index\\.html$/i, '').replace(/\\/+$/, '');
   const feeds = Array.from(document.querySelectorAll('[data-tp-home-feed]'));
   if (!feeds.length) return;
+
+  if (previewPath !== '/preview') {
+    feeds.forEach((feed) => {
+      showMessage(feed, 'فهرست زنده در این نسخه در دسترس نیست',
+        'برای مشاهدهٔ مربیان و محصولات منتشرشده، از پیش‌نمایش وب متصل به سامانه استفاده کنید.');
+      feed.setAttribute('aria-busy', 'false');
+    });
+    return;
+  }
 
   const numberFa = (value) => Number(value || 0).toLocaleString('fa-IR');
   const make = (tag, className, text) => {
