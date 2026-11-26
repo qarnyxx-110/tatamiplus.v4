@@ -11,3 +11,10 @@ let blogState='idle',blogErr=false,blogAt=0;
 async function loadBlog(){if(!TP_API||blogState==='loading'||blogState==='refreshing'||(blogState==='done'&&Date.now()-blogAt<60000))return;const first=blogState==='idle';blogState=first?'loading':'refreshing';const r=await apiGet('/public/articles?page_size=100');
  if(r&&Array.isArray(r.results)){BL.splice(0,BL.length,...r.results.map(blogItem));blogErr=false}else if(first)blogErr=true;
  blogState='done';blogAt=Date.now();if(/^#\/blog/.test(location.hash))R('x')}
+// ---- تاتامی‌پدیا
+let tpdState='idle',tpdAt=0;
+async function loadTpd(){if(!TP_API||tpdState==='loading'||tpdState==='refreshing'||(tpdState==='done'&&Date.now()-tpdAt<60000))return;tpdState=tpdState==='idle'?'loading':'refreshing';const[c,t]=await Promise.all([apiGet('/public/glossary/categories'),apiGet('/public/glossary/terms?page_size=500')]);
+ if(c&&t&&Array.isArray(c.results)&&Array.isArray(t.results)){TPD.categories.splice(0,TPD.categories.length,...c.results.map(x=>({slug:String(x.slug),name:String(x.name),nameJa:String(x.name_ja||''),romaji:String(x.romaji||''),order:+x.order||0})));
+  TPD.terms.splice(0,TPD.terms.length,...t.results.map(x=>({slug:String(x.slug),nameFa:String(x.name_fa),nameJa:String(x.name_ja||''),romaji:String(x.romaji||''),meaning:String(x.meaning||''),description:String(x.description||''),usage:String(x.usage||''),safety:String(x.safety||''),categories:(x.categories||[]).map(String),related:(x.related||[]).map(String),featured:!!x.featured,image:safeUrl(x.image_url),status:'published'})))}
+ tpdState='done';tpdAt=Date.now();if(/^#\/tatamipedia/.test(location.hash))R('x')}
+
