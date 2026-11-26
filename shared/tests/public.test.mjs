@@ -8,6 +8,11 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
  await pg.goto(base+'/index.html');await wait(300);
  // --- وضعیت داده‌های مسابقات با تاریخ سپری‌شده
  await go('#/tournaments');
+ const tournamentDebug=await pg.evaluate(()=>({hash:location.hash,
+  text:(document.getElementById('app')?.innerText||'').slice(0,900),
+  tabs:[...document.querySelectorAll('[role="tab"]')].map(el=>({text:el.innerText,visible:!!(el.offsetWidth||el.offsetHeight||el.getClientRects().length),html:el.outerHTML.slice(0,220)}))
+ }));
+ console.log('TOURNAMENT_TABS_DEBUG '+JSON.stringify(tournamentDebug));
  const tournamentNames=['جام بهاره تهران','لیگ باشگاه‌های اصفهان','مسابقات کشوری نوجوانان','جام دوستی شیراز'];
  const upcomingTournaments=await T();
  S.ok('مسابقات با تاریخ سپری‌شده به‌عنوان پیش‌رو نمایش داده نمی‌شوند',
