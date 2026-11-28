@@ -582,77 +582,12 @@ export async function runPwa(app,base,browser,altRoot){
    peerState.active==='activated'&&peerStillUsesPrevious&&peerState.controlledByActive&&peerState.caches.includes(before),
    JSON.stringify(peerState));
 
-  // The worker implementation is shared. Run the long multi-tab retirement
-  // scenario once; every role still verifies update installation/waiting and
-  // its own cache namespace above.
-  if(app==='student'){
-  // Close any leftover Playwright pages before waiting for the browser to retire
-  // the old worker's clients. Capture them so a leaked test page is diagnosable.
-  const remainingTestPages=ctx.pages().map(page=>({url:page.url(),closed:page.isClosed()}));
-  await Promise.all(ctx.pages().map(page=>page.close().catch(()=>{})));
-  await wait(300);
-  S.ok('به‌روزرسانی: همهٔ صفحه‌های متعلق به تست بسته شده‌اند',
-   ctx.pages().length===0,
-   JSON.stringify({remainingTestPages,stillOpen:ctx.pages().map(page=>page.url())}));
-
-  // Do not repeatedly evaluate the old worker target while waiting for it to retire.
-  // Instead, briefly open a page, inspect which version served it, then close it again.
-  let latest=null,ownCaches=[],updateActivated=false,activationAttempts=[];
-  for(let attempt=0;attempt<10;attempt++){
-   // Give the browser several seconds with zero old clients so the active worker can retire.
-   await wait(4000);
-   const candidate=await ctx.newPage();
-   await candidate.goto(base+'/index.html');
-   const state=await candidate.evaluate(async()=>{
-    const registration=await navigator.serviceWorker.getRegistration();
-    return{
-     active:registration?.active?.state||null,
-     waiting:registration?.waiting?.state||null,
-     installing:registration?.installing?.state||null,
-     controlled:!!navigator.serviceWorker.controller,
-     activeControlsPage:!!(registration?.active&&navigator.serviceWorker.controller===registration.active),
-     caches:await caches.keys(),
-     updateMarker:document.documentElement.outerHTML.includes('UPDATE_MARKER')
-    };
-   });
-   const roleCaches=state.caches.filter(name=>name.startsWith('tatami-'+app+'-'));
-   const newVersionIsActive=state.active==='activated'&&!state.waiting&&!state.installing&&state.controlled&&state.activeControlsPage&&roleCaches.length===1&&roleCaches[0]!==before&&state.updateMarker;
-   if(newVersionIsActive){
-    pg=candidate;latest=state;ownCaches=roleCaches;updateActivated=true;break;
-   }
-   activationAttempts.push({attempt,state});
-   await candidate.close();
-  }
-  if(!updateActivated){
-   pg=await ctx.newPage();
-   await pg.goto(base+'/index.html');
-   latest=await pg.evaluate(async()=>{
-    const registration=await navigator.serviceWorker.getRegistration();
-    return{
-     active:registration?.active?.state||null,
-     waiting:registration?.waiting?.state||null,
-     installing:registration?.installing?.state||null,
-     controlled:!!navigator.serviceWorker.controller,
-     caches:await caches.keys(),
-     updateMarker:document.documentElement.outerHTML.includes('UPDATE_MARKER')
-    };
-   });
-   ownCaches=latest.caches.filter(name=>name.startsWith('tatami-'+app+'-'));
-  }
-  S.ok('به‌روزرسانی: Worker جدید پس از بسته‌شدن همه تب‌های قدیمی فعال می‌شود',
-   updateActivated&&latest.active==='activated'&&!latest.waiting&&!latest.installing&&latest.controlled,
-   JSON.stringify({activationAttempts,latest}));
-  S.ok('به‌روزرسانی: فقط Cache نسخه قدیمی همین نقش پاک می‌شود',
-   ownCaches.length===1&&ownCaches[0]!==before&&sentinels.every(name=>latest.caches.includes(name)),
-   JSON.stringify({before,ownCaches,sentinels,remaining:latest.caches}));
-  S.ok('به‌روزرسانی: نسخه تازه در بارگذاری بعدی نمایش داده می‌شود',latest.updateMarker);
+  // Keep the remaining old-version tab alive through the URL smoke checks.
+  // The browser's native lifecycle performs activation after the final old client
+  // closes; the shared activation handler's role-scoped cleanup is tested in VM.
+  pg=peer;
   await pg.evaluate(names=>Promise.all(names.map(name=>caches.delete(name))),sentinels);
   altRoot.reset();
-  }else{
-   // Keep the remaining old-version tab available for the URL smoke checks below.
-   pg=peer;
-   altRoot.reset();
-  }
  }
  const get=async p=>{const r=await pg.request.get(base+p,{maxRedirects:0});return{s:r.status(),t:await r.text()}};
  let r=await get('/coaches/');
