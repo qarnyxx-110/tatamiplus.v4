@@ -12,7 +12,13 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
  const upcomingTournaments=await T();
  S.ok('مسابقات با تاریخ سپری‌شده به‌عنوان پیش‌رو نمایش داده نمی‌شوند',
   tournamentNames.every(name=>!upcomingTournaments.includes(name)));
- await pg.getByRole('tab',{name:'نیازمند بررسی'}).click();await wait(60);
+ const reviewTab=pg.getByRole('tab',{name:'نیازمند بررسی'});
+ const reviewTabCount=await reviewTab.count();
+ if(reviewTabCount!==1){
+  const debug=await pg.evaluate(()=>({hash:location.hash,title:document.title,text:(document.getElementById('app')?.innerText||'').slice(0,1600),tabs:[...document.querySelectorAll('#app [role="tab"]')].map(x=>({text:x.textContent.trim(),selected:x.getAttribute('aria-selected')}))}));
+  throw new Error('Tournament review tab missing; debug='+JSON.stringify(debug)+'; pageErrors='+errs.join(' | '));
+ }
+ await reviewTab.click();await wait(60);
  const reviewTournaments=await T();
  S.ok('مسابقات دارای وضعیت نامطمئن در گروه نیازمند بررسی قابل مشاهده‌اند',
   tournamentNames.every(name=>reviewTournaments.includes(name)));
