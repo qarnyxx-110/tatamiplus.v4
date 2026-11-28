@@ -13,10 +13,11 @@
       {% include 'includes/form_fields.html' %}
       <button class="btn tp-auth-btn" type="submit">ورود به حساب</button>
     </form>
-    <nav class="tp-auth-links" aria-label="راه‌های دیگر ورود">
+    <p class="tp-auth-alt">
       <a href="{% url 'phone_auth:password_reset' %}">رمز عبورم را فراموش کرده‌ام</a>
+      <span aria-hidden="true"> · </span>
       <a href="{% url 'phone_auth:sms_login' %}{% if request.GET.next %}?next={{ request.GET.next|urlencode }}{% endif %}">ورود یا ثبت‌نام با پیامک</a>
-    </nav>
+    </p>
   {% else %}
     <h1 id="auth-page-title">ورود یا ساخت حساب با شمارهٔ همراه</h1>
     <p class="mu">اگر حساب داشته باشی وارد می‌شوی؛ در غیر این صورت پس از تأیید شماره، حساب ساخته می‌شود.</p>
@@ -25,9 +26,9 @@
       {% include 'includes/form_fields.html' %}
       <button class="btn tp-auth-btn" type="submit">ارسال کد تأیید</button>
     </form>
-    <nav class="tp-auth-links" aria-label="راه‌های دیگر ورود">
+    <p class="tp-auth-alt">
       <a href="{% url 'phone_auth:login' %}{% if request.GET.next %}?next={{ request.GET.next|urlencode }}{% endif %}">ورود با رمز عبور</a>
-    </nav>
+    </p>
   {% endif %}
 {% endblock %}
 
