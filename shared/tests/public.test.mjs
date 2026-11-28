@@ -572,49 +572,53 @@ export async function runPwa(app,base,browser,altRoot){
    peerState.active==='activated'&&peerStillUsesPrevious&&peerState.controlledByActive&&peerState.caches.includes(before),
    JSON.stringify(peerState));
 
-  // Once every old client is closed, the next page must eventually enter on the new version.
-  await peer.close();
-  let pg=null,latest=null,ownCaches=[],updateActivated=false;
-  for(let attempt=0;attempt<35;attempt++){
-   await wait(800);
-   const candidate=await ctx.newPage();
-   await candidate.goto(base+'/index.html');
-   const state=await candidate.evaluate(async()=>{
-    const registration=await navigator.serviceWorker.getRegistration();
-    return{
-     active:registration?.active?.state||null,
-     waiting:registration?.waiting?.state||null,
-     installing:registration?.installing?.state||null,
-     controlled:!!navigator.serviceWorker.controller,
-     caches:await caches.keys(),
-     updateMarker:document.documentElement.outerHTML.includes('UPDATE_MARKER')
-    };
-   });
-   const roleCaches=state.caches.filter(name=>name.startsWith('tatami-'+app+'-'));
-   if(state.active==='activated'&&!state.waiting&&!state.installing&&state.controlled&&roleCaches.length===1&&roleCaches[0]!==before&&state.updateMarker){
-    pg=candidate;latest=state;ownCaches=roleCaches;updateActivated=true;break;
+  // Inspect the registration from the Service Worker target itself. This avoids
+  // opening a new page that would become another client of the old worker.
+  let workerSnapshot=null,updateActivated=false;
+  for(let attempt=0;attempt<60;attempt++){
+   const workers=typeof ctx.serviceWorkers==='function'?ctx.serviceWorkers():[];
+   const states=await Promise.all(workers.map(async worker=>{
+    try{
+     return await worker.evaluate(async()=>{
+      const registration=self.registration;
+      const windows=await self.clients.matchAll({type:'window',includeUncontrolled:true});
+      return{
+       scriptURL:self.location.href,
+       active:registration.active?.state||null,
+       waiting:registration.waiting?.state||null,
+       installing:registration.installing?.state||null,
+       clients:windows.map(client=>client.url),
+       caches:await caches.keys()
+      };
+     });
+    }catch(error){return{error:String(error),scriptURL:worker.url()}}
+   }));
+   workerSnapshot=states.find(state=>state.scriptURL?.endsWith('/sw.js')&&!state.error)||null;
+   if(workerSnapshot){
+    const roleCaches=workerSnapshot.caches.filter(name=>name.startsWith('tatami-'+app+'-'));
+    if(workerSnapshot.active==='activated'&&!workerSnapshot.waiting&&!workerSnapshot.installing&&workerSnapshot.clients.length===0&&roleCaches.length===1&&roleCaches[0]!==before){
+     updateActivated=true;break;
+    }
    }
-   await candidate.close();
+   await wait(500);
   }
-  if(!pg){
-   pg=await ctx.newPage();
-   await pg.goto(base+'/index.html');
-   latest=await pg.evaluate(async()=>{
-    const registration=await navigator.serviceWorker.getRegistration();
-    return{
-     active:registration?.active?.state||null,
-     waiting:registration?.waiting?.state||null,
-     installing:registration?.installing?.state||null,
-     controlled:!!navigator.serviceWorker.controller,
-     caches:await caches.keys(),
-     updateMarker:document.documentElement.outerHTML.includes('UPDATE_MARKER')
-    };
-   });
-   ownCaches=latest.caches.filter(name=>name.startsWith('tatami-'+app+'-'));
-  }
+  pg=await ctx.newPage();
+  await pg.goto(base+'/index.html');
+  const latest=await pg.evaluate(async()=>{
+   const registration=await navigator.serviceWorker.getRegistration();
+   return{
+    active:registration?.active?.state||null,
+    waiting:registration?.waiting?.state||null,
+    installing:registration?.installing?.state||null,
+    controlled:!!navigator.serviceWorker.controller,
+    caches:await caches.keys(),
+    updateMarker:document.documentElement.outerHTML.includes('UPDATE_MARKER')
+   };
+  });
+  const ownCaches=latest.caches.filter(name=>name.startsWith('tatami-'+app+'-'));
   S.ok('به‌روزرسانی: Worker جدید پس از بسته‌شدن همه تب‌های قدیمی فعال می‌شود',
-   updateActivated,
-   JSON.stringify(latest));
+   updateActivated&&latest.active==='activated'&&!latest.waiting&&!latest.installing&&latest.controlled,
+   JSON.stringify({workerSnapshot,latest}));
   S.ok('به‌روزرسانی: فقط Cache نسخه قدیمی همین نقش پاک می‌شود',
    ownCaches.length===1&&ownCaches[0]!==before&&sentinels.every(name=>latest.caches.includes(name)),
    JSON.stringify({before,ownCaches,sentinels,remaining:latest.caches}));
