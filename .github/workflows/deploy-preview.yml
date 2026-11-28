@@ -102,6 +102,9 @@ jobs:
         working-directory: shared
         run: node tests/django-ui.test.mjs
 
+      - name: Run Django product detail and variant browser tests
+        working-directory: shared
+        run: node tests/django-store-ui.test.mjs
 
       - name: Run focused clubs and map browser tests
         working-directory: shared
