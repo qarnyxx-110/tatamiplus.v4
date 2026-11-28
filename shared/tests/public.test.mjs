@@ -348,15 +348,24 @@ export async function runPwa(app,base,browser,altRoot){
  for(const i of man.icons)if(await pg.evaluate(u=>fetch(u).then(r=>r.status),i.src)!==200)ok=false;
  S.ok('آیکون‌ها 200',ok);
  S.ok('offline.html موجود',await pg.evaluate(()=>fetch('offline.html').then(r=>r.status))===200);
- const precache=await pg.evaluate(async()=>{
+ const pwaCoreAssets=[
+  'assets/css/home-live-feeds.css',
+  'assets/js/home-live-feeds.js',
+  'assets/images/judo/uchi-mata.svg',
+  'assets/images/judo/seoi-nage.svg',
+  'assets/images/judo/osoto-gari.svg'
+ ];
+ const precache=await pg.evaluate(async(requiredAssets)=>{
   const source=await fetch('sw.js').then(r=>r.text());
   const match=source.match(/SHELL=(\[[^;]+\]);/);
-  if(!match)return{ok:false,missing:['Unable to parse generated precache list']};
-  const paths=JSON.parse(match[1]),missing=[];
+  if(!match)return{ok:false,missing:['Unable to parse generated precache list'],unlisted:requiredAssets,notCore:requiredAssets};
+  const paths=JSON.parse(match[1]),missing=[],unlisted=requiredAssets.filter(path=>!paths.includes(path));
+  const coreMatch=source.match(/CORE_COUNT=(\d+)/),coreCount=coreMatch?Number(coreMatch[1]):0;
+  const notCore=requiredAssets.filter(path=>!paths.slice(0,coreCount).includes(path));
   for(const path of paths){try{const response=await fetch(path);if(!response.ok)missing.push(path+' → HTTP '+response.status)}catch(error){missing.push(path+' → '+String(error))}}
-  return{ok:missing.length===0,missing};
- });
- S.ok('همه مسیرهای پیش‌کش PWA قابل دریافت‌اند',precache.ok,precache.missing.join(' | '));
+  return{ok:missing.length===0&&unlisted.length===0&&notCore.length===0,missing,unlisted,notCore};
+ },pwaCoreAssets);
+ S.ok('منابع اصلی رابط در Build و فهرست هستهٔ Cache موجودند',precache.ok,JSON.stringify(precache));
  const registrations=await pg.evaluate(async()=>Promise.all((await navigator.serviceWorker.getRegistrations()).map(async registration=>({scope:registration.scope,active:registration.active?.state||null,installing:registration.installing?.state||null,waiting:registration.waiting?.state||null}))));
  S.ok('Service Worker registration exists',registrations.length>0,JSON.stringify(registrations));
  const swReady=await pg.evaluate(()=>Promise.race([navigator.serviceWorker.ready.then(()=>true),new Promise(resolve=>setTimeout(()=>resolve(false),10000))]));
@@ -375,6 +384,14 @@ export async function runPwa(app,base,browser,altRoot){
   return!!(await cache.match(url));
  });
  S.ok('فایل تنظیمات نشان در Cache اولیه PWA ذخیره شده است',configCached);
+ const coreAssetsCached=await pg.evaluate(async(paths)=>{
+  const name=(await caches.keys()).find(key=>key.startsWith('tatami-'));
+  if(!name)return{ok:false,missing:paths};
+  const cache=await caches.open(name),missing=[];
+  for(const path of paths)if(!await cache.match(new URL(path,location.href).toString()))missing.push(path);
+  return{ok:missing.length===0,missing};
+ },pwaCoreAssets);
+ S.ok('CSS، JavaScript و SVGهای اصلی در Cache نسخه‌دار ذخیره شده‌اند',coreAssetsCached.ok,coreAssetsCached.missing.join(' | '));
  const cdp=await ctx.newCDPSession(pg);
  try{
   const r=await cdp.send('Page.getInstallabilityErrors');
@@ -393,6 +410,12 @@ export async function runPwa(app,base,browser,altRoot){
    catch{return{status:0,text:''}}
   });
   S.ok('تنظیمات نشان در حالت آفلاین هم در دسترس است',offlineConfig.status===200&&offlineConfig.text.includes('TP_NESHAN_WEB_KEY'),String(offlineConfig.status));
+  const offlineCoreAssets=await pg.evaluate(async(paths)=>{
+   const results=[];
+   for(const path of paths){try{const response=await fetch(path,{cache:'no-store'});results.push({path,status:response.status})}catch(error){results.push({path,status:0,error:String(error)})}}
+   return results;
+  },pwaCoreAssets);
+  S.ok('منابع اصلی رابط در حالت آفلاین قابل دریافت‌اند',offlineCoreAssets.every(result=>result.status===200),JSON.stringify(offlineCoreAssets));
  }catch(e){S.ok('آفلاین: رفرش',false,e.message.slice(0,80))}
  try{
   await pg.goto(base+'/coaches/sara-ahmadi/',{timeout:8000});
