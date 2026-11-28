@@ -1,22 +1,57 @@
-const V='tatami-v2',SHELL=['./','index.html','offline.html','manifest.webmanifest','icons/icon-192.png','icons/icon-512.png'];
-self.addEventListener('install',e=>{
- // Preserve the original immediate activation behavior when a new worker finishes installing.
+const V='tatami-v2',CACHE_PREFIX='tatami-cache-prefix',CORE_COUNT=6,SHELL=['./','index.html','offline.html','manifest.webmanifest','icons/icon-192.png','icons/icon-512.png'];
+self.addEventListener('install',event=>{
  self.skipWaiting().catch(error=>console.error('[Tatami SW] skipWaiting failed',error));
- e.waitUntil((async()=>{
-  const c=await caches.open(V),core=SHELL.slice(0,12),routes=SHELL.slice(12);
-  await c.addAll(core);
-  const results=await Promise.allSettled(routes.map(url=>c.add(url)));
+ event.waitUntil((async()=>{
+  const cache=await caches.open(V);
+  await cache.addAll(SHELL.slice(0,CORE_COUNT));
+  const routes=SHELL.slice(CORE_COUNT);
+  const results=await Promise.allSettled(routes.map(url=>cache.add(url)));
   results.forEach((result,index)=>{if(result.status==='rejected')console.warn('[Tatami SW] optional route was not precached:',routes[index],result.reason)});
  })().catch(error=>{console.error('[Tatami SW] install failed',error);throw error}));
 });
 self.addEventListener('message',event=>{
- if(event.data&&event.data.type==='SKIP_WAITING'){
-  // Trigger activation without extending this message event with the activation promise.
+ if(event.data?.type==='SKIP_WAITING'){
   self.skipWaiting().catch(error=>console.error('[Tatami SW] requested activation failed',error));
-  if(event.ports&&event.ports[0])event.ports[0].postMessage({type:'SKIP_WAITING_ACK'});
+  event.ports[0]?.postMessage({type:'SKIP_WAITING_ACK'});
  }
 });
-self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==V).map(x=>caches.delete(x)))).then(()=>self.clients.claim()))});
-self.addEventListener('fetch',e=>{const r=e.request;if(r.method!=='GET')return;
-if(r.mode==='navigate'){e.respondWith(fetch(r).then(x=>{const u=new URL(r.url),root=new URL('./',self.registration.scope).pathname;if(x.ok&&(u.pathname===root||u.pathname===root+'index.html')){const c=x.clone();caches.open(V).then(h=>h.put('index.html',c))}return x}).catch(()=>caches.match(r).then(cached=>cached||caches.match('index.html').then(x=>x||caches.match('offline.html')))));return}
-e.respondWith(caches.match(r).then(c=>c||fetch(r).then(x=>{if(x.ok&&(new URL(r.url).origin===location.origin||/fonts\.(googleapis|gstatic)\.com/.test(r.url))){const y=x.clone();caches.open(V).then(h=>h.put(r,y))}return x}).catch(()=>c)))});
+self.addEventListener('activate',event=>{
+ event.waitUntil((async()=>{
+  const names=await caches.keys();
+  await Promise.all(names.filter(name=>name.startsWith(CACHE_PREFIX+'-')&&name!==V).map(name=>caches.delete(name)));
+  await self.clients.claim();
+ })());
+});
+self.addEventListener('fetch',event=>{
+ const request=event.request;
+ if(request.method!=='GET')return;
+ if(request.mode==='navigate'){
+  event.respondWith((async()=>{
+   const cache=await caches.open(V);
+   try{
+    const response=await fetch(request);
+    const pathname=new URL(request.url).pathname;
+    const root=new URL('./',self.registration.scope).pathname;
+    if(response.ok&&(pathname===root||pathname===root+'index.html')){
+     try{await cache.put('index.html',response.clone())}catch{}
+    }
+    return response;
+   }catch(error){
+    const fallback=await cache.match(request)||await cache.match('index.html')||await cache.match('offline.html');
+    if(fallback)return fallback;
+    throw error;
+   }
+  })());
+  return;
+ }
+ event.respondWith((async()=>{
+  const cache=await caches.open(V);
+  const cached=await cache.match(request);
+  if(cached)return cached;
+  const response=await fetch(request);
+  if(response.ok&&(new URL(request.url).origin===location.origin||/fonts\.(googleapis|gstatic)\.com/.test(request.url))){
+   try{await cache.put(request,response.clone())}catch{}
+  }
+  return response;
+ })());
+});

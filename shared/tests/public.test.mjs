@@ -356,7 +356,7 @@ export async function runPwa(app,base,browser,altRoot){
   const source=await fetch('sw.js').then(r=>r.text());
   const match=source.match(/SHELL=(\[[^;]+\]);/);
   if(!match)return{ok:false,missing:['Unable to parse generated precache list']};
-  const paths=JSON.parse(match[1]),required=['assets/neshan-config.js','assets/css/home-live-feeds.css','assets/js/home-live-feeds.js','assets/images/judo/uchi-mata.svg','assets/images/judo/seoi-nage.svg','assets/images/judo/osoto-gari.svg'],missing=[],unlisted=required.filter(path=>!paths.includes(path));
+  const paths=JSON.parse(match[1]),required=['icons/maskable-512.png','assets/neshan-config.js','assets/css/home-live-feeds.css','assets/js/home-live-feeds.js','assets/images/judo/uchi-mata.svg','assets/images/judo/seoi-nage.svg','assets/images/judo/osoto-gari.svg'],missing=[],unlisted=required.filter(path=>!paths.includes(path));
   for(const path of paths){try{const response=await fetch(path);if(!response.ok)missing.push(path+' → HTTP '+response.status)}catch(error){missing.push(path+' → '+String(error))}}
   return{ok:missing.length===0&&unlisted.length===0,missing,unlisted};
  });
@@ -429,6 +429,14 @@ export async function runPwa(app,base,browser,altRoot){
    const beforeKeys=await updatePg.evaluate(()=>caches.keys());
    const before=beforeKeys[0]||'';
    S.ok('به‌روزرسانی: context مستقل با worker فعال و Cache اولیه',cleanClientControlled&&beforeKeys.length===1&&!!before,JSON.stringify({controlled:cleanClientControlled,caches:beforeKeys}));
+   const otherRoleCache='tatami-'+(app==='student'?'coach':'student')+'-0000000000';
+   const isolatedRequest='assets/other-role-cache-fixture.txt';
+   await updatePg.evaluate(async({name,request})=>{
+    const cache=await caches.open(name);
+    await cache.put(request,new Response('other role cache fixture'));
+   },{name:otherRoleCache,request:isolatedRequest});
+   const readsOtherRole=await updatePg.evaluate(async request=>(await fetch(request).then(response=>response.text()))==='other role cache fixture',isolatedRequest);
+   S.ok('Service Worker does not read a different role cache',!readsOtherRole);
    altRoot.use();
 
    // Force the browser to check the changed Service Worker script.
@@ -508,7 +516,7 @@ export async function runPwa(app,base,browser,altRoot){
    let after=[];
    for(let i=0;i<30;i++){
     await wait(400);
-    after=await updatePg.evaluate(()=>caches.keys());
+    after=await updatePg.evaluate(async prefix=>(await caches.keys()).filter(name=>name.startsWith(prefix)), 'tatami-'+app+'-');
     if(after.length===1&&after[0]!==before)break;
    }
    const cacheReplaced=after.length===1&&after[0]!==before;
@@ -518,6 +526,8 @@ export async function runPwa(app,base,browser,altRoot){
     updateState.builtHandlerPresent&&(!updateState.activationRequested||updateState.activationAcknowledged),JSON.stringify(updateState));
    S.ok('به‌روزرسانی: Cache نسخه جدید جایگزین قدیمی شد',
     cacheReplaced,before+' → '+after.join());
+   const otherRoleCachePreserved=await updatePg.evaluate(name=>caches.has(name),otherRoleCache);
+   S.ok('Automatic update preserves a different role cache',otherRoleCachePreserved);
    S.ok('به‌روزرسانی: محتوای نسخه جدید نمایش داده می‌شود',
     await updatePg.evaluate(()=>document.documentElement.outerHTML.includes('UPDATE_MARKER')));
   }catch(error){
