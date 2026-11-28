@@ -4,6 +4,7 @@ const is404=()=>/۴۰۴/.test(document.getElementById('app').innerText);
 export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA '+app),denied={student:['#/role','#/my-profile','#/design-system','#/checkout'],coach:['#/role','#/ai','#/clubs','#/club/0','#/design-system','#/checkout'],club:['#/role','#/ai','#/my-profile','#/design-system','#/checkout']}[app];
  const ctx=await browser.newContext({viewport:{width:390,height:800},serviceWorkers:'block'});const pg=await ctx.newPage();pg.setDefaultTimeout(15000);pg.setDefaultNavigationTimeout(15000);const errs=[];
  pg.on('pageerror',e=>errs.push('PAGEERROR '+JSON.stringify({name:e.name,message:e.message,stack:e.stack||''}).slice(0,1600)));pg.on('console',m=>{if(m.type()==='error'&&!/fonts\.g|ERR_NAME_NOT_RESOLVED|ERR_INTERNET|Failed to load resource/.test(m.text()))errs.push('CONSOLE '+JSON.stringify({text:m.text(),location:m.location()}).slice(0,1600))});
+ await pg.addInitScript(()=>{addEventListener('error',e=>{if(e instanceof ErrorEvent)console.error('[TP_WINDOW_ERROR] '+JSON.stringify({message:e.message,filename:e.filename,lineno:e.lineno,colno:e.colno,stack:e.error&&e.error.stack||''}))},true)});
  const go=async h=>{await pg.evaluate(x=>{location.hash=x},h);await wait(60)},T=()=>pg.evaluate(()=>document.getElementById('app').innerText),cnt=sel=>pg.locator(sel).count(),nf=()=>pg.evaluate(is404);
  await pg.goto(base+'/index.html');await wait(300);
  // --- وضعیت داده‌های مسابقات با تاریخ سپری‌شده
