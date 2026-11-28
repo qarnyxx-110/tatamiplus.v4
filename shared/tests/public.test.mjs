@@ -403,17 +403,20 @@ export async function runPwa(app,base,browser,altRoot){
   'assets/images/judo/seoi-nage.svg',
   'assets/images/judo/osoto-gari.svg'
  ];
- const precache=await pg.evaluate(async(requiredAssets)=>{
+ const precache=await pg.evaluate(async({requiredAssets,app})=>{
   const source=await fetch('sw.js').then(r=>r.text());
   const match=source.match(/SHELL=(\[[^;]+\]);/);
-  if(!match)return{ok:false,missing:['Unable to parse generated precache list'],unlisted:requiredAssets,notCore:requiredAssets};
+  if(!match)return{ok:false,missing:['Unable to parse generated precache list'],unlisted:requiredAssets,notCore:requiredAssets,cachePrefix:null};
   const paths=JSON.parse(match[1]),missing=[],unlisted=requiredAssets.filter(path=>!paths.includes(path));
   const coreMatch=source.match(/CORE_COUNT=(\d+)/),coreCount=coreMatch?Number(coreMatch[1]):0;
   const notCore=requiredAssets.filter(path=>!paths.slice(0,coreCount).includes(path));
+  const prefixMatch=source.match(/CACHE_PREFIX='([^']+)'/);
   for(const path of paths){try{const response=await fetch(path);if(!response.ok)missing.push(path+' → HTTP '+response.status)}catch(error){missing.push(path+' → '+String(error))}}
-  return{ok:missing.length===0&&unlisted.length===0&&notCore.length===0,missing,unlisted,notCore};
- },pwaCoreAssets);
+  const cachePrefix=prefixMatch?.[1]||null;
+  return{ok:missing.length===0&&unlisted.length===0&&notCore.length===0&&cachePrefix==='tatami-'+app,missing,unlisted,notCore,cachePrefix};
+ },{requiredAssets:pwaCoreAssets,app});
  S.ok('منابع اصلی رابط در Build و فهرست هستهٔ Cache موجودند',precache.ok,JSON.stringify(precache));
+ S.ok('پیشوند Cache از نقش همین PWA جدا شده است',precache.cachePrefix==='tatami-'+app,String(precache.cachePrefix));
  const registrations=await pg.evaluate(async()=>Promise.all((await navigator.serviceWorker.getRegistrations()).map(async registration=>({scope:registration.scope,active:registration.active?.state||null,installing:registration.installing?.state||null,waiting:registration.waiting?.state||null}))));
  S.ok('Service Worker registration exists',registrations.length>0,JSON.stringify(registrations));
  const swReady=await pg.evaluate(()=>Promise.race([navigator.serviceWorker.ready.then(()=>true),new Promise(resolve=>setTimeout(()=>resolve(false),10000))]));
@@ -432,6 +435,15 @@ export async function runPwa(app,base,browser,altRoot){
   return!!(await cache.match(url));
  });
  S.ok('فایل تنظیمات نشان در Cache اولیه PWA ذخیره شده است',configCached);
+ const manifestIconsCached=await pg.evaluate(async()=>{
+  const manifest=await fetch('manifest.webmanifest').then(response=>response.json());
+  const names=await caches.keys();
+  if(!names.length)return{ok:false,missing:manifest.icons.map(icon=>icon.src)};
+  const cache=await caches.open(names[0]),missing=[];
+  for(const icon of manifest.icons)if(!await cache.match(new URL(icon.src,location.href).toString()))missing.push(icon.src);
+  return{ok:missing.length===0,missing};
+ });
+ S.ok('همهٔ آیکون‌های Manifest از جمله maskable در Cache اولیه‌اند',manifestIconsCached.ok,JSON.stringify(manifestIconsCached));
  const coreAssetsCached=await pg.evaluate(async(paths)=>{
   const name=(await caches.keys()).find(key=>key.startsWith('tatami-'));
   if(!name)return{ok:false,missing:paths};
