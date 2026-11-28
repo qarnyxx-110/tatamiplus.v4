@@ -68,6 +68,14 @@ jobs:
         working-directory: shared
         run: node tests/django-bridge.test.mjs
 
+      - name: Run Django Admin navigation browser regression tests
+        working-directory: shared
+        run: node tests/admin-navigation.test.mjs
+
+      - name: Run Persian Django Admin sidebar text regression tests
+        working-directory: shared
+        run: node tests/admin-navigation-text.test.mjs
+
       - name: Run Student PWA browser regression suite
         working-directory: shared
         env:

@@ -1,19 +1,24 @@
 {% extends "admin/base.html" %}
-{% load static %}
 
 {% block title %}{{ title }} | مدیریت تاتامی پلاس{% endblock %}
 
 {% block branding %}
-<h1 id="site-name">
-  <a href="{% url 'admin:index' %}">تاتامی پلاس</a>
-  <span class="tp-admin-brand-caption">مدیریت سامانه</span>
+<h1 id="site-name" class="tp-admin-brand">
+  <a href="{% url 'admin:index' %}" aria-label="تاتامی پلاس، داشبورد مدیریت">
+    <span class="tp-admin-brand-mark" aria-hidden="true">道</span>
+    <span class="tp-admin-brand-copy">
+      <strong>تاتامی پلاس</strong>
+      <small>مرکز مدیریت سامانه</small>
+    </span>
+  </a>
 </h1>
 {% endblock %}
 
 {% block nav-global %}
 {% if new_coach_leads_count %}
   <a class="tp-admin-lead-notice" href="{% url 'admin:accounts_signuplead_changelist' %}" aria-label="سرنخ‌های جدید مربی: {{ new_coach_leads_count }}">
-    <span>درخواست‌های مربیگری جدید</span>
+    <span class="tp-admin-lead-dot" aria-hidden="true"></span>
+    <span>سرنخ‌های جدید مربی</span>
     <strong class="tp-admin-lead-count">{{ new_coach_leads_count }}</strong>
   </a>
 {% endif %}
@@ -21,5 +26,15 @@
 
 {% block extrastyle %}
   {{ block.super }}
-  <link rel="stylesheet" href="{% static 'css/tatami-admin.css' %}">
+  <link rel="stylesheet" href="/static/css/tatami-admin.css?v=20261120.1">
+  <link rel="stylesheet" href="/static/css/tatami-admin-ux.css?v=20261121.1">
+  <link rel="stylesheet" href="/static/css/tatami-admin-polish.css?v=20261120.1">
+  <link rel="stylesheet" href="/static/css/tatami-admin-navigation.css?v=20261120.1">
+  <link rel="stylesheet" href="/static/css/tatami-admin-workspace.css?v=20261121.1">
+  <link rel="stylesheet" href="/static/css/tatami-admin-navigation-text.css?v=20261121.1">
+{% endblock %}
+
+{% block extrahead %}
+  {{ block.super }}
+  <script defer src="/static/js/tatami-admin-navigation.js?v=20261120.1"></script>
 {% endblock %}

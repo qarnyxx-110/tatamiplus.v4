@@ -1,0 +1,73 @@
+name: Django Admin navigation and workspace browser validation
+
+'on':
+  push:
+    branches:
+      - main
+      - "feat/**"
+    paths:
+      - "django/static/js/tatami-admin-navigation.js"
+      - "django/static/css/tatami-admin-navigation.css"
+      - "django/static/css/tatami-admin-navigation-text.css"
+      - "django/static/css/tatami-admin-workspace.css"
+      - "shared/tests/admin-navigation.test.mjs"
+      - "shared/tests/admin-navigation-text.test.mjs"
+      - "shared/tests/admin-workspace-ui.test.mjs"
+      - ".github/workflows/admin-navigation-validation.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "django/static/js/tatami-admin-navigation.js"
+      - "django/static/css/tatami-admin-navigation.css"
+      - "django/static/css/tatami-admin-navigation-text.css"
+      - "django/static/css/tatami-admin-workspace.css"
+      - "shared/tests/admin-navigation.test.mjs"
+      - "shared/tests/admin-navigation-text.test.mjs"
+      - "shared/tests/admin-workspace-ui.test.mjs"
+      - ".github/workflows/admin-navigation-validation.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  browser:
+    name: Verify Django Admin navigation interactions
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install browser-test dependencies
+        working-directory: shared
+        run: |
+          npm install --no-package-lock --no-audit --no-fund
+          npx playwright install --with-deps chromium
+
+      - name: Run Admin navigation browser regression
+        working-directory: shared
+        run: node tests/admin-navigation.test.mjs
+
+      - name: Run Persian Admin sidebar text and layout regression
+        working-directory: shared
+        run: node tests/admin-navigation-text.test.mjs
+
+      - name: Run Admin form and submit-footer browser regression
+        working-directory: shared
+        run: node tests/admin-workspace-ui.test.mjs
+
+
+      - name: Upload measured Admin sidebar screenshots and dimensions
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tatami-admin-sidebar-measured-layout
+          path: shared/artifacts/admin-sidebar-sizing/
+          if-no-files-found: warn
+          retention-days: 7
