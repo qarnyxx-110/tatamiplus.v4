@@ -472,50 +472,96 @@ export async function runPwa(app,base,browser,altRoot){
  }catch(e){S.ok('آفلاین: ورود مستقیم /coaches/<slug>/',false,e.message.slice(0,80))}
  await ctx.setOffline(false);
  if(altRoot){
-  const before=keys[0];
-  altRoot.use();
+  const before=keys.find(name=>name.startsWith('tatami-'+app+'-'));
+  const otherRoles=['student','coach','club'].filter(role=>role!==app);
+  const sentinels=[...otherRoles.map(role=>'tatami-'+role+'-preserve-sentinel'),'tatami-unrelated-preserve-sentinel'];
+  await pg.evaluate(names=>Promise.all(names.map(name=>caches.open(name))),sentinels);
 
-  // Force the browser to check the changed Service Worker script rather than
-  // relying on its automatic update-check schedule.
-  const updateState=await pg.evaluate(async()=>{
+  // A second tab remains controlled by the old worker while the replacement installs.
+  const peer=await ctx.newPage();
+  await peer.goto(base+'/index.html');
+  await peer.waitForFunction(()=>!!navigator.serviceWorker.controller,{timeout:8000});
+
+  altRoot.use();
+  const updateRequested=await pg.evaluate(async()=>{
    const registration=await navigator.serviceWorker.getRegistration();
-   if(!registration)return{registration:false,controllerChanged:false,error:'no registration'};
-   let timer=0;
-   const controllerChanged=new Promise(resolve=>{
-    const onChange=()=>{if(timer)clearTimeout(timer);resolve(true)};
-    navigator.serviceWorker.addEventListener('controllerchange',onChange,{once:true});
-    timer=setTimeout(()=>{navigator.serviceWorker.removeEventListener('controllerchange',onChange);resolve(false)},12000);
-   });
-   try{await registration.update()}catch(error){
-    if(timer)clearTimeout(timer);
-    return{registration:true,controllerChanged:false,error:String(error)};
-   }
-   const changed=await controllerChanged;
-   const latest=await navigator.serviceWorker.getRegistration();
+   if(!registration)return false;
+   await registration.update();
+   return true;
+  });
+  if(updateRequested){
+   await pg.waitForFunction(async()=>{
+    const registration=await navigator.serviceWorker.getRegistration();
+    return registration?.waiting?.state==='installed';
+   },null,{timeout:15000}).catch(()=>null);
+  }
+  const staged=await pg.evaluate(async()=>{
+   const registration=await navigator.serviceWorker.getRegistration();
    return{
-    registration:true,
-    controllerChanged:changed,
-    active:latest?.active?.state||null,
-    installing:latest?.installing?.state||null,
-    waiting:latest?.waiting?.state||null,
-    controlled:!!navigator.serviceWorker.controller
+    active:registration?.active?.state||null,
+    waiting:registration?.waiting?.state||null,
+    controller:navigator.serviceWorker.controller?.state||null,
+    activeControlsPage:!!(registration?.active&&navigator.serviceWorker.controller===registration.active),
+    caches:await caches.keys()
    };
   });
+  const stagedCache=staged.caches.find(name=>name.startsWith('tatami-'+app+'-')&&name!==before);
+  S.ok('به‌روزرسانی: نسخه جدید تا پایان کار تب‌های قدیمی در انتظار می‌ماند',
+   updateRequested&&!!before&&staged.active==='activated'&&staged.waiting==='installed'&&staged.controller==='activated'&&staged.activeControlsPage&&staged.caches.includes(before)&&!!stagedCache,
+   JSON.stringify(staged));
 
+  await pg.close();
+  await wait(350);
+  const peerState=await peer.evaluate(async()=>{
+   const registration=await navigator.serviceWorker.getRegistration();
+   return{
+    active:registration?.active?.state||null,
+    waiting:registration?.waiting?.state||null,
+    controlledByActive:!!(registration?.active&&navigator.serviceWorker.controller===registration.active),
+    caches:await caches.keys()
+   };
+  });
+  S.ok('به‌روزرسانی: بازماندن حتی یک تب، نسخه قبلی و Cache آن را حفظ می‌کند',
+   peerState.active==='activated'&&peerState.waiting==='installed'&&peerState.controlledByActive&&peerState.caches.includes(before),
+   JSON.stringify(peerState));
+
+  // Once every old client is closed, the browser may activate the waiting worker.
+  await peer.close();
+  await wait(1800);
+  pg=await ctx.newPage();
   await pg.goto(base+'/index.html');
+  await pg.waitForFunction(async()=>{
+   const registration=await navigator.serviceWorker.getRegistration();
+   return registration?.active?.state==='activated'&&!registration.waiting&&!registration.installing&&!!navigator.serviceWorker.controller;
+  },null,{timeout:15000}).catch(()=>null);
+
   let after=[];
   for(let i=0;i<30;i++){
-   await wait(400);
+   await wait(300);
    after=await pg.evaluate(()=>caches.keys());
-   if(after.length===1&&after[0]!==before)break;
+   const own=after.filter(name=>name.startsWith('tatami-'+app+'-'));
+   if(own.length===1&&own[0]!==before)break;
   }
-  const cacheReplaced=after.length===1&&after[0]!==before;
-  S.ok('به‌روزرسانی: ثبت نسخه جدید Service Worker و controllerchange',
-   updateState.registration&&updateState.controllerChanged,JSON.stringify(updateState));
-  S.ok('به‌روزرسانی: Cache نسخه جدید جایگزین قدیمی شد',
-   cacheReplaced,before+' → '+after.join());
-  S.ok('به‌روزرسانی: محتوای نسخه جدید نمایش داده می‌شود',
-   await pg.evaluate(()=>document.documentElement.outerHTML.includes('UPDATE_MARKER')));
+  const latest=await pg.evaluate(async()=>{
+   const registration=await navigator.serviceWorker.getRegistration();
+   return{
+    active:registration?.active?.state||null,
+    waiting:registration?.waiting?.state||null,
+    installing:registration?.installing?.state||null,
+    controlled:!!navigator.serviceWorker.controller,
+    caches:await caches.keys(),
+    updateMarker:document.documentElement.outerHTML.includes('UPDATE_MARKER')
+   };
+  });
+  const ownCaches=latest.caches.filter(name=>name.startsWith('tatami-'+app+'-'));
+  S.ok('به‌روزرسانی: Worker جدید پس از بسته‌شدن همه تب‌های قدیمی فعال می‌شود',
+   latest.active==='activated'&&!latest.waiting&&!latest.installing&&latest.controlled,
+   JSON.stringify(latest));
+  S.ok('به‌روزرسانی: فقط Cache نسخه قدیمی همین نقش پاک می‌شود',
+   ownCaches.length===1&&ownCaches[0]!==before&&sentinels.every(name=>latest.caches.includes(name)),
+   JSON.stringify({before,ownCaches,sentinels,remaining:latest.caches}));
+  S.ok('به‌روزرسانی: نسخه تازه در بارگذاری بعدی نمایش داده می‌شود',latest.updateMarker);
+  await pg.evaluate(names=>Promise.all(names.map(name=>caches.delete(name))),sentinels);
   altRoot.reset();
  }
  const get=async p=>{const r=await pg.request.get(base+p,{maxRedirects:0});return{s:r.status(),t:await r.text()}};
