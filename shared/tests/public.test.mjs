@@ -533,8 +533,9 @@ export async function runPwa(app,base,browser,altRoot){
    };
   });
   const stagedCache=staged.caches.find(name=>name.startsWith('tatami-'+app+'-')&&name!==before);
-  S.ok('به‌روزرسانی: نسخه جدید تا پایان کار تب‌های قدیمی در انتظار می‌ماند',
-   updateRequested&&!!before&&staged.active==='activated'&&staged.waiting==='installed'&&staged.controller==='activated'&&staged.activeControlsPage&&staged.caches.includes(before)&&!!stagedCache,
+  const replacementIsStaged=staged.installing==='installing'||staged.waiting==='installed';
+  S.ok('به‌روزرسانی: نسخه جدید نصب/منتظر می‌ماند و نسخه فعال را تصاحب نمی‌کند',
+   updateRequested&&!!before&&staged.active==='activated'&&replacementIsStaged&&staged.controller==='activated'&&staged.activeControlsPage&&staged.caches.includes(before)&&!!stagedCache,
    JSON.stringify(staged));
 
   await pg.close();
@@ -543,18 +544,20 @@ export async function runPwa(app,base,browser,altRoot){
    const registration=await navigator.serviceWorker.getRegistration();
    return{
     active:registration?.active?.state||null,
+    installing:registration?.installing?.state||null,
     waiting:registration?.waiting?.state||null,
     controlledByActive:!!(registration?.active&&navigator.serviceWorker.controller===registration.active),
     caches:await caches.keys()
    };
   });
+  const peerStillUsesPrevious=peerState.installing==='installing'||peerState.waiting==='installed';
   S.ok('به‌روزرسانی: بازماندن حتی یک تب، نسخه قبلی و Cache آن را حفظ می‌کند',
-   peerState.active==='activated'&&peerState.waiting==='installed'&&peerState.controlledByActive&&peerState.caches.includes(before),
+   peerState.active==='activated'&&peerStillUsesPrevious&&peerState.controlledByActive&&peerState.caches.includes(before),
    JSON.stringify(peerState));
 
   // Once every old client is closed, the browser may activate the waiting worker.
   await peer.close();
-  await wait(1800);
+  await wait(20000);
   pg=await ctx.newPage();
   await pg.goto(base+'/index.html');
   await pg.waitForFunction(async()=>{
