@@ -338,7 +338,10 @@ export async function runPwa(app,base,browser,altRoot){
  const S=new Suite('PWA-فنی '+app);
  const ctx=await browser.newContext({viewport:{width:390,height:800},serviceWorkers:'allow'});
  const pg=await ctx.newPage();pg.setDefaultTimeout(15000);pg.setDefaultNavigationTimeout(15000);
- const swConsoleErrors=[],swHttpErrors=[];pg.on('console',message=>{if(message.type()==='error')swConsoleErrors.push(message.text())});pg.on('response',response=>{if(response.status()>=400)swHttpErrors.push(response.status()+' '+response.url())});
+ const swConsoleErrors=[],swHttpErrors=[],failedRequests=[];
+ pg.on('console',message=>{if(message.type()==='error')swConsoleErrors.push({text:message.text(),location:message.location()})});
+ pg.on('response',response=>{if(response.status()>=400)swHttpErrors.push({status:response.status(),url:response.url(),resourceType:response.request().resourceType()})});
+ pg.on('requestfailed',request=>failedRequests.push({url:request.url(),failure:request.failure(),resourceType:request.resourceType()}));
  await pg.goto(base+'/index.html');
  const neshanConfig=await pg.evaluate(async()=>{const r=await fetch('assets/neshan-config.js');return{status:r.status,text:await r.text()}});
  S.ok('تنظیمات نشان در خروجی PWA قابل دریافت است',neshanConfig.status===200&&neshanConfig.text.includes('TP_NESHAN_WEB_KEY')&&neshanConfig.text.includes('TP_CLUBS_JSON_URL'),String(neshanConfig.status));
@@ -362,7 +365,7 @@ export async function runPwa(app,base,browser,altRoot){
  S.ok('Service Worker registration exists',registrations.length>0,JSON.stringify(registrations));
  const swReady=await pg.evaluate(()=>Promise.race([navigator.serviceWorker.ready.then(()=>true),new Promise(resolve=>setTimeout(()=>resolve(false),10000))]));
  S.ok('Service Worker registration becomes ready within 10 seconds',swReady,swReady?'ready':'timed out');
- S.ok('Service Worker has no registration, install, or resource-load errors',!swConsoleErrors.length&&!swHttpErrors.length,[...swConsoleErrors,...swHttpErrors].join(' | '));
+ S.ok('Service Worker has no registration, install, or resource-load errors',!swConsoleErrors.length&&!swHttpErrors.length,JSON.stringify({consoleErrors:swConsoleErrors.slice(0,30),httpErrors:swHttpErrors.slice(0,40),requestFailures:failedRequests.slice(0,20)}));
  await wait(900);
  await pg.reload();
  await wait(500);
@@ -432,15 +435,32 @@ export async function runPwa(app,base,browser,altRoot){
    const updateState=await updatePg.evaluate(async()=>{
     const registration=await navigator.serviceWorker.getRegistration();
     if(!registration)return{registration:false,controllerChanged:false,error:'no registration'};
+    const lifecycle=[];
+    const describe=worker=>worker?{state:worker.state,scriptURL:worker.scriptURL}:null;
+    const track=worker=>{
+     if(!worker)return;
+     lifecycle.push({event:'worker-state',...describe(worker)});
+     worker.addEventListener('statechange',()=>lifecycle.push({event:'worker-state',...describe(worker)}));
+    };
+    registration.addEventListener('updatefound',()=>{
+     lifecycle.push({event:'updatefound'});
+     track(registration.installing);
+    });
+    track(registration.installing);
+    track(registration.waiting);
     const waitForControllerChange=()=>new Promise(resolve=>{
      let timer=0;
-     const onChange=()=>{if(timer)clearTimeout(timer);resolve(true)};
+     const onChange=()=>{
+      if(timer)clearTimeout(timer);
+      lifecycle.push({event:'controllerchange',controller:describe(navigator.serviceWorker.controller)});
+      resolve(true);
+     };
      navigator.serviceWorker.addEventListener('controllerchange',onChange,{once:true});
      timer=setTimeout(()=>{navigator.serviceWorker.removeEventListener('controllerchange',onChange);resolve(false)},12000);
     });
     const firstChange=waitForControllerChange();
     try{await registration.update()}catch(error){
-     return{registration:true,controllerChanged:false,error:String(error)};
+     return{registration:true,controllerChanged:false,error:String(error),lifecycle};
     }
     let changed=await firstChange;
     const automaticControllerChange=changed;
@@ -476,10 +496,11 @@ export async function runPwa(app,base,browser,altRoot){
      activationAcknowledged,
      activationResponse,
      builtHandlerPresent,
-     active:latest?.active?.state||null,
-     installing:latest?.installing?.state||null,
-     waiting:latest?.waiting?.state||null,
-     controlled:!!navigator.serviceWorker.controller
+     active:describe(latest?.active),
+     installing:describe(latest?.installing),
+     waiting:describe(latest?.waiting),
+     controlled:!!navigator.serviceWorker.controller,
+     lifecycle
     };
    });
 
