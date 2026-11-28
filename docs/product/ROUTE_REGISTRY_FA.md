@@ -33,14 +33,15 @@
 ## ۳. قراردادهای Django تأییدشده در handoff فعلی
 
 ### احراز هویت و حساب
-- GET/POST /auth/login/ و جریان OTP.
-- POST /auth/otp/send/ و GET/POST /auth/otp/verify/.
-- GET/POST /auth/complete-profile/.
-- مسیرهای بازیابی/تنظیم رمز در handoff.
-- POST /accounts/logout/ با CSRF.
+- GET/POST `/auth/login/` برای ورود با رمز (`PasswordLoginForm`).
+- GET/POST `/auth/login/sms/` برای ورود/ثبت‌نام پیامکی (`PhoneLoginForm`).
+- POST `/auth/otp/send/` و GET/POST `/auth/otp/verify/` برای تأیید OTP.
+- GET/POST `/auth/complete-profile/`؛ فرم جاری شامل name، city، role، password و password_confirm است.
+- `/auth/password/reset/` و `/auth/password/reset/confirm/` برای بازیابی؛ `/auth/password/set/` برای ساخت رمز حساب قدیمی.
+- POST `/accounts/logout/` با CSRF.
 - /account/ برای هاب حساب و نقش کاربر.
 
-**نکته:** صفحهٔ ورود/ثبت‌نام باید با قرارداد OTP فعلی طراحی شود؛ ثبت‌نام مستقل قدیمی مرجع نیست. نقش‌های بک‌اند student، coach و gym هستند.
+**نکته:** ثبت‌نام جداگانه وجود ندارد؛ مسیر SMS، ورود حساب موجود و ایجاد حساب جدید را پس از تأیید OTP پوشش می‌دهد. در کد جاری، `/auth/login/` ورود با رمز و `/auth/login/sms/` مسیر پیامکی است. handoff در این بخش با کد اختلاف دارد؛ قالب فرانت‌اند فعلی نیز action پیامکی را اشتباه به `/auth/login/` می‌فرستد و باید پیش از تأیید اتصال اصلاح شود. نقش‌های بک‌اند student، coach و gym هستند.
 
 ### مربی
 - /coaches/ و /coaches/<profile_id>/ برای پروفایل‌های تأییدشده/منتشرشده.
