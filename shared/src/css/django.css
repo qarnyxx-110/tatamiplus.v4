@@ -48,9 +48,3 @@
 .tp-coaches{align-items:stretch}
 .tp-coaches>li{display:flex;min-width:0}
 .tp-coaches>li>.tp-coach{width:100%;flex:1;min-width:0}
-
-
-/* Links between the two server-rendered login modes. */
-.tp-auth-links{display:flex;justify-content:space-between;gap:var(--tp-space-sm);flex-wrap:wrap;margin-top:var(--tp-space-md)}
-.tp-auth-links a{color:var(--tp-color-brand-text);font-size:var(--tp-font-size-sm);text-decoration:underline;text-underline-offset:3px}
-.tp-auth-links a:hover{color:var(--tp-color-accent)}
