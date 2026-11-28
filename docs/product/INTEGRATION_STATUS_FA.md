@@ -6,7 +6,7 @@
 | قابلیت | شواهد قرارداد | وضعیت اتصال در فرانت‌اند طبق مبنای معماری | تصمیم طراحی |
 |---|---|---|---|
 | خانه و محتوای عمومی | GET / | Template سرور دارد؛ وضعیت دقیق پوسته باید بررسی شود | طراحی مستقل |
-| ورود/ثبت‌نام و حساب | `/auth/login/` ورود با رمز؛ `/auth/login/sms/` ورود/ثبت‌نام پیامکی؛ `/auth/otp/verify/` تأیید کد؛ complete-profile و password routes | Bridge، hashها و templateها وجود دارند، اما ناسازگاری P0 در action قالب login باعث می‌شود فرم SMS به endpoint ورود با رمز POST شود | دو فرم مجزا با قرارداد دقیق؛ تا رفع ناسازگاری، اتصال SMS «Needs fix» است |
+| ورود/ثبت‌نام و حساب | `/auth/login/` ورود با رمز؛ `/auth/login/sms/` ورود/ثبت‌نام پیامکی؛ `/auth/otp/verify/` تأیید کد؛ complete-profile و password routes | قالب login در شاخهٔ طراحی اکنون با `mode=password|sms` دو فرم مستقل و action صحیح دارد؛ آزمون ایستا به‌روزرسانی شده، اجرای Build/CI و تست زنده هنوز انجام نشده | اصلاح کد P0 انجام شد؛ وضعیت نهایی اتصال پس از اجرای تست‌های سرور/مرورگر تأیید می‌شود |
 | فهرست و پروفایل مربی | /coaches/ و جزئیات | متصل طبق معماری، فقط دادهٔ منتشرشده | دادهٔ واقعی؛ empty state |
 | درخواست و وضعیت مربی | /coaches/apply/ و application/ | bridge route موجود | فرم و status واقعی |
 | فروشگاه و سبد | /store/، detail، cart و POSTها | متصل؛ مرجع قیمت/موجودی Django | دادهٔ واقعی؛ کاتالوگ خالی را درست نمایش بده |
@@ -25,7 +25,7 @@
 
 ## ۱. مواردی که باید پیش از اتصال رفع/تصمیم‌گیری شوند
 
-1. **P0 ورود پیامکی:** `django/templates/accounts/login.html` همیشه به `phone_auth:login`، یعنی `/auth/login/` (ورود با رمز)، POST می‌کند؛ در حالی‌که فرم `PhoneLoginForm` در `/auth/login/sms/` باید به `phone_auth:sms_login` POST شود. متن/دکمهٔ قالب نیز حالت password را از SMS جدا نمی‌کند. این ناسازگاری قبل از اتصال نهایی باید در فرانت‌اند اصلاح و تست شود.
+1. **P0 ورود پیامکی، اصلاح کد انجام شد:** قالب frontend-owned بر اساس `mode` دو فرم جدا دارد؛ password به `phone_auth:login` و SMS به `phone_auth:sms_login` POST می‌کند. تست قراردادی و assertهای CI نیز به‌روزرسانی شده‌اند؛ Build، CI و تست زندهٔ Django هنوز باید اجرا شوند.
 2. **تعارض handoff و کد:** فایل handoff در بخش ورود، `/auth/login/` را گاهی OTP توصیف می‌کند؛ اما `accounts/auth_urls.py` و `accounts/views.py` فعلی `/auth/login/` را `password_login` و `/auth/login/sms/` را `phone_login` ثبت می‌کنند. مبنای طراحی فعلاً کد جاری است؛ handoff باید با مالک بک‌اند همسان شود.
 3. قالب تکمیل پروفایل پنج فیلد دارد: name، city، role، password و password_confirm؛ توضیح قدیمی handoff فقط سه فیلد پایه را نام برده بود.
 4. View تأیید OTP مقدار `resend_in` را به قالب نمی‌دهد؛ شمارش معکوس ظاهری نباید از نظر UI معادل مجوز سرور تلقی شود.
