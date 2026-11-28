@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 
 const bridge = fs.readFileSync(new URL('../src/js/shared/django-route-bridge.js', import.meta.url), 'utf8');
+const auth = fs.readFileSync(new URL('../src/js/shared/auth.js', import.meta.url), 'utf8');
 const router = fs.readFileSync(new URL('../src/js/shared/router.js', import.meta.url), 'utf8');
 const loginTemplate = fs.readFileSync(new URL('../../django/templates/accounts/login.html', import.meta.url), 'utf8');
 
@@ -35,4 +36,9 @@ assert.ok(loginTemplate.includes("{% url 'phone_auth:password_reset' %}"), 'Pass
 assert.ok(loginTemplate.includes("{% csrf_token %}"), 'Both login forms must include CSRF protection');
 assert.ok(loginTemplate.includes("ورود به حساب") && loginTemplate.includes("ارسال کد تأیید"), 'Each mode must have an accurate action label');
 
-console.log('Django auth route and template contract: PASS');
+assert.match(auth, /if\(role==='club'\)\{\s*window\.location\.assign\('\/auth\/login\/sms\/\?role=gym'\);\s*return;\s*\}/, 'Selecting the Preview club role must enter Django gym OTP registration');
+assert.ok(auth.includes("const AUTH_ROLES=['student','coach']"), 'Gym accounts must not be stored in the local Preview auth system');
+assert.ok(auth.includes("L('tp:me',null)"), 'Existing Preview local account restoration must remain intact');
+assert.ok(auth.includes('ثبت‌نام واقعی باشگاه فیزیکی') && auth.includes('ورود و ثبت‌نام در سامانهٔ اصلی'), 'The club role card must describe the real Django registration path');
+
+console.log('Django auth route, gym entry and template contract: PASS');
