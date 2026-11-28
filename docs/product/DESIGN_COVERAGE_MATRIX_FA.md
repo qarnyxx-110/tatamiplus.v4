@@ -34,6 +34,8 @@
 | PG-016 | هاب حساب | `#/profile` و `#/my-profile` | `views-new.js` و `views-coaches.js` با هم‌پوشانی | مالک نهایی route باید در Build تست شود | P0 |
 | PG-017 | خروج | POST `/accounts/logout/` | Django | CSRF/session | P1 |
 
+مشخصات جزئی جریان ورود/OTP: [PG-010_AUTH_OTP_FA.md](pages/PG-010_AUTH_OTP_FA.md). این سند ناسازگاری action قالب login را به‌عنوان مانع P0 ثبت کرده است.
+
 ## ۳. فروشگاه و سفارش
 
 | شناسه | صفحه | مسیر | مالک/منبع | وضعیت اولیه | اولویت |
