@@ -8,6 +8,7 @@ function sc(){const c=$('#cine');if(!c||matchMedia('(prefers-reduced-motion:redu
 addEventListener('hashchange',()=>R());addEventListener('scroll',sc,{passive:true});R();
 if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)&&APP.fixed&&!window.__ARTIFACT__){
  const registerTatamiServiceWorker=()=>navigator.serviceWorker.register(new URL('sw.js',document.baseURI),{scope:'./'}).then(registration=>{
+  if(!registration)return;
   const notice=document.getElementById('tp-pwa-update-notice');
   const dismiss=document.getElementById('tp-pwa-update-dismiss');
   if(!notice||!dismiss)return;
