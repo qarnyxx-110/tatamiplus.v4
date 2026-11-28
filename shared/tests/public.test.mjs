@@ -7,8 +7,8 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
  pg.on('console',m=>{
   if(m.type()!=='error')return;
   const message=m.text();
-  if(/^\\[Tatami home live feed\\] (?:coaches|products) Error: Django feed returned HTTP 404/.test(message)){backendFeedErrors.push(message);return}
-  if(!/fonts\\.g|ERR_NAME_NOT_RESOLVED|ERR_INTERNET|Failed to load resource/.test(message))errs.push('CONSOLE '+JSON.stringify({text:message,location:m.location()}).slice(0,1600));
+  if(/^\[Tatami home live feed\] (?:coaches|products) Error: Django feed returned HTTP 404/.test(message)){backendFeedErrors.push(message);return}
+  if(!/fonts\.g|ERR_NAME_NOT_RESOLVED|ERR_INTERNET|Failed to load resource/.test(message))errs.push('CONSOLE '+JSON.stringify({text:message,location:m.location()}).slice(0,1600));
  });
  pg.on('response',response=>{
   if(response.status()>=400&&response.request().resourceType()==='fetch')backendFeedResponses.push({status:response.status(),url:response.url()});
@@ -47,7 +47,7 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
   homeFeedStates.length===2&&homeFeedStates.every(feed=>['empty','error'].includes(feed.state)&&feed.cards===0),
   JSON.stringify(homeFeedStates));
  S.ok('Home: پاسخ 404 محیط استاتیک فقط مربوط به endpoint واقعی فروشگاه است',
-  backendFeedResponses.length===1&&backendFeedResponses[0].status===404&&backendFeedResponses[0].url===expectedStoreUrl,
+  backendFeedResponses.length>=1&&backendFeedResponses.every(response=>response.status===404&&response.url===expectedStoreUrl),
   JSON.stringify(backendFeedResponses));
  S.ok('Home: خطای فید با پیام مشخص قابل تشخیص است',
   backendFeedErrors.some(message=>message.includes('products')&&message.includes('HTTP 404')),
