@@ -671,11 +671,17 @@ export async function runPreview(base,browser){
  await pg.locator('.cn .chip',{hasText:'کمربند جودو'}).first().click();await wait(140);
  S.ok('تغییر فیلتر صفحه را به ۱ برمی‌گرداند و فیلتر حفظ می‌شود',
    await cards()===10&&(await pg.evaluate(()=>location.hash)).includes('category=')&&!(await pg.evaluate(()=>location.hash)).includes('page=2'));
- await go('#/register?role=club');
+ const gymSignup=base+'/auth/login/sms/?role=gym';
+ await pg.route(gymSignup,route=>route.fulfill({contentType:'text/html',body:'<main>Django OTP</main>'}));
+ await go('#/register');
  S.ok('ثبت‌نام: سه نوع حساب در رابط نمایش داده می‌شوند',await pg.locator('#rg-f .tp-role-card').count()===3);
- S.ok('ثبت‌نام: حساب باشگاه فقط پیش‌نمایش است و دکمه ساخت حساب را غیرفعال می‌کند',await pg.locator('#rg-f').getAttribute('data-role-preview')==='club'&&await pg.locator('#rg-f button[type=submit]').isDisabled()&&(await T()).includes('در حال حاضر ساخت حساب باشگاه از این فرم امکان‌پذیر نیست'));
- await pg.locator('#rg-f input[name=role][value=student]').check();
- S.ok('ثبت‌نام: انتخاب هنرجو حالت فعال را برمی‌گرداند',await pg.locator('#rg-f button[type=submit]').isEnabled()&&await pg.locator('#rg-f').getAttribute('data-role-preview')==='');
+ await Promise.all([pg.waitForURL(gymSignup),pg.locator('#rg-f button[data-role-preview="club"]').click()]);
+ S.ok('ثبت‌نام: انتخاب باشگاه به ثبت‌نام پیامکی Django می‌رود',pg.url()===gymSignup);
+ await pg.goto(base+'/index.html#/register?role=club');
+ await pg.waitForURL(gymSignup);
+ S.ok('ثبت‌نام: پیوند مستقیم نقش باشگاه هم به ثبت‌نام پیامکی Django می‌رود',pg.url()===gymSignup);
+ await pg.goto(base+'/index.html#/register');
+ S.ok('ثبت‌نام: حساب هنرجو در فرم محلی فعال است',await pg.locator('#rg-f input[name=role][value=student]').isChecked()&&await pg.locator('#rg-f button[type=submit]').isEnabled());
  await pg.setViewportSize({width:390,height:850});await go('#/register');
  S.ok('ثبت‌نام موبایل: مرحله اول فرم نمایش داده می‌شود',await pg.locator('#rg-f').getAttribute('data-mobile-steps')==='true'&&await pg.locator('#rg-f [data-auth-step="2"]').isHidden());
  await pg.locator('#rg-u').fill('mobile-preview-user');
