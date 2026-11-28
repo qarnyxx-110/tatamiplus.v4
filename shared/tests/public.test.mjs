@@ -36,15 +36,24 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
  S.ok('جزئیات مسابقه وضعیت ثبت‌نام را به‌اشتباه باز/بسته/پایان‌یافته اعلام نمی‌کند',
   tournamentDetail.includes('نیازمند تأیید'));
  await go('#/');
- await wait(300);
+ await pg.waitForFunction(()=>{
+  const feeds=[...document.querySelectorAll('#app [data-tp-home-feed]')];
+  return feeds.length===2&&feeds.every(feed=>
+   feed.dataset.tpFeedStarted==='true'&&
+   ['empty','error','ready','reference'].includes(feed.dataset.state)&&
+   feed.getAttribute('aria-busy')==='false'
+  );
+ },null,{timeout:5000}).catch(()=>null);
  const homeFeedStates=await pg.locator('#app [data-tp-home-feed]').evaluateAll(feeds=>feeds.map(feed=>({
   layout:feed.dataset.layout,
-  state:feed.dataset.state,
+  started:feed.dataset.tpFeedStarted==='true',
+  state:feed.dataset.state||null,
+  busy:feed.getAttribute('aria-busy'),
   cards:feed.querySelectorAll('.tp-coaches > li,.tp-product-card').length
  })));
  const expectedStoreUrl=new URL('/store/',base).toString();
  S.ok('Home: فید واقعی Django بدون پاسخ بک‌اند، فقط empty/error و بدون کارت ساختگی می‌ماند',
-  homeFeedStates.length===2&&homeFeedStates.every(feed=>['empty','error'].includes(feed.state)&&feed.cards===0),
+  homeFeedStates.length===2&&homeFeedStates.every(feed=>feed.started&&['empty','error'].includes(feed.state)&&feed.busy==='false'&&feed.cards===0),
   JSON.stringify(homeFeedStates));
  S.ok('Home: پاسخ 404 محیط استاتیک فقط مربوط به endpoint واقعی فروشگاه است',
   backendFeedResponses.length>=1&&backendFeedResponses.every(response=>response.status===404&&response.url===expectedStoreUrl),
