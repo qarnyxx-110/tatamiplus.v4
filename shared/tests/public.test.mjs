@@ -7,7 +7,7 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
  pg.on('console',m=>{
   if(m.type()!=='error')return;
   const message=m.text();
-  if(/^\[Tatami home live feed\] (?:coaches|products) Error: Django feed returned HTTP 404/.test(message)){backendFeedErrors.push(message);return}
+  if(message.includes('[Tatami home live feed]')&&message.includes('Django feed returned HTTP 404')&&/(?:coaches|products)/.test(message)){backendFeedErrors.push(message);return}
   if(!/fonts\.g|ERR_NAME_NOT_RESOLVED|ERR_INTERNET|Failed to load resource/.test(message))errs.push('CONSOLE '+JSON.stringify({text:message,location:m.location()}).slice(0,1600));
  });
  pg.on('response',response=>{
@@ -50,8 +50,8 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
   backendFeedResponses.length>=1&&backendFeedResponses.every(response=>response.status===404&&response.url===expectedStoreUrl),
   JSON.stringify(backendFeedResponses));
  S.ok('Home: خطای فید با پیام مشخص قابل تشخیص است',
-  backendFeedErrors.some(message=>message.includes('products')&&message.includes('HTTP 404')),
-  backendFeedErrors.join(' | '));
+  backendFeedErrors.some(message=>message.includes('products')&&message.includes('Django feed returned HTTP 404')),
+  JSON.stringify({captured:backendFeedErrors,consoleErrorMessages:errs.filter(error=>error.includes('Tatami home live feed'))}));
  // --- مسیرهای معتبر/نامعتبر
  const valid=['#/','#/store','#/online-coach','#/store/','#/product/3','#/product?id=3','#/video/3','#/video?id=3','#/blog','#/blog/uchi-mata-basics','#/blog/2','#/tournaments','#/tournament/1','#/instructor/1','#/academy','#/profile','#/gems','#/cart','#/dashboard','#/videos','#/search','#/coaches','#/coaches/sara-ahmadi','#/sponsors','#/tatamipedia','#/tatamipedia/ippon','#/tatamipedia?q=ippon&cat=refereeing','#/blog?page=2','#/specialist-services','#/nutrition-coaches','#/sports-clinics','#/sports-psychologists'];
  const bad=[];for(const r of valid){await go(r);if(await nf())bad.push(r)}S.ok('مسیرهای معتبر 404 نمی‌دهند ('+valid.length+' مسیر)',!bad.length,bad.join(' '));
