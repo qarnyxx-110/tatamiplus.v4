@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360" role="img" aria-labelledby="title desc">
+<title id="title">نمودار شماتیک اوسوتو‌گاری</title><desc id="desc">جودوکار سفید با هدایت بالاتنه، پای تکیه‌گاه حریف آبی را از بیرون به عقب درو می‌کند.</desc><defs>
+ <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#182638"/><stop offset="1" stop-color="#101721"/></linearGradient>
+ <linearGradient id="mat" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#24364a"/><stop offset="1" stop-color="#192737"/></linearGradient>
+ <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse"><path d="M32 0H0V32" fill="none" stroke="#8DB0FF" stroke-opacity=".08" stroke-width="1"/></pattern>
+ <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0 0L6 3L0 6" fill="none" stroke="#FFC933" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker>
+ <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="8"/></filter>
+ </defs>
+<rect width="640" height="360" rx="24" fill="url(#bg)"/><rect x="18" y="18" width="604" height="324" rx="18" fill="url(#grid)" stroke="#8DB0FF" stroke-opacity=".17"/>
+<path d="M55 292H585" stroke="#8DB0FF" stroke-opacity=".16" stroke-width="2" stroke-dasharray="5 9"/><ellipse cx="320" cy="298" rx="210" ry="24" fill="#050b12" opacity=".45" filter="url(#shadow)"/>
+<g stroke-linecap="round" stroke-linejoin="round">
+ <circle cx="444" cy="91" r="24" fill="#D9A98D" stroke="#8DB0FF" stroke-width="4"/>
+ <path d="M420 120Q445 110 472 131L486 191L439 210L403 161Z" fill="#2F62D6" stroke="#8DB0FF" stroke-width="4"/>
+ <path d="M419 136L375 145L340 126" fill="none" stroke="#2F62D6" stroke-width="20"/><path d="M419 136L375 145L340 126" fill="none" stroke="#8DB0FF" stroke-width="3"/>
+ <path d="M466 138L506 153L527 135" fill="none" stroke="#2F62D6" stroke-width="20"/><path d="M466 138L506 153L527 135" fill="none" stroke="#8DB0FF" stroke-width="3"/>
+ <path d="M446 202L475 243L495 276" fill="none" stroke="#2F62D6" stroke-width="25"/><path d="M446 202L475 243L495 276" fill="none" stroke="#8DB0FF" stroke-width="3"/>
+ <path d="M477 197L521 214L548 209" fill="none" stroke="#2F62D6" stroke-width="25"/><path d="M477 197L521 214L548 209" fill="none" stroke="#8DB0FF" stroke-width="3"/>
+ <circle cx="231" cy="94" r="24" fill="#DDB69A" stroke="#DDE7F5" stroke-width="4"/>
+ <path d="M204 123Q231 109 258 128L267 192L205 197Z" fill="#F1F4FA" stroke="#B8C7D8" stroke-width="4"/>
+ <path d="M209 139L271 150L329 141" fill="none" stroke="#F1F4FA" stroke-width="20"/><path d="M209 139L271 150L329 141" fill="none" stroke="#B8C7D8" stroke-width="3"/>
+ <path d="M255 140L314 122L373 135" fill="none" stroke="#F1F4FA" stroke-width="19"/><path d="M255 140L314 122L373 135" fill="none" stroke="#B8C7D8" stroke-width="3"/>
+ <path d="M215 191L197 241L189 287" fill="none" stroke="#F1F4FA" stroke-width="25"/><path d="M215 191L197 241L189 287" fill="none" stroke="#B8C7D8" stroke-width="3"/>
+ <path d="M255 190L293 226L407 245" fill="none" stroke="#F1F4FA" stroke-width="26"/><path d="M255 190L293 226L407 245" fill="none" stroke="#B8C7D8" stroke-width="3"/>
+ <path d="M202 181Q232 195 267 179" fill="none" stroke="#244FB3" stroke-width="10"/>
+ <path d="M380 244Q421 260 467 288" fill="none" stroke="#FFC933" stroke-width="4" stroke-dasharray="8 8" marker-end="url(#arrow)"/>
+ <path d="M478 104Q533 89 553 129" fill="none" stroke="#FFC933" stroke-width="4" stroke-dasharray="7 8" marker-end="url(#arrow)"/>
+</g>
+<g fill="#8DB0FF" opacity=".7"><circle cx="68" cy="62" r="3"/><circle cx="580" cy="78" r="3"/><circle cx="550" cy="286" r="2"/></g>
+</svg>

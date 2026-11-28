@@ -11,7 +11,7 @@ const SITE=(process.env.SITE_URL||'').replace(/\/$/,''),API=(process.env.TP_API_
 const PUBLIC_JS=['lib/text','shared/core','shared/api','shared/components','ui/components-ui','shared/dashboard-kit','shared/content','shared/store','shared/videos','shared/state-guard','shared/views-core','shared/views-store','shared/views-tournaments','shared/views-videos','shared/views-academy','shared/views-new','shared/views-specialist-services','shared/views-online-coach','shared/views-clubs-map','shared/views-portfolio','shared/views-blog','shared/views-coaches','shared/views-tatamipedia','shared/views-sponsors','shared/auth','student/student','coach/coach','club/club','shared/router'].map(f=>`js/${f}.js`);
 const MKT_JS=['lib/text','marketing/util','ui/components-ui','marketing/demo-store','marketing/api-client','marketing/editor','marketing/views','marketing/main'].map(f=>`js/${f}.js`);
 const STORE=JSON.parse(R('data/store-products.json'));
-const DATA={coaches:JSON.parse(R('data/coaches.json')),sponsors:JSON.parse(R('data/sponsors.json')),tpd:JSON.parse(R('data/tatamipedia.json'))};delete DATA.tpd._note;
+const DATA={coaches:JSON.parse(R('data/coaches.json')),coachDirectory:JSON.parse(R('data/coach-directory.json')),sponsors:JSON.parse(R('data/sponsors.json')),tpd:JSON.parse(R('data/tatamipedia.json'))};delete DATA.tpd._note;
 const TOK=JSON.parse(R('design/tokens.json'));delete TOK._comment;
 const tokensCss=()=>':root{'+Object.entries(TOK).flatMap(([g,o])=>Object.entries(o).map(([k,v])=>`--tp-${g}-${k}:${String(v).replace(/\{([a-z]+)\.([^}]+)\}/g,(m,a,c)=>`var(--tp-${a}-${c})`)}`)).join(';')+'}';
 const APPS={
@@ -35,7 +35,7 @@ function page(name,pwa){const a=APPS[name],cfg={...a};delete cfg.name;delete cfg
  h=h.replace(/<a ([^>]*?)href="#\/([a-z-]*)[^"]*"([^>]*)>[^<]*<\/a>/g,(m,x,k)=>a.deny.includes(k)?'':m);
  const tags=pwa?`<meta name="theme-color" content="#121418"><meta name="description" content="${a.desc}"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icons/icon-192.png"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png">`:'';
  const files=PUBLIC_JS;
- const js=(pwa?'':'window.__ARTIFACT__=true;\n')+`const APP=${JSON.stringify(cfg)},IMG_AVAIL=${JSON.stringify(AVAIL)},TP_API_BASE=${JSON.stringify(API)},COACHES=${JSON.stringify(DATA.coaches)},STORE_CATALOG=${JSON.stringify(STORE)},SPONSORS=${JSON.stringify(DATA.sponsors)},TPD=${JSON.stringify(DATA.tpd)};\n`+files.map(R).join('\n')+(name==='preview'?'\n'+R('js/shared/django-route-bridge.js'):'');
+ const js=(pwa?'':'window.__ARTIFACT__=true;\n')+`const APP=${JSON.stringify(cfg)},IMG_AVAIL=${JSON.stringify(AVAIL)},TP_API_BASE=${JSON.stringify(API)},COACHES=${JSON.stringify(DATA.coaches)},COACH_DIRECTORY=${JSON.stringify(DATA.coachDirectory).replace(/</g,'\\u003c')},STORE_CATALOG=${JSON.stringify(STORE)},SPONSORS=${JSON.stringify(DATA.sponsors)},TPD=${JSON.stringify(DATA.tpd)};\n`+files.map(R).join('\n')+(name==='preview'?'\n'+R('js/shared/django-route-bridge.js'):'');
  return h.replace('<!--PWA-->',()=>tags).replace('/*CSS*/',()=>baseCss()).replace('/*JS*/',()=>min(js,'js'))}
 function marketing(){const js=`const TP_CMS=${JSON.stringify({apiBase:API,mode:API?'api':'demo'})},BL_SEED=${JSON.stringify(R('data/blog-seed.json')?JSON.parse(R('data/blog-seed.json')):[])},TPD_SEED=${JSON.stringify(DATA.tpd)},TP_DEMO_AUTHOR='تیم مارکتینگ';\n`+MKT_JS.map(R).join('\n');
  return dropGoogle(R('marketing.html')).replace('/*CSS*/',()=>baseCss(R('css/marketing.css'))).replace('/*JS*/',()=>min(js,'js'))}
