@@ -11,3 +11,4 @@ const qa=a=>sec('qa','دسترسی سریع',`<div class="d-qa">${a.map(x=>{cons
 const cols=(a,l,t)=>`<div class="cols" role="img" aria-label="${t}">${a.map((v,i)=>`<div><i style="height:${Math.round(v*.85)}px"></i><span>${l[i]}</span></div>`).join('')}</div>`;
 const DAYS=['ش','ی','د','س','چ','پ','ج'],MON=['مهر','آبان','آذر','دی','بهمن','اسفند'];
 const nfp=(t,h='#/',l='بازگشت به صفحه اصلی')=>`<div class="w nf" data-nf><div class="nf4 gold" aria-hidden="true">۴۰۴</div><h1>${t}</h1><p class="mu">آدرس واردشده معتبر نیست یا این مورد وجود ندارد.</p><p class="pa" style="justify-content:center"><a class="btn" href="#/">بازگشت به صفحه اصلی</a>${h!='#/'?`<a class="btn o" href="${h}">${l}</a>`:''}</p></div>`;
+const tpSectionTabs=(label,items,current)=>`<nav class="tp-section-tabs tp-tabs" aria-label="${esc(label)}">${items.map(([key,title])=>`<a href="#/${esc(key)}" ${key===current?'aria-current="page"':''}>${esc(title)}</a>`).join('')}</nav>`;
