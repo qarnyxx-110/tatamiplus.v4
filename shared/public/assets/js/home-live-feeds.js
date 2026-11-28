@@ -6,9 +6,6 @@
 (() => {
   'use strict';
 
-  const feeds = Array.from(document.querySelectorAll('[data-tp-home-feed]'));
-  if (!feeds.length) return;
-
   const numberFa = (value) => Number(value || 0).toLocaleString('fa-IR');
   const make = (tag, className, text) => {
     const node = document.createElement(tag);
