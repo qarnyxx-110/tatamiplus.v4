@@ -6,7 +6,7 @@
 | قابلیت | شواهد قرارداد | وضعیت اتصال در فرانت‌اند طبق مبنای معماری | تصمیم طراحی |
 |---|---|---|---|
 | خانه و محتوای عمومی | GET / | Template سرور دارد؛ وضعیت دقیق پوسته باید بررسی شود | طراحی مستقل |
-| OTP و حساب | مسیرهای /auth/ و account/ | مسیرهای اصلی Preview bridge شناخته شده‌اند | طراحی با flow OTP فعلی |
+| ورود/ثبت‌نام و حساب | `/auth/login/` ورود با رمز؛ `/auth/login/sms/` ورود/ثبت‌نام پیامکی؛ `/auth/otp/verify/` تأیید کد؛ complete-profile و password routes | Bridge، hashها و templateها وجود دارند، اما ناسازگاری P0 در action قالب login باعث می‌شود فرم SMS به endpoint ورود با رمز POST شود | دو فرم مجزا با قرارداد دقیق؛ تا رفع ناسازگاری، اتصال SMS «Needs fix» است |
 | فهرست و پروفایل مربی | /coaches/ و جزئیات | متصل طبق معماری، فقط دادهٔ منتشرشده | دادهٔ واقعی؛ empty state |
 | درخواست و وضعیت مربی | /coaches/apply/ و application/ | bridge route موجود | فرم و status واقعی |
 | فروشگاه و سبد | /store/، detail، cart و POSTها | متصل؛ مرجع قیمت/موجودی Django | دادهٔ واقعی؛ کاتالوگ خالی را درست نمایش بده |
@@ -25,15 +25,19 @@
 
 ## ۱. مواردی که باید پیش از اتصال رفع/تصمیم‌گیری شوند
 
-1. routeهای تخصصی در MAXSEG ثبت شده‌اند، اما در handoff فعلی endpoint عملیاتی برای آن‌ها یافت نشده است؛ وضعیت آن‌ها UI-only می‌ماند.
-2. مسیرهای `/gyms/` در Django و Templateهای backend وجود دارند، اما Router/Bridge فرانت‌اند آن‌ها را پوشش نمی‌دهد و در مخزن فرانت‌اند نیز پوشش قالب‌های اختصاصی gyms کامل نیست.
-3. تفاوت role=club در PWA و role=gym در Django باید با mapping صریح و بدون جعل نقش حل شود.
-4. Design System راهنمای زنده را در Preview معرفی می‌کند، اما `preview.deny` در Build آن را بسته است.
-5. چند View مالک routeهای هم‌نام هستند؛ ترتیب Object.assign در Build باید برای routeهای متداخل در رجیستری ثبت شود.
-6. مسیر `coach-invite` در resolver دیده می‌شود ولی route allowlist و واگذاری زندهٔ Preview آن کامل نیست.
-7. پنل بازاریابی نباید بر API فرضی یا mock server به‌عنوان production تکیه کند.
-8. داده‌های نمونهٔ dashboard، courses، coach، store، map و video باید از مسیرهای متصل production جدا باشند.
-9. در پرداخت MockGateway فقط یک محیط/درگاه آزمایشی است.
+1. **P0 ورود پیامکی:** `django/templates/accounts/login.html` همیشه به `phone_auth:login`، یعنی `/auth/login/` (ورود با رمز)، POST می‌کند؛ در حالی‌که فرم `PhoneLoginForm` در `/auth/login/sms/` باید به `phone_auth:sms_login` POST شود. متن/دکمهٔ قالب نیز حالت password را از SMS جدا نمی‌کند. این ناسازگاری قبل از اتصال نهایی باید در فرانت‌اند اصلاح و تست شود.
+2. **تعارض handoff و کد:** فایل handoff در بخش ورود، `/auth/login/` را گاهی OTP توصیف می‌کند؛ اما `accounts/auth_urls.py` و `accounts/views.py` فعلی `/auth/login/` را `password_login` و `/auth/login/sms/` را `phone_login` ثبت می‌کنند. مبنای طراحی فعلاً کد جاری است؛ handoff باید با مالک بک‌اند همسان شود.
+3. قالب تکمیل پروفایل پنج فیلد دارد: name، city، role، password و password_confirm؛ توضیح قدیمی handoff فقط سه فیلد پایه را نام برده بود.
+4. View تأیید OTP مقدار `resend_in` را به قالب نمی‌دهد؛ شمارش معکوس ظاهری نباید از نظر UI معادل مجوز سرور تلقی شود.
+5. routeهای تخصصی در MAXSEG ثبت شده‌اند، اما در handoff فعلی endpoint عملیاتی برای آن‌ها یافت نشده است؛ وضعیت آن‌ها UI-only می‌ماند.
+6. مسیرهای `/gyms/` در Django و Templateهای backend وجود دارند، اما Router/Bridge فرانت‌اند آن‌ها را پوشش نمی‌دهد و در مخزن فرانت‌اند نیز پوشش قالب‌های اختصاصی gyms کامل نیست.
+7. تفاوت role=club در PWA و role=gym در Django باید با mapping صریح و بدون جعل نقش حل شود.
+8. Design System راهنمای زنده را در Preview معرفی می‌کند، اما `preview.deny` در Build آن را بسته است.
+9. چند View مالک routeهای هم‌نام هستند؛ ترتیب Object.assign در Build باید برای routeهای متداخل در رجیستری ثبت شود.
+10. مسیر `coach-invite` در resolver دیده می‌شود ولی route allowlist و واگذاری زندهٔ Preview آن کامل نیست.
+11. پنل بازاریابی نباید بر API فرضی یا mock server به‌عنوان production تکیه کند.
+12. داده‌های نمونهٔ dashboard، courses، coach، store، map و video باید از مسیرهای متصل production جدا باشند.
+13. در پرداخت MockGateway فقط یک محیط/درگاه آزمایشی است.
 
 ## ۲. تعریف وضعیت اتصال
 
