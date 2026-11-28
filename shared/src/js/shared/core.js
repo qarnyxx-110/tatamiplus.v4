@@ -4,7 +4,7 @@ let role=L('role',null),cart=L('cart',[]),fav=L('fav',[]),saved=L('saved',[]),pr
 const allowed=k=>!APP.deny.includes(k);
 let PT=null;
 const NAV=APP.nav||[['','خانه'],['store','فروشگاه'],['online-coach','مربی آنلاین'],['courses','باشگاه مجازی'],['tournaments','تورنمنت‌ها'],['coaches','مربیان'],['clubs','باشگاه‌ها'],['blog','وبلاگ'],['sponsors','حامیان تاتامی پلاس'],['gems','جم'],['search','جستجو']];
-const tpSectionTabs=(label,items,current)=>`<nav class="tp-section-tabs tp-tabs" aria-label="${esc(label)}">${items.map(([key,title])=>`<a href="#/${esc(key)}" ${key===current?'aria-current="page"':''}>${esc(title)}</a>`).join('')}</nav>`;
+const tpSectionTabs=(ariaLabel,items,active)=>`<nav class="chips tp-section-tabs" aria-label="${ariaLabel}">${items.map(([key,label])=>`<a class="chip${active===key?' on':''}" href="#/${key}"${active===key?' aria-current="page"':''}>${label}</a>`).join('')}</nav>`;
 const CATS=['لباس جودو','کمربند جودو','تجهیزات تمرینی','قدرت و آمادگی جسمانی','لوازم شخصی','محافظ‌ها و ایمنی','تجهیزات تمرین در خانه','تجهیزات باشگاهی'];
 const PN=[['کیمونو مسابقه‌ای','کیمونو تمرینی سبک','کیمونو کودکان'],['کمربند سفید','کمربند سبز','کمربند مشکی'],['کیسه بوکس ضربه','لاستیک تمرین اوچی‌کومی','بازوبند پرتاب'],['کش مقاومتی','کتل‌بل ۱۶ کیلویی','طناب کنفی'],['کیف ورزشی','دمپایی تاتامی','حوله ورزشی'],['محافظ دهان','مچ‌بند حمایتی','زانوبند'],['تشک تاشو خانگی','مانکن پرتاب','قفسه کمربند'],['تشک تاتامی رقابتی','ساعت مسابقه','تخته امتیاز']];
 // محصولات: کاتالوگ کارفرما (STORE_CATALOG ← data/store-products.json) + نمونه‌های آزمایشی فقط برای دسته‌ای که کاتالوگ ندارد (جلوگیری از تکرار)
