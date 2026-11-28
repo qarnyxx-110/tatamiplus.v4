@@ -2,8 +2,17 @@
 import {Suite,WIDTHS,OVERFLOW_JS,wait} from './helpers.mjs';
 const is404=()=>/۴۰۴/.test(document.getElementById('app').innerText);
 export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA '+app),denied={student:['#/role','#/my-profile','#/design-system','#/checkout'],coach:['#/role','#/ai','#/clubs','#/club/0','#/design-system','#/checkout'],club:['#/role','#/ai','#/my-profile','#/design-system','#/checkout']}[app];
- const ctx=await browser.newContext({viewport:{width:390,height:800},serviceWorkers:'block'});const pg=await ctx.newPage();pg.setDefaultTimeout(15000);pg.setDefaultNavigationTimeout(15000);const errs=[];
- pg.on('pageerror',e=>errs.push('PAGEERROR '+JSON.stringify({name:e.name,message:e.message,stack:e.stack||''}).slice(0,1600)));pg.on('console',m=>{if(m.type()==='error'&&!/fonts\.g|ERR_NAME_NOT_RESOLVED|ERR_INTERNET|Failed to load resource/.test(m.text()))errs.push('CONSOLE '+JSON.stringify({text:m.text(),location:m.location()}).slice(0,1600))});
+ const ctx=await browser.newContext({viewport:{width:390,height:800},serviceWorkers:'block'});const pg=await ctx.newPage();pg.setDefaultTimeout(15000);pg.setDefaultNavigationTimeout(15000);const errs=[],backendFeedErrors=[],backendFeedResponses=[];
+ pg.on('pageerror',e=>errs.push('PAGEERROR '+JSON.stringify({name:e.name,message:e.message,stack:e.stack||''}).slice(0,1600)));
+ pg.on('console',m=>{
+  if(m.type()!=='error')return;
+  const message=m.text();
+  if(/^\\[Tatami home live feed\\] (?:coaches|products) Error: Django feed returned HTTP 404/.test(message)){backendFeedErrors.push(message);return}
+  if(!/fonts\\.g|ERR_NAME_NOT_RESOLVED|ERR_INTERNET|Failed to load resource/.test(message))errs.push('CONSOLE '+JSON.stringify({text:message,location:m.location()}).slice(0,1600));
+ });
+ pg.on('response',response=>{
+  if(response.status()>=400&&response.request().resourceType()==='fetch')backendFeedResponses.push({status:response.status(),url:response.url()});
+ });
  const go=async h=>{await pg.evaluate(x=>{location.hash=x},h);await wait(60)},T=()=>pg.evaluate(()=>document.getElementById('app').innerText),cnt=sel=>pg.locator(sel).count(),nf=()=>pg.evaluate(is404);
  await pg.goto(base+'/index.html');await wait(300);
  // --- وضعیت داده‌های مسابقات با تاریخ سپری‌شده
@@ -27,6 +36,22 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
  S.ok('جزئیات مسابقه وضعیت ثبت‌نام را به‌اشتباه باز/بسته/پایان‌یافته اعلام نمی‌کند',
   tournamentDetail.includes('نیازمند تأیید'));
  await go('#/');
+ await wait(300);
+ const homeFeedStates=await pg.locator('#app [data-tp-home-feed]').evaluateAll(feeds=>feeds.map(feed=>({
+  layout:feed.dataset.layout,
+  state:feed.dataset.state,
+  cards:feed.querySelectorAll('.tp-coaches > li,.tp-product-card').length
+ })));
+ const expectedStoreUrl=new URL('/store/',base).toString();
+ S.ok('Home: فید واقعی Django بدون پاسخ بک‌اند، فقط empty/error و بدون کارت ساختگی می‌ماند',
+  homeFeedStates.length===2&&homeFeedStates.every(feed=>['empty','error'].includes(feed.state)&&feed.cards===0),
+  JSON.stringify(homeFeedStates));
+ S.ok('Home: پاسخ 404 محیط استاتیک فقط مربوط به endpoint واقعی فروشگاه است',
+  backendFeedResponses.length===1&&backendFeedResponses[0].status===404&&backendFeedResponses[0].url===expectedStoreUrl,
+  JSON.stringify(backendFeedResponses));
+ S.ok('Home: خطای فید با پیام مشخص قابل تشخیص است',
+  backendFeedErrors.some(message=>message.includes('products')&&message.includes('HTTP 404')),
+  backendFeedErrors.join(' | '));
  // --- مسیرهای معتبر/نامعتبر
  const valid=['#/','#/store','#/online-coach','#/store/','#/product/3','#/product?id=3','#/video/3','#/video?id=3','#/blog','#/blog/uchi-mata-basics','#/blog/2','#/tournaments','#/tournament/1','#/instructor/1','#/academy','#/profile','#/gems','#/cart','#/dashboard','#/videos','#/search','#/coaches','#/coaches/sara-ahmadi','#/sponsors','#/tatamipedia','#/tatamipedia/ippon','#/tatamipedia?q=ippon&cat=refereeing','#/blog?page=2','#/specialist-services','#/nutrition-coaches','#/sports-clinics','#/sports-psychologists'];
  const bad=[];for(const r of valid){await go(r);if(await nf())bad.push(r)}S.ok('مسیرهای معتبر 404 نمی‌دهند ('+valid.length+' مسیر)',!bad.length,bad.join(' '));
@@ -337,8 +362,22 @@ export async function runPwa(app,base,browser,altRoot){
  const S=new Suite('PWA-فنی '+app);
  const ctx=await browser.newContext({viewport:{width:390,height:800},serviceWorkers:'allow'});
  const pg=await ctx.newPage();pg.setDefaultTimeout(15000);pg.setDefaultNavigationTimeout(15000);
- const swConsoleErrors=[];pg.on('console',message=>{if(message.type()==='error')swConsoleErrors.push(message.text())});
+ const swConsoleErrors=[],staticResourceErrors=[];
+ pg.on('console',message=>{
+  if(message.type()!=='error')return;
+  const source=message.location()?.url||'';
+  if(source.endsWith('/sw.js')||message.text().includes('[Tatami SW]'))swConsoleErrors.push({text:message.text(),source});
+ });
+ pg.on('response',response=>{
+  const resourceType=response.request().resourceType();
+  const sameOrigin=new URL(response.url()).origin===new URL(base).origin;
+  if(sameOrigin&&response.status()>=400&&['stylesheet','script','image','font'].includes(resourceType)){
+   staticResourceErrors.push({status:response.status(),url:response.url(),resourceType});
+  }
+ });
  await pg.goto(base+'/index.html');
+ await wait(250);
+ S.ok('CSS، JS و تصاویر هم‌مبدأ PWA با پاسخ موفق بارگذاری می‌شوند',staticResourceErrors.length===0,JSON.stringify(staticResourceErrors));
  const neshanConfig=await pg.evaluate(async()=>{const r=await fetch('assets/neshan-config.js');return{status:r.status,text:await r.text()}});
  S.ok('تنظیمات نشان در خروجی PWA قابل دریافت است',neshanConfig.status===200&&neshanConfig.text.includes('TP_NESHAN_WEB_KEY')&&neshanConfig.text.includes('TP_CLUBS_JSON_URL'),String(neshanConfig.status));
  const man=await pg.evaluate(()=>fetch('manifest.webmanifest').then(r=>r.json()));
