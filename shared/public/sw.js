@@ -1,22 +1,36 @@
-const V='tatami-v2',CORE_COUNT=7,SHELL=['./','index.html','offline.html','manifest.webmanifest','icons/icon-192.png','icons/icon-512.png'];
-self.addEventListener('install',e=>{
- // Request activation synchronously while the install event is being dispatched.
- self.skipWaiting().catch(error=>console.error('[Tatami SW] skipWaiting failed',error));
- e.waitUntil((async()=>{
-  const c=await caches.open(V),core=SHELL.slice(0,CORE_COUNT),routes=SHELL.slice(CORE_COUNT);
-  await c.addAll(core);
-  const results=await Promise.allSettled(routes.map(url=>c.add(url)));
+const V='tatami-v2',CACHE_PREFIX='tatami-cache-prefix',CORE_COUNT=7,SHELL=['./','index.html','offline.html','manifest.webmanifest','icons/icon-192.png','icons/icon-512.png'];
+self.addEventListener('install',event=>{
+ // Keep the new worker waiting while any page is still using the previous version.
+ event.waitUntil((async()=>{
+  const cache=await caches.open(V),core=SHELL.slice(0,CORE_COUNT),routes=SHELL.slice(CORE_COUNT);
+  await cache.addAll(core);
+  const results=await Promise.allSettled(routes.map(url=>cache.add(url)));
   results.forEach((result,index)=>{if(result.status==='rejected')console.warn('[Tatami SW] optional route was not precached:',routes[index],result.reason)});
  })().catch(error=>{console.error('[Tatami SW] install failed',error);throw error}));
 });
-self.addEventListener('message',event=>{
- if(event.data&&event.data.type==='SKIP_WAITING'){
-  // Trigger activation without extending this message event with the activation promise.
-  self.skipWaiting().catch(error=>console.error('[Tatami SW] requested activation failed',error));
-  if(event.ports&&event.ports[0])event.ports[0].postMessage({type:'SKIP_WAITING_ACK'});
- }
+self.addEventListener('activate',event=>{
+ // Cache Storage is shared by all role PWAs on the same origin. Retire only this role's old versions.
+ event.waitUntil(caches.keys().then(names=>Promise.all(
+  names.filter(name=>name.startsWith(CACHE_PREFIX+'-')&&name!==V).map(name=>caches.delete(name))
+ )));
 });
-self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==V).map(x=>caches.delete(x)))).then(()=>self.clients.claim()))});
-self.addEventListener('fetch',e=>{const r=e.request;if(r.method!=='GET')return;
-if(r.mode==='navigate'){e.respondWith(fetch(r).then(x=>{const u=new URL(r.url),root=new URL('./',self.registration.scope).pathname;if(x.ok&&(u.pathname===root||u.pathname===root+'index.html')){const c=x.clone();caches.open(V).then(h=>h.put('index.html',c))}return x}).catch(()=>caches.match(r).then(cached=>cached||caches.match('index.html').then(x=>x||caches.match('offline.html')))));return}
-e.respondWith(caches.match(r).then(c=>c||fetch(r).then(x=>{if(x.ok&&(new URL(r.url).origin===location.origin||/fonts\.(googleapis|gstatic)\.com/.test(r.url))){const y=x.clone();caches.open(V).then(h=>h.put(r,y))}return x}).catch(()=>c)))});
+self.addEventListener('fetch',event=>{
+ const request=event.request;
+ if(request.method!=='GET')return;
+ if(request.mode==='navigate'){
+  event.respondWith(fetch(request).then(async response=>{
+   const url=new URL(request.url),root=new URL('./',self.registration.scope).pathname;
+   if(response.ok&&(url.pathname===root||url.pathname===root+'index.html')){
+    try{const cache=await caches.open(V);await cache.put('index.html',response.clone())}catch{}
+   }
+   return response;
+  }).catch(()=>caches.match(request).then(cached=>cached||caches.match('index.html').then(page=>page||caches.match('offline.html')))));
+  return;
+ }
+ event.respondWith(caches.match(request).then(cached=>cached||fetch(request).then(async response=>{
+  if(response.ok&&(new URL(request.url).origin===location.origin||/fonts\.(googleapis|gstatic)\.com/.test(request.url))){
+   try{const cache=await caches.open(V);await cache.put(request,response.clone())}catch{}
+  }
+  return response;
+ }).catch(()=>cached)));
+});
