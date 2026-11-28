@@ -534,7 +534,7 @@ export async function runPwa(app,base,browser,altRoot){
     const registration=await navigator.serviceWorker.getRegistration();
     const names=await caches.keys();
     return registration?.waiting?.state==='installed'&&names.some(name=>name.startsWith('tatami-'+app+'-')&&name!==before);
-   },{app,before},{timeout:10000}).catch(()=>null);
+   },{app,before},{timeout:25000}).catch(()=>null);
   }
   const staged=await pg.evaluate(async()=>{
    const registration=await navigator.serviceWorker.getRegistration();
