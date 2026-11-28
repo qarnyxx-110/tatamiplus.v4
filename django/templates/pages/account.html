@@ -49,15 +49,27 @@
         {% endif %}
       </div>
       {% endwith %}
+    {% elif user.role == 'gym' %}
+      <section class="d-c tp-coach-next" aria-label="پنل باشگاه">
+        <h2>پنل باشگاه</h2>
+        {% if owned_gym %}
+          <p>باشگاه «{{ owned_gym.name }}» ثبت شده است.</p>
+          <p><span class="tag {% if owned_gym.status == 'active' %}ok{% elif owned_gym.status == 'inactive' %}danger{% else %}g{% endif %}">{{ owned_gym.get_status_display }}</span></p>
+          <a class="btn o" href="{% url 'gyms:panel' %}">مدیریت باشگاه</a>
+        {% else %}
+          <p>هنوز باشگاهی ثبت نکرده‌اید. با اطلاعات پایهٔ باشگاه شروع کنید؛ مربیان و هنرجوها را می‌توانید بعداً اضافه کنید.</p>
+          <a class="btn" href="{% url 'gyms:create' %}">ساخت باشگاه</a>
+        {% endif %}
+      </section>
     {% endif %}
   {% else %}
     <div class="d-c tp-acct-out">
       <h2>مسیرت را انتخاب کن</h2>
-      <p class="mu">برای ادامه، حساب هنرجو یا مربی بسازید یا وارد حساب خود شوید.</p>
+      <p class="mu">برای ادامه، حساب هنرجو، مربی یا باشگاه بسازید یا وارد حساب خود شوید.</p>
       <ul class="tp-roles-l" aria-label="نوع حساب کاربری">
-        <li><span class="tp-role-n" aria-hidden="true">۰۱</span><div><b>هنرجو</b><div class="mu sm">مربیان را ببینید و سبد خریدتان را در حساب خود نگه دارید.</div></div><a class="btn s" href="{% url 'phone_auth:login' %}?role=student">ثبت‌نام هنرجو</a></li>
-        <li><span class="tp-role-n" aria-hidden="true">۰۲</span><div><b>مربی</b><div class="mu sm">حساب بسازید و درخواست مربیگری خود را برای بررسی ثبت کنید.</div></div><a class="btn s" href="{% url 'phone_auth:login' %}?role=coach">ثبت‌نام مربی</a></li>
-        <li><span class="tp-role-n" aria-hidden="true">۰۳</span><div><b>باشگاه</b><div class="mu sm">در حال حاضر امکان ساخت حساب باشگاه از این صفحه وجود ندارد.</div></div></li>
+        <li><span class="tp-role-n" aria-hidden="true">۰۱</span><div><b>هنرجو</b><div class="mu sm">مربیان را ببینید و سبد خریدتان را در حساب خود نگه دارید.</div></div><a class="btn s" href="{% url 'phone_auth:sms_login' %}?role=student">ثبت‌نام هنرجو</a></li>
+        <li><span class="tp-role-n" aria-hidden="true">۰۲</span><div><b>مربی</b><div class="mu sm">حساب بسازید و درخواست مربیگری خود را برای بررسی ثبت کنید.</div></div><a class="btn s" href="{% url 'phone_auth:sms_login' %}?role=coach">ثبت‌نام مربی</a></li>
+        <li><span class="tp-role-n" aria-hidden="true">۰۳</span><div><b>باشگاه</b><div class="mu sm">باشگاهت را ثبت کن و مربیان و ساختارش را مدیریت کن.</div></div><a class="btn s" href="{% url 'phone_auth:sms_login' %}?role=gym&amp;next={% url 'gyms:create' %}">ثبت‌نام باشگاه</a></li>
       </ul>
       <p class="tp-auth-alt">قبلاً ثبت‌نام کرده‌اید؟ <a href="{% url 'phone_auth:login' %}">وارد شوید</a></p>
     </div>

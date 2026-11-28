@@ -2,11 +2,16 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import vm from 'node:vm';
 import { chromium } from 'playwright';
 import { build, serve, wait } from './helpers.mjs';
 
 const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'tatami-django-bridge-'));
 build(tempRoot);
+const previewHtml = fs.readFileSync(path.join(tempRoot, 'preview', 'index.html'), 'utf8');
+const inlineScripts = [...previewHtml.matchAll(/<script>([\s\S]*?)<\/script>/g)];
+if (!inlineScripts.length) throw new Error('Preview build did not produce an inline application script.');
+new vm.Script(inlineScripts.map(match => match[1]).join('\n'), { filename: 'tatami-preview-inline.js' });
 const server = await serve(tempRoot);
 const port = new URL(server.url).port;
 const base = `http://tatamiplus.ir:${port}`;
@@ -332,12 +337,26 @@ try {
   await page.locator('#blog-list-target').waitFor({ state: 'visible', timeout: 15000 });
   assert.equal(await page.locator('#app').getAttribute('data-django-view'), '/blog/');
 
-  await page.route('**/auth/**', async route => {
-    const url = new URL(route.request().url());
+  await page.route('**/gyms/**', async route => {
+    const pathname = new URL(route.request().url()).pathname;
+    const content = pathname === '/gyms/'
+      ? '<h1 id="gym-target">فهرست باشگاه‌های واقعی Django</h1><a id="gym-create-link" href="/gyms/new/">ساخت باشگاه</a>'
+      : '<h1 id="gym-create-target">فرم ساخت باشگاه Django</h1>';
     await route.fulfill({
       status: 200,
       contentType: 'text/html; charset=utf-8',
-      body: documentHtml('<h1 id="auth-target">' + url.pathname + url.search + '</h1>', 'احراز هویت آزمایشی')
+      body: documentHtml(content, 'باشگاه‌ها')
+    });
+  });
+
+  await page.route('**/auth/**', async route => {
+    const url = new URL(route.request().url());
+    const content = '<h1 id="auth-target">' + url.pathname + url.search + '</h1>' +
+      '<a id="gym-route-link" href="/gyms/">ورود به بخش باشگاه‌ها</a>';
+    await route.fulfill({
+      status: 200,
+      contentType: 'text/html; charset=utf-8',
+      body: documentHtml(content, 'احراز هویت آزمایشی')
     });
   });
 
@@ -345,6 +364,7 @@ try {
     ['#/login', '/auth/login/'],
     ['#/register?role=coach&next=%23%2Fcart', '/auth/login/sms/?role=coach&next=%2Fstore%2Fcart%2F'],
     ['#/role?role=student', '/auth/login/sms/?role=student'],
+    ['#/register?role=club', '/auth/login/sms/?role=gym'],
     ['#/password-reset', '/auth/password/reset/'],
     ['#/set-password', '/auth/password/set/'],
     ['#/login?next=%23%2Fblog%2Fuchi-mata', '/auth/login/?next=%2Fblog%2Fuchi-mata%2F'],
@@ -361,6 +381,14 @@ try {
       { timeout: 15000 }
     );
   }
+
+  // Links rendered by Django under /gyms/ must remain inside the existing Preview shell.
+  await page.locator('#gym-route-link').click();
+  await page.locator('#gym-target').waitFor({ state: 'visible', timeout: 15000 });
+  assert.equal(await page.locator('#app').getAttribute('data-django-view'), '/gyms/');
+  await page.locator('#gym-create-link').click();
+  await page.locator('#gym-create-target').waitFor({ state: 'visible', timeout: 15000 });
+  assert.equal(await page.locator('#app').getAttribute('data-django-view'), '/gyms/new/');
 
   // Live search must not present local reference/demo products or coach profiles as Django records.
   await page.evaluate(() => { location.hash = '#/search?q=' + encodeURIComponent('عنوان مقاله واقعی'); });
@@ -439,4 +467,4 @@ try {
 }
 
 if (failures.length) throw new Error(failures.join('\n\n'));
-console.log('Django Preview bridge browser checks: existing regression passed; blog routes, live search provenance, sample club routes and video demo notice passed; auth routes: 10/10 passed');
+console.log('Django Preview bridge browser checks: existing regression passed; blog routes, live search provenance, sample club routes, gym links and video demo notice passed; auth routes: 11/11 passed');

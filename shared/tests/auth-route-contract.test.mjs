@@ -4,6 +4,10 @@ import fs from 'node:fs';
 const bridge = fs.readFileSync(new URL('../src/js/shared/django-route-bridge.js', import.meta.url), 'utf8');
 const router = fs.readFileSync(new URL('../src/js/shared/router.js', import.meta.url), 'utf8');
 
+assert.ok(bridge.includes("const backendRole = role === 'club' ? 'gym' : role;"), 'Legacy Preview club role must map to Django gym role');
+assert.ok(bridge.includes("if (backendRole && !['student', 'coach', 'gym'].includes(backendRole)) return '';"), 'Only backend-supported roles may be forwarded');
+assert.ok(bridge.includes('coach|coaches|gyms'), 'Bridge URL allowlist must include Django gym routes');
+
 assert.match(bridge, /const target = route === 'login' \? '\/auth\/login\/' : '\/auth\/login\/sms\/';/);
 assert.match(bridge, /if \(route === 'password-reset'\) return '\/auth\/password\/reset\/';/);
 assert.match(bridge, /if \(route === 'set-password'\) return '\/auth\/password\/set\/';/);

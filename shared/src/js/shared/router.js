@@ -1,4 +1,4 @@
-const MAXSEG={'':0,login:0,register:0,'password-reset':0,'set-password':0,'coach-apply':0,'coach-application':0,dashboard:0,store:0,'online-coach':0,courses:1,episode:1,search:0,cart:0,checkout:0,tournaments:0,videos:0,academy:0,ai:0,clubs:0,profile:0,gems:0,sponsors:0,'my-profile':0,coaches:1,tatamipedia:1,blog:1,product:1,video:1,tournament:1,instructor:1,club:1};
+const MAXSEG={'':0,login:0,register:0,'password-reset':0,'set-password':0,'coach-apply':0,'coach-application':0,dashboard:0,store:0,'online-coach':0,courses:1,episode:1,search:0,cart:0,checkout:0,tournaments:0,videos:0,academy:0,ai:0,clubs:0,'specialist-services':0,'nutrition-coaches':0,'sports-clinics':0,'sports-psychologists':0,profile:0,gems:0,sponsors:0,'my-profile':0,coaches:1,tatamipedia:1,blog:1,product:1,video:1,tournament:1,instructor:1,club:1};
 if(APP.fixed)role=APP.role;
 function R(f){const host=location.hostname.toLowerCase(),previewPath=location.pathname==='/preview/'||location.pathname==='/preview',route=location.hash.slice(2).split('?')[0].split('/')[0];if((host==='tatamiplus.ir'||host==='www.tatamiplus.ir')&&previewPath&&['server','login','register','role','password-reset','set-password','blog','store','product','cart','checkout','coaches','academy','instructor','coach-apply','coach-application','courses','episode','club','gems','profile','my-profile','orders'].includes(route)&&!(route==='club'&&location.hash.split('?')[0].split('/').filter(Boolean).length>2))return;if(R.p==='#/online-coach'&&location.hash.split('?')[0]!=='#/online-coach'&&typeof stopOnlineCoachCamera==='function')stopOnlineCoachCamera(false);if(APP.fixed&&APP.home&&!location.hash){location.hash='#/'+APP.home;return}const qp=new URLSearchParams(location.search+'&'+(location.hash.split('?')[1]||'')).get('role');if(!APP.fixed&&RN[qp]&&qp!=role){role=qp;S('role',qp)}const h=location.hash.split('?')[0].replace('#/','').split('/'),k=h[0];
 const mx=MAXSEG[k],ok=mx!==undefined&&allowed(k)&&location.hash.length<=400&&(h.length-1<=mx||(mx==0&&h.length==2&&h[1]==='')),v=ok?views[k]:views.nf;{const p=location.hash.split('?')[0],a=$('#app');a.toggleAttribute('data-enter',R.p!==p);R.p=p}$('#app').innerHTML=v(/^\d+$/.test(h[1]||'')?+h[1]:NaN,h[1]);if((k==='clubs'||k==='club')&&typeof tpClubInitMap==='function')setTimeout(()=>tpClubInitMap(document.getElementById(k==='clubs'?'tp-clubs-map':'tp-club-detail-map')),0);if(k=='dashboard')obs();document.title=PT?PT.t+' | تاتامی پلاس':'تاتامی پلاس';{const m=document.querySelector('meta[name=description]');if(m&&PT)m.content=PT.d}PT=null;$('#nv').innerHTML=NAV.map(n=>`<a href="#/${n[0]}" class="${n[0]==k?'on':''}">${n[1]}</a>`).join('');{const nd=$('#nvd');if(nd)nd.innerHTML=NAV.map(n=>`<a href="#/${n[0]}" class="${n[0]==k?'on':''}"${n[0]==k?' aria-current="page"':''}>${n[1]}</a>`).join('');const d=$('#mnd');if(d&&d.open)d.close()}authUI();save();
@@ -7,7 +7,26 @@ function sc(){const c=$('#cine');if(!c||matchMedia('(prefers-reduced-motion:redu
 {const d=$('#mnd'),b=$('#mnb');if(d&&b&&d.showModal){b.addEventListener('click',()=>{d.showModal();b.setAttribute('aria-expanded','true')});d.addEventListener('close',()=>b.setAttribute('aria-expanded','false'));d.addEventListener('click',e=>{if(e.target===d||e.target.closest('a'))d.close()});$('#mnx').addEventListener('click',()=>d.close())}else if(b)b.hidden=true}
 addEventListener('hashchange',()=>R());addEventListener('scroll',sc,{passive:true});R();
 if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)&&!window.__ARTIFACT__){
- const registerTatamiServiceWorker=()=>navigator.serviceWorker.register(new URL('sw.js',document.baseURI),{scope:'./'}).catch(error=>console.error('[Tatami SW] registration failed',error));
+ const activateWaitingWorker=registration=>{
+  const worker=registration.waiting;
+  if(!navigator.serviceWorker.controller||!worker)return;
+  try{worker.postMessage({type:'SKIP_WAITING'})}catch(error){console.error('[Tatami SW] update activation request failed',error)}
+ };
+ const watchServiceWorker=registration=>{
+  if(registration.waiting)activateWaitingWorker(registration);
+  registration.addEventListener('updatefound',()=>{
+   const worker=registration.installing;
+   if(!worker)return;
+   const checkInstalled=()=>{
+    if(worker.state==='installed')activateWaitingWorker(registration);
+   };
+   worker.addEventListener('statechange',checkInstalled);
+   checkInstalled();
+  });
+ };
+ const registerTatamiServiceWorker=()=>navigator.serviceWorker.register(new URL('sw.js',document.baseURI),{scope:'./'})
+  .then(registration=>{if(registration&&typeof registration.addEventListener==='function')watchServiceWorker(registration);return registration})
+  .catch(error=>console.error('[Tatami SW] registration failed',error));
  if(document.readyState==='complete')registerTatamiServiceWorker();
  else addEventListener('load',registerTatamiServiceWorker,{once:true});
 }

@@ -168,3 +168,6 @@ footer{border-top:1px solid var(--tp-color-border);padding:var(--tp-space-lg);te
 @media(max-width:900px) { .tp-technique-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .tp-techniques-head { align-items:flex-start; } }
 @media(max-width:620px) { .tp-techniques { width:100%; margin:var(--tp-space-2xl) auto; padding-inline:var(--tp-space-sm); } .tp-techniques-head { flex-direction:column; gap:var(--tp-space-sm); } .tp-technique-grid { grid-template-columns:minmax(0,1fr); gap:var(--tp-space-md); } .tp-technique-copy { padding:var(--tp-space-md); } .tp-technique-visual { aspect-ratio:16/9; } }
 @media(prefers-reduced-motion:reduce) { .tp-technique-card { transition:none; } .tp-technique-card:hover { transform:none; } }
+
+/* PWA video demo touch targets: keep all icon controls at the 44px minimum. */
+.vp .pl,.vp .vpc button{inline-size:44px;min-inline-size:44px;block-size:44px;min-block-size:44px;padding:0;display:inline-grid;place-items:center}
