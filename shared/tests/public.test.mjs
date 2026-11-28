@@ -409,7 +409,7 @@ export async function runPwa(app,base,browser,altRoot){
  S.ok('Service Worker registration exists',registrations.length>0,JSON.stringify(registrations));
  const swReady=await pg.evaluate(()=>Promise.race([navigator.serviceWorker.ready.then(()=>true),new Promise(resolve=>setTimeout(()=>resolve(false),10000))]));
  S.ok('Service Worker registration becomes ready within 10 seconds',swReady,swReady?'ready':'timed out');
- S.ok('Service Worker console has no registration/install error',!swConsoleErrors.length,swConsoleErrors.join(' | '));
+ S.ok('Service Worker console has no registration/install error',!swConsoleErrors.length,JSON.stringify(swConsoleErrors));
  await wait(900);
  await pg.reload();
  await wait(500);
