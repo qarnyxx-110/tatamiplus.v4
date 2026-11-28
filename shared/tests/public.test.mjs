@@ -581,53 +581,52 @@ export async function runPwa(app,base,browser,altRoot){
    ctx.pages().length===0,
    JSON.stringify({remainingTestPages,stillOpen:ctx.pages().map(page=>page.url())}));
 
-  // Inspect the registration from the Service Worker target itself. This avoids
-  // opening a new page that would become another client of the old worker.
-  let workerSnapshot=null,updateActivated=false;
-  for(let attempt=0;attempt<60;attempt++){
-   const workers=typeof ctx.serviceWorkers==='function'?ctx.serviceWorkers():[];
-   const states=await Promise.all(workers.map(async worker=>{
-    try{
-     return await worker.evaluate(async()=>{
-      const registration=self.registration;
-      const windows=await self.clients.matchAll({type:'window',includeUncontrolled:true});
-      return{
-       scriptURL:self.location.href,
-       active:registration.active?.state||null,
-       waiting:registration.waiting?.state||null,
-       installing:registration.installing?.state||null,
-       clients:windows.map(client=>client.url),
-       caches:await caches.keys()
-      };
-     });
-    }catch(error){return{error:String(error),scriptURL:worker.url()}}
-   }));
-   workerSnapshot=states.find(state=>state.scriptURL?.endsWith('/sw.js')&&!state.error)||null;
-   if(workerSnapshot){
-    const roleCaches=workerSnapshot.caches.filter(name=>name.startsWith('tatami-'+app+'-'));
-    if(workerSnapshot.active==='activated'&&!workerSnapshot.waiting&&!workerSnapshot.installing&&workerSnapshot.clients.length===0&&roleCaches.length===1&&roleCaches[0]!==before){
-     updateActivated=true;break;
-    }
+  // Do not repeatedly evaluate the old worker target while waiting for it to retire.
+  // Instead, briefly open a page, inspect which version served it, then close it again.
+  let latest=null,ownCaches=[],updateActivated=false,activationAttempts=[];
+  for(let attempt=0;attempt<24;attempt++){
+   await wait(700);
+   const candidate=await ctx.newPage();
+   await candidate.goto(base+'/index.html');
+   const state=await candidate.evaluate(async()=>{
+    const registration=await navigator.serviceWorker.getRegistration();
+    return{
+     active:registration?.active?.state||null,
+     waiting:registration?.waiting?.state||null,
+     installing:registration?.installing?.state||null,
+     controlled:!!navigator.serviceWorker.controller,
+     activeControlsPage:!!(registration?.active&&navigator.serviceWorker.controller===registration.active),
+     caches:await caches.keys(),
+     updateMarker:document.documentElement.outerHTML.includes('UPDATE_MARKER')
+    };
+   });
+   const roleCaches=state.caches.filter(name=>name.startsWith('tatami-'+app+'-'));
+   const newVersionIsActive=state.active==='activated'&&!state.waiting&&!state.installing&&state.controlled&&state.activeControlsPage&&roleCaches.length===1&&roleCaches[0]!==before&&state.updateMarker;
+   if(newVersionIsActive){
+    pg=candidate;latest=state;ownCaches=roleCaches;updateActivated=true;break;
    }
-   await wait(500);
+   activationAttempts.push({attempt,state});
+   await candidate.close();
   }
-  pg=await ctx.newPage();
-  await pg.goto(base+'/index.html');
-  const latest=await pg.evaluate(async()=>{
-   const registration=await navigator.serviceWorker.getRegistration();
-   return{
-    active:registration?.active?.state||null,
-    waiting:registration?.waiting?.state||null,
-    installing:registration?.installing?.state||null,
-    controlled:!!navigator.serviceWorker.controller,
-    caches:await caches.keys(),
-    updateMarker:document.documentElement.outerHTML.includes('UPDATE_MARKER')
-   };
-  });
-  const ownCaches=latest.caches.filter(name=>name.startsWith('tatami-'+app+'-'));
+  if(!updateActivated){
+   pg=await ctx.newPage();
+   await pg.goto(base+'/index.html');
+   latest=await pg.evaluate(async()=>{
+    const registration=await navigator.serviceWorker.getRegistration();
+    return{
+     active:registration?.active?.state||null,
+     waiting:registration?.waiting?.state||null,
+     installing:registration?.installing?.state||null,
+     controlled:!!navigator.serviceWorker.controller,
+     caches:await caches.keys(),
+     updateMarker:document.documentElement.outerHTML.includes('UPDATE_MARKER')
+    };
+   });
+   ownCaches=latest.caches.filter(name=>name.startsWith('tatami-'+app+'-'));
+  }
   S.ok('به‌روزرسانی: Worker جدید پس از بسته‌شدن همه تب‌های قدیمی فعال می‌شود',
    updateActivated&&latest.active==='activated'&&!latest.waiting&&!latest.installing&&latest.controlled,
-   JSON.stringify({workerSnapshot,latest}));
+   JSON.stringify({activationAttempts,latest}));
   S.ok('به‌روزرسانی: فقط Cache نسخه قدیمی همین نقش پاک می‌شود',
    ownCaches.length===1&&ownCaches[0]!==before&&sentinels.every(name=>latest.caches.includes(name)),
    JSON.stringify({before,ownCaches,sentinels,remaining:latest.caches}));
