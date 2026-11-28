@@ -25,16 +25,17 @@
 
 | شناسه | صفحه | مسیر/route | مالک/قرارداد | وضعیت اولیه | اولویت |
 |---|---|---|---|---|---|
-| PG-010 | ورود با رمز | `#/login` → `/auth/login/` | Django | اتصال Bridge باید با تست جاری تأیید شود | P0 |
-| PG-011 | ورود/ثبت‌نام پیامکی | `#/register` → `/auth/login/sms/` | Django OTP | فلو واحد؛ ثبت‌نام جداگانه نیست | P0 |
-| PG-012 | انتخاب نقش | `#/role` در جریان ویژهٔ live Preview | نقش‌های student/coach/gym | mapping نقش در طراحی لازم است؛ Router hash مستقل ندارد | P0 |
-| PG-013 | بازیابی رمز | `#/password-reset` | Django | قرارداد در handoff موجود | P1 |
-| PG-014 | تنظیم رمز | `#/set-password` | Django | دسترسی وابسته به session/token معتبر | P1 |
-| PG-015 | تکمیل پروفایل | URL مستقیم Django | Django | route hash عمومی مستقل ندارد | P0 |
-| PG-016 | هاب حساب | `#/profile` و `#/my-profile` | `views-new.js` و `views-coaches.js` با هم‌پوشانی | مالک نهایی route باید در Build تست شود | P0 |
-| PG-017 | خروج | POST `/accounts/logout/` | Django | CSRF/session | P1 |
+| PG-010 | ورود با رمز | `#/login` → `/auth/login/` | Django `PasswordLoginForm` | قالب دو حالت password/sms را تفکیک می‌کند؛ تست Build/سرور باقی است | P0 |
+| PG-011 | ورود/ثبت‌نام پیامکی | `#/register` → `/auth/login/sms/` | Django `PhoneLoginForm` | action صحیح در قالب شاخهٔ طراحی؛ تست زنده باقی است | P0 |
+| PG-012 | تأیید OTP | `/auth/otp/verify/` | Django `OTPVerifyForm` | قالب و POST/CSRF موجود؛ آزمون زمان ارسال مجدد باقی است | P0 |
+| PG-013 | درخواست بازیابی رمز | `#/password-reset` → `/auth/password/reset/` | Django `PhoneOnlyForm` | قرارداد موجود؛ تست مرورگر باقی است | P1 |
+| PG-014 | تأیید بازیابی و رمز تازه | `/auth/password/reset/confirm/` | Django `ResetPasswordForm` | code + password + confirmation؛ تست مرورگر باقی است | P1 |
+| PG-015 | تکمیل پروفایل | `/auth/complete-profile/` | Django `ProfileCompletionForm` | name، city، role، password و password_confirm | P0 |
+| PG-016 | ساخت رمز حساب قدیمی | `#/set-password` → `/auth/password/set/` | Django `NewPasswordForm` | session احراز هویت‌شده لازم است | P1 |
+| PG-017 | هاب حساب | `#/profile` و `#/my-profile` → `/account/` | Django / Viewهای PWA با هم‌پوشانی | مالک route و state session باید تست شود | P0 |
+| PG-018 | خروج | POST `/accounts/logout/` | Django | CSRF/session؛ تست مرورگر باقی است | P1 |
 
-مشخصات جزئی جریان ورود/OTP: [PG-010_AUTH_OTP_FA.md](pages/PG-010_AUTH_OTP_FA.md). این سند ناسازگاری action قالب login را به‌عنوان مانع P0 ثبت کرده است.
+مشخصات جزئی جریان ورود/OTP: [PG-010_AUTH_OTP_FA.md](pages/PG-010_AUTH_OTP_FA.md). این سند اصلاح action دو حالت login را ثبت کرده است؛ اجرای Build و تست زنده هنوز معیار بستن P0 هستند.
 
 ## ۳. فروشگاه و سفارش
 
