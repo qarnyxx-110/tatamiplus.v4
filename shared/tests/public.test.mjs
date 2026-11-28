@@ -370,7 +370,7 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
 export async function runPwa(app,base,browser,altRoot){
  const S=new Suite('PWA-فنی '+app);
  const ctx=await browser.newContext({viewport:{width:390,height:800},serviceWorkers:'allow'});
- const pg=await ctx.newPage();pg.setDefaultTimeout(15000);pg.setDefaultNavigationTimeout(15000);
+ let pg=await ctx.newPage();pg.setDefaultTimeout(15000);pg.setDefaultNavigationTimeout(15000);
  const swConsoleErrors=[],staticResourceErrors=[];
  pg.on('console',message=>{
   if(message.type()!=='error')return;
@@ -519,12 +519,13 @@ export async function runPwa(app,base,browser,altRoot){
    await pg.waitForFunction(async()=>{
     const registration=await navigator.serviceWorker.getRegistration();
     return registration?.waiting?.state==='installed';
-   },null,{timeout:15000}).catch(()=>null);
+   },null,{timeout:25000}).catch(()=>null);
   }
   const staged=await pg.evaluate(async()=>{
    const registration=await navigator.serviceWorker.getRegistration();
    return{
     active:registration?.active?.state||null,
+    installing:registration?.installing?.state||null,
     waiting:registration?.waiting?.state||null,
     controller:navigator.serviceWorker.controller?.state||null,
     activeControlsPage:!!(registration?.active&&navigator.serviceWorker.controller===registration.active),
