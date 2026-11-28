@@ -7,31 +7,52 @@ function sc(){const c=$('#cine');if(!c||matchMedia('(prefers-reduced-motion:redu
 {const d=$('#mnd'),b=$('#mnb');if(d&&b&&d.showModal){b.addEventListener('click',()=>{d.showModal();b.setAttribute('aria-expanded','true')});d.addEventListener('close',()=>b.setAttribute('aria-expanded','false'));d.addEventListener('click',e=>{if(e.target===d||e.target.closest('a'))d.close()});$('#mnx').addEventListener('click',()=>d.close())}else if(b)b.hidden=true}
 addEventListener('hashchange',()=>R());addEventListener('scroll',sc,{passive:true});R();
 if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)&&APP.fixed&&!window.__ARTIFACT__){
- const registerTatamiServiceWorker=()=>navigator.serviceWorker.register(new URL('sw.js',document.baseURI),{scope:'./'}).then(registration=>{
-  const notice=document.getElementById('tp-pwa-update-notice');
-  const dismiss=document.getElementById('tp-pwa-update-dismiss');
-  if(!notice||!dismiss)return;
-  let dismissedWorker=null;
-  const renderUpdateNotice=()=>{
-   const waiting=registration.waiting;
-   const controller=navigator.serviceWorker.controller;
-   const updateReady=!!(waiting&&registration.active&&controller===registration.active);
-   notice.hidden=!updateReady||waiting===dismissedWorker;
-  };
-  const watchInstallingWorker=worker=>{
-   if(worker)worker.addEventListener('statechange',renderUpdateNotice);
-  };
-  watchInstallingWorker(registration.installing);
-  registration.addEventListener('updatefound',()=>{
-   watchInstallingWorker(registration.installing);
+ const registerTatamiServiceWorker=()=>{
+  const container=navigator.serviceWorker;
+  if(!container||typeof container.register!=='function')return;
+  let registrationPromise;
+  try{
+   registrationPromise=container.register(new URL('sw.js',document.baseURI),{scope:'./'});
+  }catch(error){
+   console.error('[Tatami SW] registration failed',error);
+   return;
+  }
+  if(!registrationPromise||typeof registrationPromise.then!=='function')return;
+  registrationPromise.then(registration=>{
+   if(!registration||typeof registration.addEventListener!=='function')return;
+   const notice=document.getElementById('tp-pwa-update-notice');
+   const dismiss=document.getElementById('tp-pwa-update-dismiss');
+   if(!notice||!dismiss)return;
+   let dismissedWorker=null;
+   const workerFor=key=>{
+    try{return registration?.[key]||null}catch{return null}
+   };
+   const renderUpdateNotice=()=>{
+    try{
+     const waiting=workerFor('waiting');
+     const active=workerFor('active');
+     const controller=container.controller||null;
+     const updateReady=!!(waiting&&active&&controller===active);
+     notice.hidden=!updateReady||waiting===dismissedWorker;
+    }catch{
+     notice.hidden=true;
+    }
+   };
+   const watchInstallingWorker=worker=>{
+    if(worker&&typeof worker.addEventListener==='function')worker.addEventListener('statechange',renderUpdateNotice);
+   };
+   watchInstallingWorker(workerFor('installing'));
+   registration.addEventListener('updatefound',()=>{
+    watchInstallingWorker(workerFor('installing'));
+    renderUpdateNotice();
+   });
+   dismiss.addEventListener('click',()=>{
+    dismissedWorker=workerFor('waiting');
+    notice.hidden=true;
+   });
    renderUpdateNotice();
-  });
-  dismiss.addEventListener('click',()=>{
-   dismissedWorker=registration.waiting;
-   notice.hidden=true;
-  });
-  renderUpdateNotice();
- }).catch(error=>console.error('[Tatami SW] registration failed',error));
+  }).catch(error=>console.error('[Tatami SW] registration failed',error));
+ };
  if(document.readyState==='complete')registerTatamiServiceWorker();
  else addEventListener('load',registerTatamiServiceWorker,{once:true});
 }
