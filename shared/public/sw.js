@@ -20,6 +20,19 @@ self.addEventListener('fetch',event=>{
  if(request.mode==='navigate'){
   event.respondWith((async()=>{
    const cache=await caches.open(V);
+   const cached=await cache.match(request);
+   if(cached)return cached;
+   try{return await fetch(request)}
+   catch(error){
+    const fallback=await cache.match('index.html')||await cache.match('offline.html');
+    if(fallback)return fallback;
+    throw error;
+   }
+  })());
+  return;
+ }
+ event.respondWith((async()=>{
+   const cache=await caches.open(V);
    try{
     const response=await fetch(request);
     const url=new URL(request.url),root=new URL('./',self.registration.scope).pathname;
