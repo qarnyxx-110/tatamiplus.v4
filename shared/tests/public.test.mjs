@@ -516,10 +516,11 @@ export async function runPwa(app,base,browser,altRoot){
    return true;
   });
   if(updateRequested){
-   await pg.waitForFunction(async()=>{
+   await pg.waitForFunction(async({app,before})=>{
     const registration=await navigator.serviceWorker.getRegistration();
-    return registration?.waiting?.state==='installed';
-   },null,{timeout:25000}).catch(()=>null);
+    const names=await caches.keys();
+    return !!(registration?.waiting||registration?.installing)&&names.some(name=>name.startsWith('tatami-'+app+'-')&&name!==before);
+   },{app,before},{timeout:10000}).catch(()=>null);
   }
   const staged=await pg.evaluate(async()=>{
    const registration=await navigator.serviceWorker.getRegistration();
@@ -538,6 +539,22 @@ export async function runPwa(app,base,browser,altRoot){
    updateRequested&&!!before&&staged.active==='activated'&&replacementIsStaged&&staged.controller==='activated'&&staged.activeControlsPage&&staged.caches.includes(before)&&!!stagedCache,
    JSON.stringify(staged));
 
+  // A fresh tab opened while the old worker is active must still receive the old shell.
+  const lateTab=await ctx.newPage();
+  await lateTab.goto(base+'/index.html');
+  const lateTabState=await lateTab.evaluate(async()=>{
+   const registration=await navigator.serviceWorker.getRegistration();
+   return{
+    controller:navigator.serviceWorker.controller?.state||null,
+    activeControlsPage:!!(registration?.active&&navigator.serviceWorker.controller===registration.active),
+    updateMarker:document.documentElement.outerHTML.includes('UPDATE_MARKER')
+   };
+  });
+  S.ok('به‌روزرسانی: تب تازه تا فعال‌شدن نسخه جدید، پوستهٔ قبلی را می‌گیرد',
+   lateTabState.controller==='activated'&&lateTabState.activeControlsPage&&!lateTabState.updateMarker,
+   JSON.stringify(lateTabState));
+  await lateTab.close();
+
   await pg.close();
   await wait(350);
   const peerState=await peer.evaluate(async()=>{
@@ -555,37 +572,48 @@ export async function runPwa(app,base,browser,altRoot){
    peerState.active==='activated'&&peerStillUsesPrevious&&peerState.controlledByActive&&peerState.caches.includes(before),
    JSON.stringify(peerState));
 
-  // Once every old client is closed, the browser may activate the waiting worker.
+  // Once every old client is closed, the next page must eventually enter on the new version.
   await peer.close();
-  await wait(20000);
-  pg=await ctx.newPage();
-  await pg.goto(base+'/index.html');
-  await pg.waitForFunction(async()=>{
-   const registration=await navigator.serviceWorker.getRegistration();
-   return registration?.active?.state==='activated'&&!registration.waiting&&!registration.installing&&!!navigator.serviceWorker.controller;
-  },null,{timeout:15000}).catch(()=>null);
-
-  let after=[];
-  for(let i=0;i<30;i++){
-   await wait(300);
-   after=await pg.evaluate(()=>caches.keys());
-   const own=after.filter(name=>name.startsWith('tatami-'+app+'-'));
-   if(own.length===1&&own[0]!==before)break;
+  let pg=null,latest=null,ownCaches=[],updateActivated=false;
+  for(let attempt=0;attempt<35;attempt++){
+   await wait(800);
+   const candidate=await ctx.newPage();
+   await candidate.goto(base+'/index.html');
+   const state=await candidate.evaluate(async()=>{
+    const registration=await navigator.serviceWorker.getRegistration();
+    return{
+     active:registration?.active?.state||null,
+     waiting:registration?.waiting?.state||null,
+     installing:registration?.installing?.state||null,
+     controlled:!!navigator.serviceWorker.controller,
+     caches:await caches.keys(),
+     updateMarker:document.documentElement.outerHTML.includes('UPDATE_MARKER')
+    };
+   });
+   const roleCaches=state.caches.filter(name=>name.startsWith('tatami-'+app+'-'));
+   if(state.active==='activated'&&!state.waiting&&!state.installing&&state.controlled&&roleCaches.length===1&&roleCaches[0]!==before&&state.updateMarker){
+    pg=candidate;latest=state;ownCaches=roleCaches;updateActivated=true;break;
+   }
+   await candidate.close();
   }
-  const latest=await pg.evaluate(async()=>{
-   const registration=await navigator.serviceWorker.getRegistration();
-   return{
-    active:registration?.active?.state||null,
-    waiting:registration?.waiting?.state||null,
-    installing:registration?.installing?.state||null,
-    controlled:!!navigator.serviceWorker.controller,
-    caches:await caches.keys(),
-    updateMarker:document.documentElement.outerHTML.includes('UPDATE_MARKER')
-   };
-  });
-  const ownCaches=latest.caches.filter(name=>name.startsWith('tatami-'+app+'-'));
+  if(!pg){
+   pg=await ctx.newPage();
+   await pg.goto(base+'/index.html');
+   latest=await pg.evaluate(async()=>{
+    const registration=await navigator.serviceWorker.getRegistration();
+    return{
+     active:registration?.active?.state||null,
+     waiting:registration?.waiting?.state||null,
+     installing:registration?.installing?.state||null,
+     controlled:!!navigator.serviceWorker.controller,
+     caches:await caches.keys(),
+     updateMarker:document.documentElement.outerHTML.includes('UPDATE_MARKER')
+    };
+   });
+   ownCaches=latest.caches.filter(name=>name.startsWith('tatami-'+app+'-'));
+  }
   S.ok('به‌روزرسانی: Worker جدید پس از بسته‌شدن همه تب‌های قدیمی فعال می‌شود',
-   latest.active==='activated'&&!latest.waiting&&!latest.installing&&latest.controlled,
+   updateActivated,
    JSON.stringify(latest));
   S.ok('به‌روزرسانی: فقط Cache نسخه قدیمی همین نقش پاک می‌شود',
    ownCaches.length===1&&ownCaches[0]!==before&&sentinels.every(name=>latest.caches.includes(name)),
