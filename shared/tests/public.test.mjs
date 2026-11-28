@@ -552,19 +552,33 @@ export async function runPwa(app,base,browser,altRoot){
    return true;
   });
   let updateWaitOutcome='not-requested',updateWaitElapsedMs=0;
+  const updatePollTrace=[];
   if(updateRequested){
    const waitStarted=Date.now();
-   try{
-    await pg.waitForFunction(async({app,before})=>{
+   while(updateWaitElapsedMs<25000){
+    const snapshot=await pg.evaluate(async()=>{
      const registration=await navigator.serviceWorker.getRegistration();
      const names=await caches.keys();
-     return registration?.waiting?.state==='installed'&&names.some(name=>name.startsWith('tatami-'+app+'-')&&name!==before);
-    },{app,before},{timeout:25000});
-    updateWaitOutcome='waiting-installed';
-   }catch(error){
-    updateWaitOutcome=String(error?.message||error).split('\\n')[0];
+     return{
+      active:registration?.active?.state||null,
+      activeScript:registration?.active?.scriptURL||null,
+      installing:registration?.installing?.state||null,
+      installingScript:registration?.installing?.scriptURL||null,
+      waiting:registration?.waiting?.state||null,
+      waitingScript:registration?.waiting?.scriptURL||null,
+      controller:navigator.serviceWorker.controller?.state||null,
+      controllerScript:navigator.serviceWorker.controller?.scriptURL||null,
+      caches:names
+     };
+    });
+    updatePollTrace.push({elapsedMs:Date.now()-waitStarted,...snapshot});
+    const ready=snapshot.waiting==='installed'&&snapshot.caches.some(name=>name.startsWith('tatami-'+app+'-')&&name!==before);
+    if(ready){updateWaitOutcome='waiting-installed';break}
+    await wait(150);
+    updateWaitElapsedMs=Date.now()-waitStarted;
    }
    updateWaitElapsedMs=Date.now()-waitStarted;
+   if(updateWaitOutcome!=='waiting-installed')updateWaitOutcome='timeout';
   }
   const staged=await pg.evaluate(async()=>{
    const registration=await navigator.serviceWorker.getRegistration();
@@ -583,7 +597,7 @@ export async function runPwa(app,base,browser,altRoot){
   const replacementIsStaged=staged.waiting==='installed';
   S.ok('به‌روزرسانی: نسخه جدید نصب/منتظر می‌ماند و نسخه فعال را تصاحب نمی‌کند',
    updateRequested&&!!before&&staged.active==='activated'&&replacementIsStaged&&staged.controller==='activated'&&staged.activeControlsPage&&staged.caches.includes(before)&&!!stagedCache,
-   JSON.stringify({staged,updateRequested,updateWaitOutcome,updateWaitElapsedMs,workerDiagnostics}));
+   JSON.stringify({staged,updateRequested,updateWaitOutcome,updateWaitElapsedMs,updatePollTrace: updatePollTrace.filter((item,index)=>index===0||index===updatePollTrace.length-1||index%20===0),workerDiagnostics}));
   S.ok('به‌روزرسانی: اعلان فقط پس از آماده‌شدن نسخه منتظر نمایش داده می‌شود',
    await pg.locator('#tp-pwa-update-notice').isVisible());
   await pg.locator('#tp-pwa-update-dismiss').click();
