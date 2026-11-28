@@ -644,3 +644,30 @@ input[aria-invalid=true],select[aria-invalid=true],textarea[aria-invalid=true]{b
  #app :is(.fv,.ptb,.qt button){min-width:44px}
 }
 @media(max-width:380px){#app .pg{grid-template-columns:minmax(0,1fr)}}
+
+/* PWA update notice: inform users without interrupting active work */
+.tp-pwa-update-notice{
+ width:calc(100% - 2*var(--tp-space-md));
+ max-width:var(--tp-container-page);
+ margin:var(--tp-space-sm) auto;
+ padding:var(--tp-space-md);
+ display:flex;
+ align-items:center;
+ justify-content:space-between;
+ gap:var(--tp-space-md);
+ color:var(--tp-color-text-primary);
+ background:var(--tp-color-surface);
+ border:1px solid var(--tp-color-border);
+ border-inline-start:4px solid var(--tp-color-brand);
+ border-radius:var(--tp-radius-card);
+ box-shadow:var(--tp-shadow-popover);
+}
+.tp-pwa-update-notice[hidden]{display:none!important}
+.tp-pwa-update-copy{min-width:0}
+.tp-pwa-update-copy>b{display:block;font-weight:var(--tp-font-weight-bold)}
+.tp-pwa-update-copy>p{margin:var(--tp-space-2xs) 0 0;color:var(--tp-color-text-secondary);font-size:var(--tp-font-size-sm);line-height:1.8}
+#tp-pwa-update-dismiss{flex:none}
+@media(max-width:600px){
+ .tp-pwa-update-notice{align-items:stretch;flex-direction:column;gap:var(--tp-space-sm);padding:var(--tp-space-sm)}
+ #tp-pwa-update-dismiss{width:100%}
+}
