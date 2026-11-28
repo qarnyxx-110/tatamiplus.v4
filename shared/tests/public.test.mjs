@@ -420,8 +420,8 @@ export async function runPwa(app,base,browser,altRoot){
  const updatePolicy=await pg.evaluate(async()=>{
   const source=await fetch('sw.js').then(response=>response.text());
   return{
-   forcesActivation:/\\bskipWaiting\\s*\\(/.test(source),
-   claimsExistingClients:/\\bclients\\.claim\\s*\\(/.test(source)
+   forcesActivation:/\bskipWaiting\s*\(/.test(source),
+   claimsExistingClients:/\bclients\.claim\s*\(/.test(source)
   };
  });
  S.ok('سیاست Worker بدون فعال‌سازی اجباری یا تصاحب ناگهانی تب‌هاست',
@@ -649,6 +649,8 @@ export async function runPwa(app,base,browser,altRoot){
   await pg.evaluate(names=>Promise.all(names.map(name=>caches.delete(name))),sentinels);
   altRoot.reset();
   }else{
+   // Keep the remaining old-version tab available for the URL smoke checks below.
+   pg=peer;
    altRoot.reset();
   }
  }
