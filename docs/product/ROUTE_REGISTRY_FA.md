@@ -1,7 +1,7 @@
 # رجیستری مسیرها و سطح اتصال
 
 **تاریخ ممیزی اولیه:** ۲۸ نوامبر ۲۰۲۶  
-**مبنای فرانت‌اند:** 8818cd18c9f418f207f6d2049e2199eff0f30d73  
+**مبنای فرانت‌اند:** شاخهٔ `design/new-design-system`، HEAD ممیزی‌شده `436ff75d5258ad58d2a86fc318841f60d847acbb`؛ مبنای انشعاب از main برابر `8818cd18c9f418f207f6d2049e2199eff0f30d73`  
 **مبنای Django:** 5f3a416d0aa5aa0363b2064ed23051a9273d8f75  
 **قاعده:** این فهرست رجیستری شروع است؛ وجود route در UI به معنی وجود backend یا فعال بودن عملیاتی آن نیست.
 
@@ -17,14 +17,16 @@
 | باشگاه مجازی | academy، courses، episode، videos، video | views-academy.js، views-videos.js | دادهٔ دوره/ویدئو در Preview می‌تواند نمونه باشد |
 | مربیان | coaches، instructor | views-coaches.js، views-portfolio.js | فهرست/پروفایل واقعی از Django |
 | باشگاه و نقشه | clubs، club | views-clubs-map.js و Viewهای دیگر | نقشهٔ محلی از directory واقعی Django جداست |
-| تخصصی | specialist-services، nutrition-coaches، sports-clinics، sports-psychologists | views-specialist-services.js | در View پیاده‌سازی شده؛ allowlist Router ندارد |
+| تخصصی | specialist-services، nutrition-coaches، sports-clinics، sports-psychologists | views-specialist-services.js | در View و allowlist فعلی Router وجود دارد؛ قرارداد عملیاتی Django تأیید نشده است |
 | خدمات هوشمند | online-coach، ai | views-online-coach.js و Viewهای مربوط | فقط طراحی/رابط؛ قرارداد عملیاتی تأیید نشده |
 | محتوا | blog، tatamipedia | views-blog.js، views-tatamipedia.js | blog به Django متصل؛ tatamipedia بدون route/model متناظر |
 | سایر | tournaments، tournament، gems، sponsors | Viewهای feature | اتصال و مالکیت هر route باید در Page Spec ثبت شود |
 
 ## ۲. مسیرهایی که پل Django در Preview می‌شناسد
 
-در منطق Router/Bridge فعلی، مسیرهای متصل یا routeهای شناخته‌شده شامل مواردی مانند login، register، role، password-reset، set-password، blog، store، product، cart، checkout، coaches، academy، instructor، coach-apply، coach-application، courses، episode، club، gems، profile، my-profile و orders هستند.
+در `MAXSEG` فعلی Router، کلیدهای عمومی شامل خانه، login، register، password-reset، set-password، coach-apply، coach-application، dashboard، store، online-coach، courses، episode، search، cart، checkout، tournaments، videos، academy، ai، clubs، profile، gems، sponsors، چهار مسیر خدمات تخصصی، my-profile، coaches، tatamipedia، blog، product، video، tournament، instructor و club هستند. این فهرست فقط مجازبودن hash در Router را نشان می‌دهد، نه اتصال Django.
+
+مسیرهای `role` و `orders` در دامنهٔ زندهٔ Preview به‌صورت ویژه در Bridge/Router زودتر واگذار می‌شوند، اما کلید مستقل آن‌ها در `MAXSEG` نیست. مسیر `coach-invite` در resolve منطق Bridge دیده می‌شود ولی در `MAXSEG` و فهرست واگذاری زنده ثبت نشده است؛ باید پیش از معرفی عمومی رفع و تست شود. کلیدهای `gyms` و `gym` نیز در Router وجود ندارند.
 
 این allowlist به معنی اتصال همهٔ مسیرها با یک عمق یکسان نیست. resolver بعضی مسیرها از دادهٔ واقعی Django استفاده می‌کند و بعضی مسیرهای hash از نام/slug دادهٔ محلی برای پیدا کردن معادل واقعی کمک می‌گیرند؛ اگر تطبیق یکتا نباشد باید به فهرست امن واقعی برگردد.
 
@@ -76,8 +78,8 @@
 
 | اولویت | شکاف | اثر | اقدام فرانت‌اند |
 |---|---|---|---|
-| P0 | چهار route خدمات تخصصی در View تعریف شده اما در MAXSEG نیستند | Router آن‌ها را به not-found می‌فرستد | اصلاح allowlist و افزودن تست route |
-| P0 | مسیرهای gyms در Bridge/Template coverage کامل نیستند | باشگاه واقعی Django از مسیر clubs نمونه قابل دسترسیِ یکپارچه نیست | تکمیل طراحی/رجیستری، سپس route mapping و قالب‌های مجاز |
+| P0 | مسیرهای gyms در Router و Bridge پوشش ندارند | فهرست/جزئیات/پنل واقعی باشگاه از Preview قابل پیمایش نیست | تعریف route map، نگاشت امن URL، و پوشش قالب‌های frontend-owned همراه با تست |
+| P1 | coach-invite در resolver هست ولی route allowlist/واگذاری Preview ندارد | لینک دعوت می‌تواند به 404 برسد | تعیین route پایدار و تست قرارداد دعوت |
 | P1 | role=club در PWA در برابر role=gym در Django | انتخاب نقش، منو و کنترل دسترسی ناسازگار می‌شود | تعیین mapping صریح و طراحی حالت‌های انتقال |
 | P1 | design-system در build config از Preview منع شده، در حالی که سند آن را راهنمای زنده Preview معرفی می‌کند | راهنمای طراحی ممکن است قابل دسترسی نباشد | تصمیم: ابزار توسعه داخلی یا صفحهٔ عمومی؟ سپس هماهنگ‌سازی |
 | P1 | چند View کلیدهای routes مشترک مانند club، academy یا profile را تعریف می‌کنند | ترتیب Object.assign/Build می‌تواند مالک نهایی را تغییر دهد | استخراج مالک نهایی هر route و یک منبع route registry |
@@ -85,6 +87,12 @@
 | P1 | auth.js و dashboard-kit دارای state یا مقادیر محلی‌اند | احتمال نمایش هویت/آمار غیرواقعی | تفکیک PWA مستقل از Preview متصل به Django |
 | P1 | MockGateway در پرداخت | خطر پیام موفقیتِ گمراه‌کننده | همهٔ حالت‌های پرداخت را طراحی کن؛ موفقیت فقط با نتیجهٔ تأییدشده |
 | P2 | صفحه‌های فاقد endpoint، از جمله مربی آنلاین، AI، نقشهٔ جغرافیایی و دانشنامه | ظاهر ممکن است با قابلیت عملیاتی اشتباه شود | طراحی کامل با empty/disabled state روشن |
+
+## ۴-الف. وضعیت راهنمای Design System و routeهای ویژه
+
+- فایل‌های طراحی فعلی رنگ‌بندی جدید دارند، اما `preview.deny` در `shared/build.js` هنوز `design-system` را مسدود می‌کند؛ بنابراین راهنمای زندهٔ معرفی‌شده در مستندات، فعلاً با تنظیم Build هم‌خوان نیست.
+- مسیرهای `specialist-services`، `nutrition-coaches`، `sports-clinics` و `sports-psychologists` در `MAXSEG` حاضرند؛ مسئلهٔ آن‌ها نبود قرارداد Django است، نه 404 ناشی از allowlist.
+- `clubs` در حال حاضر نقشه/فهرست نمونهٔ فرانت‌اند است و نباید معادل `/gyms/` واقعی Django تلقی شود.
 
 ## ۵. سیاست ثبت هر Route
 
