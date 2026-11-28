@@ -25,14 +25,15 @@
 
 ## ۱. مواردی که باید پیش از اتصال رفع/تصمیم‌گیری شوند
 
-1. routeهای خدمات تخصصی در View هستند ولی از MAXSEG جا افتاده‌اند.
-2. مسیرهای gyms در urls.py بک‌اند وجود دارند، اما در django/templates فرانت‌اند پوشهٔ gyms وجود ندارد و Bridge allowlist/resolve آن‌ها را پوشش نمی‌دهد.
-3. تفاوت role=club در PWA و role=gym در Django باید با mapping صریح حل شود.
-4. Design System راهنمای زنده را در Preview معرفی می‌کند، اما APP.preview deny آن را بسته است.
-5. چند View مالک routeهای هم‌نام هستند؛ ترتیب Object.assign در build باید پیش از تغییر ثبت شود.
-6. پنل بازاریابی نباید بر API فرضی یا mock server به‌عنوان production تکیه کند.
-7. داده‌های نمونهٔ dashboard، courses، coach، store، map و video باید از مسیرهای متصل production جدا باشند.
-8. در پرداخت MockGateway فقط یک محیط/درگاه آزمایشی است.
+1. routeهای تخصصی در MAXSEG ثبت شده‌اند، اما در handoff فعلی endpoint عملیاتی برای آن‌ها یافت نشده است؛ وضعیت آن‌ها UI-only می‌ماند.
+2. مسیرهای `/gyms/` در Django و Templateهای backend وجود دارند، اما Router/Bridge فرانت‌اند آن‌ها را پوشش نمی‌دهد و در مخزن فرانت‌اند نیز پوشش قالب‌های اختصاصی gyms کامل نیست.
+3. تفاوت role=club در PWA و role=gym در Django باید با mapping صریح و بدون جعل نقش حل شود.
+4. Design System راهنمای زنده را در Preview معرفی می‌کند، اما `preview.deny` در Build آن را بسته است.
+5. چند View مالک routeهای هم‌نام هستند؛ ترتیب Object.assign در Build باید برای routeهای متداخل در رجیستری ثبت شود.
+6. مسیر `coach-invite` در resolver دیده می‌شود ولی route allowlist و واگذاری زندهٔ Preview آن کامل نیست.
+7. پنل بازاریابی نباید بر API فرضی یا mock server به‌عنوان production تکیه کند.
+8. داده‌های نمونهٔ dashboard، courses، coach، store، map و video باید از مسیرهای متصل production جدا باشند.
+9. در پرداخت MockGateway فقط یک محیط/درگاه آزمایشی است.
 
 ## ۲. تعریف وضعیت اتصال
 
