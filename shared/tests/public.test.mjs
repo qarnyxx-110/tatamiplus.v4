@@ -584,8 +584,9 @@ export async function runPwa(app,base,browser,altRoot){
   // Do not repeatedly evaluate the old worker target while waiting for it to retire.
   // Instead, briefly open a page, inspect which version served it, then close it again.
   let latest=null,ownCaches=[],updateActivated=false,activationAttempts=[];
-  for(let attempt=0;attempt<24;attempt++){
-   await wait(700);
+  for(let attempt=0;attempt<10;attempt++){
+   // Give the browser several seconds with zero old clients so the active worker can retire.
+   await wait(4000);
    const candidate=await ctx.newPage();
    await candidate.goto(base+'/index.html');
    const state=await candidate.evaluate(async()=>{
