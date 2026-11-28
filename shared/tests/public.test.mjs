@@ -435,6 +435,20 @@ export async function runPwa(app,base,browser,altRoot){
   return!!(await cache.match(url));
  });
  S.ok('فایل تنظیمات نشان در Cache اولیه PWA ذخیره شده است',configCached);
+ const otherRole=app==='student'?'coach':'student';
+ const crossRoleCacheProbe=await pg.evaluate(async(role)=>{
+  const cacheName='tatami-'+role+'-isolation-probe';
+  const url=new URL('assets/__tatami-cache-isolation-probe__.txt',location.href).toString();
+  const otherCache=await caches.open(cacheName);
+  await otherCache.put(url,new Response('other-role-cache-entry',{headers:{'Content-Type':'text/plain'}}));
+  try{
+   const response=await fetch(url);
+   return{status:response.status,body:await response.text()};
+  }finally{await caches.delete(cacheName)}
+ },otherRole);
+ S.ok('درخواست PWA فقط Cache همان نسخه/نقش را می‌خواند',
+  crossRoleCacheProbe.status===404&&!crossRoleCacheProbe.body.includes('other-role-cache-entry'),
+  JSON.stringify(crossRoleCacheProbe));
  const manifestIconsCached=await pg.evaluate(async()=>{
   const manifest=await fetch('manifest.webmanifest').then(response=>response.json());
   const names=await caches.keys();
