@@ -32,12 +32,47 @@ for(const app of['student','coach','club']){
 }
 const mock=spawn('node',['tools/mock-api-server.mjs','--port',String(MOCK),'--static',API],{stdio:'inherit'});await wait(800);
 const browser=await pw.chromium.launch();const out=[];const apps=['student','coach','club'];let root=A;const ctl={use:()=>{root=B},reset:()=>{root=A}};
+async function verifyGeneratedServiceWorkerPolicy(app){
+ const source=fs.readFileSync(path.join(A,app,'sw.js'),'utf8');
+ const version=source.match(/const V='([^']+)'/)?.[1];
+ const prefix=source.match(/CACHE_PREFIX='([^']+)'/)?.[1];
+ if(!version||prefix!=='tatami-'+app)throw new Error('Generated '+app+' Service Worker has an invalid role cache namespace');
+ if(/\bskipWaiting\s*\(/.test(source)||/\bclients\.claim\s*\(/.test(source)){
+  throw new Error('Generated '+app+' Service Worker contains a forced activation or client-claim call');
+ }
+ const otherRole=apps.find(role=>role!==app);
+ const cacheNames=[`tatami-${app}-old`,version,`tatami-${otherRole}-preserve`,'tatami-unrelated-preserve'];
+ const deleted=[];
+ const listeners={};
+ const sandbox={
+  self:{addEventListener:(name,handler)=>{listeners[name]=handler}},
+  caches:{
+   keys:async()=>cacheNames.slice(),
+   delete:async name=>{deleted.push(name);return true}
+  },
+  Promise,
+  URL,
+  console
+ };
+ vm.runInNewContext(source,sandbox,{filename:app+'/sw.js'});
+ if(typeof listeners.activate!=='function')throw new Error('Generated '+app+' Service Worker has no activate handler');
+ let activationWork;
+ listeners.activate({waitUntil(promise){activationWork=promise}});
+ if(!activationWork)throw new Error('Generated '+app+' Service Worker does not wait for cache cleanup');
+ await activationWork;
+ const expected=[`tatami-${app}-old`];
+ if(JSON.stringify(deleted)!==JSON.stringify(expected)){
+  throw new Error('Generated '+app+' Service Worker cleanup crossed role boundaries: '+JSON.stringify({deleted,expected}));
+ }
+ console.log('PASS Service Worker deferred-update policy and role Cache cleanup:',app);
+}
 try{
  for(const app of apps){
   const sw=path.join(A,app,'sw.js');
   const syntax=spawnSync(process.execPath,['--check',sw],{encoding:'utf8'});
   if(syntax.status!==0)throw new Error('Generated Service Worker syntax failed for '+app+': '+(syntax.stderr||syntax.stdout));
   console.log('PASS generated Service Worker syntax:',app);
+  await verifyGeneratedServiceWorkerPolicy(app);
  }
  if(process.env.ONLY==='marketing'){
   const pubSrv=await serve(path.join(PUB,'student'));

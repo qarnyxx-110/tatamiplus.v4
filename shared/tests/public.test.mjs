@@ -2,11 +2,21 @@
 import {Suite,WIDTHS,OVERFLOW_JS,wait} from './helpers.mjs';
 const is404=()=>/۴۰۴/.test(document.getElementById('app').innerText);
 export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA '+app),denied={student:['#/role','#/my-profile','#/design-system','#/checkout'],coach:['#/role','#/ai','#/clubs','#/club/0','#/design-system','#/checkout'],club:['#/role','#/ai','#/my-profile','#/design-system','#/checkout']}[app];
- const ctx=await browser.newContext({viewport:{width:390,height:800},serviceWorkers:'block'});const pg=await ctx.newPage();pg.setDefaultTimeout(15000);pg.setDefaultNavigationTimeout(15000);const errs=[];
- pg.on('pageerror',e=>errs.push('PAGEERROR '+JSON.stringify({name:e.name,message:e.message,stack:e.stack||''}).slice(0,1600)));pg.on('console',m=>{if(m.type()==='error'&&!/fonts\.g|ERR_NAME_NOT_RESOLVED|ERR_INTERNET|Failed to load resource/.test(m.text()))errs.push('CONSOLE '+JSON.stringify({text:m.text(),location:m.location()}).slice(0,1600))});
- await pg.addInitScript(()=>{addEventListener('error',e=>{if(e instanceof ErrorEvent)console.error('[TP_WINDOW_ERROR] '+JSON.stringify({message:e.message,filename:e.filename,lineno:e.lineno,colno:e.colno,stack:e.error&&e.error.stack||''}))},true)});
+ const ctx=await browser.newContext({viewport:{width:390,height:800},serviceWorkers:'block'});const pg=await ctx.newPage();pg.setDefaultTimeout(15000);pg.setDefaultNavigationTimeout(15000);const errs=[],backendFeedErrors=[],backendFeedResponses=[];
+ pg.on('pageerror',e=>errs.push('PAGEERROR '+JSON.stringify({name:e.name,message:e.message,stack:e.stack||''}).slice(0,1600)));
+ pg.on('console',m=>{
+  if(m.type()!=='error')return;
+  const message=m.text();
+  if(message.includes('[Tatami home live feed]')&&message.includes('Django feed returned HTTP 404')&&/(?:coaches|products)/.test(message)){backendFeedErrors.push(message);return}
+  if(!/fonts\.g|ERR_NAME_NOT_RESOLVED|ERR_INTERNET|Failed to load resource/.test(message))errs.push('CONSOLE '+JSON.stringify({text:message,location:m.location()}).slice(0,1600));
+ });
+ pg.on('response',response=>{
+  if(response.status()>=400&&response.request().resourceType()==='fetch')backendFeedResponses.push({status:response.status(),url:response.url()});
+ });
  const go=async h=>{await pg.evaluate(x=>{location.hash=x},h);await wait(60)},T=()=>pg.evaluate(()=>document.getElementById('app').innerText),cnt=sel=>pg.locator(sel).count(),nf=()=>pg.evaluate(is404);
  await pg.goto(base+'/index.html');await wait(300);
+ S.ok('اعلان به‌روزرسانی بدون نسخهٔ منتظر پنهان است',
+  await pg.locator('#tp-pwa-update-notice').count()===1&&await pg.locator('#tp-pwa-update-notice').isHidden());
  // --- وضعیت داده‌های مسابقات با تاریخ سپری‌شده
  await go('#/tournaments');
  const tournamentNames=['جام بهاره تهران','لیگ باشگاه‌های اصفهان','مسابقات کشوری نوجوانان','جام دوستی شیراز'];
@@ -28,6 +38,31 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
  S.ok('جزئیات مسابقه وضعیت ثبت‌نام را به‌اشتباه باز/بسته/پایان‌یافته اعلام نمی‌کند',
   tournamentDetail.includes('نیازمند تأیید'));
  await go('#/');
+ await pg.waitForFunction(()=>{
+  const feeds=[...document.querySelectorAll('#app [data-tp-home-feed]')];
+  return feeds.length===2&&feeds.every(feed=>
+   feed.dataset.tpFeedStarted==='true'&&
+   ['empty','error','ready','reference'].includes(feed.dataset.state)&&
+   feed.getAttribute('aria-busy')==='false'
+  );
+ },null,{timeout:5000}).catch(()=>null);
+ const homeFeedStates=await pg.locator('#app [data-tp-home-feed]').evaluateAll(feeds=>feeds.map(feed=>({
+  layout:feed.dataset.layout,
+  started:feed.dataset.tpFeedStarted==='true',
+  state:feed.dataset.state||null,
+  busy:feed.getAttribute('aria-busy'),
+  cards:feed.querySelectorAll('.tp-coaches > li,.tp-product-card').length
+ })));
+ const expectedStoreUrl=new URL('/store/',base).toString();
+ S.ok('Home: فید واقعی Django بدون پاسخ بک‌اند، فقط empty/error و بدون کارت ساختگی می‌ماند',
+  homeFeedStates.length===2&&homeFeedStates.every(feed=>feed.started&&['empty','error'].includes(feed.state)&&feed.busy==='false'&&feed.cards===0),
+  JSON.stringify(homeFeedStates));
+ S.ok('Home: پاسخ 404 محیط استاتیک فقط مربوط به endpoint واقعی فروشگاه است',
+  backendFeedResponses.length>=1&&backendFeedResponses.every(response=>response.status===404&&response.url===expectedStoreUrl),
+  JSON.stringify(backendFeedResponses));
+ S.ok('Home: خطای فید با پیام مشخص قابل تشخیص است',
+  backendFeedErrors.some(message=>message.includes('products')&&message.includes('Django feed returned HTTP 404')),
+  JSON.stringify({captured:backendFeedErrors,consoleErrorMessages:errs.filter(error=>error.includes('Tatami home live feed'))}));
  // --- مسیرهای معتبر/نامعتبر
  const valid=['#/','#/store','#/online-coach','#/store/','#/product/3','#/product?id=3','#/video/3','#/video?id=3','#/blog','#/blog/uchi-mata-basics','#/blog/2','#/tournaments','#/tournament/1','#/instructor/1','#/academy','#/profile','#/gems','#/cart','#/dashboard','#/videos','#/search','#/coaches','#/coaches/sara-ahmadi','#/sponsors','#/tatamipedia','#/tatamipedia/ippon','#/tatamipedia?q=ippon&cat=refereeing','#/blog?page=2','#/specialist-services','#/nutrition-coaches','#/sports-clinics','#/sports-psychologists'];
  const bad=[];for(const r of valid){await go(r);if(await nf())bad.push(r)}S.ok('مسیرهای معتبر 404 نمی‌دهند ('+valid.length+' مسیر)',!bad.length,bad.join(' '));
@@ -337,12 +372,25 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
 export async function runPwa(app,base,browser,altRoot){
  const S=new Suite('PWA-فنی '+app);
  const ctx=await browser.newContext({viewport:{width:390,height:800},serviceWorkers:'allow'});
- const pg=await ctx.newPage();pg.setDefaultTimeout(15000);pg.setDefaultNavigationTimeout(15000);
- const swConsoleErrors=[],swHttpErrors=[],failedRequests=[];
- pg.on('console',message=>{if(message.type()==='error')swConsoleErrors.push({text:message.text(),location:message.location()})});
- pg.on('response',response=>{if(response.status()>=400)swHttpErrors.push({status:response.status(),url:response.url(),resourceType:response.request().resourceType()})});
- pg.on('requestfailed',request=>failedRequests.push({url:request.url(),failure:request.failure(),resourceType:request.resourceType()}));
+ let pg=await ctx.newPage();pg.setDefaultTimeout(15000);pg.setDefaultNavigationTimeout(15000);
+ const swConsoleErrors=[],staticResourceErrors=[];
+ pg.on('console',message=>{
+  if(message.type()!=='error')return;
+  const source=message.location()?.url||'';
+  if(source.endsWith('/sw.js')||message.text().includes('[Tatami SW]'))swConsoleErrors.push({text:message.text(),source});
+ });
+ pg.on('response',response=>{
+  const resourceType=response.request().resourceType();
+  const sameOrigin=new URL(response.url()).origin===new URL(base).origin;
+  if(sameOrigin&&response.status()>=400&&['stylesheet','script','image','font'].includes(resourceType)){
+   staticResourceErrors.push({status:response.status(),url:response.url(),resourceType});
+  }
+ });
  await pg.goto(base+'/index.html');
+ await wait(250);
+ S.ok('اعلان به‌روزرسانی در نصب اولیه پنهان است',
+  await pg.locator('#tp-pwa-update-notice').count()===1&&await pg.locator('#tp-pwa-update-notice').isHidden());
+ S.ok('CSS، JS و تصاویر هم‌مبدأ PWA با پاسخ موفق بارگذاری می‌شوند',staticResourceErrors.length===0,JSON.stringify(staticResourceErrors));
  const neshanConfig=await pg.evaluate(async()=>{const r=await fetch('assets/neshan-config.js');return{status:r.status,text:await r.text()}});
  S.ok('تنظیمات نشان در خروجی PWA قابل دریافت است',neshanConfig.status===200&&neshanConfig.text.includes('TP_NESHAN_WEB_KEY')&&neshanConfig.text.includes('TP_CLUBS_JSON_URL'),String(neshanConfig.status));
  const man=await pg.evaluate(()=>fetch('manifest.webmanifest').then(r=>r.json()));
@@ -352,20 +400,42 @@ export async function runPwa(app,base,browser,altRoot){
  for(const i of man.icons)if(await pg.evaluate(u=>fetch(u).then(r=>r.status),i.src)!==200)ok=false;
  S.ok('آیکون‌ها 200',ok);
  S.ok('offline.html موجود',await pg.evaluate(()=>fetch('offline.html').then(r=>r.status))===200);
- const precache=await pg.evaluate(async()=>{
+ const pwaCoreAssets=[
+  'assets/css/home-live-feeds.css',
+  'assets/js/home-live-feeds.js',
+  'assets/images/judo/uchi-mata.svg',
+  'assets/images/judo/seoi-nage.svg',
+  'assets/images/judo/osoto-gari.svg'
+ ];
+ const precache=await pg.evaluate(async({requiredAssets,app})=>{
   const source=await fetch('sw.js').then(r=>r.text());
   const match=source.match(/SHELL=(\[[^;]+\]);/);
-  if(!match)return{ok:false,missing:['Unable to parse generated precache list']};
-  const paths=JSON.parse(match[1]),required=['icons/maskable-512.png','assets/neshan-config.js','assets/css/home-live-feeds.css','assets/js/home-live-feeds.js','assets/images/judo/uchi-mata.svg','assets/images/judo/seoi-nage.svg','assets/images/judo/osoto-gari.svg'],missing=[],unlisted=required.filter(path=>!paths.includes(path));
+  if(!match)return{ok:false,missing:['Unable to parse generated precache list'],unlisted:requiredAssets,notCore:requiredAssets,cachePrefix:null};
+  const paths=JSON.parse(match[1]),missing=[],unlisted=requiredAssets.filter(path=>!paths.includes(path));
+  const coreMatch=source.match(/CORE_COUNT=(\d+)/),coreCount=coreMatch?Number(coreMatch[1]):0;
+  const notCore=requiredAssets.filter(path=>!paths.slice(0,coreCount).includes(path));
+  const prefixMatch=source.match(/CACHE_PREFIX='([^']+)'/);
   for(const path of paths){try{const response=await fetch(path);if(!response.ok)missing.push(path+' → HTTP '+response.status)}catch(error){missing.push(path+' → '+String(error))}}
-  return{ok:missing.length===0&&unlisted.length===0,missing,unlisted};
+  const cachePrefix=prefixMatch?.[1]||null;
+  return{ok:missing.length===0&&unlisted.length===0&&notCore.length===0&&cachePrefix==='tatami-'+app,missing,unlisted,notCore,cachePrefix};
+ },{requiredAssets:pwaCoreAssets,app});
+ S.ok('منابع اصلی رابط در Build و فهرست هستهٔ Cache موجودند',precache.ok,JSON.stringify(precache));
+ S.ok('پیشوند Cache از نقش همین PWA جدا شده است',precache.cachePrefix==='tatami-'+app,String(precache.cachePrefix));
+ const updatePolicy=await pg.evaluate(async()=>{
+  const source=await fetch('sw.js').then(response=>response.text());
+  return{
+   forcesActivation:/\bskipWaiting\s*\(/.test(source),
+   claimsExistingClients:/\bclients\.claim\s*\(/.test(source)
+  };
  });
- S.ok('همه منابع اصلی PWA در Precache موجود و قابل دریافت‌اند',precache.ok,[...precache.missing,...precache.unlisted.map(path=>path+' → not precached')].join(' | '));
+ S.ok('سیاست Worker بدون فعال‌سازی اجباری یا تصاحب ناگهانی تب‌هاست',
+  !updatePolicy.forcesActivation&&!updatePolicy.claimsExistingClients,
+  JSON.stringify(updatePolicy));
  const registrations=await pg.evaluate(async()=>Promise.all((await navigator.serviceWorker.getRegistrations()).map(async registration=>({scope:registration.scope,active:registration.active?.state||null,installing:registration.installing?.state||null,waiting:registration.waiting?.state||null}))));
  S.ok('Service Worker registration exists',registrations.length>0,JSON.stringify(registrations));
  const swReady=await pg.evaluate(()=>Promise.race([navigator.serviceWorker.ready.then(()=>true),new Promise(resolve=>setTimeout(()=>resolve(false),10000))]));
  S.ok('Service Worker registration becomes ready within 10 seconds',swReady,swReady?'ready':'timed out');
- S.ok('Service Worker has no registration, install, or resource-load errors',!swConsoleErrors.length&&!swHttpErrors.length,JSON.stringify({consoleErrors:swConsoleErrors.slice(0,30),httpErrors:swHttpErrors.slice(0,40),requestFailures:failedRequests.slice(0,20)}));
+ S.ok('Service Worker console has no registration/install error',!swConsoleErrors.length,JSON.stringify(swConsoleErrors));
  await wait(900);
  await pg.reload();
  await wait(500);
@@ -379,6 +449,37 @@ export async function runPwa(app,base,browser,altRoot){
   return!!(await cache.match(url));
  });
  S.ok('فایل تنظیمات نشان در Cache اولیه PWA ذخیره شده است',configCached);
+ const otherRole=app==='student'?'coach':'student';
+ const crossRoleCacheProbe=await pg.evaluate(async(role)=>{
+  const cacheName='tatami-'+role+'-isolation-probe';
+  const url=new URL('assets/__tatami-cache-isolation-probe__.txt',location.href).toString();
+  const otherCache=await caches.open(cacheName);
+  await otherCache.put(url,new Response('other-role-cache-entry',{headers:{'Content-Type':'text/plain'}}));
+  try{
+   const response=await fetch(url);
+   return{status:response.status,body:await response.text()};
+  }finally{await caches.delete(cacheName)}
+ },otherRole);
+ S.ok('درخواست PWA فقط Cache همان نسخه/نقش را می‌خواند',
+  crossRoleCacheProbe.status===404&&!crossRoleCacheProbe.body.includes('other-role-cache-entry'),
+  JSON.stringify(crossRoleCacheProbe));
+ const manifestIconsCached=await pg.evaluate(async()=>{
+  const manifest=await fetch('manifest.webmanifest').then(response=>response.json());
+  const names=await caches.keys();
+  if(!names.length)return{ok:false,missing:manifest.icons.map(icon=>icon.src)};
+  const cache=await caches.open(names[0]),missing=[];
+  for(const icon of manifest.icons)if(!await cache.match(new URL(icon.src,location.href).toString()))missing.push(icon.src);
+  return{ok:missing.length===0,missing};
+ });
+ S.ok('همهٔ آیکون‌های Manifest از جمله maskable در Cache اولیه‌اند',manifestIconsCached.ok,JSON.stringify(manifestIconsCached));
+ const coreAssetsCached=await pg.evaluate(async(paths)=>{
+  const name=(await caches.keys()).find(key=>key.startsWith('tatami-'));
+  if(!name)return{ok:false,missing:paths};
+  const cache=await caches.open(name),missing=[];
+  for(const path of paths)if(!await cache.match(new URL(path,location.href).toString()))missing.push(path);
+  return{ok:missing.length===0,missing};
+ },pwaCoreAssets);
+ S.ok('CSS، JavaScript و SVGهای اصلی در Cache نسخه‌دار ذخیره شده‌اند',coreAssetsCached.ok,coreAssetsCached.missing.join(' | '));
  const cdp=await ctx.newCDPSession(pg);
  try{
   const r=await cdp.send('Page.getInstallabilityErrors');
@@ -397,6 +498,12 @@ export async function runPwa(app,base,browser,altRoot){
    catch{return{status:0,text:''}}
   });
   S.ok('تنظیمات نشان در حالت آفلاین هم در دسترس است',offlineConfig.status===200&&offlineConfig.text.includes('TP_NESHAN_WEB_KEY'),String(offlineConfig.status));
+  const offlineCoreAssets=await pg.evaluate(async(paths)=>{
+   const results=[];
+   for(const path of paths){try{const response=await fetch(path,{cache:'no-store'});results.push({path,status:response.status})}catch(error){results.push({path,status:0,error:String(error)})}}
+   return results;
+  },pwaCoreAssets);
+  S.ok('منابع اصلی رابط در حالت آفلاین قابل دریافت‌اند',offlineCoreAssets.every(result=>result.status===200),JSON.stringify(offlineCoreAssets));
  }catch(e){S.ok('آفلاین: رفرش',false,e.message.slice(0,80))}
  try{
   await pg.goto(base+'/coaches/sara-ahmadi/',{timeout:8000});
@@ -405,137 +512,104 @@ export async function runPwa(app,base,browser,altRoot){
  }catch(e){S.ok('آفلاین: ورود مستقیم /coaches/<slug>/',false,e.message.slice(0,80))}
  await ctx.setOffline(false);
  if(altRoot){
-  // Run the update lifecycle in a fresh context so offline-navigation traffic
-  // from the earlier checks cannot keep the outgoing worker busy.
-  altRoot.reset();
-  const updateCtx=await browser.newContext({viewport:{width:390,height:800},serviceWorkers:'allow'});
-  try{
-   const updatePg=await updateCtx.newPage();
-   updatePg.setDefaultTimeout(15000);
-   updatePg.setDefaultNavigationTimeout(15000);
-   // Register the worker from a minimal document rather than booting the
-   // full application. This prevents app/image/API requests from keeping the
-   // outgoing worker busy during the update test.
-   await updatePg.goto(base+'/offline.html');
-   await updatePg.evaluate(async()=>{
-    const registration=await navigator.serviceWorker.register('sw.js',{scope:'./'});
-    await Promise.race([navigator.serviceWorker.ready,new Promise(resolve=>setTimeout(()=>resolve(null),10000))]);
-    return registration.scope;
-   });
-   await updatePg.reload();
-   await updatePg.waitForLoadState('networkidle',{timeout:5000}).catch(()=>{});
-   await wait(500);
-   const cleanClientControlled=await updatePg.evaluate(()=>!!navigator.serviceWorker.controller);
-   const beforeKeys=await updatePg.evaluate(()=>caches.keys());
-   const before=beforeKeys[0]||'';
-   S.ok('به‌روزرسانی: context مستقل با worker فعال و Cache اولیه',cleanClientControlled&&beforeKeys.length===1&&!!before,JSON.stringify({controlled:cleanClientControlled,caches:beforeKeys}));
-   const otherRoleCache='tatami-'+(app==='student'?'coach':'student')+'-0000000000';
-   const isolatedRequest='assets/other-role-cache-fixture.txt';
-   await updatePg.evaluate(async({name,request})=>{
-    const cache=await caches.open(name);
-    await cache.put(request,new Response('other role cache fixture'));
-   },{name:otherRoleCache,request:isolatedRequest});
-   const readsOtherRole=await updatePg.evaluate(async request=>(await fetch(request).then(response=>response.text()))==='other role cache fixture',isolatedRequest);
-   S.ok('Service Worker does not read a different role cache',!readsOtherRole);
-   altRoot.use();
+  const before=keys.find(name=>name.startsWith('tatami-'+app+'-'));
+  const otherRoles=['student','coach','club'].filter(role=>role!==app);
+  const sentinels=[...otherRoles.map(role=>'tatami-'+role+'-preserve-sentinel'),'tatami-unrelated-preserve-sentinel'];
+  await pg.evaluate(names=>Promise.all(names.map(name=>caches.open(name))),sentinels);
 
-   // Force the browser to check the changed Service Worker script.
-   const updateState=await updatePg.evaluate(async()=>{
+  // A second tab remains controlled by the old worker while the replacement installs.
+  const peer=await ctx.newPage();
+  await peer.goto(base+'/index.html');
+  await peer.waitForFunction(()=>!!navigator.serviceWorker.controller,{timeout:8000});
+
+  altRoot.use();
+  const updateRequested=await pg.evaluate(async()=>{
+   const registration=await navigator.serviceWorker.getRegistration();
+   if(!registration)return false;
+   await registration.update();
+   return true;
+  });
+  if(updateRequested){
+   await pg.waitForFunction(async({app,before})=>{
     const registration=await navigator.serviceWorker.getRegistration();
-    if(!registration)return{registration:false,controllerChanged:false,error:'no registration'};
-    const lifecycle=[];
-    const describe=worker=>worker?{state:worker.state,scriptURL:worker.scriptURL}:null;
-    const track=worker=>{
-     if(!worker)return;
-     lifecycle.push({event:'worker-state',...describe(worker)});
-     worker.addEventListener('statechange',()=>lifecycle.push({event:'worker-state',...describe(worker)}));
-    };
-    registration.addEventListener('updatefound',()=>{
-     lifecycle.push({event:'updatefound'});
-     track(registration.installing);
-    });
-    track(registration.installing);
-    track(registration.waiting);
-    const waitForControllerChange=()=>new Promise(resolve=>{
-     let timer=0;
-     const onChange=()=>{
-      if(timer)clearTimeout(timer);
-      lifecycle.push({event:'controllerchange',controller:describe(navigator.serviceWorker.controller)});
-      resolve(true);
-     };
-     navigator.serviceWorker.addEventListener('controllerchange',onChange,{once:true});
-     timer=setTimeout(()=>{navigator.serviceWorker.removeEventListener('controllerchange',onChange);resolve(false)},12000);
-    });
-    const firstChange=waitForControllerChange();
-    try{await registration.update()}catch(error){
-     return{registration:true,controllerChanged:false,error:String(error),lifecycle};
-    }
-    let changed=await firstChange;
-    const automaticControllerChange=changed;
-    let activationRequested=false;
-    let latest=await navigator.serviceWorker.getRegistration();
-    let activationAcknowledged=null,activationResponse=null;
-    if(!changed&&latest?.waiting){
-     activationRequested=true;
-     const forcedChange=waitForControllerChange();
-     activationAcknowledged=await new Promise(resolve=>{
-      const channel=new MessageChannel();
-      const timer=setTimeout(()=>resolve(false),5000);
-      channel.port1.onmessage=event=>{
-       clearTimeout(timer);
-       activationResponse=event.data||null;
-       resolve(!!(event.data&&event.data.type==='SKIP_WAITING_ACK'));
-      };
-      channel.port1.onmessageerror=()=>{
-       clearTimeout(timer);
-       resolve(false);
-      };
-      latest.waiting.postMessage({type:'SKIP_WAITING'},[channel.port2]);
-     });
-     changed=await forcedChange;
-     latest=await navigator.serviceWorker.getRegistration();
-    }
-    const builtHandlerPresent=await fetch('sw.js').then(response=>response.text()).then(source=>source.includes('SKIP_WAITING_ACK'));
-    return{
-     registration:true,
-     controllerChanged:changed,
-     automaticControllerChange,
-     activationRequested,
-     activationAcknowledged,
-     activationResponse,
-     builtHandlerPresent,
-     active:describe(latest?.active),
-     installing:describe(latest?.installing),
-     waiting:describe(latest?.waiting),
-     controlled:!!navigator.serviceWorker.controller,
-     lifecycle
-    };
-   });
-
-   await updatePg.goto(base+'/index.html');
-   let after=[];
-   for(let i=0;i<30;i++){
-    await wait(400);
-    after=await updatePg.evaluate(async prefix=>(await caches.keys()).filter(name=>name.startsWith(prefix)), 'tatami-'+app+'-');
-    if(after.length===1&&after[0]!==before)break;
-   }
-   const cacheReplaced=after.length===1&&after[0]!==before;
-   S.ok('به‌روزرسانی: ثبت نسخه جدید Service Worker و controllerchange',
-    updateState.registration&&updateState.controllerChanged,JSON.stringify(updateState));
-   S.ok('به‌روزرسانی: worker جدید فرمان فعال‌سازی را دریافت کرد',
-    updateState.builtHandlerPresent&&(!updateState.activationRequested||updateState.activationAcknowledged),JSON.stringify(updateState));
-   S.ok('به‌روزرسانی: Cache نسخه جدید جایگزین قدیمی شد',
-    cacheReplaced,before+' → '+after.join());
-   const otherRoleCachePreserved=await updatePg.evaluate(name=>caches.has(name),otherRoleCache);
-   S.ok('Automatic update preserves a different role cache',otherRoleCachePreserved);
-   S.ok('به‌روزرسانی: محتوای نسخه جدید نمایش داده می‌شود',
-    await updatePg.evaluate(()=>document.documentElement.outerHTML.includes('UPDATE_MARKER')));
-  }catch(error){
-   S.ok('به‌روزرسانی: اجرای context مستقل',false,String(error).slice(0,160));
-  }finally{
-   await updateCtx.close();
-   altRoot.reset();
+    const names=await caches.keys();
+    return registration?.waiting?.state==='installed'&&names.some(name=>name.startsWith('tatami-'+app+'-')&&name!==before);
+   },{app,before},{timeout:10000}).catch(()=>null);
   }
+  const staged=await pg.evaluate(async()=>{
+   const registration=await navigator.serviceWorker.getRegistration();
+   return{
+    active:registration?.active?.state||null,
+    installing:registration?.installing?.state||null,
+    waiting:registration?.waiting?.state||null,
+    controller:navigator.serviceWorker.controller?.state||null,
+    activeControlsPage:!!(registration?.active&&navigator.serviceWorker.controller===registration.active),
+    caches:await caches.keys()
+   };
+  });
+  const stagedCache=staged.caches.find(name=>name.startsWith('tatami-'+app+'-')&&name!==before);
+  const replacementIsStaged=staged.waiting==='installed';
+  S.ok('به‌روزرسانی: نسخه جدید نصب/منتظر می‌ماند و نسخه فعال را تصاحب نمی‌کند',
+   updateRequested&&!!before&&staged.active==='activated'&&replacementIsStaged&&staged.controller==='activated'&&staged.activeControlsPage&&staged.caches.includes(before)&&!!stagedCache,
+   JSON.stringify(staged));
+  S.ok('به‌روزرسانی: اعلان فقط پس از آماده‌شدن نسخه منتظر نمایش داده می‌شود',
+   await pg.locator('#tp-pwa-update-notice').isVisible());
+  await pg.locator('#tp-pwa-update-dismiss').click();
+  const dismissedNotice=await pg.evaluate(async()=>{
+   const registration=await navigator.serviceWorker.getRegistration();
+   return{
+    hidden:document.getElementById('tp-pwa-update-notice')?.hidden===true,
+    active:registration?.active?.state||null,
+    waiting:registration?.waiting?.state||null,
+    controlledByActive:!!(registration?.active&&navigator.serviceWorker.controller===registration.active)
+   };
+  });
+  S.ok('بستن اعلان، Worker منتظر را فعال یا صفحه را بارگذاری مجدد نمی‌کند',
+   dismissedNotice.hidden&&dismissedNotice.active==='activated'&&dismissedNotice.waiting==='installed'&&dismissedNotice.controlledByActive,
+   JSON.stringify(dismissedNotice));
+
+  // A fresh tab opened while the old worker is active must still receive the old shell.
+  const lateTab=await ctx.newPage();
+  await lateTab.goto(base+'/index.html');
+  await lateTab.waitForFunction(()=>!!document.querySelector('#tp-pwa-update-notice')&&!document.querySelector('#tp-pwa-update-notice').hidden,{timeout:5000}).catch(()=>null);
+  const lateTabState=await lateTab.evaluate(async()=>{
+   const registration=await navigator.serviceWorker.getRegistration();
+   return{
+    controller:navigator.serviceWorker.controller?.state||null,
+    activeControlsPage:!!(registration?.active&&navigator.serviceWorker.controller===registration.active),
+    updateMarker:document.documentElement.outerHTML.includes('UPDATE_MARKER'),
+    updateNoticeVisible:document.querySelector('#tp-pwa-update-notice')?.hidden===false
+   };
+  });
+  S.ok('به‌روزرسانی: تب تازه تا فعال‌شدن نسخه جدید، پوستهٔ قبلی را می‌گیرد',
+   lateTabState.controller==='activated'&&lateTabState.activeControlsPage&&!lateTabState.updateMarker,
+   JSON.stringify(lateTabState));
+  S.ok('به‌روزرسانی: تب تازه نیز اعلان نسخهٔ منتظر را می‌بیند',lateTabState.updateNoticeVisible,JSON.stringify(lateTabState));
+  await lateTab.close();
+
+  await pg.close();
+  await wait(350);
+  const peerState=await peer.evaluate(async()=>{
+   const registration=await navigator.serviceWorker.getRegistration();
+   return{
+    active:registration?.active?.state||null,
+    installing:registration?.installing?.state||null,
+    waiting:registration?.waiting?.state||null,
+    controlledByActive:!!(registration?.active&&navigator.serviceWorker.controller===registration.active),
+    caches:await caches.keys()
+   };
+  });
+  const peerStillUsesPrevious=peerState.installing==='installing'||peerState.waiting==='installed';
+  S.ok('به‌روزرسانی: بازماندن حتی یک تب، نسخه قبلی و Cache آن را حفظ می‌کند',
+   peerState.active==='activated'&&peerStillUsesPrevious&&peerState.controlledByActive&&peerState.caches.includes(before),
+   JSON.stringify(peerState));
+
+  // Keep the remaining old-version tab alive through the URL smoke checks.
+  // The browser's native lifecycle performs activation after the final old client
+  // closes; the shared activation handler's role-scoped cleanup is tested in VM.
+  pg=peer;
+  await pg.evaluate(names=>Promise.all(names.map(name=>caches.delete(name))),sentinels);
+  altRoot.reset();
  }
  const get=async p=>{const r=await pg.request.get(base+p,{maxRedirects:0});return{s:r.status(),t:await r.text()}};
  let r=await get('/coaches/');
@@ -681,17 +755,11 @@ export async function runPreview(base,browser){
  await pg.locator('.cn .chip',{hasText:'کمربند جودو'}).first().click();await wait(140);
  S.ok('تغییر فیلتر صفحه را به ۱ برمی‌گرداند و فیلتر حفظ می‌شود',
    await cards()===10&&(await pg.evaluate(()=>location.hash)).includes('category=')&&!(await pg.evaluate(()=>location.hash)).includes('page=2'));
- const gymSignup=base+'/auth/login/sms/?role=gym';
- await pg.route(gymSignup,route=>route.fulfill({contentType:'text/html',body:'<main>Django OTP</main>'}));
- await go('#/register');
+ await go('#/register?role=club');
  S.ok('ثبت‌نام: سه نوع حساب در رابط نمایش داده می‌شوند',await pg.locator('#rg-f .tp-role-card').count()===3);
- await Promise.all([pg.waitForURL(gymSignup),pg.locator('#rg-f button[data-role-preview="club"]').click()]);
- S.ok('ثبت‌نام: انتخاب باشگاه به ثبت‌نام پیامکی Django می‌رود',pg.url()===gymSignup);
- await pg.goto(base+'/index.html#/register?role=club');
- await pg.waitForURL(gymSignup);
- S.ok('ثبت‌نام: پیوند مستقیم نقش باشگاه هم به ثبت‌نام پیامکی Django می‌رود',pg.url()===gymSignup);
- await pg.goto(base+'/index.html#/register');
- S.ok('ثبت‌نام: حساب هنرجو در فرم محلی فعال است',await pg.locator('#rg-f input[name=role][value=student]').isChecked()&&await pg.locator('#rg-f button[type=submit]').isEnabled());
+ S.ok('ثبت‌نام: حساب باشگاه فقط پیش‌نمایش است و دکمه ساخت حساب را غیرفعال می‌کند',await pg.locator('#rg-f').getAttribute('data-role-preview')==='club'&&await pg.locator('#rg-f button[type=submit]').isDisabled()&&(await T()).includes('در حال حاضر ساخت حساب باشگاه از این فرم امکان‌پذیر نیست'));
+ await pg.locator('#rg-f input[name=role][value=student]').check();
+ S.ok('ثبت‌نام: انتخاب هنرجو حالت فعال را برمی‌گرداند',await pg.locator('#rg-f button[type=submit]').isEnabled()&&await pg.locator('#rg-f').getAttribute('data-role-preview')==='');
  await pg.setViewportSize({width:390,height:850});await go('#/register');
  S.ok('ثبت‌نام موبایل: مرحله اول فرم نمایش داده می‌شود',await pg.locator('#rg-f').getAttribute('data-mobile-steps')==='true'&&await pg.locator('#rg-f [data-auth-step="2"]').isHidden());
  await pg.locator('#rg-u').fill('mobile-preview-user');

@@ -6,27 +6,32 @@ if(!f&&k==='store'&&new URLSearchParams(location.hash.split('?')[1]||'').get('fo
 function sc(){const c=$('#cine');if(!c||matchMedia('(prefers-reduced-motion:reduce)').matches)return;const r=c.getBoundingClientRect(),p=Math.min(3,Math.max(0,-r.top/(c.offsetHeight-innerHeight)*3));c.querySelectorAll('.sc').forEach((e,i)=>{const d=p-(i+.5),o=Math.max(0,1-Math.abs(d)*1.7);e.style.opacity=o;e.style.transform=`translateY(${d*-50}px) scale(${.92+o*.08})`;e.style.pointerEvents=o>.5?'auto':'none'})}
 {const d=$('#mnd'),b=$('#mnb');if(d&&b&&d.showModal){b.addEventListener('click',()=>{d.showModal();b.setAttribute('aria-expanded','true')});d.addEventListener('close',()=>b.setAttribute('aria-expanded','false'));d.addEventListener('click',e=>{if(e.target===d||e.target.closest('a'))d.close()});$('#mnx').addEventListener('click',()=>d.close())}else if(b)b.hidden=true}
 addEventListener('hashchange',()=>R());addEventListener('scroll',sc,{passive:true});R();
-if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)&&!window.__ARTIFACT__){
- const activateWaitingWorker=registration=>{
-  const worker=registration.waiting;
-  if(!navigator.serviceWorker.controller||!worker)return;
-  try{worker.postMessage({type:'SKIP_WAITING'})}catch(error){console.error('[Tatami SW] update activation request failed',error)}
- };
- const watchServiceWorker=registration=>{
-  if(registration.waiting)activateWaitingWorker(registration);
+if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)&&APP.fixed&&!window.__ARTIFACT__){
+ const registerTatamiServiceWorker=()=>navigator.serviceWorker.register(new URL('sw.js',document.baseURI),{scope:'./'}).then(registration=>{
+  const notice=document.getElementById('tp-pwa-update-notice');
+  const dismiss=document.getElementById('tp-pwa-update-dismiss');
+  if(!notice||!dismiss)return;
+  let dismissedWorker=null;
+  const renderUpdateNotice=()=>{
+   const waiting=registration.waiting;
+   const controller=navigator.serviceWorker.controller;
+   const updateReady=!!(waiting&&registration.active&&controller===registration.active);
+   notice.hidden=!updateReady||waiting===dismissedWorker;
+  };
+  const watchInstallingWorker=worker=>{
+   if(worker)worker.addEventListener('statechange',renderUpdateNotice);
+  };
+  watchInstallingWorker(registration.installing);
   registration.addEventListener('updatefound',()=>{
-   const worker=registration.installing;
-   if(!worker)return;
-   const checkInstalled=()=>{
-    if(worker.state==='installed')activateWaitingWorker(registration);
-   };
-   worker.addEventListener('statechange',checkInstalled);
-   checkInstalled();
+   watchInstallingWorker(registration.installing);
+   renderUpdateNotice();
   });
- };
- const registerTatamiServiceWorker=()=>navigator.serviceWorker.register(new URL('sw.js',document.baseURI),{scope:'./'})
-  .then(registration=>{if(registration&&typeof registration.addEventListener==='function')watchServiceWorker(registration);return registration})
-  .catch(error=>console.error('[Tatami SW] registration failed',error));
+  dismiss.addEventListener('click',()=>{
+   dismissedWorker=registration.waiting;
+   notice.hidden=true;
+  });
+  renderUpdateNotice();
+ }).catch(error=>console.error('[Tatami SW] registration failed',error));
  if(document.readyState==='complete')registerTatamiServiceWorker();
  else addEventListener('load',registerTatamiServiceWorker,{once:true});
 }
