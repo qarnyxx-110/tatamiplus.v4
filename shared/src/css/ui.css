@@ -70,6 +70,7 @@ body>header nav a{display:inline-flex;align-items:center;min-height:var(--tp-con
 .ftg a{display:inline-flex;align-items:center;min-height:var(--tp-control-touch)}
 .tp-crumbs a,.tp-crumbs li{display:inline-flex;align-items:center;min-height:var(--tp-control-touch)}
 .rec,.qa{min-height:var(--tp-control-touch)}
+.vp button{min-inline-size:var(--tp-control-touch);min-block-size:var(--tp-control-touch)}
 
 /* تاتامی‌پدیا و مقاله */
 .tp-ja{font-family:"Noto Sans JP","Hiragino Sans","Yu Gothic","Meiryo",system-ui,sans-serif;unicode-bidi:isolate;font-size:var(--tp-font-size-xl);margin-block:var(--tp-space-2xs)}
