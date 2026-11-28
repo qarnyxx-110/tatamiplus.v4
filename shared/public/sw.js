@@ -18,19 +18,37 @@ self.addEventListener('fetch',event=>{
  const request=event.request;
  if(request.method!=='GET')return;
  if(request.mode==='navigate'){
-  event.respondWith(fetch(request).then(async response=>{
-   const url=new URL(request.url),root=new URL('./',self.registration.scope).pathname;
-   if(response.ok&&(url.pathname===root||url.pathname===root+'index.html')){
-    try{const cache=await caches.open(V);await cache.put('index.html',response.clone())}catch{}
+  event.respondWith((async()=>{
+   const cache=await caches.open(V);
+   try{
+    const response=await fetch(request);
+    const url=new URL(request.url),root=new URL('./',self.registration.scope).pathname;
+    if(response.ok&&(url.pathname===root||url.pathname===root+'index.html')){
+     try{await cache.put('index.html',response.clone())}catch{}
+    }
+    return response;
+   }catch(error){
+    const cached=await cache.match(request)||await cache.match('index.html')||await cache.match('offline.html');
+    if(cached)return cached;
+    throw error;
    }
-   return response;
-  }).catch(()=>caches.match(request).then(cached=>cached||caches.match('index.html').then(page=>page||caches.match('offline.html')))));
+  })());
   return;
  }
- event.respondWith(caches.match(request).then(cached=>cached||fetch(request).then(async response=>{
-  if(response.ok&&(new URL(request.url).origin===location.origin||/fonts\.(googleapis|gstatic)\.com/.test(request.url))){
-   try{const cache=await caches.open(V);await cache.put(request,response.clone())}catch{}
+ event.respondWith((async()=>{
+  const cache=await caches.open(V);
+  const cached=await cache.match(request);
+  if(cached)return cached;
+  try{
+   const response=await fetch(request);
+   if(response.ok&&(new URL(request.url).origin===location.origin||/fonts\\.(googleapis|gstatic)\\.com/.test(request.url))){
+    try{await cache.put(request,response.clone())}catch{}
+   }
+   return response;
+  }catch(error){
+   const fallback=await cache.match(request);
+   if(fallback)return fallback;
+   throw error;
   }
-  return response;
- }).catch(()=>cached)));
+ })());
 });
