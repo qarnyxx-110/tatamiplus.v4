@@ -37,7 +37,7 @@ async function verifyGeneratedServiceWorkerPolicy(app){
  const version=source.match(/const V='([^']+)'/)?.[1];
  const prefix=source.match(/CACHE_PREFIX='([^']+)'/)?.[1];
  if(!version||prefix!=='tatami-'+app)throw new Error('Generated '+app+' Service Worker has an invalid role cache namespace');
- if(/\\bskipWaiting\\s*\\(/.test(source)||/\\bclients\\.claim\\s*\\(/.test(source)){
+ if(/\bskipWaiting\s*\(/.test(source)||/\bclients\.claim\s*\(/.test(source)){
   throw new Error('Generated '+app+' Service Worker contains a forced activation or client-claim call');
  }
  const otherRole=apps.find(role=>role!==app);
