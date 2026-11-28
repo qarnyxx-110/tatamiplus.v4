@@ -15,6 +15,8 @@ export async function runPublic(app,base,browser,opts={}){const S=new Suite('PWA
  });
  const go=async h=>{await pg.evaluate(x=>{location.hash=x},h);await wait(60)},T=()=>pg.evaluate(()=>document.getElementById('app').innerText),cnt=sel=>pg.locator(sel).count(),nf=()=>pg.evaluate(is404);
  await pg.goto(base+'/index.html');await wait(300);
+ S.ok('اعلان به‌روزرسانی بدون نسخهٔ منتظر پنهان است',
+  await pg.locator('#tp-pwa-update-notice').count()===1&&await pg.locator('#tp-pwa-update-notice').isHidden());
  // --- وضعیت داده‌های مسابقات با تاریخ سپری‌شده
  await go('#/tournaments');
  const tournamentNames=['جام بهاره تهران','لیگ باشگاه‌های اصفهان','مسابقات کشوری نوجوانان','جام دوستی شیراز'];
@@ -386,6 +388,8 @@ export async function runPwa(app,base,browser,altRoot){
  });
  await pg.goto(base+'/index.html');
  await wait(250);
+ S.ok('اعلان به‌روزرسانی در نصب اولیه پنهان است',
+  await pg.locator('#tp-pwa-update-notice').count()===1&&await pg.locator('#tp-pwa-update-notice').isHidden());
  S.ok('CSS، JS و تصاویر هم‌مبدأ PWA با پاسخ موفق بارگذاری می‌شوند',staticResourceErrors.length===0,JSON.stringify(staticResourceErrors));
  const neshanConfig=await pg.evaluate(async()=>{const r=await fetch('assets/neshan-config.js');return{status:r.status,text:await r.text()}});
  S.ok('تنظیمات نشان در خروجی PWA قابل دریافت است',neshanConfig.status===200&&neshanConfig.text.includes('TP_NESHAN_WEB_KEY')&&neshanConfig.text.includes('TP_CLUBS_JSON_URL'),String(neshanConfig.status));
@@ -529,7 +533,7 @@ export async function runPwa(app,base,browser,altRoot){
    await pg.waitForFunction(async({app,before})=>{
     const registration=await navigator.serviceWorker.getRegistration();
     const names=await caches.keys();
-    return !!(registration?.waiting||registration?.installing)&&names.some(name=>name.startsWith('tatami-'+app+'-')&&name!==before);
+    return registration?.waiting?.state==='installed'&&names.some(name=>name.startsWith('tatami-'+app+'-')&&name!==before);
    },{app,before},{timeout:10000}).catch(()=>null);
   }
   const staged=await pg.evaluate(async()=>{
@@ -544,25 +548,43 @@ export async function runPwa(app,base,browser,altRoot){
    };
   });
   const stagedCache=staged.caches.find(name=>name.startsWith('tatami-'+app+'-')&&name!==before);
-  const replacementIsStaged=staged.installing==='installing'||staged.waiting==='installed';
+  const replacementIsStaged=staged.waiting==='installed';
   S.ok('به‌روزرسانی: نسخه جدید نصب/منتظر می‌ماند و نسخه فعال را تصاحب نمی‌کند',
    updateRequested&&!!before&&staged.active==='activated'&&replacementIsStaged&&staged.controller==='activated'&&staged.activeControlsPage&&staged.caches.includes(before)&&!!stagedCache,
    JSON.stringify(staged));
+  S.ok('به‌روزرسانی: اعلان فقط پس از آماده‌شدن نسخه منتظر نمایش داده می‌شود',
+   await pg.locator('#tp-pwa-update-notice').isVisible());
+  await pg.locator('#tp-pwa-update-dismiss').click();
+  const dismissedNotice=await pg.evaluate(async()=>{
+   const registration=await navigator.serviceWorker.getRegistration();
+   return{
+    hidden:document.getElementById('tp-pwa-update-notice')?.hidden===true,
+    active:registration?.active?.state||null,
+    waiting:registration?.waiting?.state||null,
+    controlledByActive:!!(registration?.active&&navigator.serviceWorker.controller===registration.active)
+   };
+  });
+  S.ok('بستن اعلان، Worker منتظر را فعال یا صفحه را بارگذاری مجدد نمی‌کند',
+   dismissedNotice.hidden&&dismissedNotice.active==='activated'&&dismissedNotice.waiting==='installed'&&dismissedNotice.controlledByActive,
+   JSON.stringify(dismissedNotice));
 
   // A fresh tab opened while the old worker is active must still receive the old shell.
   const lateTab=await ctx.newPage();
   await lateTab.goto(base+'/index.html');
+  await lateTab.waitForFunction(()=>!!document.querySelector('#tp-pwa-update-notice')&&!document.querySelector('#tp-pwa-update-notice').hidden,{timeout:5000}).catch(()=>null);
   const lateTabState=await lateTab.evaluate(async()=>{
    const registration=await navigator.serviceWorker.getRegistration();
    return{
     controller:navigator.serviceWorker.controller?.state||null,
     activeControlsPage:!!(registration?.active&&navigator.serviceWorker.controller===registration.active),
-    updateMarker:document.documentElement.outerHTML.includes('UPDATE_MARKER')
+    updateMarker:document.documentElement.outerHTML.includes('UPDATE_MARKER'),
+    updateNoticeVisible:document.querySelector('#tp-pwa-update-notice')?.hidden===false
    };
   });
   S.ok('به‌روزرسانی: تب تازه تا فعال‌شدن نسخه جدید، پوستهٔ قبلی را می‌گیرد',
    lateTabState.controller==='activated'&&lateTabState.activeControlsPage&&!lateTabState.updateMarker,
    JSON.stringify(lateTabState));
+  S.ok('به‌روزرسانی: تب تازه نیز اعلان نسخهٔ منتظر را می‌بیند',lateTabState.updateNoticeVisible,JSON.stringify(lateTabState));
   await lateTab.close();
 
   await pg.close();
