@@ -25,7 +25,7 @@
 
 ## ۱. مواردی که باید پیش از اتصال رفع/تصمیم‌گیری شوند
 
-1. **P0 ورود پیامکی، اصلاح کد انجام شد:** قالب frontend-owned بر اساس `mode` دو فرم جدا دارد؛ password به `phone_auth:login` و SMS به `phone_auth:sms_login` POST می‌کند. تست قراردادی و assertهای CI نیز به‌روزرسانی شده‌اند؛ Build، CI و تست زندهٔ Django هنوز باید اجرا شوند.
+1. **P0 ورود پیامکی، اصلاح کد انجام شد:** قالب frontend-owned بر اساس `mode` دو فرم جدا دارد؛ password به `phone_auth:login` و SMS به `phone_auth:sms_login` POST می‌کند. تست قراردادی، بررسی routeها، compile قالب‌ها و ۵۷ تست بک‌اند در CI موفق بوده‌اند. بررسی نحوی bundleهای چهار خروجی و Service Workerهای سه PWA نیز موفق است؛ اما QA کامل مرورگری PWA هنوز به‌علت شکست یک آزمون اندازهٔ هدف لمسی در `#/video/3` و سه آزمون فنی چرخه/منابع Service Worker سبز نیست. آزمون زندهٔ OTP/SMS روی دامنه همچنان لازم است.
 2. **تعارض handoff و کد:** فایل handoff در بخش ورود، `/auth/login/` را گاهی OTP توصیف می‌کند؛ اما `accounts/auth_urls.py` و `accounts/views.py` فعلی `/auth/login/` را `password_login` و `/auth/login/sms/` را `phone_login` ثبت می‌کنند. مبنای طراحی فعلاً کد جاری است؛ handoff باید با مالک بک‌اند همسان شود.
 3. قالب تکمیل پروفایل پنج فیلد دارد: name، city، role، password و password_confirm؛ توضیح قدیمی handoff فقط سه فیلد پایه را نام برده بود.
 4. View تأیید OTP مقدار `resend_in` را به قالب نمی‌دهد؛ شمارش معکوس ظاهری نباید از نظر UI معادل مجوز سرور تلقی شود.
