@@ -42,7 +42,6 @@ function marketing(){const js=`const TP_CMS=${JSON.stringify({apiBase:API,mode:A
 const OUT=process.env.OUT?path.resolve(process.env.OUT):J('dist');
 // فایل تنظیمات نشان به‌صورت عمومی در هر PWA لازم است؛ سایر فایل‌های assets همچنان فقط بر اساس allowlist کپی می‌شوند.
 const NESHAN_CONFIG_SRC=J('public/assets/neshan-config.js');
-const NESHAN_CONFIG=fs.readFileSync(NESHAN_CONFIG_SRC,'utf8');
 const PWA_CORE_ASSETS=[
  'css/home-live-feeds.css',
  'js/home-live-feeds.js',
@@ -52,7 +51,6 @@ const PWA_CORE_ASSETS=[
 ];
 const PWA_CORE_ASSET_SRCS=new Set(PWA_CORE_ASSETS.map(file=>path.resolve(J('public/assets/'+file))));
 for(const source of PWA_CORE_ASSET_SRCS)if(!fs.existsSync(source)||!fs.statSync(source).isFile())throw new Error('Required PWA core asset is missing: '+source);
-const PWA_CORE_ASSET_FINGERPRINT=PWA_CORE_ASSETS.map(file=>file+'\\0'+fs.readFileSync(J('public/assets/'+file),'utf8')).join('\\0');
 const keep=s=>!/[\\/]assets[\\/]/.test(s)||fs.statSync(s).isDirectory()||/\.(jpe?g|png|webp|avif)$/i.test(s)||path.resolve(s)===NESHAN_CONFIG_SRC||PWA_CORE_ASSET_SRCS.has(path.resolve(s));
 const prune=d=>{for(const e of fs.readdirSync(d,{withFileTypes:true}))if(e.isDirectory()){prune(path.join(d,e.name));if(!fs.readdirSync(path.join(d,e.name)).length)fs.rmdirSync(path.join(d,e.name))}};
 const meta=(title,desc,url,img)=>`<title>${title} | تاتامی پلاس</title><meta name="description" content="${desc}"><meta property="og:title" content="${title}"><meta property="og:description" content="${desc}"><meta property="og:type" content="website">${SITE&&url?`<link rel="canonical" href="${SITE}/${url}"><meta property="og:url" content="${SITE}/${url}">`:''}${SITE&&img?`<meta property="og:image" content="${SITE}/${img}">`:''}`;
@@ -60,7 +58,6 @@ const meta=(title,desc,url,img)=>`<title>${title} | تاتامی پلاس</title
 function stub(o,rel,hash,title,desc,img){const d=path.join(o,rel);fs.mkdirSync(d,{recursive:true});const up='../'.repeat(rel.split('/').filter(Boolean).length);
  fs.writeFileSync(path.join(d,'index.html'),`<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">${meta(title,desc,rel+'/',img)}<meta http-equiv="refresh" content="0;url=${up}#/${hash}"></head><body><script>location.replace('${up}#/${hash}')</script><p><a href="${up}#/${hash}">${title}</a></p></body></html>`)}
 const strip=s=>String(s).replace(/"/g,'&quot;').replace(/</g,'&lt;');
-const sha=s=>crypto.createHash('sha256').update(s).digest('hex').slice(0,10);
 for(const n of ['student','coach','club']){const a=APPS[n],o=path.join(OUT,n);fs.rmSync(o,{recursive:true,force:true});fs.mkdirSync(o,{recursive:true});fs.cpSync(J('public'),o,{recursive:true,filter:keep});if(fs.existsSync(o+'/assets'))prune(o+'/assets');fs.cpSync(J('icons/'+n),o+'/icons',{recursive:true});
  const html=page(n,true);fs.writeFileSync(o+'/index.html',html);
  stub(o,'coaches','coaches','مربیان تاتامی','فهرست مربیان جودو تاتامی پلاس.');
@@ -69,10 +66,26 @@ for(const n of ['student','coach','club']){const a=APPS[n],o=path.join(OUT,n);fs
  for(const t of DATA.tpd.terms.filter(t=>t.status!=='draft'))stub(o,'tatamipedia/'+t.slug,'tatamipedia/'+t.slug,strip(t.nameFa+' — تاتامی‌پدیا'),strip(t.meaning+'. '+t.description.slice(0,110)),AVAIL.includes('tatamipedia/'+t.slug+'.jpg')?'assets/images/tatamipedia/'+t.slug+'.jpg':'');
  fs.writeFileSync(o+'/manifest.webmanifest',JSON.stringify({id:'./',name:a.name,short_name:a.short,description:a.desc,lang:'fa',dir:'rtl',start_url:a.start,scope:'./',display:'standalone',orientation:'portrait',background_color:'#121418',theme_color:'#121418',icons:[{src:'icons/icon-192.png',sizes:'192x192',type:'image/png',purpose:'any'},{src:'icons/icon-512.png',sizes:'512x512',type:'image/png',purpose:'any'},{src:'icons/maskable-512.png',sizes:'512x512',type:'image/png',purpose:'maskable'}]},null,1));
  // نسخه Cache از محتوای Build ساخته می‌شود: هر تغییر در سورس ← نام Cache جدید ← به‌روزرسانی خودکار
- const shell=['./','index.html','offline.html','manifest.webmanifest','icons/icon-192.png','icons/icon-512.png',...PWA_CORE_ASSETS.map(file=>'assets/'+file),'assets/neshan-config.js','coaches/',...DATA.coaches.map(c=>'coaches/'+c.slug+'/'),'tatamipedia/',...DATA.tpd.terms.filter(t=>t.status!=='draft').map(t=>'tatamipedia/'+t.slug+'/'),...FONTS.map(f=>'fonts/'+f)];
- const coreCount=6+PWA_CORE_ASSETS.length+1;
- const ver=sha(html+JSON.stringify(AVAIL)+FONTS.join()+NESHAN_CONFIG+PWA_CORE_ASSET_FINGERPRINT);
- fs.writeFileSync(o+'/sw.js',fs.readFileSync(o+'/sw.js','utf8').replace("'tatami-v2'",`'tatami-${n}-${ver}'`).replace("CORE_COUNT=7",`CORE_COUNT=${coreCount}`).replace("SHELL=['./','index.html','offline.html','manifest.webmanifest','icons/icon-192.png','icons/icon-512.png']",'SHELL='+JSON.stringify(shell)));
+ const shell=['./','index.html','offline.html','manifest.webmanifest','icons/icon-192.png','icons/icon-512.png','icons/maskable-512.png',...PWA_CORE_ASSETS.map(file=>'assets/'+file),'assets/neshan-config.js','coaches/',...DATA.coaches.map(c=>'coaches/'+c.slug+'/'),'tatamipedia/',...DATA.tpd.terms.filter(t=>t.status!=='draft').map(t=>'tatamipedia/'+t.slug+'/'),...FONTS.map(f=>'fonts/'+f)];
+ const coreCount=shell.indexOf('coaches/');
+ if(coreCount<0)throw new Error('Unable to determine the PWA core precache boundary');
+ const fingerprint=crypto.createHash('sha256');
+ const addFingerprint=(name,content)=>fingerprint.update(name).update('\\0').update(content).update('\\0');
+ addFingerprint('service-worker',fs.readFileSync(J('public/sw.js')));
+ for(const item of shell){
+  let file=path.resolve(o,item==='.'?'index.html':item);
+  if(fs.existsSync(file)&&fs.statSync(file).isDirectory())file=path.join(file,'index.html');
+  if(!fs.existsSync(file)||!fs.statSync(file).isFile())throw new Error('Required PWA shell resource is missing: '+item);
+  addFingerprint('shell:'+item,fs.readFileSync(file));
+ }
+ for(const file of AVAIL)addFingerprint('image:'+file,fs.readFileSync(J('public/assets/images/'+file)));
+ for(const file of walk(J('icons/'+n)).sort())addFingerprint('icon:'+file,fs.readFileSync(J('icons/'+n+'/'+file)));
+ const ver=fingerprint.digest('hex').slice(0,10);
+ fs.writeFileSync(o+'/sw.js',fs.readFileSync(o+'/sw.js','utf8')
+  .replace("'tatami-v2'",`'tatami-${n}-${ver}'`)
+  .replace("'tatami-cache-prefix'",`'tatami-${n}'`)
+  .replace("CORE_COUNT=7",`CORE_COUNT=${coreCount}`)
+  .replace("SHELL=['./','index.html','offline.html','manifest.webmanifest','icons/icon-192.png','icons/icon-512.png']",'SHELL='+JSON.stringify(shell)));
  console.log(n,fs.statSync(o+'/index.html').size,'bytes · cache',ver)}
 {const o=path.join(OUT,'marketing');fs.rmSync(o,{recursive:true,force:true});fs.mkdirSync(o,{recursive:true});fs.writeFileSync(o+'/index.html',marketing());console.log('marketing',fs.statSync(o+'/index.html').size,'bytes · mode',API?'api':'demo')}
 const previewOut=path.join(OUT,'preview');fs.mkdirSync(previewOut,{recursive:true});fs.cpSync(J('public/assets'),path.join(previewOut,'assets'),{recursive:true,force:true});fs.writeFileSync(path.join(previewOut,'index.html'),page('preview',false));fs.writeFileSync(J('build-artifact.html'),page('preview',false));
