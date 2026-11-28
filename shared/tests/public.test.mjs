@@ -572,6 +572,15 @@ export async function runPwa(app,base,browser,altRoot){
    peerState.active==='activated'&&peerStillUsesPrevious&&peerState.controlledByActive&&peerState.caches.includes(before),
    JSON.stringify(peerState));
 
+  // Close any leftover Playwright pages before waiting for the browser to retire
+  // the old worker's clients. Capture them so a leaked test page is diagnosable.
+  const remainingTestPages=ctx.pages().map(page=>({url:page.url(),closed:page.isClosed()}));
+  await Promise.all(ctx.pages().map(page=>page.close().catch(()=>{})));
+  await wait(300);
+  S.ok('به‌روزرسانی: همهٔ صفحه‌های متعلق به تست بسته شده‌اند',
+   ctx.pages().length===0,
+   JSON.stringify({remainingTestPages,stillOpen:ctx.pages().map(page=>page.url())}));
+
   // Inspect the registration from the Service Worker target itself. This avoids
   // opening a new page that would become another client of the old worker.
   let workerSnapshot=null,updateActivated=false;
