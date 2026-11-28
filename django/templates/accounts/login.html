@@ -1,19 +1,41 @@
 {% extends "layouts/auth.html" %}
 
-{% block title %}ورود و ثبت‌نام پیامکی | تاتامی پلاس{% endblock %}
+{% block title %}{% if mode == "password" %}ورود به حساب{% else %}ورود یا ثبت‌نام پیامکی{% endif %} | تاتامی پلاس{% endblock %}
 
 {% block auth_content %}
   <p class="tp-auth-kicker">TATAMI PLUS · حساب کاربری</p>
-  <h1 id="auth-page-title">ورود یا ثبت‌نام با پیامک</h1>
-  <p class="mu">شمارهٔ همراه و نوع حساب را وارد کنید. برای تأیید شماره، کد یک‌بارمصرف ارسال می‌شود.</p>
 
-  <form id="tp-login-form" method="post" action="{% url 'phone_auth:login' %}" novalidate data-auth-form="login" aria-labelledby="auth-page-title">
-    {% csrf_token %}
-    {% include 'includes/form_fields.html' %}
-    <button class="btn tp-auth-btn" type="submit">دریافت کد یک‌بارمصرف</button>
-  </form>
+  {% if mode == "password" %}
+    <h1 id="auth-page-title">ورود به حساب</h1>
+    <p class="mu">برای ورود، شمارهٔ همراه و رمز عبورت را وارد کن.</p>
+    <form id="tp-password-login-form" method="post" action="{% url 'phone_auth:login' %}" novalidate data-auth-form="password-login" aria-labelledby="auth-page-title">
+      {% csrf_token %}
+      {% include 'includes/form_fields.html' %}
+      <button class="btn tp-auth-btn" type="submit">ورود به حساب</button>
+    </form>
+    <p class="tp-auth-alt">
+      <a href="{% url 'phone_auth:password_reset' %}">رمز عبورم را فراموش کرده‌ام</a>
+      <span aria-hidden="true"> · </span>
+      <a href="{% url 'phone_auth:sms_login' %}{% if request.GET.next %}?next={{ request.GET.next|urlencode }}{% endif %}">ورود یا ثبت‌نام با پیامک</a>
+    </p>
+  {% else %}
+    <h1 id="auth-page-title">ورود یا ساخت حساب با شمارهٔ همراه</h1>
+    <p class="mu">اگر حساب داشته باشی وارد می‌شوی؛ در غیر این صورت پس از تأیید شماره، حساب ساخته می‌شود.</p>
+    <form id="tp-sms-login-form" method="post" action="{% url 'phone_auth:sms_login' %}" novalidate data-auth-form="sms-login" aria-labelledby="auth-page-title">
+      {% csrf_token %}
+      {% include 'includes/form_fields.html' %}
+      <button class="btn tp-auth-btn" type="submit">ارسال کد تأیید</button>
+    </form>
+    <p class="tp-auth-alt">
+      <a href="{% url 'phone_auth:login' %}{% if request.GET.next %}?next={{ request.GET.next|urlencode }}{% endif %}">ورود با رمز عبور</a>
+    </p>
+  {% endif %}
 {% endblock %}
 
 {% block auth_after_card %}
-  <p class="tp-auth-alt">پس از تأیید شماره، حساب شما وارد مرحلهٔ بعدی ثبت‌نام یا ورود می‌شود.</p>
+  {% if mode == "sms" %}
+    <p class="tp-auth-alt">کد تأیید فقط پس از درخواست شما ارسال می‌شود. اعتبار و محدودیت آن را سامانه بررسی می‌کند.</p>
+  {% else %}
+    <p class="tp-auth-alt">برای حساب‌هایی که هنوز رمز ندارند، ورود پیامکی در دسترس است.</p>
+  {% endif %}
 {% endblock %}

@@ -1,9 +1,25 @@
 // اجرای کامل: Build → سرورها → تست هر PWA → پنل مارکتینگ. خروجی: test-results/summary.md و results.json
 import fs from 'node:fs';import path from 'node:path';import os from 'node:os';import {spawn,spawnSync} from 'node:child_process';
+import vm from 'node:vm';
 import {pw,serve,build,wait} from './helpers.mjs';import {runPublic,runPwa,runClubs,runPreview} from './public.test.mjs';import {runMarketingApi,runMarketingDemo} from './marketing.test.mjs';
 import {runCheckout} from './checkout-flow.test.mjs';
 const tmp=fs.mkdtempSync(path.join(os.tmpdir(),'tp-test-')),MOCK=+process.env.MOCK_PORT||8601,A=path.join(tmp,'a'),B=path.join(tmp,'b'),API=path.join(tmp,'api'),PUB=path.join(tmp,'pub'),SITE=path.join(tmp,'site');
 console.log('Build…');build(A);build(B,{TP_API_BASE:'/__build_b__'});build(API,{TP_API_BASE:'/api/v1'});build(PUB,{TP_API_BASE:`http://127.0.0.1:${MOCK}/api/v1`});build(SITE,{SITE_URL:'https://example.test'});
+function verifyInlineBundle(app){
+ const html=fs.readFileSync(path.join(A,app,'index.html'),'utf8');
+ const tags=[...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script\s*>/gi)];
+ let checked=0;
+ for(const [i,m] of tags.entries()){
+  if(/\bsrc\s*=/.test(m[1]))continue;
+  if(!m[2].trim())continue;
+  try{new vm.Script(m[2],{filename:app+'/index.html#inline-script-'+(i+1)});checked++}
+  catch(error){throw new Error('Generated '+app+' inline bundle has invalid JavaScript in script '+(i+1)+': '+error.stack)}
+ }
+ if(!checked)throw new Error('No inline application bundle found for '+app);
+ console.log('PASS generated inline bundle syntax:',app,checked,'script(s)');
+}
+for(const app of ['student','coach','club','preview'])verifyInlineBundle(app);
+
 // نسخه B: شبیه‌سازی انتشار نسخه جدید. هم سند و هم نسخه Cache در Service Worker تغییر می‌کند.
 for(const app of['student','coach','club']){
  const htmlFile=path.join(B,app,'index.html');
