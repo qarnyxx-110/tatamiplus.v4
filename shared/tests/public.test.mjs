@@ -373,7 +373,11 @@ export async function runPwa(app,base,browser,altRoot){
  const S=new Suite('PWA-فنی '+app);
  const ctx=await browser.newContext({viewport:{width:390,height:800},serviceWorkers:'allow'});
  let pg=await ctx.newPage();pg.setDefaultTimeout(15000);pg.setDefaultNavigationTimeout(15000);
- const swConsoleErrors=[],staticResourceErrors=[];
+ const swConsoleErrors=[],staticResourceErrors=[],workerDiagnostics=[];
+ ctx.on('serviceworker',worker=>{
+  worker.on('console',message=>workerDiagnostics.push({worker:worker.url(),type:message.type(),text:message.text()}));
+  worker.on('pageerror',error=>workerDiagnostics.push({worker:worker.url(),type:'pageerror',text:String(error)}));
+ });
  pg.on('console',message=>{
   if(message.type()!=='error')return;
   const source=message.location()?.url||'';
@@ -521,6 +525,24 @@ export async function runPwa(app,base,browser,altRoot){
   const peer=await ctx.newPage();
   await peer.goto(base+'/index.html');
   await peer.waitForFunction(()=>!!navigator.serviceWorker.controller,{timeout:8000});
+  await pg.evaluate(async()=>{
+   const registration=await navigator.serviceWorker.getRegistration();
+   window.__tpSwUpdateTrace=[];
+   const record=(stage,worker)=>window.__tpSwUpdateTrace.push({
+    at:Date.now(),stage,workerState:worker?.state||null,
+    active:registration?.active?.state||null,
+    installing:registration?.installing?.state||null,
+    waiting:registration?.waiting?.state||null
+   });
+   const watch=worker=>worker?.addEventListener('statechange',()=>record('statechange',worker));
+   registration?.addEventListener('updatefound',()=>{
+    record('updatefound',registration.installing);
+    watch(registration.installing);
+   });
+   watch(registration?.installing);
+   record('before-update');
+   window.__tpSwUpdatePoll=setInterval(()=>record('poll',registration.installing),150);
+  });
 
   altRoot.use();
   const updateRequested=await pg.evaluate(async()=>{
@@ -529,12 +551,20 @@ export async function runPwa(app,base,browser,altRoot){
    await registration.update();
    return true;
   });
+  let updateWaitOutcome='not-requested',updateWaitElapsedMs=0;
   if(updateRequested){
-   await pg.waitForFunction(async({app,before})=>{
-    const registration=await navigator.serviceWorker.getRegistration();
-    const names=await caches.keys();
-    return registration?.waiting?.state==='installed'&&names.some(name=>name.startsWith('tatami-'+app+'-')&&name!==before);
-   },{app,before},{timeout:25000}).catch(()=>null);
+   const waitStarted=Date.now();
+   try{
+    await pg.waitForFunction(async({app,before})=>{
+     const registration=await navigator.serviceWorker.getRegistration();
+     const names=await caches.keys();
+     return registration?.waiting?.state==='installed'&&names.some(name=>name.startsWith('tatami-'+app+'-')&&name!==before);
+    },{app,before},{timeout:25000});
+    updateWaitOutcome='waiting-installed';
+   }catch(error){
+    updateWaitOutcome=String(error?.message||error).split('\\n')[0];
+   }
+   updateWaitElapsedMs=Date.now()-waitStarted;
   }
   const staged=await pg.evaluate(async()=>{
    const registration=await navigator.serviceWorker.getRegistration();
@@ -544,14 +574,16 @@ export async function runPwa(app,base,browser,altRoot){
     waiting:registration?.waiting?.state||null,
     controller:navigator.serviceWorker.controller?.state||null,
     activeControlsPage:!!(registration?.active&&navigator.serviceWorker.controller===registration.active),
-    caches:await caches.keys()
+    caches:await caches.keys(),
+    lifecycleTrace:window.__tpSwUpdateTrace||[]
    };
   });
+  await pg.evaluate(()=>{if(window.__tpSwUpdatePoll)clearInterval(window.__tpSwUpdatePoll)});
   const stagedCache=staged.caches.find(name=>name.startsWith('tatami-'+app+'-')&&name!==before);
   const replacementIsStaged=staged.waiting==='installed';
   S.ok('به‌روزرسانی: نسخه جدید نصب/منتظر می‌ماند و نسخه فعال را تصاحب نمی‌کند',
    updateRequested&&!!before&&staged.active==='activated'&&replacementIsStaged&&staged.controller==='activated'&&staged.activeControlsPage&&staged.caches.includes(before)&&!!stagedCache,
-   JSON.stringify(staged));
+   JSON.stringify({staged,updateRequested,updateWaitOutcome,updateWaitElapsedMs,workerDiagnostics}));
   S.ok('به‌روزرسانی: اعلان فقط پس از آماده‌شدن نسخه منتظر نمایش داده می‌شود',
    await pg.locator('#tp-pwa-update-notice').isVisible());
   await pg.locator('#tp-pwa-update-dismiss').click();
