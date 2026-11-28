@@ -417,6 +417,16 @@ export async function runPwa(app,base,browser,altRoot){
  },{requiredAssets:pwaCoreAssets,app});
  S.ok('منابع اصلی رابط در Build و فهرست هستهٔ Cache موجودند',precache.ok,JSON.stringify(precache));
  S.ok('پیشوند Cache از نقش همین PWA جدا شده است',precache.cachePrefix==='tatami-'+app,String(precache.cachePrefix));
+ const updatePolicy=await pg.evaluate(async()=>{
+  const source=await fetch('sw.js').then(response=>response.text());
+  return{
+   forcesActivation:/\\bskipWaiting\\s*\\(/.test(source),
+   claimsExistingClients:/\\bclients\\.claim\\s*\\(/.test(source)
+  };
+ });
+ S.ok('سیاست Worker بدون فعال‌سازی اجباری یا تصاحب ناگهانی تب‌هاست',
+  !updatePolicy.forcesActivation&&!updatePolicy.claimsExistingClients,
+  JSON.stringify(updatePolicy));
  const registrations=await pg.evaluate(async()=>Promise.all((await navigator.serviceWorker.getRegistrations()).map(async registration=>({scope:registration.scope,active:registration.active?.state||null,installing:registration.installing?.state||null,waiting:registration.waiting?.state||null}))));
  S.ok('Service Worker registration exists',registrations.length>0,JSON.stringify(registrations));
  const swReady=await pg.evaluate(()=>Promise.race([navigator.serviceWorker.ready.then(()=>true),new Promise(resolve=>setTimeout(()=>resolve(false),10000))]));
@@ -572,6 +582,10 @@ export async function runPwa(app,base,browser,altRoot){
    peerState.active==='activated'&&peerStillUsesPrevious&&peerState.controlledByActive&&peerState.caches.includes(before),
    JSON.stringify(peerState));
 
+  // The worker implementation is shared. Run the long multi-tab retirement
+  // scenario once; every role still verifies update installation/waiting and
+  // its own cache namespace above.
+  if(app==='student'){
   // Close any leftover Playwright pages before waiting for the browser to retire
   // the old worker's clients. Capture them so a leaked test page is diagnosable.
   const remainingTestPages=ctx.pages().map(page=>({url:page.url(),closed:page.isClosed()}));
@@ -634,6 +648,9 @@ export async function runPwa(app,base,browser,altRoot){
   S.ok('به‌روزرسانی: نسخه تازه در بارگذاری بعدی نمایش داده می‌شود',latest.updateMarker);
   await pg.evaluate(names=>Promise.all(names.map(name=>caches.delete(name))),sentinels);
   altRoot.reset();
+  }else{
+   altRoot.reset();
+  }
  }
  const get=async p=>{const r=await pg.request.get(base+p,{maxRedirects:0});return{s:r.status(),t:await r.text()}};
  let r=await get('/coaches/');
