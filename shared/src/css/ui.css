@@ -70,6 +70,7 @@ body>header nav a{display:inline-flex;align-items:center;min-height:var(--tp-con
 .ftg a{display:inline-flex;align-items:center;min-height:var(--tp-control-touch)}
 .tp-crumbs a,.tp-crumbs li{display:inline-flex;align-items:center;min-height:var(--tp-control-touch)}
 .rec,.qa{min-height:var(--tp-control-touch)}
+.vp button{min-inline-size:var(--tp-control-touch);min-block-size:var(--tp-control-touch)}
 
 /* تاتامی‌پدیا و مقاله */
 .tp-ja{font-family:"Noto Sans JP","Hiragino Sans","Yu Gothic","Meiryo",system-ui,sans-serif;unicode-bidi:isolate;font-size:var(--tp-font-size-xl);margin-block:var(--tp-space-2xs)}
@@ -89,7 +90,7 @@ h3,h4,.card h2,.card h3{font-weight:var(--tp-font-weight-bold)}
 .logo,.d-lg,.mk-sb .mk-logo{font-family:var(--tp-font-family-display);font-weight:var(--tp-font-weight-regular);color:var(--tp-color-text-primary)}
 /* ObiHeading: نوار کمربند مشکی ۸px با سر قرمز زیر تیتر هر بخش */
 .d-s>h2{display:block;padding-bottom:var(--tp-space-xs);margin-bottom:var(--tp-space-md)}
-.d-s>h2::after{content:"";display:block;height:8px;margin-top:var(--tp-space-xs);border-radius:var(--tp-radius-none);background:linear-gradient(to right,var(--tp-color-brand) 0 64px,var(--tp-color-text-primary) 64px)}
+.d-s>h2::after{content:"";display:block;height:8px;margin-top:var(--tp-space-xs);border-radius:var(--tp-radius-none);background:linear-gradient(to right,var(--tp-color-brand) 0 64px,var(--tp-color-accent) 64px)}
 /* هدر و ناوبری */
 body>header{background:var(--tp-color-header-bg);border-bottom:1px solid var(--tp-color-border);backdrop-filter:saturate(1.2) blur(6px)}
 nav a{font-weight:var(--tp-font-weight-medium)}nav a:hover{color:var(--tp-color-text-primary);background:var(--tp-color-surface-hover)}
@@ -457,7 +458,7 @@ input[aria-invalid=true],select[aria-invalid=true],textarea[aria-invalid=true]{b
 .pf-heat-wrap{max-width:26rem}
 .pf-heat{display:grid;grid-template-rows:repeat(7,minmax(0,1fr));grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:4px}
 .pf-heat i,.pf-legend i{display:block;aspect-ratio:1;border-radius:3px;background:var(--tp-color-neutral-tint)}
-.pf-heat i.l1,.pf-legend i.l1{background:rgba(31,79,181,.22)}.pf-heat i.l2,.pf-legend i.l2{background:rgba(31,79,181,.45)}.pf-heat i.l3,.pf-legend i.l3{background:rgba(31,79,181,.72)}.pf-heat i.l4,.pf-legend i.l4{background:var(--tp-color-brand)}
+.pf-heat i.l1,.pf-legend i.l1{background:rgba(192,57,43,.18)}.pf-heat i.l2,.pf-legend i.l2{background:rgba(192,57,43,.36)}.pf-heat i.l3,.pf-legend i.l3{background:rgba(192,57,43,.58)}.pf-heat i.l4,.pf-legend i.l4{background:var(--tp-color-brand)}
 .pf-heat-ax{display:flex;justify-content:space-between;margin-top:var(--tp-space-2xs)}
 .pf-legend{display:flex;align-items:center;gap:4px;margin-top:var(--tp-space-2xs)}.pf-legend i{width:12px}
 .pf-mini{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--tp-space-sm);margin:var(--tp-space-md) 0 0}
@@ -509,11 +510,11 @@ input[aria-invalid=true],select[aria-invalid=true],textarea[aria-invalid=true]{b
 .pf-mc-soon{margin-top:auto;padding-top:var(--tp-space-xs);border-top:1px dashed var(--tp-color-border)}
 .d-m>.tp-note{margin-top:0}
 
-/* ===== تم تیره: آبی جودو و خاکستری تاتامی ===== */
-.hero::after{background:rgba(255,255,255,.55)}
-.hero .btn{background:#FFFFFF;color:var(--tp-color-brand-text)}
-.hero .btn:hover{background:var(--tp-color-brand-tint);color:var(--tp-color-brand-hover);box-shadow:-4px 4px 0 rgba(255,255,255,.35)}
-.ft{border-top-color:#5B86E5}
+/* ===== هویت بصری زغالی، قرمز تاتامی و طلایی ===== */
+.hero::after{background:var(--tp-color-accent)}
+.hero .btn{background:var(--tp-color-accent);color:var(--tp-color-night)}
+.hero .btn:hover{background:var(--tp-color-accent);color:var(--tp-color-night);box-shadow:-4px 4px 0 rgba(192,57,43,.55)}
+.ft{border-top-color:var(--tp-color-accent)}
 .tp-belt-black{box-shadow:inset 0 0 0 1px rgba(255,255,255,.3)}
 .tp-toast.error{color:var(--tp-color-bg)}
 .btn.o.dg:hover{color:var(--tp-color-bg)}
@@ -521,8 +522,8 @@ input[aria-invalid=true],select[aria-invalid=true],textarea[aria-invalid=true]{b
 .db{color:#FFFFFF}
 .hero .btn.o{background:transparent;color:#FFFFFF;border-color:#FFFFFF}
 .hero .btn.o:hover{background:#FFFFFF;color:var(--tp-color-brand-hover)}
-.hero .btn:not(.o){background:#FFFFFF;color:var(--tp-color-night)}
-.hero .btn:not(.o):hover{background:#E7EDFA;color:var(--tp-color-night)}
+.hero .btn:not(.o){background:var(--tp-color-brand);color:var(--tp-color-text-on-brand)}
+.hero .btn:not(.o):hover{background:var(--tp-color-brand-hover);color:var(--tp-color-text-on-brand)}
 
 /* ===== رنگ کمربندهای جودو ===== */
 .tp-belt-white{background:var(--tp-belt-white)}.tp-belt-yellow{background:var(--tp-belt-yellow)}.tp-belt-orange{background:var(--tp-belt-orange)}.tp-belt-green{background:var(--tp-belt-green)}.tp-belt-blue{background:var(--tp-belt-blue)}.tp-belt-brown{background:var(--tp-belt-brown)}.tp-belt-black{background:var(--tp-belt-black)}
