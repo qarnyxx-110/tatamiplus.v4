@@ -3,6 +3,7 @@ import fs from 'node:fs';
 
 const bridge = fs.readFileSync(new URL('../src/js/shared/django-route-bridge.js', import.meta.url), 'utf8');
 const router = fs.readFileSync(new URL('../src/js/shared/router.js', import.meta.url), 'utf8');
+const loginTemplate = fs.readFileSync(new URL('../../django/templates/accounts/login.html', import.meta.url), 'utf8');
 
 assert.match(bridge, /const target = route === 'login' \? '\/auth\/login\/' : '\/auth\/login\/sms\/';/);
 assert.match(bridge, /if \(route === 'password-reset'\) return '\/auth\/password\/reset\/';/);
@@ -20,4 +21,13 @@ const unicodeSlugValidator = String.raw`return /^[\p{L}\p{M}\p{N}_-]+$/u.test`;
 assert.ok(bridge.includes(unicodeSlugValidator), 'Unicode slug validator must allow letters, marks and numbers only');
 assert.ok(router.includes("'set-password','blog','store'"), 'Live Preview interception must include Django blog pages');
 
-console.log('Django auth route contract: PASS');
+assert.ok(loginTemplate.includes('{% if mode == "password" %}'), 'Login template must render separate password and SMS modes');
+assert.ok(loginTemplate.includes('data-auth-form="password-login"'), 'Password form must be explicitly identified');
+assert.ok(loginTemplate.includes('data-auth-form="sms-login"'), 'SMS form must be explicitly identified');
+assert.ok(loginTemplate.includes("action=\"{% url 'phone_auth:login' %}\""), 'Password form must POST to the password-login endpoint');
+assert.ok(loginTemplate.includes("action=\"{% url 'phone_auth:sms_login' %}\""), 'SMS form must POST to the SMS endpoint');
+assert.ok(loginTemplate.includes("{% url 'phone_auth:password_reset' %}"), 'Password login must link to the reset flow');
+assert.ok(loginTemplate.includes("{% csrf_token %}"), 'Both login forms must include CSRF protection');
+assert.ok(loginTemplate.includes("ورود به حساب") && loginTemplate.includes("ارسال کد تأیید"), 'Each mode must have an accurate action label');
+
+console.log('Django auth route and template contract: PASS');
